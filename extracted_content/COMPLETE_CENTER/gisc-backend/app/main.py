@@ -24,6 +24,7 @@ from app.rate_limiter import RateLimitMiddleware
 from app.system_data import system_data_provider
 from app.realtime_threat_feeds import get_realtime_threat_aggregator
 from app.tier5_router import router as tier5_router
+from app.advanced_tier5_router import router as advanced_tier5_router
 
 Base.metadata.create_all(bind=engine)
 
@@ -50,6 +51,7 @@ app.add_middleware(RateLimitMiddleware)
 
 app.include_router(enterprise_router)
 app.include_router(tier5_router)
+app.include_router(advanced_tier5_router)
 
 domain_hub = get_domain_integration_hub()
 
