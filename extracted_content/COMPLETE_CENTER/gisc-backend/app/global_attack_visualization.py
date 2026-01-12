@@ -377,7 +377,7 @@ class AttackRouteGenerator:
 class GlobalAttackVisualizationEngine:
     """Main engine for global attack visualization with real-time streaming"""
     
-    DB_PATH = "/var/lib/tyranthos/attack_visualization.db"
+    DB_PATH = "/tmp/tyranthos/attack_visualization.db"
     
     def __init__(self):
         self.route_generator = AttackRouteGenerator()
@@ -880,4 +880,7 @@ def get_attack_visualization_engine() -> GlobalAttackVisualizationEngine:
     with _engine_lock:
         if _visualization_engine is None:
             _visualization_engine = GlobalAttackVisualizationEngine()
+            logger.info("Initializing attack visualization engine with real threat data from abuse.ch feeds...")
+            _visualization_engine.generate_attack_routes(limit=100)
+            logger.info(f"Generated {len(_visualization_engine.active_routes)} attack routes from threat feeds")
         return _visualization_engine

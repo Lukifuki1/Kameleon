@@ -135,7 +135,7 @@ class StoredPersonProfile:
 class PersonProfileDatabase:
     """SQLite-based person profile database with photo storage and connection detection"""
     
-    DB_PATH = "/var/lib/tyranthos/person_profiles.db"
+    DB_PATH = "/tmp/tyranthos/person_profiles.db"
     MAX_PHOTOS_PER_PERSON = 3
     
     def __init__(self):

@@ -116,7 +116,7 @@ class CameraSighting:
 class CameraDatabase:
     """SQLite database for camera storage and management"""
     
-    DB_PATH = "/var/lib/tyranthos/cameras.db"
+    DB_PATH = "/tmp/tyranthos/cameras.db"
     
     def __init__(self):
         self._lock = threading.Lock()
