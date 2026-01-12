@@ -95,12 +95,14 @@ interface SystemStatusResponse {
 const COLORS = ['#06b6d4', '#3b82f6', '#8b5cf6', '#ec4899', '#f97316', '#eab308', '#22c55e', '#ef4444'];
 
 function App() {
-  const [systemStatus, setSystemStatus] = useState<SystemStatus>('OPERATIONAL');
-  const [threatLevel, setThreatLevel] = useState<ThreatLevel>('LOW');
-  const [activeTab, setActiveTab] = useState('soc');
-  const [currentTime, setCurrentTime] = useState(new Date());
-  const [isLoading, setIsLoading] = useState(true);
-  const [connectionError, setConnectionError] = useState<string | null>(null);
+    const [systemStatus, setSystemStatus] = useState<SystemStatus>('OPERATIONAL');
+    const [threatLevel, setThreatLevel] = useState<ThreatLevel>('LOW');
+    const [activeTab, setActiveTab] = useState('soc');
+    const [currentTime, setCurrentTime] = useState(new Date());
+    const [isLoading, setIsLoading] = useState(true);
+    const [connectionError, setConnectionError] = useState<string | null>(null);
+    const [tier5Status, setTier5Status] = useState<{operational: boolean; components: Record<string, {status: string}>} | null>(null);
+    const [tier5Error, setTier5Error] = useState<string | null>(null);
   
   const [metrics, setMetrics] = useState({
     eventsPerSecond: 0,
@@ -214,17 +216,41 @@ function App() {
     const [selectedInterface, setSelectedInterface] = useState('any');
     const [captureFilter, setCaptureFilter] = useState('');
 
+      const fetchTier5Status = useCallback(async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/tier5/status`);
+        if (!response.ok) {
+          setTier5Error('Tier 5 system not operational - backend not connected');
+          setTier5Status(null);
+          return false;
+        }
+        const data = await response.json();
+        const allComponentsActive = data.components && 
+          Object.values(data.components).every((c: any) => c.status === 'active' || c.status === 'HEALTHY');
+        setTier5Status({
+          operational: data.status === 'OPERATIONAL' && allComponentsActive,
+          components: data.components
+        });
+        setTier5Error(null);
+        return data.status === 'OPERATIONAL' && allComponentsActive;
+      } catch (err) {
+        setTier5Error('Tier 5 system not reachable - ensure backend is running on production network');
+        setTier5Status(null);
+        return false;
+      }
+    }, []);
+
     const fetchSystemStatus = useCallback(async () => {
-    try {
-      const response = await fetch(`${API_URL}/api/v1/status`);
-      if (!response.ok) throw new Error('Failed to fetch system status');
-      const data: SystemStatusResponse = await response.json();
-      setSystemStatus(data.system_status as SystemStatus);
-      setThreatLevel(data.threat_level as ThreatLevel);
-    } catch (err) {
-      console.error('Error fetching system status:', err);
-    }
-  }, []);
+      try {
+        const response = await fetch(`${API_URL}/api/v1/status`);
+        if (!response.ok) throw new Error('Failed to fetch system status');
+        const data: SystemStatusResponse = await response.json();
+        setSystemStatus(data.system_status as SystemStatus);
+        setThreatLevel(data.threat_level as ThreatLevel);
+      } catch (err) {
+        console.error('Error fetching system status:', err);
+      }
+    }, []);
 
   const fetchMetrics = useCallback(async () => {
     try {
@@ -960,29 +986,32 @@ function App() {
     return () => clearInterval(timer);
   }, []);
 
-  useEffect(() => {
-    const initializeData = async () => {
-      setIsLoading(true);
-      try {
-        await Promise.all([
-          fetchSystemStatus(),
-          fetchMetrics(),
-          fetchThreats(),
-          fetchIntelReports(),
-          fetchNetworkNodes(),
-          fetchScanHistory(),
-          fetchSystemCapabilities(),
-          fetchSystemData()
-        ]);
-        setConnectionError(null);
-      } catch (err) {
-        setConnectionError('Failed to connect to backend API');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    initializeData();
-  }, [fetchSystemStatus, fetchMetrics, fetchThreats, fetchIntelReports, fetchNetworkNodes, fetchSystemCapabilities, fetchSystemData]);
+    useEffect(() => {
+      const initializeData = async () => {
+        setIsLoading(true);
+        try {
+          const tier5Operational = await fetchTier5Status();
+          if (tier5Operational) {
+            await Promise.all([
+              fetchSystemStatus(),
+              fetchMetrics(),
+              fetchThreats(),
+              fetchIntelReports(),
+              fetchNetworkNodes(),
+              fetchScanHistory(),
+              fetchSystemCapabilities(),
+              fetchSystemData()
+            ]);
+            setConnectionError(null);
+          }
+        } catch (err) {
+          setConnectionError('Failed to connect to backend API');
+        } finally {
+          setIsLoading(false);
+        }
+      };
+      initializeData();
+    }, [fetchTier5Status, fetchSystemStatus, fetchMetrics, fetchThreats, fetchIntelReports, fetchNetworkNodes, fetchSystemCapabilities, fetchSystemData]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -1036,6 +1065,87 @@ function App() {
       default: return 'text-zinc-400';
     }
   };
+
+  if (tier5Error || (tier5Status && !tier5Status.operational)) {
+    return (
+      <div className="min-h-screen bg-zinc-950 text-zinc-100 flex items-center justify-center">
+        <div className="max-w-2xl mx-auto p-8">
+          <Card className="bg-red-950/50 border-red-800">
+            <CardHeader>
+              <div className="flex items-center gap-4">
+                <ShieldAlert className="h-16 w-16 text-red-500" />
+                <div>
+                  <CardTitle className="text-2xl text-red-400">TIER 5 SYSTEM NOT OPERATIONAL</CardTitle>
+                  <CardDescription className="text-red-300/70">
+                    Classification: TOP SECRET // NSOC // TIER-5
+                  </CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="bg-red-900/30 border border-red-700 rounded-lg p-4">
+                <h3 className="text-lg font-semibold text-red-400 mb-2">SECURITY NOTICE</h3>
+                <p className="text-zinc-300">
+                  This interface displays ONLY real operational data from production network infrastructure.
+                  No data will be shown until all Tier 5 components are fully operational on a real network.
+                </p>
+              </div>
+              
+              <div className="space-y-2">
+                <h4 className="text-sm font-semibold text-zinc-400">SYSTEM STATUS</h4>
+                <div className="bg-zinc-900/50 border border-zinc-700 rounded-lg p-4">
+                  <p className="text-red-400 font-mono text-sm">
+                    {tier5Error || 'Tier 5 components not fully operational'}
+                  </p>
+                </div>
+              </div>
+
+              {tier5Status?.components && (
+                <div className="space-y-2">
+                  <h4 className="text-sm font-semibold text-zinc-400">COMPONENT STATUS</h4>
+                  <div className="grid grid-cols-2 gap-2">
+                    {Object.entries(tier5Status.components).map(([name, comp]: [string, any]) => (
+                      <div key={name} className="bg-zinc-900/50 border border-zinc-700 rounded p-2 flex items-center justify-between">
+                        <span className="text-xs text-zinc-400 uppercase">{name.replace(/_/g, ' ')}</span>
+                        <Badge variant="outline" className={
+                          comp.status === 'active' || comp.status === 'HEALTHY'
+                            ? 'bg-green-900/50 text-green-400 border-green-700'
+                            : 'bg-red-900/50 text-red-400 border-red-700'
+                        }>
+                          {comp.status}
+                        </Badge>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div className="bg-zinc-900/50 border border-zinc-700 rounded-lg p-4">
+                <h4 className="text-sm font-semibold text-zinc-400 mb-2">REQUIRED FOR OPERATION</h4>
+                <ul className="text-xs text-zinc-500 space-y-1">
+                  <li>- Backend API running on production network</li>
+                  <li>- Local Threat Intelligence database initialized</li>
+                  <li>- SOAR Engine with playbooks configured</li>
+                  <li>- Threat Hunting engine active</li>
+                  <li>- Compliance Engine operational</li>
+                  <li>- High Availability infrastructure healthy</li>
+                  <li>- Multi-tenant system initialized</li>
+                  <li>- Real-time streaming connected</li>
+                </ul>
+              </div>
+
+              <Button 
+                onClick={() => window.location.reload()} 
+                className="w-full bg-red-900 hover:bg-red-800 text-red-100"
+              >
+                RETRY CONNECTION
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100">
