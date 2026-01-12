@@ -1,0 +1,1067 @@
+/**
+ * @file Adversary Disruption - Self-Contained Adversary Disruption Platform
+ * @author {{AVTOR}}
+ * @version {{VERZIJA}}
+ * @date {{DATUM}}
+ * @project {{IME_PROJEKTA}}
+ * @domain VARNOSTNI_SISTEMI
+ * 
+ * @requirement REQ-SEC-ADP-001
+ * @design DSN-SEC-ADP-001
+ * @test TST-SEC-ADP-001
+ * 
+ * @description
+ * Enterprise-grade self-contained adversary disruption platform implementing
+ * comprehensive infrastructure disruption, capability degradation, operational
+ * interference, and coordinated counter-operations. All disruption algorithms
+ * are natively implemented without external dependencies.
+ * 
+ * @classification TOP SECRET - Adversary Disruption Operations
+ * @authorization Required: Level 5 Security Clearance
+ * @dependencies NONE - Fully self-contained implementation
+ */
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ADVERSARY DISRUPTION TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export type DisruptionType =
+  | 'INFRASTRUCTURE_DISRUPTION'
+  | 'CAPABILITY_DEGRADATION'
+  | 'OPERATIONAL_INTERFERENCE'
+  | 'COMMUNICATION_DISRUPTION'
+  | 'RESOURCE_EXHAUSTION'
+  | 'INTELLIGENCE_DENIAL'
+  | 'ATTRIBUTION_EXPOSURE'
+  | 'COORDINATION_DISRUPTION';
+
+export type TargetCategory =
+  | 'C2_INFRASTRUCTURE'
+  | 'STAGING_SERVERS'
+  | 'PROXY_NETWORK'
+  | 'MALWARE_DISTRIBUTION'
+  | 'CREDENTIAL_HARVESTING'
+  | 'DATA_EXFILTRATION'
+  | 'COMMUNICATION_CHANNELS'
+  | 'FINANCIAL_INFRASTRUCTURE';
+
+export type DisruptionMethod =
+  | 'SINKHOLING'
+  | 'TAKEDOWN'
+  | 'BLOCKING'
+  | 'POISONING'
+  | 'FLOODING'
+  | 'INTERCEPTION'
+  | 'MANIPULATION'
+  | 'EXPOSURE';
+
+export type AdversaryType =
+  | 'NATION_STATE'
+  | 'APT_GROUP'
+  | 'CYBERCRIMINAL'
+  | 'HACKTIVIST'
+  | 'TERRORIST'
+  | 'INSIDER'
+  | 'COMPETITOR'
+  | 'UNKNOWN';
+
+export type OperationPhase =
+  | 'RECONNAISSANCE'
+  | 'PLANNING'
+  | 'PREPARATION'
+  | 'EXECUTION'
+  | 'ASSESSMENT'
+  | 'SUSTAINMENT';
+
+export type ImpactLevel =
+  | 'CRITICAL'
+  | 'HIGH'
+  | 'MEDIUM'
+  | 'LOW'
+  | 'MINIMAL';
+
+export type SecurityLevel =
+  | 'TOP_SECRET'
+  | 'SECRET'
+  | 'CONFIDENTIAL'
+  | 'UNCLASSIFIED';
+
+export type OperationalMode =
+  | 'COVERT'
+  | 'OVERT'
+  | 'COORDINATED'
+  | 'AUTONOMOUS';
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ADVERSARY DISRUPTION CONFIGURATION
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface AdversaryDisruptionConfig {
+  readonly platformId: string;
+  readonly name: string;
+  readonly version: string;
+  readonly mode: OperationalMode;
+  readonly targeting: TargetingConfig;
+  readonly infrastructure: InfrastructureDisruptionConfig;
+  readonly capability: CapabilityDegradationConfig;
+  readonly communication: CommunicationDisruptionConfig;
+  readonly resource: ResourceExhaustionConfig;
+  readonly intelligence: IntelligenceDenialConfig;
+  readonly attribution: AttributionExposureConfig;
+  readonly coordination: CoordinationDisruptionConfig;
+  readonly assessment: AssessmentConfig;
+  readonly deconfliction: DeconflictionConfig;
+  readonly reporting: ReportingConfig;
+  readonly storage: StorageConfig;
+  readonly security: SecurityConfig;
+  readonly metadata: PlatformMetadata;
+}
+
+export interface TargetingConfig {
+  readonly enabled: boolean;
+  readonly intelligence: TargetIntelligenceConfig;
+  readonly selection: TargetSelectionConfig;
+  readonly validation: TargetValidationConfig;
+  readonly prioritization: TargetPrioritizationConfig;
+}
+
+export interface TargetIntelligenceConfig {
+  readonly enabled: boolean;
+  readonly sources: readonly IntelligenceSource[];
+  readonly correlation: boolean;
+  readonly enrichment: boolean;
+  readonly confidence: ConfidenceThreshold;
+}
+
+export type IntelligenceSource =
+  | 'INTERNAL'
+  | 'PARTNER'
+  | 'COMMERCIAL'
+  | 'GOVERNMENT'
+  | 'OPEN_SOURCE';
+
+export interface ConfidenceThreshold {
+  readonly minimum: number;
+  readonly preferred: number;
+}
+
+export interface TargetSelectionConfig {
+  readonly enabled: boolean;
+  readonly criteria: readonly SelectionCriterion[];
+  readonly exclusions: readonly string[];
+  readonly approvalRequired: boolean;
+}
+
+export interface SelectionCriterion {
+  readonly criterionId: string;
+  readonly attribute: string;
+  readonly operator: 'EQUALS' | 'CONTAINS' | 'GREATER_THAN' | 'LESS_THAN';
+  readonly value: string | number;
+  readonly weight: number;
+}
+
+export interface TargetValidationConfig {
+  readonly enabled: boolean;
+  readonly multiSource: boolean;
+  readonly minimumSources: number;
+  readonly recencyRequirement: number;
+  readonly legalReview: boolean;
+}
+
+export interface TargetPrioritizationConfig {
+  readonly enabled: boolean;
+  readonly factors: readonly PrioritizationFactor[];
+  readonly algorithm: 'WEIGHTED' | 'RANKED' | 'HYBRID';
+}
+
+export interface PrioritizationFactor {
+  readonly factorId: string;
+  readonly name: string;
+  readonly weight: number;
+  readonly calculation: string;
+}
+
+export interface InfrastructureDisruptionConfig {
+  readonly enabled: boolean;
+  readonly c2Disruption: C2DisruptionConfig;
+  readonly stagingDisruption: StagingDisruptionConfig;
+  readonly proxyDisruption: ProxyDisruptionConfig;
+  readonly distributionDisruption: DistributionDisruptionConfig;
+}
+
+export interface C2DisruptionConfig {
+  readonly enabled: boolean;
+  readonly sinkholing: SinkholingConfig;
+  readonly takedown: TakedownConfig;
+  readonly interception: InterceptionConfig;
+  readonly manipulation: ManipulationConfig;
+}
+
+export interface SinkholingConfig {
+  readonly enabled: boolean;
+  readonly dnsSinkhole: boolean;
+  readonly ipSinkhole: boolean;
+  readonly trafficAnalysis: boolean;
+  readonly victimNotification: boolean;
+}
+
+export interface TakedownConfig {
+  readonly enabled: boolean;
+  readonly registrarCoordination: boolean;
+  readonly hostingCoordination: boolean;
+  readonly legalProcess: boolean;
+  readonly emergencyTakedown: boolean;
+}
+
+export interface InterceptionConfig {
+  readonly enabled: boolean;
+  readonly trafficCapture: boolean;
+  readonly commandCapture: boolean;
+  readonly credentialCapture: boolean;
+  readonly payloadCapture: boolean;
+}
+
+export interface ManipulationConfig {
+  readonly enabled: boolean;
+  readonly commandManipulation: boolean;
+  readonly responseManipulation: boolean;
+  readonly timingManipulation: boolean;
+  readonly dataManipulation: boolean;
+}
+
+export interface StagingDisruptionConfig {
+  readonly enabled: boolean;
+  readonly serverTakedown: boolean;
+  readonly contentRemoval: boolean;
+  readonly accessBlocking: boolean;
+  readonly monitoring: boolean;
+}
+
+export interface ProxyDisruptionConfig {
+  readonly enabled: boolean;
+  readonly proxyIdentification: boolean;
+  readonly proxyBlocking: boolean;
+  readonly proxyTakedown: boolean;
+  readonly chainAnalysis: boolean;
+}
+
+export interface DistributionDisruptionConfig {
+  readonly enabled: boolean;
+  readonly malwareRemoval: boolean;
+  readonly downloadBlocking: boolean;
+  readonly siteDisruption: boolean;
+  readonly updatePoisoning: boolean;
+}
+
+export interface CapabilityDegradationConfig {
+  readonly enabled: boolean;
+  readonly toolDisruption: ToolDisruptionConfig;
+  readonly techniqueDisruption: TechniqueDisruptionConfig;
+  readonly resourceDisruption: ResourceDisruptionConfig;
+  readonly personnelDisruption: PersonnelDisruptionConfig;
+}
+
+export interface ToolDisruptionConfig {
+  readonly enabled: boolean;
+  readonly signatureGeneration: boolean;
+  readonly detectionRules: boolean;
+  readonly toolExposure: boolean;
+  readonly toolNeutralization: boolean;
+}
+
+export interface TechniqueDisruptionConfig {
+  readonly enabled: boolean;
+  readonly techniqueBlocking: boolean;
+  readonly techniqueDetection: boolean;
+  readonly techniqueExposure: boolean;
+  readonly countermeasures: boolean;
+}
+
+export interface ResourceDisruptionConfig {
+  readonly enabled: boolean;
+  readonly financialDisruption: boolean;
+  readonly infrastructureDisruption: boolean;
+  readonly supplyChainDisruption: boolean;
+  readonly recruitmentDisruption: boolean;
+}
+
+export interface PersonnelDisruptionConfig {
+  readonly enabled: boolean;
+  readonly identityExposure: boolean;
+  readonly activityTracking: boolean;
+  readonly communicationMonitoring: boolean;
+  readonly legalAction: boolean;
+}
+
+export interface CommunicationDisruptionConfig {
+  readonly enabled: boolean;
+  readonly channelDisruption: ChannelDisruptionConfig;
+  readonly protocolDisruption: ProtocolDisruptionConfig;
+  readonly encryptionDisruption: EncryptionDisruptionConfig;
+}
+
+export interface ChannelDisruptionConfig {
+  readonly enabled: boolean;
+  readonly channelBlocking: boolean;
+  readonly channelMonitoring: boolean;
+  readonly channelManipulation: boolean;
+  readonly channelExposure: boolean;
+}
+
+export interface ProtocolDisruptionConfig {
+  readonly enabled: boolean;
+  readonly protocolBlocking: boolean;
+  readonly protocolManipulation: boolean;
+  readonly protocolExposure: boolean;
+  readonly protocolAnalysis: boolean;
+}
+
+export interface EncryptionDisruptionConfig {
+  readonly enabled: boolean;
+  readonly keyCompromise: boolean;
+  readonly algorithmWeakness: boolean;
+  readonly implementationFlaws: boolean;
+  readonly sidechannelExploitation: boolean;
+}
+
+export interface ResourceExhaustionConfig {
+  readonly enabled: boolean;
+  readonly computeExhaustion: ComputeExhaustionConfig;
+  readonly bandwidthExhaustion: BandwidthExhaustionConfig;
+  readonly storageExhaustion: StorageExhaustionConfig;
+  readonly financialExhaustion: FinancialExhaustionConfig;
+}
+
+export interface ComputeExhaustionConfig {
+  readonly enabled: boolean;
+  readonly cpuExhaustion: boolean;
+  readonly memoryExhaustion: boolean;
+  readonly processExhaustion: boolean;
+  readonly cryptographicExhaustion: boolean;
+}
+
+export interface BandwidthExhaustionConfig {
+  readonly enabled: boolean;
+  readonly trafficFlooding: boolean;
+  readonly connectionExhaustion: boolean;
+  readonly amplificationAttacks: boolean;
+  readonly slowlorisAttacks: boolean;
+}
+
+export interface StorageExhaustionConfig {
+  readonly enabled: boolean;
+  readonly diskFilling: boolean;
+  readonly logFlooding: boolean;
+  readonly databaseExhaustion: boolean;
+  readonly cacheExhaustion: boolean;
+}
+
+export interface FinancialExhaustionConfig {
+  readonly enabled: boolean;
+  readonly cloudCostExhaustion: boolean;
+  readonly transactionCosts: boolean;
+  readonly operationalCosts: boolean;
+  readonly legalCosts: boolean;
+}
+
+export interface IntelligenceDenialConfig {
+  readonly enabled: boolean;
+  readonly disinformation: DisinformationConfig;
+  readonly deception: DeceptionConfig;
+  readonly obfuscation: ObfuscationConfig;
+  readonly counterIntelligence: CounterIntelligenceConfig;
+}
+
+export interface DisinformationConfig {
+  readonly enabled: boolean;
+  readonly falseIndicators: boolean;
+  readonly misleadingData: boolean;
+  readonly fabricatedIntelligence: boolean;
+  readonly narrativeManipulation: boolean;
+}
+
+export interface DeceptionConfig {
+  readonly enabled: boolean;
+  readonly honeypots: boolean;
+  readonly decoys: boolean;
+  readonly falseFlags: boolean;
+  readonly misdirection: boolean;
+}
+
+export interface ObfuscationConfig {
+  readonly enabled: boolean;
+  readonly trafficObfuscation: boolean;
+  readonly identityObfuscation: boolean;
+  readonly infrastructureObfuscation: boolean;
+  readonly operationalObfuscation: boolean;
+}
+
+export interface CounterIntelligenceConfig {
+  readonly enabled: boolean;
+  readonly sourceProtection: boolean;
+  readonly methodProtection: boolean;
+  readonly operationProtection: boolean;
+  readonly personnelProtection: boolean;
+}
+
+export interface AttributionExposureConfig {
+  readonly enabled: boolean;
+  readonly publicExposure: PublicExposureConfig;
+  readonly partnerSharing: PartnerSharingConfig;
+  readonly legalAction: LegalActionConfig;
+  readonly diplomaticAction: DiplomaticActionConfig;
+}
+
+export interface PublicExposureConfig {
+  readonly enabled: boolean;
+  readonly technicalReports: boolean;
+  readonly mediaEngagement: boolean;
+  readonly conferencePresentation: boolean;
+  readonly socialMediaExposure: boolean;
+}
+
+export interface PartnerSharingConfig {
+  readonly enabled: boolean;
+  readonly governmentPartners: boolean;
+  readonly industryPartners: boolean;
+  readonly internationalPartners: boolean;
+  readonly academicPartners: boolean;
+}
+
+export interface LegalActionConfig {
+  readonly enabled: boolean;
+  readonly criminalReferral: boolean;
+  readonly civilAction: boolean;
+  readonly sanctions: boolean;
+  readonly indictments: boolean;
+}
+
+export interface DiplomaticActionConfig {
+  readonly enabled: boolean;
+  readonly demarche: boolean;
+  readonly publicStatement: boolean;
+  readonly internationalCoordination: boolean;
+  readonly treatyEnforcement: boolean;
+}
+
+export interface CoordinationDisruptionConfig {
+  readonly enabled: boolean;
+  readonly groupDisruption: GroupDisruptionConfig;
+  readonly operationalDisruption: OperationalDisruptionConfig;
+  readonly supplyChainDisruption: SupplyChainDisruptionConfig;
+}
+
+export interface GroupDisruptionConfig {
+  readonly enabled: boolean;
+  readonly leadershipTargeting: boolean;
+  readonly memberExposure: boolean;
+  readonly trustDisruption: boolean;
+  readonly recruitmentDisruption: boolean;
+}
+
+export interface OperationalDisruptionConfig {
+  readonly enabled: boolean;
+  readonly planningDisruption: boolean;
+  readonly executionDisruption: boolean;
+  readonly communicationDisruption: boolean;
+  readonly logisticsDisruption: boolean;
+}
+
+export interface SupplyChainDisruptionConfig {
+  readonly enabled: boolean;
+  readonly toolSupplyDisruption: boolean;
+  readonly infrastructureSupplyDisruption: boolean;
+  readonly financialSupplyDisruption: boolean;
+  readonly personnelSupplyDisruption: boolean;
+}
+
+export interface AssessmentConfig {
+  readonly enabled: boolean;
+  readonly effectiveness: EffectivenessAssessmentConfig;
+  readonly impact: ImpactAssessmentConfig;
+  readonly collateral: CollateralAssessmentConfig;
+  readonly sustainability: SustainabilityAssessmentConfig;
+}
+
+export interface EffectivenessAssessmentConfig {
+  readonly enabled: boolean;
+  readonly metrics: readonly string[];
+  readonly benchmarks: readonly string[];
+  readonly reporting: boolean;
+}
+
+export interface ImpactAssessmentConfig {
+  readonly enabled: boolean;
+  readonly adversaryImpact: boolean;
+  readonly operationalImpact: boolean;
+  readonly strategicImpact: boolean;
+  readonly longTermImpact: boolean;
+}
+
+export interface CollateralAssessmentConfig {
+  readonly enabled: boolean;
+  readonly civilianImpact: boolean;
+  readonly infrastructureImpact: boolean;
+  readonly economicImpact: boolean;
+  readonly diplomaticImpact: boolean;
+}
+
+export interface SustainabilityAssessmentConfig {
+  readonly enabled: boolean;
+  readonly resourceRequirements: boolean;
+  readonly maintenanceRequirements: boolean;
+  readonly adaptationRequirements: boolean;
+  readonly exitStrategy: boolean;
+}
+
+export interface DeconflictionConfig {
+  readonly enabled: boolean;
+  readonly internal: InternalDeconflictionConfig;
+  readonly external: ExternalDeconflictionConfig;
+  readonly realTime: RealTimeDeconflictionConfig;
+}
+
+export interface InternalDeconflictionConfig {
+  readonly enabled: boolean;
+  readonly operationsCenter: boolean;
+  readonly intelligenceTeams: boolean;
+  readonly legalTeams: boolean;
+  readonly policyTeams: boolean;
+}
+
+export interface ExternalDeconflictionConfig {
+  readonly enabled: boolean;
+  readonly governmentPartners: boolean;
+  readonly internationalPartners: boolean;
+  readonly lawEnforcement: boolean;
+  readonly industryPartners: boolean;
+}
+
+export interface RealTimeDeconflictionConfig {
+  readonly enabled: boolean;
+  readonly conflictDetection: boolean;
+  readonly automaticNotification: boolean;
+  readonly manualOverride: boolean;
+  readonly escalation: boolean;
+}
+
+export interface ReportingConfig {
+  readonly enabled: boolean;
+  readonly formats: readonly ReportFormat[];
+  readonly sections: readonly ReportSection[];
+  readonly automation: ReportAutomationConfig;
+}
+
+export type ReportFormat =
+  | 'PDF'
+  | 'HTML'
+  | 'JSON'
+  | 'XML'
+  | 'STIX';
+
+export type ReportSection =
+  | 'EXECUTIVE_SUMMARY'
+  | 'OPERATION_DETAILS'
+  | 'TARGET_ANALYSIS'
+  | 'DISRUPTION_ACTIONS'
+  | 'EFFECTIVENESS_ASSESSMENT'
+  | 'RECOMMENDATIONS';
+
+export interface ReportAutomationConfig {
+  readonly enabled: boolean;
+  readonly scheduling: boolean;
+  readonly triggers: readonly string[];
+}
+
+export interface StorageConfig {
+  readonly type: 'DATABASE' | 'FILE_SYSTEM' | 'HYBRID';
+  readonly encryption: StorageEncryptionConfig;
+  readonly retention: RetentionConfig;
+  readonly backup: BackupConfig;
+}
+
+export interface StorageEncryptionConfig {
+  readonly enabled: boolean;
+  readonly algorithm: 'AES_256_GCM' | 'CHACHA20_POLY1305';
+  readonly keyManagement: 'LOCAL' | 'HSM' | 'KMS';
+}
+
+export interface RetentionConfig {
+  readonly enabled: boolean;
+  readonly operations: number;
+  readonly intelligence: number;
+  readonly logs: number;
+}
+
+export interface BackupConfig {
+  readonly enabled: boolean;
+  readonly frequency: number;
+  readonly encryption: boolean;
+  readonly offsite: boolean;
+}
+
+export interface SecurityConfig {
+  readonly authentication: AuthenticationConfig;
+  readonly authorization: AuthorizationConfig;
+  readonly audit: AuditConfig;
+  readonly classification: ClassificationConfig;
+}
+
+export interface AuthenticationConfig {
+  readonly enabled: boolean;
+  readonly methods: readonly ('PKI' | 'CAC' | 'BIOMETRIC' | 'MFA')[];
+  readonly sessionTimeout: number;
+}
+
+export interface AuthorizationConfig {
+  readonly enabled: boolean;
+  readonly model: 'RBAC' | 'ABAC' | 'MAC';
+  readonly clearanceRequired: boolean;
+}
+
+export interface AuditConfig {
+  readonly enabled: boolean;
+  readonly logAllAccess: boolean;
+  readonly logAllOperations: boolean;
+  readonly retention: number;
+}
+
+export interface ClassificationConfig {
+  readonly enabled: boolean;
+  readonly defaultLevel: SecurityLevel;
+  readonly autoClassification: boolean;
+}
+
+export interface PlatformMetadata {
+  readonly createdAt: number;
+  readonly updatedAt: number;
+  readonly createdBy: string;
+  readonly version: string;
+  readonly tags: readonly string[];
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TARGET TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface DisruptionTarget {
+  readonly targetId: string;
+  readonly category: TargetCategory;
+  readonly type: TargetType;
+  readonly identifier: string;
+  readonly adversary: AdversaryInfo;
+  readonly infrastructure: InfrastructureInfo;
+  readonly intelligence: TargetIntelligence;
+  readonly priority: TargetPriority;
+  readonly status: TargetStatus;
+  readonly metadata: TargetMetadata;
+}
+
+export type TargetType =
+  | 'DOMAIN'
+  | 'IP_ADDRESS'
+  | 'SERVER'
+  | 'NETWORK'
+  | 'APPLICATION'
+  | 'ACCOUNT'
+  | 'CHANNEL'
+  | 'INFRASTRUCTURE';
+
+export interface AdversaryInfo {
+  readonly adversaryId: string;
+  readonly type: AdversaryType;
+  readonly name: string | null;
+  readonly aliases: readonly string[];
+  readonly attribution: AttributionInfo;
+}
+
+export interface AttributionInfo {
+  readonly confidence: 'HIGH' | 'MEDIUM' | 'LOW';
+  readonly basis: readonly string[];
+  readonly nationState: string | null;
+  readonly group: string | null;
+}
+
+export interface InfrastructureInfo {
+  readonly infrastructureId: string;
+  readonly type: InfrastructureType;
+  readonly location: LocationInfo;
+  readonly hosting: HostingInfo;
+  readonly connections: readonly ConnectionInfo[];
+}
+
+export type InfrastructureType =
+  | 'C2_SERVER'
+  | 'STAGING_SERVER'
+  | 'PROXY'
+  | 'VPN'
+  | 'BULLETPROOF_HOSTING'
+  | 'CLOUD_INFRASTRUCTURE'
+  | 'COMPROMISED_INFRASTRUCTURE';
+
+export interface LocationInfo {
+  readonly country: string;
+  readonly region: string | null;
+  readonly city: string | null;
+  readonly coordinates: Coordinates | null;
+}
+
+export interface Coordinates {
+  readonly latitude: number;
+  readonly longitude: number;
+}
+
+export interface HostingInfo {
+  readonly provider: string;
+  readonly asn: number;
+  readonly registrar: string | null;
+  readonly registrationDate: number | null;
+}
+
+export interface ConnectionInfo {
+  readonly connectionId: string;
+  readonly targetId: string;
+  readonly type: 'UPSTREAM' | 'DOWNSTREAM' | 'PEER';
+  readonly protocol: string;
+  readonly frequency: number;
+}
+
+export interface TargetIntelligence {
+  readonly sources: readonly IntelligenceEntry[];
+  readonly indicators: readonly IndicatorInfo[];
+  readonly ttps: readonly TTPInfo[];
+  readonly confidence: number;
+}
+
+export interface IntelligenceEntry {
+  readonly entryId: string;
+  readonly source: IntelligenceSource;
+  readonly timestamp: number;
+  readonly content: string;
+  readonly reliability: 'HIGH' | 'MEDIUM' | 'LOW';
+}
+
+export interface IndicatorInfo {
+  readonly indicatorId: string;
+  readonly type: IndicatorType;
+  readonly value: string;
+  readonly confidence: 'HIGH' | 'MEDIUM' | 'LOW';
+  readonly firstSeen: number;
+  readonly lastSeen: number;
+}
+
+export type IndicatorType =
+  | 'IP'
+  | 'DOMAIN'
+  | 'URL'
+  | 'HASH'
+  | 'EMAIL'
+  | 'CERTIFICATE'
+  | 'USER_AGENT'
+  | 'JA3';
+
+export interface TTPInfo {
+  readonly ttpId: string;
+  readonly tactic: string;
+  readonly technique: string;
+  readonly procedure: string;
+  readonly mitreId: string | null;
+}
+
+export interface TargetPriority {
+  readonly score: number;
+  readonly factors: readonly PriorityFactor[];
+  readonly urgency: 'IMMEDIATE' | 'HIGH' | 'MEDIUM' | 'LOW';
+}
+
+export interface PriorityFactor {
+  readonly factorId: string;
+  readonly name: string;
+  readonly value: number;
+  readonly weight: number;
+}
+
+export type TargetStatus =
+  | 'IDENTIFIED'
+  | 'VALIDATED'
+  | 'APPROVED'
+  | 'TARGETED'
+  | 'DISRUPTED'
+  | 'VERIFIED'
+  | 'CLOSED';
+
+export interface TargetMetadata {
+  readonly createdAt: number;
+  readonly updatedAt: number;
+  readonly createdBy: string;
+  readonly classification: SecurityLevel;
+  readonly tags: readonly string[];
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// OPERATION TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface DisruptionOperation {
+  readonly operationId: string;
+  readonly name: string;
+  readonly type: DisruptionType;
+  readonly phase: OperationPhase;
+  readonly status: OperationStatus;
+  readonly targets: readonly DisruptionTarget[];
+  readonly actions: readonly DisruptionAction[];
+  readonly assessment: OperationAssessment;
+  readonly coordination: OperationCoordination;
+  readonly timeline: readonly OperationEvent[];
+  readonly metadata: OperationMetadata;
+}
+
+export type OperationStatus =
+  | 'PLANNING'
+  | 'APPROVED'
+  | 'EXECUTING'
+  | 'PAUSED'
+  | 'COMPLETED'
+  | 'TERMINATED'
+  | 'FAILED';
+
+export interface DisruptionAction {
+  readonly actionId: string;
+  readonly type: ActionType;
+  readonly method: DisruptionMethod;
+  readonly target: string;
+  readonly status: ActionStatus;
+  readonly startTime: number;
+  readonly endTime: number | null;
+  readonly result: ActionResult | null;
+  readonly executor: string;
+}
+
+export type ActionType =
+  | 'SINKHOLE'
+  | 'TAKEDOWN'
+  | 'BLOCK'
+  | 'INTERCEPT'
+  | 'MANIPULATE'
+  | 'EXPOSE'
+  | 'EXHAUST'
+  | 'DECEIVE';
+
+export type ActionStatus =
+  | 'PENDING'
+  | 'IN_PROGRESS'
+  | 'COMPLETED'
+  | 'FAILED'
+  | 'ROLLED_BACK';
+
+export interface ActionResult {
+  readonly success: boolean;
+  readonly impact: ImpactLevel;
+  readonly message: string;
+  readonly details: Readonly<Record<string, unknown>>;
+  readonly evidence: readonly EvidenceItem[];
+}
+
+export interface EvidenceItem {
+  readonly evidenceId: string;
+  readonly type: EvidenceType;
+  readonly path: string;
+  readonly hash: string;
+  readonly timestamp: number;
+}
+
+export type EvidenceType =
+  | 'LOG'
+  | 'CAPTURE'
+  | 'SCREENSHOT'
+  | 'REPORT'
+  | 'ARTIFACT';
+
+export interface OperationAssessment {
+  readonly effectiveness: EffectivenessMetrics;
+  readonly impact: ImpactMetrics;
+  readonly collateral: CollateralMetrics;
+  readonly sustainability: SustainabilityMetrics;
+}
+
+export interface EffectivenessMetrics {
+  readonly targetsDisrupted: number;
+  readonly capabilityDegraded: number;
+  readonly operationsImpacted: number;
+  readonly overallScore: number;
+}
+
+export interface ImpactMetrics {
+  readonly adversaryImpact: ImpactLevel;
+  readonly operationalImpact: ImpactLevel;
+  readonly strategicImpact: ImpactLevel;
+  readonly duration: number;
+}
+
+export interface CollateralMetrics {
+  readonly civilianImpact: ImpactLevel;
+  readonly infrastructureImpact: ImpactLevel;
+  readonly economicImpact: ImpactLevel;
+  readonly mitigationActions: readonly string[];
+}
+
+export interface SustainabilityMetrics {
+  readonly resourcesRequired: number;
+  readonly maintenanceRequired: number;
+  readonly adaptationRequired: boolean;
+  readonly exitStrategyReady: boolean;
+}
+
+export interface OperationCoordination {
+  readonly internal: readonly CoordinationEntry[];
+  readonly external: readonly CoordinationEntry[];
+  readonly deconfliction: readonly DeconflictionEntry[];
+}
+
+export interface CoordinationEntry {
+  readonly entryId: string;
+  readonly timestamp: number;
+  readonly party: string;
+  readonly type: 'NOTIFICATION' | 'REQUEST' | 'APPROVAL' | 'UPDATE';
+  readonly status: 'PENDING' | 'ACKNOWLEDGED' | 'COMPLETED';
+  readonly details: string;
+}
+
+export interface DeconflictionEntry {
+  readonly entryId: string;
+  readonly timestamp: number;
+  readonly operation: string;
+  readonly conflict: string;
+  readonly resolution: string;
+  readonly status: 'IDENTIFIED' | 'RESOLVED' | 'ESCALATED';
+}
+
+export interface OperationEvent {
+  readonly eventId: string;
+  readonly timestamp: number;
+  readonly type: OperationEventType;
+  readonly description: string;
+  readonly actor: string;
+  readonly details: Readonly<Record<string, unknown>>;
+}
+
+export type OperationEventType =
+  | 'INITIATED'
+  | 'PHASE_CHANGE'
+  | 'ACTION_STARTED'
+  | 'ACTION_COMPLETED'
+  | 'ASSESSMENT_COMPLETED'
+  | 'ESCALATED'
+  | 'COMPLETED'
+  | 'TERMINATED';
+
+export interface OperationMetadata {
+  readonly createdAt: number;
+  readonly updatedAt: number;
+  readonly createdBy: string;
+  readonly classification: SecurityLevel;
+  readonly authorization: string;
+  readonly legalReview: boolean;
+  readonly tags: readonly string[];
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SESSION TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface AdversaryDisruptionSession {
+  readonly sessionId: string;
+  readonly platformId: string;
+  readonly state: SessionState;
+  readonly config: SessionConfig;
+  readonly progress: SessionProgress;
+  readonly targets: readonly DisruptionTarget[];
+  readonly operations: readonly DisruptionOperation[];
+  readonly alerts: readonly SessionAlert[];
+  readonly errors: readonly SessionError[];
+  readonly startTime: number;
+  readonly endTime: number | null;
+  readonly metadata: SessionMetadata;
+}
+
+export type SessionState =
+  | 'PENDING'
+  | 'INITIALIZING'
+  | 'TARGETING'
+  | 'EXECUTING'
+  | 'ASSESSING'
+  | 'COMPLETED'
+  | 'FAILED';
+
+export interface SessionConfig {
+  readonly mode: OperationalMode;
+  readonly targets: readonly string[];
+  readonly options: Readonly<Record<string, unknown>>;
+}
+
+export interface SessionProgress {
+  readonly phase: SessionPhase;
+  readonly percentage: number;
+  readonly currentTask: string | null;
+  readonly estimatedTimeRemaining: number | null;
+}
+
+export type SessionPhase =
+  | 'INITIALIZING'
+  | 'TARGET_IDENTIFICATION'
+  | 'TARGET_VALIDATION'
+  | 'OPERATION_PLANNING'
+  | 'OPERATION_EXECUTION'
+  | 'ASSESSMENT'
+  | 'REPORTING'
+  | 'FINALIZING';
+
+export interface SessionAlert {
+  readonly alertId: string;
+  readonly timestamp: number;
+  readonly type: AlertType;
+  readonly severity: ImpactLevel;
+  readonly source: string;
+  readonly description: string;
+  readonly status: AlertStatus;
+}
+
+export type AlertType =
+  | 'TARGET_CHANGE'
+  | 'OPERATION_FAILURE'
+  | 'COLLATERAL_DETECTED'
+  | 'DECONFLICTION_REQUIRED'
+  | 'ADVERSARY_ADAPTATION'
+  | 'ESCALATION_REQUIRED';
+
+export type AlertStatus =
+  | 'NEW'
+  | 'ACKNOWLEDGED'
+  | 'INVESTIGATING'
+  | 'RESOLVED'
+  | 'ESCALATED';
+
+export interface SessionError {
+  readonly errorId: string;
+  readonly timestamp: number;
+  readonly type: SessionErrorType;
+  readonly message: string;
+  readonly details: string | null;
+  readonly recoverable: boolean;
+}
+
+export type SessionErrorType =
+  | 'TARGETING_ERROR'
+  | 'EXECUTION_ERROR'
+  | 'COORDINATION_ERROR'
+  | 'ASSESSMENT_ERROR'
+  | 'TIMEOUT'
+  | 'INTERNAL_ERROR';
+
+export interface SessionMetadata {
+  readonly platformVersion: string;
+  readonly startedBy: string;
+  readonly classification: SecurityLevel;
+  readonly authorization: string;
+  readonly tags: readonly string[];
+}

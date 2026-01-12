@@ -1,0 +1,1071 @@
+/**
+ * @file Supply Chain Security - Self-Contained Supply Chain Security Platform
+ * @author {{AVTOR}}
+ * @version {{VERZIJA}}
+ * @date {{DATUM}}
+ * @project {{IME_PROJEKTA}}
+ * @domain VARNOSTNI_SISTEMI
+ * 
+ * @requirement REQ-SEC-SCS-001
+ * @design DSN-SEC-SCS-001
+ * @test TST-SEC-SCS-001
+ * 
+ * @description
+ * Enterprise-grade self-contained supply chain security platform implementing
+ * comprehensive vendor risk management, third-party security assessment, software
+ * supply chain security, hardware supply chain verification, and supply chain
+ * attack detection. All supply chain algorithms are natively implemented without
+ * external dependencies.
+ * 
+ * @classification TOP SECRET - Supply Chain Security
+ * @authorization Required: Level 4 Security Clearance
+ * @dependencies NONE - Fully self-contained implementation
+ */
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SUPPLY CHAIN TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export type SupplyChainType =
+  | 'SOFTWARE'
+  | 'HARDWARE'
+  | 'SERVICE'
+  | 'DATA'
+  | 'INFRASTRUCTURE'
+  | 'PERSONNEL';
+
+export type VendorCategory =
+  | 'CRITICAL'
+  | 'HIGH_RISK'
+  | 'MEDIUM_RISK'
+  | 'LOW_RISK'
+  | 'STRATEGIC'
+  | 'TACTICAL';
+
+export type RiskLevel =
+  | 'CRITICAL'
+  | 'HIGH'
+  | 'MEDIUM'
+  | 'LOW'
+  | 'MINIMAL';
+
+export type AssessmentType =
+  | 'INITIAL'
+  | 'PERIODIC'
+  | 'TRIGGERED'
+  | 'CONTINUOUS'
+  | 'INCIDENT_DRIVEN';
+
+export type ComplianceFramework =
+  | 'NIST_CSF'
+  | 'ISO_27001'
+  | 'SOC_2'
+  | 'CMMC'
+  | 'GDPR'
+  | 'HIPAA'
+  | 'PCI_DSS'
+  | 'FEDRAMP';
+
+export type SecurityLevel =
+  | 'TOP_SECRET'
+  | 'SECRET'
+  | 'CONFIDENTIAL'
+  | 'UNCLASSIFIED';
+
+export type OperationalMode =
+  | 'ASSESSMENT'
+  | 'MONITORING'
+  | 'RESPONSE'
+  | 'COMBINED';
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SUPPLY CHAIN CONFIGURATION
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface SupplyChainSecurityConfig {
+  readonly platformId: string;
+  readonly name: string;
+  readonly version: string;
+  readonly mode: OperationalMode;
+  readonly vendorManagement: VendorManagementConfig;
+  readonly softwareSupplyChain: SoftwareSupplyChainConfig;
+  readonly hardwareSupplyChain: HardwareSupplyChainConfig;
+  readonly serviceSupplyChain: ServiceSupplyChainConfig;
+  readonly riskManagement: RiskManagementConfig;
+  readonly monitoring: MonitoringConfig;
+  readonly attackDetection: AttackDetectionConfig;
+  readonly compliance: ComplianceConfig;
+  readonly reporting: ReportingConfig;
+  readonly storage: StorageConfig;
+  readonly security: SecurityConfig;
+  readonly metadata: PlatformMetadata;
+}
+
+export interface VendorManagementConfig {
+  readonly enabled: boolean;
+  readonly onboarding: VendorOnboardingConfig;
+  readonly assessment: VendorAssessmentConfig;
+  readonly monitoring: VendorMonitoringConfig;
+  readonly offboarding: VendorOffboardingConfig;
+}
+
+export interface VendorOnboardingConfig {
+  readonly enabled: boolean;
+  readonly dueDiligence: DueDiligenceConfig;
+  readonly contractual: ContractualConfig;
+  readonly technical: TechnicalOnboardingConfig;
+}
+
+export interface DueDiligenceConfig {
+  readonly enabled: boolean;
+  readonly financialReview: boolean;
+  readonly legalReview: boolean;
+  readonly securityReview: boolean;
+  readonly reputationCheck: boolean;
+  readonly referenceCheck: boolean;
+}
+
+export interface ContractualConfig {
+  readonly enabled: boolean;
+  readonly securityRequirements: boolean;
+  readonly dataProtection: boolean;
+  readonly auditRights: boolean;
+  readonly incidentNotification: boolean;
+  readonly terminationClauses: boolean;
+}
+
+export interface TechnicalOnboardingConfig {
+  readonly enabled: boolean;
+  readonly accessProvisioning: boolean;
+  readonly integrationTesting: boolean;
+  readonly securityBaseline: boolean;
+  readonly monitoringSetup: boolean;
+}
+
+export interface VendorAssessmentConfig {
+  readonly enabled: boolean;
+  readonly questionnaires: QuestionnaireConfig;
+  readonly audits: AuditConfig;
+  readonly penetrationTesting: PenetrationTestingConfig;
+  readonly continuousAssessment: ContinuousAssessmentConfig;
+}
+
+export interface QuestionnaireConfig {
+  readonly enabled: boolean;
+  readonly frameworks: readonly ComplianceFramework[];
+  readonly customQuestions: boolean;
+  readonly evidenceCollection: boolean;
+  readonly scoring: boolean;
+}
+
+export interface AuditConfig {
+  readonly enabled: boolean;
+  readonly onsite: boolean;
+  readonly remote: boolean;
+  readonly thirdParty: boolean;
+  readonly frequency: number;
+}
+
+export interface PenetrationTestingConfig {
+  readonly enabled: boolean;
+  readonly external: boolean;
+  readonly internal: boolean;
+  readonly applicationLevel: boolean;
+  readonly frequency: number;
+}
+
+export interface ContinuousAssessmentConfig {
+  readonly enabled: boolean;
+  readonly securityRatings: boolean;
+  readonly threatIntelligence: boolean;
+  readonly breachMonitoring: boolean;
+  readonly complianceMonitoring: boolean;
+}
+
+export interface VendorMonitoringConfig {
+  readonly enabled: boolean;
+  readonly performanceMonitoring: boolean;
+  readonly securityMonitoring: boolean;
+  readonly complianceMonitoring: boolean;
+  readonly financialMonitoring: boolean;
+}
+
+export interface VendorOffboardingConfig {
+  readonly enabled: boolean;
+  readonly accessRevocation: boolean;
+  readonly dataReturn: boolean;
+  readonly dataDestruction: boolean;
+  readonly knowledgeTransfer: boolean;
+}
+
+export interface SoftwareSupplyChainConfig {
+  readonly enabled: boolean;
+  readonly sbom: SBOMConfig;
+  readonly dependencyManagement: DependencyManagementConfig;
+  readonly codeAnalysis: CodeAnalysisConfig;
+  readonly buildSecurity: BuildSecurityConfig;
+  readonly artifactSecurity: ArtifactSecurityConfig;
+}
+
+export interface SBOMConfig {
+  readonly enabled: boolean;
+  readonly generation: SBOMGenerationConfig;
+  readonly analysis: SBOMAnalysisConfig;
+  readonly management: SBOMManagementConfig;
+}
+
+export interface SBOMGenerationConfig {
+  readonly enabled: boolean;
+  readonly formats: readonly SBOMFormat[];
+  readonly automated: boolean;
+  readonly cicdIntegration: boolean;
+}
+
+export type SBOMFormat =
+  | 'SPDX'
+  | 'CYCLONEDX'
+  | 'SWID';
+
+export interface SBOMAnalysisConfig {
+  readonly enabled: boolean;
+  readonly vulnerabilityScanning: boolean;
+  readonly licenseCompliance: boolean;
+  readonly componentRisk: boolean;
+  readonly dependencyGraph: boolean;
+}
+
+export interface SBOMManagementConfig {
+  readonly enabled: boolean;
+  readonly versioning: boolean;
+  readonly storage: boolean;
+  readonly sharing: boolean;
+  readonly attestation: boolean;
+}
+
+export interface DependencyManagementConfig {
+  readonly enabled: boolean;
+  readonly scanning: DependencyScanningConfig;
+  readonly updating: DependencyUpdatingConfig;
+  readonly policies: DependencyPoliciesConfig;
+}
+
+export interface DependencyScanningConfig {
+  readonly enabled: boolean;
+  readonly vulnerabilities: boolean;
+  readonly licenses: boolean;
+  readonly malware: boolean;
+  readonly typosquatting: boolean;
+}
+
+export interface DependencyUpdatingConfig {
+  readonly enabled: boolean;
+  readonly automated: boolean;
+  readonly securityPatches: boolean;
+  readonly majorVersions: boolean;
+  readonly testing: boolean;
+}
+
+export interface DependencyPoliciesConfig {
+  readonly enabled: boolean;
+  readonly allowedSources: readonly string[];
+  readonly blockedPackages: readonly string[];
+  readonly versionPinning: boolean;
+  readonly signatureVerification: boolean;
+}
+
+export interface CodeAnalysisConfig {
+  readonly enabled: boolean;
+  readonly staticAnalysis: StaticAnalysisConfig;
+  readonly secretsDetection: SecretsDetectionConfig;
+  readonly malwareDetection: MalwareDetectionConfig;
+}
+
+export interface StaticAnalysisConfig {
+  readonly enabled: boolean;
+  readonly securityRules: boolean;
+  readonly codeQuality: boolean;
+  readonly customRules: boolean;
+  readonly cicdIntegration: boolean;
+}
+
+export interface SecretsDetectionConfig {
+  readonly enabled: boolean;
+  readonly preCommit: boolean;
+  readonly cicd: boolean;
+  readonly historicalScan: boolean;
+  readonly remediation: boolean;
+}
+
+export interface MalwareDetectionConfig {
+  readonly enabled: boolean;
+  readonly signatureBased: boolean;
+  readonly behavioralAnalysis: boolean;
+  readonly sandboxing: boolean;
+}
+
+export interface BuildSecurityConfig {
+  readonly enabled: boolean;
+  readonly reproducibleBuilds: boolean;
+  readonly buildIsolation: boolean;
+  readonly buildAttestation: boolean;
+  readonly supplyChainLevels: SLSAConfig;
+}
+
+export interface SLSAConfig {
+  readonly enabled: boolean;
+  readonly level: 1 | 2 | 3 | 4;
+  readonly provenance: boolean;
+  readonly verification: boolean;
+}
+
+export interface ArtifactSecurityConfig {
+  readonly enabled: boolean;
+  readonly signing: ArtifactSigningConfig;
+  readonly verification: ArtifactVerificationConfig;
+  readonly storage: ArtifactStorageConfig;
+}
+
+export interface ArtifactSigningConfig {
+  readonly enabled: boolean;
+  readonly algorithm: 'RSA' | 'ECDSA' | 'ED25519';
+  readonly keyManagement: 'LOCAL' | 'HSM' | 'KMS';
+  readonly timestamping: boolean;
+}
+
+export interface ArtifactVerificationConfig {
+  readonly enabled: boolean;
+  readonly signatureVerification: boolean;
+  readonly integrityCheck: boolean;
+  readonly provenanceVerification: boolean;
+}
+
+export interface ArtifactStorageConfig {
+  readonly enabled: boolean;
+  readonly encryption: boolean;
+  readonly accessControl: boolean;
+  readonly retention: number;
+}
+
+export interface HardwareSupplyChainConfig {
+  readonly enabled: boolean;
+  readonly procurement: ProcurementConfig;
+  readonly verification: HardwareVerificationConfig;
+  readonly tracking: HardwareTrackingConfig;
+  readonly tampering: TamperingDetectionConfig;
+}
+
+export interface ProcurementConfig {
+  readonly enabled: boolean;
+  readonly approvedVendors: boolean;
+  readonly counterfeitPrevention: boolean;
+  readonly chainOfCustody: boolean;
+  readonly documentation: boolean;
+}
+
+export interface HardwareVerificationConfig {
+  readonly enabled: boolean;
+  readonly visualInspection: boolean;
+  readonly functionalTesting: boolean;
+  readonly firmwareVerification: boolean;
+  readonly componentAuthentication: boolean;
+}
+
+export interface HardwareTrackingConfig {
+  readonly enabled: boolean;
+  readonly assetInventory: boolean;
+  readonly locationTracking: boolean;
+  readonly lifecycleManagement: boolean;
+  readonly disposalTracking: boolean;
+}
+
+export interface TamperingDetectionConfig {
+  readonly enabled: boolean;
+  readonly physicalInspection: boolean;
+  readonly sealVerification: boolean;
+  readonly electronicVerification: boolean;
+  readonly xrayInspection: boolean;
+}
+
+export interface ServiceSupplyChainConfig {
+  readonly enabled: boolean;
+  readonly cloudServices: CloudServicesConfig;
+  readonly managedServices: ManagedServicesConfig;
+  readonly professionalServices: ProfessionalServicesConfig;
+}
+
+export interface CloudServicesConfig {
+  readonly enabled: boolean;
+  readonly providerAssessment: boolean;
+  readonly configurationMonitoring: boolean;
+  readonly dataResidency: boolean;
+  readonly exitStrategy: boolean;
+}
+
+export interface ManagedServicesConfig {
+  readonly enabled: boolean;
+  readonly accessManagement: boolean;
+  readonly performanceMonitoring: boolean;
+  readonly securityMonitoring: boolean;
+  readonly incidentManagement: boolean;
+}
+
+export interface ProfessionalServicesConfig {
+  readonly enabled: boolean;
+  readonly backgroundChecks: boolean;
+  readonly accessControls: boolean;
+  readonly workMonitoring: boolean;
+  readonly knowledgeProtection: boolean;
+}
+
+export interface RiskManagementConfig {
+  readonly enabled: boolean;
+  readonly assessment: RiskAssessmentConfig;
+  readonly scoring: RiskScoringConfig;
+  readonly mitigation: RiskMitigationConfig;
+  readonly reporting: RiskReportingConfig;
+}
+
+export interface RiskAssessmentConfig {
+  readonly enabled: boolean;
+  readonly inherentRisk: boolean;
+  readonly residualRisk: boolean;
+  readonly concentrationRisk: boolean;
+  readonly geopoliticalRisk: boolean;
+}
+
+export interface RiskScoringConfig {
+  readonly enabled: boolean;
+  readonly methodology: 'QUANTITATIVE' | 'QUALITATIVE' | 'HYBRID';
+  readonly factors: readonly RiskFactor[];
+  readonly weighting: boolean;
+}
+
+export type RiskFactor =
+  | 'SECURITY_POSTURE'
+  | 'FINANCIAL_STABILITY'
+  | 'OPERATIONAL_RESILIENCE'
+  | 'COMPLIANCE_STATUS'
+  | 'GEOGRAPHIC_LOCATION'
+  | 'DATA_ACCESS'
+  | 'CRITICALITY';
+
+export interface RiskMitigationConfig {
+  readonly enabled: boolean;
+  readonly controls: boolean;
+  readonly monitoring: boolean;
+  readonly contingency: boolean;
+  readonly insurance: boolean;
+}
+
+export interface RiskReportingConfig {
+  readonly enabled: boolean;
+  readonly dashboards: boolean;
+  readonly alerts: boolean;
+  readonly executiveReports: boolean;
+  readonly regulatoryReports: boolean;
+}
+
+export interface MonitoringConfig {
+  readonly enabled: boolean;
+  readonly realTime: RealTimeMonitoringConfig;
+  readonly periodic: PeriodicMonitoringConfig;
+  readonly eventDriven: EventDrivenMonitoringConfig;
+}
+
+export interface RealTimeMonitoringConfig {
+  readonly enabled: boolean;
+  readonly securityEvents: boolean;
+  readonly performanceMetrics: boolean;
+  readonly complianceStatus: boolean;
+  readonly threatIntelligence: boolean;
+}
+
+export interface PeriodicMonitoringConfig {
+  readonly enabled: boolean;
+  readonly assessments: boolean;
+  readonly audits: boolean;
+  readonly reviews: boolean;
+  readonly frequency: number;
+}
+
+export interface EventDrivenMonitoringConfig {
+  readonly enabled: boolean;
+  readonly breachNotifications: boolean;
+  readonly vulnerabilityDisclosures: boolean;
+  readonly regulatoryChanges: boolean;
+  readonly businessChanges: boolean;
+}
+
+export interface AttackDetectionConfig {
+  readonly enabled: boolean;
+  readonly softwareAttacks: SoftwareAttackDetectionConfig;
+  readonly hardwareAttacks: HardwareAttackDetectionConfig;
+  readonly serviceAttacks: ServiceAttackDetectionConfig;
+}
+
+export interface SoftwareAttackDetectionConfig {
+  readonly enabled: boolean;
+  readonly dependencyConfusion: boolean;
+  readonly typosquatting: boolean;
+  readonly maliciousPackages: boolean;
+  readonly compromisedUpdates: boolean;
+  readonly buildCompromise: boolean;
+}
+
+export interface HardwareAttackDetectionConfig {
+  readonly enabled: boolean;
+  readonly counterfeitComponents: boolean;
+  readonly hardwareTrojans: boolean;
+  readonly firmwareCompromise: boolean;
+  readonly physicalTampering: boolean;
+}
+
+export interface ServiceAttackDetectionConfig {
+  readonly enabled: boolean;
+  readonly accountCompromise: boolean;
+  readonly insiderThreat: boolean;
+  readonly dataExfiltration: boolean;
+  readonly serviceManipulation: boolean;
+}
+
+export interface ComplianceConfig {
+  readonly enabled: boolean;
+  readonly frameworks: readonly ComplianceFramework[];
+  readonly controls: ControlsConfig;
+  readonly evidence: EvidenceConfig;
+  readonly reporting: ComplianceReportingConfig;
+}
+
+export interface ControlsConfig {
+  readonly enabled: boolean;
+  readonly mapping: boolean;
+  readonly assessment: boolean;
+  readonly remediation: boolean;
+  readonly tracking: boolean;
+}
+
+export interface EvidenceConfig {
+  readonly enabled: boolean;
+  readonly collection: boolean;
+  readonly storage: boolean;
+  readonly retention: number;
+  readonly chainOfCustody: boolean;
+}
+
+export interface ComplianceReportingConfig {
+  readonly enabled: boolean;
+  readonly automated: boolean;
+  readonly scheduling: boolean;
+  readonly distribution: boolean;
+}
+
+export interface ReportingConfig {
+  readonly enabled: boolean;
+  readonly formats: readonly ReportFormat[];
+  readonly sections: readonly ReportSection[];
+  readonly automation: ReportAutomationConfig;
+}
+
+export type ReportFormat =
+  | 'PDF'
+  | 'HTML'
+  | 'JSON'
+  | 'EXCEL';
+
+export type ReportSection =
+  | 'EXECUTIVE_SUMMARY'
+  | 'VENDOR_INVENTORY'
+  | 'RISK_ASSESSMENT'
+  | 'COMPLIANCE_STATUS'
+  | 'INCIDENT_SUMMARY'
+  | 'RECOMMENDATIONS';
+
+export interface ReportAutomationConfig {
+  readonly enabled: boolean;
+  readonly scheduling: boolean;
+  readonly triggers: readonly string[];
+}
+
+export interface StorageConfig {
+  readonly type: 'DATABASE' | 'FILE_SYSTEM' | 'HYBRID';
+  readonly encryption: StorageEncryptionConfig;
+  readonly retention: RetentionConfig;
+  readonly backup: BackupConfig;
+}
+
+export interface StorageEncryptionConfig {
+  readonly enabled: boolean;
+  readonly algorithm: 'AES_256_GCM' | 'CHACHA20_POLY1305';
+  readonly keyManagement: 'LOCAL' | 'HSM' | 'KMS';
+}
+
+export interface RetentionConfig {
+  readonly enabled: boolean;
+  readonly assessments: number;
+  readonly evidence: number;
+  readonly logs: number;
+}
+
+export interface BackupConfig {
+  readonly enabled: boolean;
+  readonly frequency: number;
+  readonly encryption: boolean;
+  readonly offsite: boolean;
+}
+
+export interface SecurityConfig {
+  readonly authentication: AuthenticationConfig;
+  readonly authorization: AuthorizationConfig;
+  readonly audit: AuditLogConfig;
+  readonly classification: ClassificationConfig;
+}
+
+export interface AuthenticationConfig {
+  readonly enabled: boolean;
+  readonly methods: readonly ('SSO' | 'MFA' | 'PKI' | 'BIOMETRIC')[];
+  readonly sessionTimeout: number;
+}
+
+export interface AuthorizationConfig {
+  readonly enabled: boolean;
+  readonly model: 'RBAC' | 'ABAC' | 'MAC';
+  readonly leastPrivilege: boolean;
+}
+
+export interface AuditLogConfig {
+  readonly enabled: boolean;
+  readonly logAllAccess: boolean;
+  readonly logAllChanges: boolean;
+  readonly retention: number;
+}
+
+export interface ClassificationConfig {
+  readonly enabled: boolean;
+  readonly defaultLevel: SecurityLevel;
+  readonly autoClassification: boolean;
+}
+
+export interface PlatformMetadata {
+  readonly createdAt: number;
+  readonly updatedAt: number;
+  readonly createdBy: string;
+  readonly version: string;
+  readonly tags: readonly string[];
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// VENDOR TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface Vendor {
+  readonly vendorId: string;
+  readonly name: string;
+  readonly category: VendorCategory;
+  readonly type: SupplyChainType;
+  readonly status: VendorStatus;
+  readonly profile: VendorProfile;
+  readonly contracts: readonly ContractInfo[];
+  readonly assessments: readonly AssessmentInfo[];
+  readonly risks: readonly RiskInfo[];
+  readonly incidents: readonly IncidentInfo[];
+  readonly metadata: VendorMetadata;
+}
+
+export type VendorStatus =
+  | 'PROSPECTIVE'
+  | 'ONBOARDING'
+  | 'ACTIVE'
+  | 'UNDER_REVIEW'
+  | 'SUSPENDED'
+  | 'OFFBOARDING'
+  | 'TERMINATED';
+
+export interface VendorProfile {
+  readonly legalName: string;
+  readonly tradingName: string | null;
+  readonly jurisdiction: string;
+  readonly industry: string;
+  readonly size: CompanySize;
+  readonly founded: number;
+  readonly contacts: readonly ContactInfo[];
+  readonly locations: readonly LocationInfo[];
+  readonly certifications: readonly CertificationInfo[];
+}
+
+export type CompanySize =
+  | 'ENTERPRISE'
+  | 'LARGE'
+  | 'MEDIUM'
+  | 'SMALL'
+  | 'STARTUP';
+
+export interface ContactInfo {
+  readonly contactId: string;
+  readonly name: string;
+  readonly role: string;
+  readonly email: string;
+  readonly phone: string | null;
+  readonly primary: boolean;
+}
+
+export interface LocationInfo {
+  readonly locationId: string;
+  readonly type: 'HEADQUARTERS' | 'OFFICE' | 'DATA_CENTER' | 'MANUFACTURING';
+  readonly country: string;
+  readonly region: string;
+  readonly city: string;
+  readonly address: string | null;
+}
+
+export interface CertificationInfo {
+  readonly certificationId: string;
+  readonly type: string;
+  readonly issuer: string;
+  readonly issueDate: number;
+  readonly expiryDate: number;
+  readonly scope: string;
+  readonly status: 'VALID' | 'EXPIRED' | 'REVOKED';
+}
+
+export interface ContractInfo {
+  readonly contractId: string;
+  readonly type: ContractType;
+  readonly status: ContractStatus;
+  readonly startDate: number;
+  readonly endDate: number;
+  readonly value: ContractValue;
+  readonly services: readonly string[];
+  readonly securityTerms: SecurityTerms;
+}
+
+export type ContractType =
+  | 'MASTER_SERVICE_AGREEMENT'
+  | 'STATEMENT_OF_WORK'
+  | 'LICENSE_AGREEMENT'
+  | 'DATA_PROCESSING_AGREEMENT'
+  | 'NON_DISCLOSURE_AGREEMENT';
+
+export type ContractStatus =
+  | 'DRAFT'
+  | 'NEGOTIATION'
+  | 'ACTIVE'
+  | 'EXPIRING'
+  | 'EXPIRED'
+  | 'TERMINATED';
+
+export interface ContractValue {
+  readonly amount: number;
+  readonly currency: string;
+  readonly period: 'ANNUAL' | 'MONTHLY' | 'ONE_TIME';
+}
+
+export interface SecurityTerms {
+  readonly dataProtection: boolean;
+  readonly auditRights: boolean;
+  readonly incidentNotification: number;
+  readonly subcontractorApproval: boolean;
+  readonly terminationAssistance: boolean;
+}
+
+export interface AssessmentInfo {
+  readonly assessmentId: string;
+  readonly type: AssessmentType;
+  readonly status: AssessmentStatus;
+  readonly startDate: number;
+  readonly completionDate: number | null;
+  readonly score: number | null;
+  readonly findings: readonly FindingInfo[];
+  readonly recommendations: readonly string[];
+}
+
+export type AssessmentStatus =
+  | 'SCHEDULED'
+  | 'IN_PROGRESS'
+  | 'PENDING_REVIEW'
+  | 'COMPLETED'
+  | 'CANCELLED';
+
+export interface FindingInfo {
+  readonly findingId: string;
+  readonly category: string;
+  readonly severity: RiskLevel;
+  readonly description: string;
+  readonly evidence: string | null;
+  readonly remediation: string | null;
+  readonly status: FindingStatus;
+}
+
+export type FindingStatus =
+  | 'OPEN'
+  | 'IN_REMEDIATION'
+  | 'REMEDIATED'
+  | 'ACCEPTED'
+  | 'CLOSED';
+
+export interface RiskInfo {
+  readonly riskId: string;
+  readonly category: RiskCategory;
+  readonly level: RiskLevel;
+  readonly description: string;
+  readonly likelihood: 'HIGH' | 'MEDIUM' | 'LOW';
+  readonly impact: 'HIGH' | 'MEDIUM' | 'LOW';
+  readonly mitigations: readonly MitigationInfo[];
+  readonly status: RiskStatus;
+}
+
+export type RiskCategory =
+  | 'SECURITY'
+  | 'OPERATIONAL'
+  | 'FINANCIAL'
+  | 'COMPLIANCE'
+  | 'REPUTATIONAL'
+  | 'STRATEGIC';
+
+export type RiskStatus =
+  | 'IDENTIFIED'
+  | 'ASSESSED'
+  | 'MITIGATED'
+  | 'ACCEPTED'
+  | 'CLOSED';
+
+export interface MitigationInfo {
+  readonly mitigationId: string;
+  readonly description: string;
+  readonly type: 'CONTROL' | 'TRANSFER' | 'AVOIDANCE' | 'ACCEPTANCE';
+  readonly status: 'PLANNED' | 'IN_PROGRESS' | 'IMPLEMENTED' | 'VERIFIED';
+  readonly effectiveness: 'HIGH' | 'MEDIUM' | 'LOW' | null;
+}
+
+export interface IncidentInfo {
+  readonly incidentId: string;
+  readonly type: IncidentType;
+  readonly severity: RiskLevel;
+  readonly description: string;
+  readonly detectedAt: number;
+  readonly resolvedAt: number | null;
+  readonly impact: string;
+  readonly rootCause: string | null;
+  readonly status: IncidentStatus;
+}
+
+export type IncidentType =
+  | 'SECURITY_BREACH'
+  | 'DATA_LEAK'
+  | 'SERVICE_OUTAGE'
+  | 'COMPLIANCE_VIOLATION'
+  | 'SUPPLY_CHAIN_ATTACK';
+
+export type IncidentStatus =
+  | 'DETECTED'
+  | 'INVESTIGATING'
+  | 'CONTAINED'
+  | 'ERADICATED'
+  | 'RECOVERED'
+  | 'CLOSED';
+
+export interface VendorMetadata {
+  readonly createdAt: number;
+  readonly updatedAt: number;
+  readonly createdBy: string;
+  readonly classification: SecurityLevel;
+  readonly tags: readonly string[];
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SOFTWARE SUPPLY CHAIN TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface SoftwareComponent {
+  readonly componentId: string;
+  readonly name: string;
+  readonly version: string;
+  readonly type: ComponentType;
+  readonly source: ComponentSource;
+  readonly license: LicenseInfo;
+  readonly vulnerabilities: readonly VulnerabilityInfo[];
+  readonly dependencies: readonly DependencyInfo[];
+  readonly provenance: ProvenanceInfo;
+  readonly status: ComponentStatus;
+  readonly metadata: ComponentMetadata;
+}
+
+export type ComponentType =
+  | 'LIBRARY'
+  | 'FRAMEWORK'
+  | 'RUNTIME'
+  | 'TOOL'
+  | 'CONTAINER'
+  | 'OPERATING_SYSTEM';
+
+export interface ComponentSource {
+  readonly type: 'REGISTRY' | 'REPOSITORY' | 'VENDOR' | 'INTERNAL';
+  readonly location: string;
+  readonly verified: boolean;
+  readonly signature: string | null;
+}
+
+export interface LicenseInfo {
+  readonly spdxId: string;
+  readonly name: string;
+  readonly type: 'PERMISSIVE' | 'COPYLEFT' | 'PROPRIETARY' | 'PUBLIC_DOMAIN';
+  readonly compliant: boolean;
+  readonly restrictions: readonly string[];
+}
+
+export interface VulnerabilityInfo {
+  readonly vulnerabilityId: string;
+  readonly cve: string | null;
+  readonly severity: RiskLevel;
+  readonly cvss: number | null;
+  readonly description: string;
+  readonly affectedVersions: string;
+  readonly fixedVersion: string | null;
+  readonly exploitAvailable: boolean;
+  readonly status: VulnerabilityStatus;
+}
+
+export type VulnerabilityStatus =
+  | 'OPEN'
+  | 'IN_REMEDIATION'
+  | 'MITIGATED'
+  | 'ACCEPTED'
+  | 'FALSE_POSITIVE';
+
+export interface DependencyInfo {
+  readonly dependencyId: string;
+  readonly name: string;
+  readonly version: string;
+  readonly type: 'DIRECT' | 'TRANSITIVE';
+  readonly scope: 'RUNTIME' | 'DEVELOPMENT' | 'TEST' | 'OPTIONAL';
+}
+
+export interface ProvenanceInfo {
+  readonly buildId: string | null;
+  readonly builder: string | null;
+  readonly sourceRepository: string | null;
+  readonly sourceCommit: string | null;
+  readonly buildTimestamp: number | null;
+  readonly attestations: readonly AttestationInfo[];
+}
+
+export interface AttestationInfo {
+  readonly attestationId: string;
+  readonly type: 'SLSA' | 'IN_TOTO' | 'SIGSTORE' | 'CUSTOM';
+  readonly issuer: string;
+  readonly timestamp: number;
+  readonly signature: string;
+  readonly verified: boolean;
+}
+
+export type ComponentStatus =
+  | 'APPROVED'
+  | 'PENDING_REVIEW'
+  | 'RESTRICTED'
+  | 'BLOCKED'
+  | 'DEPRECATED';
+
+export interface ComponentMetadata {
+  readonly addedAt: number;
+  readonly updatedAt: number;
+  readonly addedBy: string;
+  readonly tags: readonly string[];
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SESSION TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface SupplyChainSession {
+  readonly sessionId: string;
+  readonly platformId: string;
+  readonly state: SessionState;
+  readonly config: SessionConfig;
+  readonly progress: SessionProgress;
+  readonly vendors: readonly Vendor[];
+  readonly components: readonly SoftwareComponent[];
+  readonly alerts: readonly SessionAlert[];
+  readonly errors: readonly SessionError[];
+  readonly startTime: number;
+  readonly endTime: number | null;
+  readonly metadata: SessionMetadata;
+}
+
+export type SessionState =
+  | 'PENDING'
+  | 'INITIALIZING'
+  | 'ASSESSING'
+  | 'MONITORING'
+  | 'RESPONDING'
+  | 'COMPLETED'
+  | 'FAILED';
+
+export interface SessionConfig {
+  readonly mode: OperationalMode;
+  readonly scope: readonly string[];
+  readonly options: Readonly<Record<string, unknown>>;
+}
+
+export interface SessionProgress {
+  readonly phase: SessionPhase;
+  readonly percentage: number;
+  readonly currentTask: string | null;
+  readonly estimatedTimeRemaining: number | null;
+}
+
+export type SessionPhase =
+  | 'INITIALIZING'
+  | 'VENDOR_ASSESSMENT'
+  | 'SOFTWARE_ANALYSIS'
+  | 'HARDWARE_VERIFICATION'
+  | 'RISK_ASSESSMENT'
+  | 'REPORTING'
+  | 'FINALIZING';
+
+export interface SessionAlert {
+  readonly alertId: string;
+  readonly timestamp: number;
+  readonly type: AlertType;
+  readonly severity: RiskLevel;
+  readonly source: string;
+  readonly description: string;
+  readonly status: AlertStatus;
+}
+
+export type AlertType =
+  | 'VULNERABILITY_DETECTED'
+  | 'SUPPLY_CHAIN_ATTACK'
+  | 'VENDOR_INCIDENT'
+  | 'COMPLIANCE_VIOLATION'
+  | 'RISK_THRESHOLD_EXCEEDED'
+  | 'CONTRACT_EXPIRING';
+
+export type AlertStatus =
+  | 'NEW'
+  | 'ACKNOWLEDGED'
+  | 'INVESTIGATING'
+  | 'RESOLVED'
+  | 'ESCALATED';
+
+export interface SessionError {
+  readonly errorId: string;
+  readonly timestamp: number;
+  readonly type: SessionErrorType;
+  readonly message: string;
+  readonly details: string | null;
+  readonly recoverable: boolean;
+}
+
+export type SessionErrorType =
+  | 'ASSESSMENT_ERROR'
+  | 'SCANNING_ERROR'
+  | 'INTEGRATION_ERROR'
+  | 'VALIDATION_ERROR'
+  | 'TIMEOUT'
+  | 'INTERNAL_ERROR';
+
+export interface SessionMetadata {
+  readonly platformVersion: string;
+  readonly startedBy: string;
+  readonly classification: SecurityLevel;
+  readonly tags: readonly string[];
+}

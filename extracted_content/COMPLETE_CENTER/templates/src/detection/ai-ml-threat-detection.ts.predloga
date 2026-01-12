@@ -1,0 +1,1605 @@
+/**
+ * @file AI/ML Threat Detection - Self-Contained Machine Learning Security Platform
+ * @author {{AVTOR}}
+ * @version {{VERZIJA}}
+ * @date {{DATUM}}
+ * @project {{IME_PROJEKTA}}
+ * @domain VARNOSTNI_SISTEMI
+ * 
+ * @requirement REQ-SEC-AML-001
+ * @design DSN-SEC-AML-001
+ * @test TST-SEC-AML-001
+ * 
+ * @description
+ * Enterprise-grade self-contained AI/ML threat detection platform implementing
+ * adversarial ML protection, deep learning threat detection, anomaly detection,
+ * behavioral analysis, NLP for threat intelligence, and automated threat hunting.
+ * All algorithms and models are natively implemented without external dependencies.
+ * 
+ * @classification TOP SECRET - AI Security Operations
+ * @authorization Required: Level 5 Security Clearance
+ * @dependencies NONE - Fully self-contained implementation
+ */
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// AI/ML THREAT DETECTION TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export type MLModelType =
+  | 'NEURAL_NETWORK'
+  | 'DEEP_NEURAL_NETWORK'
+  | 'CONVOLUTIONAL_NEURAL_NETWORK'
+  | 'RECURRENT_NEURAL_NETWORK'
+  | 'LSTM'
+  | 'GRU'
+  | 'TRANSFORMER'
+  | 'AUTOENCODER'
+  | 'VARIATIONAL_AUTOENCODER'
+  | 'GENERATIVE_ADVERSARIAL_NETWORK'
+  | 'RANDOM_FOREST'
+  | 'GRADIENT_BOOSTING'
+  | 'XGBOOST'
+  | 'SUPPORT_VECTOR_MACHINE'
+  | 'ISOLATION_FOREST'
+  | 'ONE_CLASS_SVM'
+  | 'K_MEANS'
+  | 'DBSCAN'
+  | 'GAUSSIAN_MIXTURE'
+  | 'HIDDEN_MARKOV_MODEL'
+  | 'BAYESIAN_NETWORK'
+  | 'GRAPH_NEURAL_NETWORK'
+  | 'ATTENTION_NETWORK'
+  | 'ENSEMBLE';
+
+export type ThreatType =
+  | 'MALWARE'
+  | 'INTRUSION'
+  | 'DATA_EXFILTRATION'
+  | 'LATERAL_MOVEMENT'
+  | 'PRIVILEGE_ESCALATION'
+  | 'COMMAND_AND_CONTROL'
+  | 'PHISHING'
+  | 'CREDENTIAL_THEFT'
+  | 'INSIDER_THREAT'
+  | 'APT'
+  | 'RANSOMWARE'
+  | 'CRYPTOMINING'
+  | 'BOTNET'
+  | 'DDOS'
+  | 'SQL_INJECTION'
+  | 'XSS'
+  | 'ZERO_DAY'
+  | 'SUPPLY_CHAIN'
+  | 'ADVERSARIAL_ML'
+  | 'MODEL_POISONING'
+  | 'DATA_POISONING'
+  | 'MODEL_EXTRACTION'
+  | 'MEMBERSHIP_INFERENCE'
+  | 'UNKNOWN';
+
+export type AdversarialAttackType =
+  | 'EVASION'
+  | 'POISONING'
+  | 'MODEL_EXTRACTION'
+  | 'MODEL_INVERSION'
+  | 'MEMBERSHIP_INFERENCE'
+  | 'BACKDOOR'
+  | 'TROJAN'
+  | 'ADVERSARIAL_PATCH'
+  | 'UNIVERSAL_PERTURBATION'
+  | 'TRANSFERABILITY';
+
+export type EvasionMethod =
+  | 'FGSM'
+  | 'PGD'
+  | 'CW'
+  | 'DEEPFOOL'
+  | 'JSMA'
+  | 'ELASTIC_NET'
+  | 'BOUNDARY'
+  | 'HOPSKIPJUMP'
+  | 'SQUARE'
+  | 'AUTOATTACK'
+  | 'CUSTOM';
+
+export type DefenseMethod =
+  | 'ADVERSARIAL_TRAINING'
+  | 'DEFENSIVE_DISTILLATION'
+  | 'INPUT_TRANSFORMATION'
+  | 'FEATURE_SQUEEZING'
+  | 'GRADIENT_MASKING'
+  | 'CERTIFIED_DEFENSE'
+  | 'RANDOMIZED_SMOOTHING'
+  | 'ENSEMBLE_DEFENSE'
+  | 'DETECTION_BASED'
+  | 'HYBRID';
+
+export type AnomalyType =
+  | 'POINT_ANOMALY'
+  | 'CONTEXTUAL_ANOMALY'
+  | 'COLLECTIVE_ANOMALY'
+  | 'TEMPORAL_ANOMALY'
+  | 'SPATIAL_ANOMALY'
+  | 'BEHAVIORAL_ANOMALY';
+
+export type DetectionMode =
+  | 'REAL_TIME'
+  | 'BATCH'
+  | 'STREAMING'
+  | 'HYBRID';
+
+export type ConfidenceLevel =
+  | 'VERY_HIGH'
+  | 'HIGH'
+  | 'MEDIUM'
+  | 'LOW'
+  | 'VERY_LOW';
+
+export type SeverityLevel =
+  | 'CRITICAL'
+  | 'HIGH'
+  | 'MEDIUM'
+  | 'LOW'
+  | 'INFORMATIONAL';
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// AI/ML THREAT DETECTION CONFIGURATION
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface AIMLThreatDetectionConfig {
+  readonly platformId: string;
+  readonly name: string;
+  readonly version: string;
+  readonly mode: DetectionMode;
+  readonly models: ModelsConfig;
+  readonly detection: DetectionConfig;
+  readonly adversarial: AdversarialConfig;
+  readonly anomaly: AnomalyConfig;
+  readonly behavioral: BehavioralConfig;
+  readonly nlp: NLPConfig;
+  readonly hunting: ThreatHuntingConfig;
+  readonly training: TrainingConfig;
+  readonly inference: InferenceConfig;
+  readonly alerting: AlertingConfig;
+  readonly storage: StorageConfig;
+  readonly security: SecurityConfig;
+  readonly metadata: PlatformMetadata;
+}
+
+export interface ModelsConfig {
+  readonly registry: ModelRegistryConfig;
+  readonly deployment: ModelDeploymentConfig;
+  readonly versioning: ModelVersioningConfig;
+  readonly monitoring: ModelMonitoringConfig;
+}
+
+export interface ModelRegistryConfig {
+  readonly enabled: boolean;
+  readonly path: string;
+  readonly maxModels: number;
+  readonly autoCleanup: boolean;
+}
+
+export interface ModelDeploymentConfig {
+  readonly enabled: boolean;
+  readonly strategy: 'BLUE_GREEN' | 'CANARY' | 'ROLLING' | 'SHADOW';
+  readonly rollbackEnabled: boolean;
+  readonly healthCheckInterval: number;
+}
+
+export interface ModelVersioningConfig {
+  readonly enabled: boolean;
+  readonly maxVersions: number;
+  readonly retainBest: boolean;
+}
+
+export interface ModelMonitoringConfig {
+  readonly enabled: boolean;
+  readonly metricsInterval: number;
+  readonly driftDetection: boolean;
+  readonly performanceAlerts: boolean;
+}
+
+export interface DetectionConfig {
+  readonly malware: MalwareDetectionConfig;
+  readonly intrusion: IntrusionDetectionConfig;
+  readonly network: NetworkDetectionConfig;
+  readonly endpoint: EndpointDetectionConfig;
+  readonly application: ApplicationDetectionConfig;
+  readonly identity: IdentityDetectionConfig;
+}
+
+export interface MalwareDetectionConfig {
+  readonly enabled: boolean;
+  readonly staticAnalysis: StaticAnalysisConfig;
+  readonly dynamicAnalysis: DynamicAnalysisConfig;
+  readonly behavioralAnalysis: MalwareBehavioralConfig;
+  readonly signatureMatching: SignatureMatchingConfig;
+}
+
+export interface StaticAnalysisConfig {
+  readonly enabled: boolean;
+  readonly peAnalysis: boolean;
+  readonly stringExtraction: boolean;
+  readonly entropyAnalysis: boolean;
+  readonly importAnalysis: boolean;
+  readonly sectionAnalysis: boolean;
+  readonly packerDetection: boolean;
+}
+
+export interface DynamicAnalysisConfig {
+  readonly enabled: boolean;
+  readonly sandboxExecution: boolean;
+  readonly apiMonitoring: boolean;
+  readonly networkMonitoring: boolean;
+  readonly fileSystemMonitoring: boolean;
+  readonly registryMonitoring: boolean;
+  readonly processMonitoring: boolean;
+}
+
+export interface MalwareBehavioralConfig {
+  readonly enabled: boolean;
+  readonly sequenceLength: number;
+  readonly featureExtraction: FeatureExtractionConfig;
+  readonly classificationThreshold: number;
+}
+
+export interface FeatureExtractionConfig {
+  readonly apiCalls: boolean;
+  readonly systemCalls: boolean;
+  readonly networkConnections: boolean;
+  readonly fileOperations: boolean;
+  readonly registryOperations: boolean;
+  readonly processOperations: boolean;
+}
+
+export interface SignatureMatchingConfig {
+  readonly enabled: boolean;
+  readonly yaraRules: boolean;
+  readonly customSignatures: boolean;
+  readonly fuzzyMatching: boolean;
+  readonly updateInterval: number;
+}
+
+export interface IntrusionDetectionConfig {
+  readonly enabled: boolean;
+  readonly networkBased: NetworkIDSConfig;
+  readonly hostBased: HostIDSConfig;
+  readonly hybridDetection: boolean;
+}
+
+export interface NetworkIDSConfig {
+  readonly enabled: boolean;
+  readonly packetInspection: boolean;
+  readonly flowAnalysis: boolean;
+  readonly protocolAnalysis: boolean;
+  readonly payloadAnalysis: boolean;
+  readonly encryptedTrafficAnalysis: boolean;
+}
+
+export interface HostIDSConfig {
+  readonly enabled: boolean;
+  readonly fileIntegrity: boolean;
+  readonly logAnalysis: boolean;
+  readonly processMonitoring: boolean;
+  readonly userActivityMonitoring: boolean;
+}
+
+export interface NetworkDetectionConfig {
+  readonly enabled: boolean;
+  readonly trafficAnalysis: TrafficAnalysisConfig;
+  readonly dnsAnalysis: DNSAnalysisConfig;
+  readonly tlsAnalysis: TLSAnalysisConfig;
+  readonly beaconingDetection: BeaconingDetectionConfig;
+  readonly exfiltrationDetection: ExfiltrationDetectionConfig;
+}
+
+export interface TrafficAnalysisConfig {
+  readonly enabled: boolean;
+  readonly flowFeatures: boolean;
+  readonly packetFeatures: boolean;
+  readonly statisticalFeatures: boolean;
+  readonly temporalFeatures: boolean;
+}
+
+export interface DNSAnalysisConfig {
+  readonly enabled: boolean;
+  readonly dgaDetection: boolean;
+  readonly tunnelDetection: boolean;
+  readonly fastFluxDetection: boolean;
+  readonly domainReputation: boolean;
+}
+
+export interface TLSAnalysisConfig {
+  readonly enabled: boolean;
+  readonly ja3Fingerprinting: boolean;
+  readonly ja3sFingerprinting: boolean;
+  readonly certificateAnalysis: boolean;
+  readonly cipherSuiteAnalysis: boolean;
+}
+
+export interface BeaconingDetectionConfig {
+  readonly enabled: boolean;
+  readonly periodicityDetection: boolean;
+  readonly jitterAnalysis: boolean;
+  readonly payloadSizeAnalysis: boolean;
+  readonly minBeaconInterval: number;
+  readonly maxBeaconInterval: number;
+}
+
+export interface ExfiltrationDetectionConfig {
+  readonly enabled: boolean;
+  readonly volumeAnalysis: boolean;
+  readonly encodingDetection: boolean;
+  readonly channelAnalysis: boolean;
+  readonly destinationAnalysis: boolean;
+}
+
+export interface EndpointDetectionConfig {
+  readonly enabled: boolean;
+  readonly processAnalysis: ProcessAnalysisConfig;
+  readonly fileAnalysis: FileAnalysisConfig;
+  readonly memoryAnalysis: MemoryAnalysisConfig;
+  readonly registryAnalysis: RegistryAnalysisConfig;
+}
+
+export interface ProcessAnalysisConfig {
+  readonly enabled: boolean;
+  readonly processTree: boolean;
+  readonly commandLineAnalysis: boolean;
+  readonly parentChildRelationships: boolean;
+  readonly injectionDetection: boolean;
+  readonly hollowingDetection: boolean;
+}
+
+export interface FileAnalysisConfig {
+  readonly enabled: boolean;
+  readonly creationMonitoring: boolean;
+  readonly modificationMonitoring: boolean;
+  readonly deletionMonitoring: boolean;
+  readonly accessPatterns: boolean;
+  readonly suspiciousLocations: boolean;
+}
+
+export interface MemoryAnalysisConfig {
+  readonly enabled: boolean;
+  readonly injectionDetection: boolean;
+  readonly shellcodeDetection: boolean;
+  readonly ropChainDetection: boolean;
+  readonly heapSprayDetection: boolean;
+}
+
+export interface RegistryAnalysisConfig {
+  readonly enabled: boolean;
+  readonly persistenceDetection: boolean;
+  readonly autorunAnalysis: boolean;
+  readonly serviceAnalysis: boolean;
+  readonly scheduledTaskAnalysis: boolean;
+}
+
+export interface ApplicationDetectionConfig {
+  readonly enabled: boolean;
+  readonly webApplications: WebAppDetectionConfig;
+  readonly apiSecurity: APISecurityConfig;
+  readonly databaseSecurity: DatabaseSecurityConfig;
+}
+
+export interface WebAppDetectionConfig {
+  readonly enabled: boolean;
+  readonly injectionDetection: boolean;
+  readonly xssDetection: boolean;
+  readonly csrfDetection: boolean;
+  readonly ssrfDetection: boolean;
+  readonly pathTraversalDetection: boolean;
+}
+
+export interface APISecurityConfig {
+  readonly enabled: boolean;
+  readonly authenticationAnalysis: boolean;
+  readonly authorizationAnalysis: boolean;
+  readonly rateAnomalyDetection: boolean;
+  readonly payloadAnalysis: boolean;
+}
+
+export interface DatabaseSecurityConfig {
+  readonly enabled: boolean;
+  readonly queryAnalysis: boolean;
+  readonly accessPatternAnalysis: boolean;
+  readonly privilegeEscalationDetection: boolean;
+  readonly dataExfiltrationDetection: boolean;
+}
+
+export interface IdentityDetectionConfig {
+  readonly enabled: boolean;
+  readonly authenticationAnalysis: AuthenticationAnalysisConfig;
+  readonly accessAnalysis: AccessAnalysisConfig;
+  readonly privilegeAnalysis: PrivilegeAnalysisConfig;
+}
+
+export interface AuthenticationAnalysisConfig {
+  readonly enabled: boolean;
+  readonly bruteForceDetection: boolean;
+  readonly credentialStuffingDetection: boolean;
+  readonly passwordSprayingDetection: boolean;
+  readonly impossibleTravelDetection: boolean;
+}
+
+export interface AccessAnalysisConfig {
+  readonly enabled: boolean;
+  readonly unusualAccessPatterns: boolean;
+  readonly offHoursAccess: boolean;
+  readonly sensitiveResourceAccess: boolean;
+  readonly peerGroupAnalysis: boolean;
+}
+
+export interface PrivilegeAnalysisConfig {
+  readonly enabled: boolean;
+  readonly escalationDetection: boolean;
+  readonly unusualPrivilegeUse: boolean;
+  readonly serviceAccountAbuse: boolean;
+}
+
+export interface AdversarialConfig {
+  readonly enabled: boolean;
+  readonly detection: AdversarialDetectionConfig;
+  readonly defense: AdversarialDefenseConfig;
+  readonly robustness: RobustnessConfig;
+  readonly monitoring: AdversarialMonitoringConfig;
+}
+
+export interface AdversarialDetectionConfig {
+  readonly enabled: boolean;
+  readonly inputValidation: InputValidationConfig;
+  readonly perturbationDetection: PerturbationDetectionConfig;
+  readonly statisticalDetection: StatisticalDetectionConfig;
+  readonly ensembleDetection: EnsembleDetectionConfig;
+}
+
+export interface InputValidationConfig {
+  readonly enabled: boolean;
+  readonly boundsChecking: boolean;
+  readonly distributionChecking: boolean;
+  readonly semanticValidation: boolean;
+}
+
+export interface PerturbationDetectionConfig {
+  readonly enabled: boolean;
+  readonly lpNormThreshold: number;
+  readonly pixelChangeThreshold: number;
+  readonly featureChangeThreshold: number;
+}
+
+export interface StatisticalDetectionConfig {
+  readonly enabled: boolean;
+  readonly mahalanobisDistance: boolean;
+  readonly localOutlierFactor: boolean;
+  readonly kernelDensityEstimation: boolean;
+}
+
+export interface EnsembleDetectionConfig {
+  readonly enabled: boolean;
+  readonly numModels: number;
+  readonly disagreementThreshold: number;
+  readonly votingStrategy: 'MAJORITY' | 'UNANIMOUS' | 'WEIGHTED';
+}
+
+export interface AdversarialDefenseConfig {
+  readonly enabled: boolean;
+  readonly adversarialTraining: AdversarialTrainingConfig;
+  readonly inputTransformation: InputTransformationConfig;
+  readonly certifiedDefense: CertifiedDefenseConfig;
+  readonly ensembleDefense: EnsembleDefenseConfig;
+}
+
+export interface AdversarialTrainingConfig {
+  readonly enabled: boolean;
+  readonly attackMethod: EvasionMethod;
+  readonly epsilon: number;
+  readonly numSteps: number;
+  readonly stepSize: number;
+  readonly mixRatio: number;
+}
+
+export interface InputTransformationConfig {
+  readonly enabled: boolean;
+  readonly jpegCompression: boolean;
+  readonly bitDepthReduction: boolean;
+  readonly spatialSmoothing: boolean;
+  readonly totalVarianceMinimization: boolean;
+}
+
+export interface CertifiedDefenseConfig {
+  readonly enabled: boolean;
+  readonly method: 'RANDOMIZED_SMOOTHING' | 'INTERVAL_BOUND_PROPAGATION' | 'LIPSCHITZ';
+  readonly certificationRadius: number;
+  readonly numSamples: number;
+}
+
+export interface EnsembleDefenseConfig {
+  readonly enabled: boolean;
+  readonly numModels: number;
+  readonly diversityMethod: 'ARCHITECTURE' | 'TRAINING_DATA' | 'HYPERPARAMETERS' | 'MIXED';
+  readonly aggregationMethod: 'AVERAGE' | 'VOTING' | 'STACKING';
+}
+
+export interface RobustnessConfig {
+  readonly enabled: boolean;
+  readonly evaluation: RobustnessEvaluationConfig;
+  readonly benchmarking: RobustnessBenchmarkingConfig;
+}
+
+export interface RobustnessEvaluationConfig {
+  readonly enabled: boolean;
+  readonly attacks: readonly EvasionMethod[];
+  readonly epsilons: readonly number[];
+  readonly metrics: readonly RobustnessMetric[];
+}
+
+export type RobustnessMetric =
+  | 'CLEAN_ACCURACY'
+  | 'ROBUST_ACCURACY'
+  | 'ATTACK_SUCCESS_RATE'
+  | 'PERTURBATION_SIZE'
+  | 'CERTIFIED_ACCURACY';
+
+export interface RobustnessBenchmarkingConfig {
+  readonly enabled: boolean;
+  readonly datasets: readonly string[];
+  readonly compareBaselines: boolean;
+  readonly reportGeneration: boolean;
+}
+
+export interface AdversarialMonitoringConfig {
+  readonly enabled: boolean;
+  readonly inputMonitoring: boolean;
+  readonly predictionMonitoring: boolean;
+  readonly gradientMonitoring: boolean;
+  readonly alertOnDetection: boolean;
+}
+
+export interface AnomalyConfig {
+  readonly enabled: boolean;
+  readonly methods: AnomalyMethodsConfig;
+  readonly thresholds: AnomalyThresholdsConfig;
+  readonly contextual: ContextualAnomalyConfig;
+  readonly temporal: TemporalAnomalyConfig;
+}
+
+export interface AnomalyMethodsConfig {
+  readonly isolationForest: IsolationForestConfig;
+  readonly oneClassSVM: OneClassSVMConfig;
+  readonly autoencoder: AutoencoderAnomalyConfig;
+  readonly statisticalMethods: StatisticalAnomalyConfig;
+}
+
+export interface IsolationForestConfig {
+  readonly enabled: boolean;
+  readonly numTrees: number;
+  readonly sampleSize: number;
+  readonly contamination: number;
+}
+
+export interface OneClassSVMConfig {
+  readonly enabled: boolean;
+  readonly kernel: 'RBF' | 'LINEAR' | 'POLY' | 'SIGMOID';
+  readonly nu: number;
+  readonly gamma: number;
+}
+
+export interface AutoencoderAnomalyConfig {
+  readonly enabled: boolean;
+  readonly architecture: readonly number[];
+  readonly latentDim: number;
+  readonly reconstructionThreshold: number;
+}
+
+export interface StatisticalAnomalyConfig {
+  readonly enabled: boolean;
+  readonly zScore: boolean;
+  readonly iqr: boolean;
+  readonly mad: boolean;
+  readonly grubbs: boolean;
+}
+
+export interface AnomalyThresholdsConfig {
+  readonly globalThreshold: number;
+  readonly perFeatureThresholds: boolean;
+  readonly adaptiveThresholds: boolean;
+  readonly seasonalAdjustment: boolean;
+}
+
+export interface ContextualAnomalyConfig {
+  readonly enabled: boolean;
+  readonly contextFeatures: readonly string[];
+  readonly conditionalModeling: boolean;
+}
+
+export interface TemporalAnomalyConfig {
+  readonly enabled: boolean;
+  readonly windowSize: number;
+  readonly seasonality: SeasonalityConfig;
+  readonly trendDetection: boolean;
+}
+
+export interface SeasonalityConfig {
+  readonly enabled: boolean;
+  readonly periods: readonly number[];
+  readonly autoDetect: boolean;
+}
+
+export interface BehavioralConfig {
+  readonly enabled: boolean;
+  readonly userBehavior: UserBehaviorConfig;
+  readonly entityBehavior: EntityBehaviorConfig;
+  readonly peerGroupAnalysis: PeerGroupConfig;
+  readonly baselineLearning: BaselineLearningConfig;
+}
+
+export interface UserBehaviorConfig {
+  readonly enabled: boolean;
+  readonly features: UserBehaviorFeatures;
+  readonly profiling: UserProfilingConfig;
+  readonly riskScoring: UserRiskScoringConfig;
+}
+
+export interface UserBehaviorFeatures {
+  readonly loginPatterns: boolean;
+  readonly accessPatterns: boolean;
+  readonly dataUsagePatterns: boolean;
+  readonly applicationUsage: boolean;
+  readonly networkActivity: boolean;
+  readonly deviceUsage: boolean;
+}
+
+export interface UserProfilingConfig {
+  readonly enabled: boolean;
+  readonly profileUpdateInterval: number;
+  readonly minDataPoints: number;
+  readonly decayFactor: number;
+}
+
+export interface UserRiskScoringConfig {
+  readonly enabled: boolean;
+  readonly factors: readonly RiskFactor[];
+  readonly weights: Readonly<Record<string, number>>;
+  readonly thresholds: RiskThresholds;
+}
+
+export interface RiskFactor {
+  readonly factorId: string;
+  readonly name: string;
+  readonly category: string;
+  readonly weight: number;
+}
+
+export interface RiskThresholds {
+  readonly critical: number;
+  readonly high: number;
+  readonly medium: number;
+  readonly low: number;
+}
+
+export interface EntityBehaviorConfig {
+  readonly enabled: boolean;
+  readonly entityTypes: readonly EntityType[];
+  readonly features: EntityBehaviorFeatures;
+  readonly correlationAnalysis: boolean;
+}
+
+export type EntityType =
+  | 'USER'
+  | 'HOST'
+  | 'APPLICATION'
+  | 'SERVICE'
+  | 'NETWORK_DEVICE'
+  | 'DATABASE'
+  | 'CLOUD_RESOURCE';
+
+export interface EntityBehaviorFeatures {
+  readonly communicationPatterns: boolean;
+  readonly resourceUsage: boolean;
+  readonly configurationChanges: boolean;
+  readonly errorPatterns: boolean;
+}
+
+export interface PeerGroupConfig {
+  readonly enabled: boolean;
+  readonly groupingMethod: 'ROLE_BASED' | 'BEHAVIOR_BASED' | 'HYBRID';
+  readonly minGroupSize: number;
+  readonly deviationThreshold: number;
+}
+
+export interface BaselineLearningConfig {
+  readonly enabled: boolean;
+  readonly learningPeriod: number;
+  readonly updateFrequency: number;
+  readonly adaptiveBaseline: boolean;
+}
+
+export interface NLPConfig {
+  readonly enabled: boolean;
+  readonly threatIntelligence: ThreatIntelNLPConfig;
+  readonly logAnalysis: LogAnalysisNLPConfig;
+  readonly phishingDetection: PhishingNLPConfig;
+  readonly sentimentAnalysis: SentimentConfig;
+}
+
+export interface ThreatIntelNLPConfig {
+  readonly enabled: boolean;
+  readonly entityExtraction: NERConfig;
+  readonly relationExtraction: RelationExtractionConfig;
+  readonly topicModeling: TopicModelingConfig;
+  readonly summarization: SummarizationConfig;
+}
+
+export interface NERConfig {
+  readonly enabled: boolean;
+  readonly entityTypes: readonly NEREntityType[];
+  readonly customEntities: readonly CustomEntityConfig[];
+}
+
+export type NEREntityType =
+  | 'MALWARE'
+  | 'THREAT_ACTOR'
+  | 'VULNERABILITY'
+  | 'INDICATOR'
+  | 'TECHNIQUE'
+  | 'TOOL'
+  | 'CAMPAIGN'
+  | 'ORGANIZATION'
+  | 'LOCATION'
+  | 'DATE';
+
+export interface CustomEntityConfig {
+  readonly entityId: string;
+  readonly name: string;
+  readonly patterns: readonly string[];
+}
+
+export interface RelationExtractionConfig {
+  readonly enabled: boolean;
+  readonly relationTypes: readonly string[];
+  readonly confidenceThreshold: number;
+}
+
+export interface TopicModelingConfig {
+  readonly enabled: boolean;
+  readonly algorithm: 'LDA' | 'NMF' | 'LSA' | 'BERT_TOPIC';
+  readonly numTopics: number;
+}
+
+export interface SummarizationConfig {
+  readonly enabled: boolean;
+  readonly method: 'EXTRACTIVE' | 'ABSTRACTIVE';
+  readonly maxLength: number;
+}
+
+export interface LogAnalysisNLPConfig {
+  readonly enabled: boolean;
+  readonly parsing: LogParsingConfig;
+  readonly classification: LogClassificationConfig;
+  readonly anomalyDetection: LogAnomalyConfig;
+}
+
+export interface LogParsingConfig {
+  readonly enabled: boolean;
+  readonly autoDetectFormat: boolean;
+  readonly customParsers: readonly string[];
+}
+
+export interface LogClassificationConfig {
+  readonly enabled: boolean;
+  readonly categories: readonly string[];
+  readonly multiLabel: boolean;
+}
+
+export interface LogAnomalyConfig {
+  readonly enabled: boolean;
+  readonly templateMining: boolean;
+  readonly sequenceAnalysis: boolean;
+}
+
+export interface PhishingNLPConfig {
+  readonly enabled: boolean;
+  readonly emailAnalysis: EmailAnalysisConfig;
+  readonly urlAnalysis: URLAnalysisConfig;
+  readonly contentAnalysis: ContentAnalysisConfig;
+}
+
+export interface EmailAnalysisConfig {
+  readonly enabled: boolean;
+  readonly headerAnalysis: boolean;
+  readonly bodyAnalysis: boolean;
+  readonly attachmentAnalysis: boolean;
+  readonly senderReputation: boolean;
+}
+
+export interface URLAnalysisConfig {
+  readonly enabled: boolean;
+  readonly lexicalFeatures: boolean;
+  readonly hostFeatures: boolean;
+  readonly contentFeatures: boolean;
+}
+
+export interface ContentAnalysisConfig {
+  readonly enabled: boolean;
+  readonly urgencyDetection: boolean;
+  readonly impersonationDetection: boolean;
+  readonly socialEngineeringPatterns: boolean;
+}
+
+export interface SentimentConfig {
+  readonly enabled: boolean;
+  readonly model: 'VADER' | 'TEXTBLOB' | 'TRANSFORMER';
+  readonly aspectBased: boolean;
+}
+
+export interface ThreatHuntingConfig {
+  readonly enabled: boolean;
+  readonly hypothesisDriven: HypothesisDrivenConfig;
+  readonly mlDriven: MLDrivenHuntingConfig;
+  readonly automation: HuntingAutomationConfig;
+}
+
+export interface HypothesisDrivenConfig {
+  readonly enabled: boolean;
+  readonly hypothesisLibrary: readonly HypothesisTemplate[];
+  readonly customHypotheses: boolean;
+}
+
+export interface HypothesisTemplate {
+  readonly hypothesisId: string;
+  readonly name: string;
+  readonly description: string;
+  readonly mitreTechniques: readonly string[];
+  readonly queries: readonly string[];
+  readonly indicators: readonly string[];
+}
+
+export interface MLDrivenHuntingConfig {
+  readonly enabled: boolean;
+  readonly anomalyBasedHunting: boolean;
+  readonly patternDiscovery: boolean;
+  readonly clusteringAnalysis: boolean;
+}
+
+export interface HuntingAutomationConfig {
+  readonly enabled: boolean;
+  readonly scheduledHunts: boolean;
+  readonly triggeredHunts: boolean;
+  readonly continuousHunting: boolean;
+}
+
+export interface TrainingConfig {
+  readonly enabled: boolean;
+  readonly dataPreprocessing: DataPreprocessingConfig;
+  readonly featureEngineering: FeatureEngineeringConfig;
+  readonly modelTraining: ModelTrainingConfig;
+  readonly validation: ValidationConfig;
+  readonly hyperparameterTuning: HyperparameterTuningConfig;
+}
+
+export interface DataPreprocessingConfig {
+  readonly enabled: boolean;
+  readonly normalization: NormalizationConfig;
+  readonly encoding: EncodingConfig;
+  readonly balancing: BalancingConfig;
+  readonly augmentation: AugmentationConfig;
+}
+
+export interface NormalizationConfig {
+  readonly method: 'STANDARD' | 'MINMAX' | 'ROBUST' | 'L2';
+  readonly perFeature: boolean;
+}
+
+export interface EncodingConfig {
+  readonly categorical: 'ONEHOT' | 'LABEL' | 'TARGET' | 'EMBEDDING';
+  readonly text: 'TFIDF' | 'BOW' | 'WORD2VEC' | 'BERT';
+}
+
+export interface BalancingConfig {
+  readonly enabled: boolean;
+  readonly method: 'SMOTE' | 'ADASYN' | 'RANDOM_OVERSAMPLE' | 'RANDOM_UNDERSAMPLE';
+  readonly targetRatio: number;
+}
+
+export interface AugmentationConfig {
+  readonly enabled: boolean;
+  readonly methods: readonly AugmentationMethod[];
+}
+
+export type AugmentationMethod =
+  | 'NOISE_INJECTION'
+  | 'FEATURE_DROPOUT'
+  | 'MIXUP'
+  | 'CUTOUT'
+  | 'ROTATION'
+  | 'SCALING';
+
+export interface FeatureEngineeringConfig {
+  readonly enabled: boolean;
+  readonly selection: FeatureSelectionConfig;
+  readonly extraction: FeatureExtractionMethodConfig;
+  readonly transformation: FeatureTransformationConfig;
+}
+
+export interface FeatureSelectionConfig {
+  readonly enabled: boolean;
+  readonly method: 'VARIANCE' | 'CORRELATION' | 'MUTUAL_INFO' | 'RECURSIVE' | 'LASSO';
+  readonly maxFeatures: number;
+}
+
+export interface FeatureExtractionMethodConfig {
+  readonly enabled: boolean;
+  readonly method: 'PCA' | 'LDA' | 'AUTOENCODER' | 'TSNE' | 'UMAP';
+  readonly numComponents: number;
+}
+
+export interface FeatureTransformationConfig {
+  readonly enabled: boolean;
+  readonly polynomial: boolean;
+  readonly interaction: boolean;
+  readonly binning: boolean;
+}
+
+export interface ModelTrainingConfig {
+  readonly batchSize: number;
+  readonly epochs: number;
+  readonly learningRate: number;
+  readonly optimizer: OptimizerConfig;
+  readonly lossFunction: LossFunctionConfig;
+  readonly regularization: RegularizationConfig;
+  readonly earlyStoppingConfig: EarlyStoppingConfig;
+  readonly checkpointing: CheckpointingConfig;
+}
+
+export interface OptimizerConfig {
+  readonly type: 'SGD' | 'ADAM' | 'ADAMW' | 'RMSPROP' | 'ADAGRAD';
+  readonly momentum: number;
+  readonly weightDecay: number;
+}
+
+export interface LossFunctionConfig {
+  readonly type: 'CROSS_ENTROPY' | 'BINARY_CROSS_ENTROPY' | 'MSE' | 'MAE' | 'FOCAL' | 'CUSTOM';
+  readonly classWeights: readonly number[] | null;
+}
+
+export interface RegularizationConfig {
+  readonly l1: number;
+  readonly l2: number;
+  readonly dropout: number;
+}
+
+export interface EarlyStoppingConfig {
+  readonly enabled: boolean;
+  readonly patience: number;
+  readonly minDelta: number;
+  readonly monitor: string;
+}
+
+export interface CheckpointingConfig {
+  readonly enabled: boolean;
+  readonly saveBest: boolean;
+  readonly saveFrequency: number;
+}
+
+export interface ValidationConfig {
+  readonly method: 'HOLDOUT' | 'KFOLD' | 'STRATIFIED_KFOLD' | 'TIME_SERIES';
+  readonly testSize: number;
+  readonly numFolds: number;
+  readonly metrics: readonly ValidationMetric[];
+}
+
+export type ValidationMetric =
+  | 'ACCURACY'
+  | 'PRECISION'
+  | 'RECALL'
+  | 'F1'
+  | 'AUC_ROC'
+  | 'AUC_PR'
+  | 'LOG_LOSS'
+  | 'CONFUSION_MATRIX';
+
+export interface HyperparameterTuningConfig {
+  readonly enabled: boolean;
+  readonly method: 'GRID' | 'RANDOM' | 'BAYESIAN' | 'HYPERBAND';
+  readonly numTrials: number;
+  readonly parameterSpace: Readonly<Record<string, ParameterRange>>;
+}
+
+export interface ParameterRange {
+  readonly type: 'CONTINUOUS' | 'DISCRETE' | 'CATEGORICAL';
+  readonly min: number | null;
+  readonly max: number | null;
+  readonly values: readonly unknown[] | null;
+}
+
+export interface InferenceConfig {
+  readonly batchSize: number;
+  readonly timeout: number;
+  readonly caching: InferenceCachingConfig;
+  readonly optimization: InferenceOptimizationConfig;
+}
+
+export interface InferenceCachingConfig {
+  readonly enabled: boolean;
+  readonly maxEntries: number;
+  readonly ttl: number;
+}
+
+export interface InferenceOptimizationConfig {
+  readonly quantization: boolean;
+  readonly pruning: boolean;
+  readonly distillation: boolean;
+  readonly onnxExport: boolean;
+}
+
+export interface AlertingConfig {
+  readonly enabled: boolean;
+  readonly channels: readonly AlertChannelConfig[];
+  readonly rules: readonly AlertRuleConfig[];
+  readonly escalation: EscalationConfig;
+  readonly deduplication: DeduplicationConfig;
+}
+
+export interface AlertChannelConfig {
+  readonly channelId: string;
+  readonly name: string;
+  readonly type: 'EMAIL' | 'WEBHOOK' | 'SLACK' | 'SIEM' | 'SOAR';
+  readonly config: Readonly<Record<string, unknown>>;
+  readonly enabled: boolean;
+}
+
+export interface AlertRuleConfig {
+  readonly ruleId: string;
+  readonly name: string;
+  readonly condition: string;
+  readonly severity: SeverityLevel;
+  readonly channels: readonly string[];
+  readonly cooldown: number;
+  readonly enabled: boolean;
+}
+
+export interface EscalationConfig {
+  readonly enabled: boolean;
+  readonly levels: readonly EscalationLevel[];
+  readonly autoEscalate: boolean;
+}
+
+export interface EscalationLevel {
+  readonly level: number;
+  readonly channels: readonly string[];
+  readonly delay: number;
+}
+
+export interface DeduplicationConfig {
+  readonly enabled: boolean;
+  readonly window: number;
+  readonly fields: readonly string[];
+}
+
+export interface StorageConfig {
+  readonly type: 'FILESYSTEM' | 'DATABASE' | 'OBJECT_STORAGE';
+  readonly path: string;
+  readonly encryption: EncryptionConfig;
+  readonly retention: RetentionConfig;
+}
+
+export interface EncryptionConfig {
+  readonly enabled: boolean;
+  readonly algorithm: 'AES_256_GCM' | 'CHACHA20_POLY1305';
+  readonly keyManagement: 'LOCAL' | 'HSM' | 'KMS';
+}
+
+export interface RetentionConfig {
+  readonly enabled: boolean;
+  readonly maxAge: number;
+  readonly maxSize: number;
+  readonly archiveOld: boolean;
+}
+
+export interface SecurityConfig {
+  readonly authentication: AuthenticationConfig;
+  readonly authorization: AuthorizationConfig;
+  readonly audit: AuditConfig;
+  readonly modelSecurity: ModelSecurityConfig;
+}
+
+export interface AuthenticationConfig {
+  readonly enabled: boolean;
+  readonly methods: readonly ('API_KEY' | 'BEARER' | 'MTLS')[];
+  readonly sessionTimeout: number;
+}
+
+export interface AuthorizationConfig {
+  readonly enabled: boolean;
+  readonly model: 'RBAC' | 'ABAC';
+  readonly defaultRole: string;
+}
+
+export interface AuditConfig {
+  readonly enabled: boolean;
+  readonly logPredictions: boolean;
+  readonly logTraining: boolean;
+  readonly logAccess: boolean;
+  readonly retention: number;
+}
+
+export interface ModelSecurityConfig {
+  readonly encryptModels: boolean;
+  readonly signModels: boolean;
+  readonly accessControl: boolean;
+  readonly integrityChecks: boolean;
+}
+
+export interface PlatformMetadata {
+  readonly createdAt: number;
+  readonly updatedAt: number;
+  readonly createdBy: string;
+  readonly version: string;
+  readonly tags: readonly string[];
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// MODEL TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface MLModel {
+  readonly modelId: string;
+  readonly name: string;
+  readonly type: MLModelType;
+  readonly version: string;
+  readonly architecture: ModelArchitecture;
+  readonly parameters: ModelParameters;
+  readonly metadata: ModelMetadata;
+  readonly performance: ModelPerformance;
+  readonly deployment: DeploymentInfo;
+}
+
+export interface ModelArchitecture {
+  readonly layers: readonly LayerConfig[];
+  readonly inputShape: readonly number[];
+  readonly outputShape: readonly number[];
+  readonly activations: readonly string[];
+  readonly totalParameters: number;
+  readonly trainableParameters: number;
+}
+
+export interface LayerConfig {
+  readonly layerId: string;
+  readonly type: LayerType;
+  readonly config: Readonly<Record<string, unknown>>;
+  readonly inputShape: readonly number[];
+  readonly outputShape: readonly number[];
+  readonly parameters: number;
+}
+
+export type LayerType =
+  | 'DENSE'
+  | 'CONV1D'
+  | 'CONV2D'
+  | 'CONV3D'
+  | 'LSTM'
+  | 'GRU'
+  | 'ATTENTION'
+  | 'TRANSFORMER'
+  | 'POOLING'
+  | 'DROPOUT'
+  | 'BATCH_NORM'
+  | 'LAYER_NORM'
+  | 'EMBEDDING'
+  | 'FLATTEN'
+  | 'RESHAPE';
+
+export interface ModelParameters {
+  readonly weights: Uint8Array;
+  readonly biases: Uint8Array;
+  readonly format: 'FLOAT32' | 'FLOAT16' | 'INT8';
+  readonly compressed: boolean;
+  readonly checksum: string;
+}
+
+export interface ModelMetadata {
+  readonly createdAt: number;
+  readonly updatedAt: number;
+  readonly createdBy: string;
+  readonly trainingDataset: string;
+  readonly trainingDuration: number;
+  readonly framework: string;
+  readonly tags: readonly string[];
+}
+
+export interface ModelPerformance {
+  readonly metrics: Readonly<Record<string, number>>;
+  readonly confusionMatrix: readonly readonly number[][] | null;
+  readonly rocCurve: ROCCurve | null;
+  readonly prCurve: PRCurve | null;
+  readonly evaluatedAt: number;
+}
+
+export interface ROCCurve {
+  readonly fpr: readonly number[];
+  readonly tpr: readonly number[];
+  readonly thresholds: readonly number[];
+  readonly auc: number;
+}
+
+export interface PRCurve {
+  readonly precision: readonly number[];
+  readonly recall: readonly number[];
+  readonly thresholds: readonly number[];
+  readonly auc: number;
+}
+
+export interface DeploymentInfo {
+  readonly status: DeploymentStatus;
+  readonly endpoint: string | null;
+  readonly replicas: number;
+  readonly lastDeployed: number | null;
+  readonly healthStatus: HealthStatus;
+}
+
+export type DeploymentStatus =
+  | 'NOT_DEPLOYED'
+  | 'DEPLOYING'
+  | 'DEPLOYED'
+  | 'FAILED'
+  | 'RETIRED';
+
+export type HealthStatus =
+  | 'HEALTHY'
+  | 'DEGRADED'
+  | 'UNHEALTHY'
+  | 'UNKNOWN';
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// DETECTION RESULT TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface ThreatDetection {
+  readonly detectionId: string;
+  readonly timestamp: number;
+  readonly threatType: ThreatType;
+  readonly severity: SeverityLevel;
+  readonly confidence: ConfidenceLevel;
+  readonly confidenceScore: number;
+  readonly source: DetectionSource;
+  readonly target: DetectionTarget;
+  readonly indicators: readonly ThreatIndicator[];
+  readonly context: DetectionContext;
+  readonly mitreMapping: MITREMapping | null;
+  readonly recommendation: readonly Recommendation[];
+  readonly metadata: DetectionMetadata;
+}
+
+export interface DetectionSource {
+  readonly sourceId: string;
+  readonly type: 'MODEL' | 'RULE' | 'ANOMALY' | 'BEHAVIORAL' | 'ENSEMBLE';
+  readonly modelId: string | null;
+  readonly ruleId: string | null;
+  readonly version: string;
+}
+
+export interface DetectionTarget {
+  readonly targetId: string;
+  readonly type: EntityType;
+  readonly identifier: string;
+  readonly attributes: Readonly<Record<string, unknown>>;
+}
+
+export interface ThreatIndicator {
+  readonly indicatorId: string;
+  readonly type: IndicatorType;
+  readonly value: string;
+  readonly confidence: number;
+  readonly firstSeen: number;
+  readonly lastSeen: number;
+  readonly context: string | null;
+}
+
+export type IndicatorType =
+  | 'IP_ADDRESS'
+  | 'DOMAIN'
+  | 'URL'
+  | 'FILE_HASH'
+  | 'EMAIL'
+  | 'PROCESS'
+  | 'REGISTRY_KEY'
+  | 'MUTEX'
+  | 'USER_AGENT'
+  | 'JA3'
+  | 'CERTIFICATE'
+  | 'BEHAVIOR_PATTERN';
+
+export interface DetectionContext {
+  readonly rawData: Readonly<Record<string, unknown>>;
+  readonly features: Readonly<Record<string, number>>;
+  readonly relatedDetections: readonly string[];
+  readonly timeline: readonly TimelineEvent[];
+}
+
+export interface TimelineEvent {
+  readonly eventId: string;
+  readonly timestamp: number;
+  readonly type: string;
+  readonly description: string;
+  readonly data: Readonly<Record<string, unknown>>;
+}
+
+export interface MITREMapping {
+  readonly tactics: readonly string[];
+  readonly techniques: readonly string[];
+  readonly subTechniques: readonly string[];
+  readonly procedures: readonly string[];
+}
+
+export interface Recommendation {
+  readonly recommendationId: string;
+  readonly priority: 'IMMEDIATE' | 'HIGH' | 'MEDIUM' | 'LOW';
+  readonly category: string;
+  readonly title: string;
+  readonly description: string;
+  readonly actions: readonly string[];
+}
+
+export interface DetectionMetadata {
+  readonly processingTime: number;
+  readonly modelVersion: string;
+  readonly platformVersion: string;
+  readonly tags: readonly string[];
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ANOMALY RESULT TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface AnomalyDetectionResult {
+  readonly anomalyId: string;
+  readonly timestamp: number;
+  readonly type: AnomalyType;
+  readonly severity: SeverityLevel;
+  readonly score: number;
+  readonly threshold: number;
+  readonly entity: AnomalyEntity;
+  readonly features: AnomalyFeatures;
+  readonly baseline: BaselineInfo;
+  readonly context: AnomalyContext;
+  readonly metadata: AnomalyMetadata;
+}
+
+export interface AnomalyEntity {
+  readonly entityId: string;
+  readonly type: EntityType;
+  readonly identifier: string;
+  readonly attributes: Readonly<Record<string, unknown>>;
+}
+
+export interface AnomalyFeatures {
+  readonly anomalousFeatures: readonly AnomalousFeature[];
+  readonly featureVector: readonly number[];
+  readonly contributionScores: Readonly<Record<string, number>>;
+}
+
+export interface AnomalousFeature {
+  readonly featureName: string;
+  readonly observedValue: number;
+  readonly expectedValue: number;
+  readonly deviation: number;
+  readonly contribution: number;
+}
+
+export interface BaselineInfo {
+  readonly baselineId: string;
+  readonly period: string;
+  readonly statistics: BaselineStatistics;
+  readonly lastUpdated: number;
+}
+
+export interface BaselineStatistics {
+  readonly mean: Readonly<Record<string, number>>;
+  readonly stdDev: Readonly<Record<string, number>>;
+  readonly min: Readonly<Record<string, number>>;
+  readonly max: Readonly<Record<string, number>>;
+  readonly percentiles: Readonly<Record<string, readonly number[]>>;
+}
+
+export interface AnomalyContext {
+  readonly temporalContext: TemporalContext;
+  readonly spatialContext: SpatialContext | null;
+  readonly relatedAnomalies: readonly string[];
+}
+
+export interface TemporalContext {
+  readonly timeOfDay: string;
+  readonly dayOfWeek: number;
+  readonly isBusinessHours: boolean;
+  readonly isHoliday: boolean;
+}
+
+export interface SpatialContext {
+  readonly location: string;
+  readonly network: string;
+  readonly department: string;
+}
+
+export interface AnomalyMetadata {
+  readonly detectionMethod: string;
+  readonly modelId: string | null;
+  readonly processingTime: number;
+  readonly tags: readonly string[];
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ADVERSARIAL RESULT TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface AdversarialDetectionResult {
+  readonly detectionId: string;
+  readonly timestamp: number;
+  readonly attackType: AdversarialAttackType;
+  readonly detected: boolean;
+  readonly confidence: number;
+  readonly input: AdversarialInput;
+  readonly analysis: AdversarialAnalysis;
+  readonly defense: DefenseAction | null;
+  readonly metadata: AdversarialMetadata;
+}
+
+export interface AdversarialInput {
+  readonly inputId: string;
+  readonly originalInput: Uint8Array | null;
+  readonly perturbedInput: Uint8Array;
+  readonly perturbationNorm: number;
+  readonly perturbationType: string;
+}
+
+export interface AdversarialAnalysis {
+  readonly detectionMethods: readonly DetectionMethodResult[];
+  readonly perturbationAnalysis: PerturbationAnalysis;
+  readonly predictionAnalysis: PredictionAnalysis;
+}
+
+export interface DetectionMethodResult {
+  readonly method: string;
+  readonly detected: boolean;
+  readonly score: number;
+  readonly threshold: number;
+}
+
+export interface PerturbationAnalysis {
+  readonly lpNorm: Readonly<Record<string, number>>;
+  readonly pixelChanges: number | null;
+  readonly featureChanges: Readonly<Record<string, number>>;
+  readonly semanticPreservation: number;
+}
+
+export interface PredictionAnalysis {
+  readonly originalPrediction: Prediction;
+  readonly perturbedPrediction: Prediction;
+  readonly predictionShift: number;
+  readonly targetedAttack: boolean;
+  readonly targetClass: string | null;
+}
+
+export interface Prediction {
+  readonly class: string;
+  readonly confidence: number;
+  readonly probabilities: Readonly<Record<string, number>>;
+}
+
+export interface DefenseAction {
+  readonly actionId: string;
+  readonly type: DefenseMethod;
+  readonly applied: boolean;
+  readonly result: DefenseResult;
+}
+
+export interface DefenseResult {
+  readonly inputTransformed: boolean;
+  readonly predictionCorrected: boolean;
+  readonly newPrediction: Prediction | null;
+  readonly confidence: number;
+}
+
+export interface AdversarialMetadata {
+  readonly modelId: string;
+  readonly processingTime: number;
+  readonly defenseEnabled: boolean;
+  readonly tags: readonly string[];
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SESSION TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface DetectionSession {
+  readonly sessionId: string;
+  readonly platformId: string;
+  readonly state: SessionState;
+  readonly config: SessionConfig;
+  readonly progress: SessionProgress;
+  readonly statistics: SessionStatistics;
+  readonly detections: readonly ThreatDetection[];
+  readonly anomalies: readonly AnomalyDetectionResult[];
+  readonly adversarialDetections: readonly AdversarialDetectionResult[];
+  readonly errors: readonly SessionError[];
+  readonly startTime: number;
+  readonly endTime: number | null;
+  readonly metadata: SessionMetadata;
+}
+
+export type SessionState =
+  | 'PENDING'
+  | 'INITIALIZING'
+  | 'RUNNING'
+  | 'PAUSED'
+  | 'STOPPING'
+  | 'COMPLETED'
+  | 'FAILED';
+
+export interface SessionConfig {
+  readonly mode: DetectionMode;
+  readonly models: readonly string[];
+  readonly dataSource: DataSourceConfig;
+  readonly options: Readonly<Record<string, unknown>>;
+}
+
+export interface DataSourceConfig {
+  readonly type: 'STREAM' | 'BATCH' | 'FILE';
+  readonly source: string;
+  readonly format: string;
+}
+
+export interface SessionProgress {
+  readonly phase: SessionPhase;
+  readonly percentage: number;
+  readonly itemsTotal: number;
+  readonly itemsProcessed: number;
+  readonly currentItem: string | null;
+  readonly estimatedTimeRemaining: number | null;
+}
+
+export type SessionPhase =
+  | 'INITIALIZING'
+  | 'LOADING_MODELS'
+  | 'PROCESSING'
+  | 'ANALYZING'
+  | 'ALERTING'
+  | 'FINALIZING';
+
+export interface SessionStatistics {
+  readonly itemsProcessed: number;
+  readonly detectionsTotal: number;
+  readonly detectionsBySeverity: Readonly<Record<SeverityLevel, number>>;
+  readonly anomaliesTotal: number;
+  readonly adversarialDetections: number;
+  readonly falsePositives: number;
+  readonly truePositives: number;
+  readonly processingTime: number;
+  readonly averageLatency: number;
+}
+
+export interface SessionError {
+  readonly errorId: string;
+  readonly timestamp: number;
+  readonly type: SessionErrorType;
+  readonly item: string | null;
+  readonly message: string;
+  readonly details: string | null;
+  readonly recoverable: boolean;
+}
+
+export type SessionErrorType =
+  | 'MODEL_ERROR'
+  | 'DATA_ERROR'
+  | 'PROCESSING_ERROR'
+  | 'TIMEOUT'
+  | 'RESOURCE_ERROR'
+  | 'INTERNAL_ERROR';
+
+export interface SessionMetadata {
+  readonly platformVersion: string;
+  readonly startedBy: string;
+  readonly environment: string;
+  readonly tags: readonly string[];
+}

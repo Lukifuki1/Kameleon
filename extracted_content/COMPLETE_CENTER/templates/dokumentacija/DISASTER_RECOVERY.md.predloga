@@ -1,0 +1,322 @@
+# Disaster Recovery Plan - {{IME_PROJEKTA}}
+
+## Pregled
+
+Ta dokument opisuje postopke za obnovitev varnostnega sistema {{IME_PROJEKTA}} v primeru katastrofalnih dogodkov. Plan zagotavlja kontinuiteto poslovanja in minimizira izgubo podatkov.
+
+**Verzija:** {{VERZIJA}}
+**Datum:** {{DATUM}}
+**Avtor:** {{AVTOR}}
+**Domena:** {{DOMENA_SL}}
+**Klasifikacija:** ZAUPNO
+
+## Skladnost
+
+Ta plan je skladen z naslednjimi standardi:
+- **DO-178C** - Software Considerations in Airborne Systems
+- **IEC 61508** - Functional Safety
+- **ISO 22301** - Business Continuity Management
+- **ISO 27031** - ICT Readiness for Business Continuity
+- **NIST SP 800-34** - Contingency Planning Guide
+
+## Cilji Obnovitve
+
+### Recovery Time Objective (RTO)
+
+| Komponenta | RTO | Prioriteta |
+|------------|-----|------------|
+| Avtentikacijski sistem | 15 min | Kriticna |
+| Avtorizacijski sistem | 15 min | Kriticna |
+| Revizijska sled | 30 min | Visoka |
+| Upravljanje kljucev | 30 min | Visoka |
+| Zaznavanje grozenj | 1 ura | Srednja |
+| Metrike in logiranje | 2 uri | Nizka |
+
+### Recovery Point Objective (RPO)
+
+| Podatki | RPO | Metoda |
+|---------|-----|--------|
+| Uporabniski podatki | 0 | Sinhrona replikacija |
+| Revizijski zapisi | 0 | Sinhrona replikacija |
+| Kriptografski kljuci | 0 | HSM replikacija |
+| Konfiguracijski podatki | 1 ura | Asinhrona replikacija |
+| Metrike | 5 min | Asinhrona replikacija |
+| Logi | 5 min | Asinhrona replikacija |
+
+## Scenariji Katastrof
+
+### Scenarij 1: Izpad Podatkovnega Centra
+
+**Opis:** Popoln izpad primarnega podatkovnega centra zaradi naravne katastrofe, pozara ali dolgotrajnega izpada elektrike.
+
+**Vpliv:**
+- Nedostopnost vseh storitev
+- Potencialna izguba podatkov v tranzitu
+
+**Postopek obnovitve:**
+
+1. **Zaznava (0-5 min)**
+   - Avtomatsko zaznavanje preko health checkov
+   - Alerting preko PagerDuty/OpsGenie
+   - Aktivacija incident response ekipe
+
+2. **Ocena (5-10 min)**
+   - Potrditev izpada primarnega DC
+   - Ocena stanja sekundarnega DC
+   - Odlocitev o failoverju
+
+3. **Failover (10-15 min)**
+   ```bash
+   # Aktivacija DR site
+   ./skripta/dr-failover.sh --target=secondary --confirm
+   
+   # Preverjanje stanja
+   ./skripta/dr-status.sh
+   
+   # Preusmeritev DNS
+   ./skripta/dns-failover.sh --zone={{IME_PROJEKTA_SLUG}}.{{ORGANIZACIJA_DOMENA}}
+   ```
+
+4. **Verifikacija (15-30 min)**
+   - Preverjanje vseh kriticnih storitev
+   - Preverjanje integritete podatkov
+   - Preverjanje varnostnih kontrol
+
+5. **Komunikacija**
+   - Obvescanje strank
+   - Obvescanje regulatorjev (ce potrebno)
+   - Posodobitev status strani
+
+### Scenarij 2: Kompromitacija Varnostnega Sistema
+
+**Opis:** Zaznana kompromitacija varnostnega sistema, vkljucno z morebitnim dostopom do kljucev ali poverilnic.
+
+**Vpliv:**
+- Potencialna izguba zaupnosti
+- Potencialna izguba integritete
+- Regulatorne posledice
+
+**Postopek obnovitve:**
+
+1. **Izolacija (0-5 min)**
+   ```bash
+   # Izolacija kompromitiranih sistemov
+   ./skripta/incident-isolate.sh --scope=affected
+   
+   # Blokada vseh aktivnih sej
+   ./skripta/session-revoke-all.sh --reason="security_incident"
+   ```
+
+2. **Ocena (5-30 min)**
+   - Forenzicna analiza
+   - Dolocitev obsega kompromitacije
+   - Identifikacija prizadetih podatkov
+
+3. **Rotacija Poverilnic (30-60 min)**
+   ```bash
+   # Rotacija vseh kljucev
+   ./skripta/key-rotate-all.sh --emergency --reason="compromise"
+   
+   # Rotacija vseh certifikatov
+   ./skripta/cert-rotate-all.sh --emergency
+   
+   # Ponastavitev vseh uporabniskih gesel
+   ./skripta/password-reset-all.sh --force
+   ```
+
+4. **Obnovitev iz Cistega Stanja**
+   ```bash
+   # Deployment iz verificirane slike
+   ./skripta/deploy-clean.sh --image=verified --version={{VERZIJA}}
+   
+   # Obnovitev konfiguracije iz varnostne kopije
+   ./skripta/config-restore.sh --source=backup --verify
+   ```
+
+5. **Verifikacija**
+   - Varnostni pregled obnovljenega sistema
+   - Penetracijski test
+   - Pregled revizijske sledi
+
+### Scenarij 3: Izguba Podatkovne Baze
+
+**Opis:** Korupcija ali izguba podatkovne baze zaradi strojne napake, cloveske napake ali napada.
+
+**Postopek obnovitve:**
+
+1. **Zaznava in Ocena (0-10 min)**
+   ```bash
+   # Preverjanje stanja baze
+   ./skripta/db-health.sh --detailed
+   
+   # Ocena skode
+   ./skripta/db-assess.sh --report
+   ```
+
+2. **Obnovitev iz Replike (10-20 min)**
+   ```bash
+   # Promocija replike v primarno
+   ./skripta/db-promote-replica.sh --target=replica-1
+   
+   # Preverjanje integritete
+   ./skripta/db-integrity-check.sh
+   ```
+
+3. **Obnovitev iz Varnostne Kopije (ce replika ni na voljo)**
+   ```bash
+   # Obnovitev iz zadnje varnostne kopije
+   ./skripta/db-restore.sh --source=latest --verify
+   
+   # Aplikacija WAL logov
+   ./skripta/db-apply-wal.sh --from=backup_timestamp
+   ```
+
+4. **Verifikacija Podatkov**
+   ```bash
+   # Preverjanje integritete revizijske sledi
+   ./skripta/audit-verify-chain.sh
+   
+   # Preverjanje uporabniskih podatkov
+   ./skripta/data-integrity-check.sh
+   ```
+
+### Scenarij 4: Izguba HSM/Kljucev
+
+**Opis:** Izguba dostopa do Hardware Security Module ali kriptografskih kljucev.
+
+**Postopek obnovitve:**
+
+1. **Aktivacija Backup HSM (0-15 min)**
+   ```bash
+   # Aktivacija sekundarnega HSM
+   ./skripta/hsm-failover.sh --target=backup
+   
+   # Preverjanje kljucev
+   ./skripta/hsm-key-verify.sh
+   ```
+
+2. **Obnovitev Kljucev iz Escrow (ce backup HSM ni na voljo)**
+   ```bash
+   # Zahteva za escrow obnovitev (zahteva M-of-N odobritev)
+   ./skripta/key-escrow-request.sh --reason="hsm_failure"
+   
+   # Po odobritvi: obnovitev kljucev
+   ./skripta/key-escrow-restore.sh --approval-id=<id>
+   ```
+
+3. **Re-enkripcija Podatkov (ce potrebno)**
+   ```bash
+   # Re-enkripcija z novimi kljuci
+   ./skripta/data-reencrypt.sh --new-key-version=<version>
+   ```
+
+## Varnostne Kopije
+
+### Strategija Varnostnega Kopiranja
+
+| Tip | Frekvenca | Retencija | Lokacija |
+|-----|-----------|-----------|----------|
+| Polna kopija DB | Dnevno | 30 dni | S3 + Glacier |
+| Inkrementalna DB | Vsako uro | 7 dni | S3 |
+| WAL logi | Kontinuirano | 7 dni | S3 |
+| Konfiguracija | Ob spremembi | 90 dni | Git + S3 |
+| Kljuci (escrow) | Ob rotaciji | Trajno | HSM + Fizicni |
+| Revizijska sled | Dnevno | 7 let | S3 + Glacier |
+
+### Preverjanje Varnostnih Kopij
+
+```bash
+# Tedensko preverjanje integritete
+./skripta/backup-verify.sh --type=all --report
+
+# Mesecni test obnovitve
+./skripta/backup-restore-test.sh --target=test-env --full
+```
+
+## Komunikacijski Plan
+
+### Eskalacijska Veriga
+
+| Nivo | Cas | Kontakt | Metoda |
+|------|-----|---------|--------|
+| L1 | 0-5 min | On-call inzenir | PagerDuty |
+| L2 | 5-15 min | Varnostna ekipa | PagerDuty + Telefon |
+| L3 | 15-30 min | CISO | Telefon |
+| L4 | 30+ min | Vodstvo | Telefon + Email |
+
+### Predloge Sporocil
+
+#### Interno Obvescanje
+```
+SUBJECT: [INCIDENT] {{IME_PROJEKTA}} - <tip_incidenta>
+
+Cas zaznave: <timestamp>
+Resnost: <kriticna|visoka|srednja|nizka>
+Vpliv: <opis_vpliva>
+Status: <v_resevanju|reseno|spremljanje>
+Naslednji koraki: <opis>
+```
+
+#### Zunanje Obvescanje (Stranke)
+```
+SUBJECT: Obvestilo o Storitvi - {{IME_PROJEKTA}}
+
+Spoštovani,
+
+Zaznali smo <opis_situacije>.
+
+Vpliv: <opis_vpliva_na_stranke>
+Pricakovana obnovitev: <cas>
+
+Za dodatne informacije spremljajte status stran: <url>
+
+Lep pozdrav,
+{{ORGANIZACIJA}}
+```
+
+## Testiranje DR Plana
+
+### Frekvenca Testiranja
+
+| Tip Testa | Frekvenca | Trajanje |
+|-----------|-----------|----------|
+| Tabletop exercise | Mesecno | 2 uri |
+| Partial failover | Kvartalno | 4 ure |
+| Full failover | Letno | 8 ur |
+| Backup restore | Mesecno | 2 uri |
+
+### Dokumentacija Testov
+
+Po vsakem testu:
+1. Dokumentiraj rezultate
+2. Identificiraj vrzeli
+3. Posodobi DR plan
+4. Izvedi korektivne ukrepe
+
+## Kontakti
+
+### Interni
+
+| Vloga | Ime | Telefon | Email |
+|-------|-----|---------|-------|
+| DR Koordinator | TBD | TBD | dr@{{ORGANIZACIJA_DOMENA}} |
+| Varnostni Vodja | TBD | TBD | security@{{ORGANIZACIJA_DOMENA}} |
+| Infrastruktura | TBD | TBD | infra@{{ORGANIZACIJA_DOMENA}} |
+
+### Zunanji
+
+| Storitev | Kontakt | SLA |
+|----------|---------|-----|
+| Cloud Provider | Support Portal | 15 min |
+| HSM Vendor | 24/7 Hotline | 1 ura |
+| DNS Provider | Support Portal | 30 min |
+
+## Revizija Dokumenta
+
+| Verzija | Datum | Avtor | Spremembe |
+|---------|-------|-------|-----------|
+| 1.0 | {{DATUM}} | {{AVTOR}} | Zacetna verzija |
+
+---
+
+**OPOMBA:** Ta dokument je zaupen in namenjen samo pooblascenemu osebju. Nepooblasceno razkritje je prepovedano.

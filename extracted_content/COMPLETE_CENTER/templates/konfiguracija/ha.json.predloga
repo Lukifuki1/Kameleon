@@ -1,0 +1,235 @@
+{
+  "$schema": "https://{{ORGANIZACIJA_DOMENA}}/schemas/ha-config.json",
+  "metadata": {
+    "projectName": "{{IME_PROJEKTA}}",
+    "version": "{{VERZIJA}}",
+    "domain": "{{DOMENA_SL}}",
+    "generatedAt": "{{DATUM}}"
+  },
+  "highAvailability": {
+    "enabled": true,
+    "mode": "active-active",
+    "minReplicas": 3,
+    "maxReplicas": 10,
+    "targetAvailability": 99.99
+  },
+  "clustering": {
+    "enabled": true,
+    "protocol": "raft",
+    "quorumSize": 2,
+    "electionTimeout": "1s",
+    "heartbeatInterval": "100ms",
+    "snapshotInterval": "10m",
+    "snapshotThreshold": 10000
+  },
+  "loadBalancing": {
+    "algorithm": "round-robin",
+    "healthCheckPath": "/health/ready",
+    "healthCheckInterval": "10s",
+    "healthCheckTimeout": "5s",
+    "unhealthyThreshold": 3,
+    "healthyThreshold": 2,
+    "drainTimeout": "30s",
+    "connectionDraining": true,
+    "stickySession": {
+      "enabled": true,
+      "cookieName": "{{IME_PROJEKTA_SLUG}}_session",
+      "ttl": "1h"
+    }
+  },
+  "failover": {
+    "automatic": true,
+    "detectionTime": "10s",
+    "recoveryTime": "30s",
+    "maxFailovers": 3,
+    "failoverCooldown": "5m",
+    "preferredLeader": null,
+    "splitBrainProtection": {
+      "enabled": true,
+      "strategy": "quorum",
+      "minNodes": 2
+    }
+  },
+  "replication": {
+    "database": {
+      "mode": "synchronous",
+      "replicas": 2,
+      "maxLag": "100ms",
+      "failoverOnLag": true
+    },
+    "cache": {
+      "mode": "async",
+      "replicas": 2,
+      "maxLag": "1s"
+    },
+    "secrets": {
+      "mode": "synchronous",
+      "replicas": 3,
+      "maxLag": "0ms"
+    }
+  },
+  "regions": {
+    "primary": {
+      "name": "eu-central-1",
+      "priority": 1,
+      "replicas": 3
+    },
+    "secondary": {
+      "name": "eu-west-1",
+      "priority": 2,
+      "replicas": 2
+    },
+    "disaster-recovery": {
+      "name": "us-east-1",
+      "priority": 3,
+      "replicas": 1,
+      "warmStandby": true
+    }
+  },
+  "autoscaling": {
+    "enabled": true,
+    "metrics": [
+      {
+        "type": "cpu",
+        "target": 70,
+        "scaleUpThreshold": 80,
+        "scaleDownThreshold": 50
+      },
+      {
+        "type": "memory",
+        "target": 75,
+        "scaleUpThreshold": 85,
+        "scaleDownThreshold": 60
+      },
+      {
+        "type": "requests",
+        "target": 1000,
+        "scaleUpThreshold": 1500,
+        "scaleDownThreshold": 500
+      },
+      {
+        "type": "custom",
+        "name": "auth_requests_per_second",
+        "target": 100,
+        "scaleUpThreshold": 150,
+        "scaleDownThreshold": 50
+      }
+    ],
+    "scaleUpPolicy": {
+      "stabilizationWindow": "0s",
+      "policies": [
+        {
+          "type": "Percent",
+          "value": 100,
+          "periodSeconds": 15
+        },
+        {
+          "type": "Pods",
+          "value": 4,
+          "periodSeconds": 15
+        }
+      ],
+      "selectPolicy": "Max"
+    },
+    "scaleDownPolicy": {
+      "stabilizationWindow": "300s",
+      "policies": [
+        {
+          "type": "Percent",
+          "value": 10,
+          "periodSeconds": 60
+        }
+      ],
+      "selectPolicy": "Min"
+    }
+  },
+  "podDisruptionBudget": {
+    "minAvailable": 2,
+    "maxUnavailable": 1
+  },
+  "antiAffinity": {
+    "type": "preferredDuringSchedulingIgnoredDuringExecution",
+    "topologyKey": "kubernetes.io/hostname",
+    "weight": 100
+  },
+  "topologySpreadConstraints": [
+    {
+      "maxSkew": 1,
+      "topologyKey": "topology.kubernetes.io/zone",
+      "whenUnsatisfiable": "ScheduleAnyway"
+    },
+    {
+      "maxSkew": 1,
+      "topologyKey": "kubernetes.io/hostname",
+      "whenUnsatisfiable": "DoNotSchedule"
+    }
+  ],
+  "gracefulShutdown": {
+    "enabled": true,
+    "timeout": "30s",
+    "preStopHook": {
+      "exec": {
+        "command": ["/bin/sh", "-c", "sleep 5"]
+      }
+    },
+    "terminationGracePeriod": "60s"
+  },
+  "healthChecks": {
+    "liveness": {
+      "path": "/health/live",
+      "initialDelaySeconds": 10,
+      "periodSeconds": 15,
+      "timeoutSeconds": 5,
+      "failureThreshold": 3,
+      "successThreshold": 1
+    },
+    "readiness": {
+      "path": "/health/ready",
+      "initialDelaySeconds": 5,
+      "periodSeconds": 10,
+      "timeoutSeconds": 5,
+      "failureThreshold": 3,
+      "successThreshold": 1
+    },
+    "startup": {
+      "path": "/health/startup",
+      "initialDelaySeconds": 5,
+      "periodSeconds": 5,
+      "timeoutSeconds": 5,
+      "failureThreshold": 30,
+      "successThreshold": 1
+    }
+  },
+  "circuitBreaker": {
+    "enabled": true,
+    "failureThreshold": 5,
+    "successThreshold": 3,
+    "timeout": "30s",
+    "halfOpenRequests": 3,
+    "failSecure": true
+  },
+  "retryPolicy": {
+    "maxRetries": 3,
+    "initialInterval": "100ms",
+    "maxInterval": "10s",
+    "multiplier": 2,
+    "retryableStatusCodes": [502, 503, 504]
+  },
+  "monitoring": {
+    "metricsEnabled": true,
+    "metricsPath": "/metrics",
+    "metricsPort": 9090,
+    "tracingEnabled": true,
+    "tracingSampleRate": 0.1,
+    "loggingLevel": "info"
+  },
+  "security": {
+    "failSecure": true,
+    "sessionReplication": true,
+    "tokenReplication": true,
+    "auditReplication": {
+      "mode": "synchronous",
+      "minReplicas": 2
+    }
+  }
+}

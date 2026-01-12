@@ -1,0 +1,1247 @@
+/**
+ * @file Firmware Analysis - Self-Contained Firmware Analysis Platform
+ * @author {{AVTOR}}
+ * @version {{VERZIJA}}
+ * @date {{DATUM}}
+ * @project {{IME_PROJEKTA}}
+ * @domain VARNOSTNI_SISTEMI
+ * 
+ * @requirement REQ-SEC-FWA-001
+ * @design DSN-SEC-FWA-001
+ * @test TST-SEC-FWA-001
+ * 
+ * @description
+ * Enterprise-grade self-contained firmware analysis platform implementing
+ * comprehensive firmware extraction, analysis, vulnerability detection,
+ * UEFI/BIOS analysis, bootkit detection, and embedded system security.
+ * All analysis algorithms are natively implemented without external dependencies.
+ * 
+ * @classification TOP SECRET - Firmware Analysis Operations
+ * @authorization Required: Level 5 Security Clearance
+ * @dependencies NONE - Fully self-contained implementation
+ */
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// FIRMWARE ANALYSIS TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export type FirmwareType =
+  | 'UEFI'
+  | 'BIOS'
+  | 'BOOTLOADER'
+  | 'EMBEDDED'
+  | 'IOT'
+  | 'ROUTER'
+  | 'SWITCH'
+  | 'BASEBAND'
+  | 'SSD_CONTROLLER'
+  | 'HDD_CONTROLLER'
+  | 'NIC'
+  | 'GPU'
+  | 'BMC'
+  | 'TPM'
+  | 'SMART_CARD'
+  | 'PLC'
+  | 'SCADA';
+
+export type FirmwareFormat =
+  | 'RAW_BINARY'
+  | 'ELF'
+  | 'PE'
+  | 'UEFI_CAPSULE'
+  | 'INTEL_HEX'
+  | 'MOTOROLA_SREC'
+  | 'SQUASHFS'
+  | 'CRAMFS'
+  | 'JFFS2'
+  | 'UBIFS'
+  | 'YAFFS'
+  | 'TAR'
+  | 'CPIO'
+  | 'ZIP';
+
+export type ProcessorArchitecture =
+  | 'X86'
+  | 'X86_64'
+  | 'ARM'
+  | 'ARM64'
+  | 'MIPS'
+  | 'MIPS64'
+  | 'PPC'
+  | 'PPC64'
+  | 'RISCV'
+  | 'SPARC'
+  | 'AVR'
+  | 'MSP430'
+  | 'XTENSA'
+  | 'ARC';
+
+export type ExtractionMethod =
+  | 'DIRECT_READ'
+  | 'JTAG'
+  | 'SWD'
+  | 'SPI_FLASH'
+  | 'I2C_EEPROM'
+  | 'UART'
+  | 'CHIP_OFF'
+  | 'UPDATE_PACKAGE'
+  | 'VENDOR_TOOL'
+  | 'MEMORY_DUMP';
+
+export type AnalysisType =
+  | 'STATIC'
+  | 'DYNAMIC'
+  | 'EMULATION'
+  | 'SYMBOLIC'
+  | 'DIFFERENTIAL'
+  | 'BEHAVIORAL';
+
+export type VulnerabilityType =
+  | 'BUFFER_OVERFLOW'
+  | 'FORMAT_STRING'
+  | 'INTEGER_OVERFLOW'
+  | 'USE_AFTER_FREE'
+  | 'COMMAND_INJECTION'
+  | 'HARDCODED_CREDENTIALS'
+  | 'WEAK_CRYPTOGRAPHY'
+  | 'INSECURE_BOOT'
+  | 'DEBUG_INTERFACE'
+  | 'BACKDOOR'
+  | 'ROOTKIT'
+  | 'BOOTKIT';
+
+export type ThreatType =
+  | 'BOOTKIT'
+  | 'ROOTKIT'
+  | 'IMPLANT'
+  | 'BACKDOOR'
+  | 'PERSISTENCE'
+  | 'SUPPLY_CHAIN'
+  | 'MODIFICATION';
+
+export type SecurityLevel =
+  | 'TOP_SECRET'
+  | 'SECRET'
+  | 'CONFIDENTIAL'
+  | 'UNCLASSIFIED';
+
+export type RiskLevel =
+  | 'CRITICAL'
+  | 'HIGH'
+  | 'MEDIUM'
+  | 'LOW'
+  | 'INFORMATIONAL';
+
+export type AnalysisMode =
+  | 'EXTRACTION'
+  | 'ANALYSIS'
+  | 'VULNERABILITY_SCAN'
+  | 'THREAT_DETECTION'
+  | 'FULL_INVESTIGATION';
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// FIRMWARE ANALYSIS CONFIGURATION
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface FirmwareAnalysisConfig {
+  readonly platformId: string;
+  readonly name: string;
+  readonly version: string;
+  readonly mode: AnalysisMode;
+  readonly extraction: ExtractionConfig;
+  readonly parsing: ParsingConfig;
+  readonly staticAnalysis: StaticAnalysisConfig;
+  readonly dynamicAnalysis: DynamicAnalysisConfig;
+  readonly emulation: EmulationConfig;
+  readonly uefiAnalysis: UEFIAnalysisConfig;
+  readonly biosAnalysis: BIOSAnalysisConfig;
+  readonly bootkitDetection: BootkitDetectionConfig;
+  readonly vulnerabilityScanning: VulnerabilityScanningConfig;
+  readonly cryptoAnalysis: CryptoAnalysisConfig;
+  readonly stringAnalysis: StringAnalysisConfig;
+  readonly symbolAnalysis: SymbolAnalysisConfig;
+  readonly reporting: ReportingConfig;
+  readonly storage: StorageConfig;
+  readonly security: SecurityConfig;
+  readonly metadata: PlatformMetadata;
+}
+
+export interface ExtractionConfig {
+  readonly enabled: boolean;
+  readonly methods: ExtractionMethodsConfig;
+  readonly verification: VerificationConfig;
+  readonly decompression: DecompressionConfig;
+}
+
+export interface ExtractionMethodsConfig {
+  readonly directRead: boolean;
+  readonly jtag: JTAGConfig;
+  readonly swd: SWDConfig;
+  readonly spiFlash: SPIFlashConfig;
+  readonly i2cEeprom: I2CEepromConfig;
+  readonly uart: UARTConfig;
+  readonly chipOff: ChipOffConfig;
+}
+
+export interface JTAGConfig {
+  readonly enabled: boolean;
+  readonly adapters: readonly string[];
+  readonly frequency: number;
+  readonly autoDetect: boolean;
+}
+
+export interface SWDConfig {
+  readonly enabled: boolean;
+  readonly adapters: readonly string[];
+  readonly frequency: number;
+  readonly resetType: 'HARDWARE' | 'SOFTWARE' | 'NONE';
+}
+
+export interface SPIFlashConfig {
+  readonly enabled: boolean;
+  readonly programmers: readonly string[];
+  readonly voltage: number;
+  readonly frequency: number;
+}
+
+export interface I2CEepromConfig {
+  readonly enabled: boolean;
+  readonly addresses: readonly number[];
+  readonly speed: number;
+}
+
+export interface UARTConfig {
+  readonly enabled: boolean;
+  readonly baudRates: readonly number[];
+  readonly dataBits: number;
+  readonly stopBits: number;
+  readonly parity: 'NONE' | 'ODD' | 'EVEN';
+}
+
+export interface ChipOffConfig {
+  readonly enabled: boolean;
+  readonly chipTypes: readonly string[];
+  readonly readers: readonly string[];
+}
+
+export interface VerificationConfig {
+  readonly enabled: boolean;
+  readonly hashAlgorithms: readonly HashAlgorithm[];
+  readonly signatureVerification: boolean;
+  readonly integrityCheck: boolean;
+}
+
+export type HashAlgorithm =
+  | 'MD5'
+  | 'SHA1'
+  | 'SHA256'
+  | 'SHA512'
+  | 'BLAKE2'
+  | 'BLAKE3';
+
+export interface DecompressionConfig {
+  readonly enabled: boolean;
+  readonly algorithms: readonly CompressionAlgorithm[];
+  readonly recursive: boolean;
+  readonly maxDepth: number;
+}
+
+export type CompressionAlgorithm =
+  | 'GZIP'
+  | 'BZIP2'
+  | 'XZ'
+  | 'LZMA'
+  | 'LZ4'
+  | 'ZSTD'
+  | 'LZOP'
+  | 'DEFLATE';
+
+export interface ParsingConfig {
+  readonly enabled: boolean;
+  readonly fileSystemParsing: FileSystemParsingConfig;
+  readonly executableParsing: ExecutableParsingConfig;
+  readonly headerParsing: HeaderParsingConfig;
+  readonly structureParsing: StructureParsingConfig;
+}
+
+export interface FileSystemParsingConfig {
+  readonly enabled: boolean;
+  readonly types: readonly FileSystemType[];
+  readonly extractFiles: boolean;
+  readonly preserveMetadata: boolean;
+}
+
+export type FileSystemType =
+  | 'SQUASHFS'
+  | 'CRAMFS'
+  | 'JFFS2'
+  | 'UBIFS'
+  | 'YAFFS'
+  | 'YAFFS2'
+  | 'EXT2'
+  | 'EXT3'
+  | 'EXT4'
+  | 'FAT'
+  | 'NTFS'
+  | 'ROMFS';
+
+export interface ExecutableParsingConfig {
+  readonly enabled: boolean;
+  readonly formats: readonly ExecutableFormat[];
+  readonly extractSymbols: boolean;
+  readonly extractStrings: boolean;
+}
+
+export type ExecutableFormat =
+  | 'ELF'
+  | 'PE'
+  | 'MACH_O'
+  | 'RAW';
+
+export interface HeaderParsingConfig {
+  readonly enabled: boolean;
+  readonly vendorHeaders: boolean;
+  readonly customHeaders: readonly string[];
+}
+
+export interface StructureParsingConfig {
+  readonly enabled: boolean;
+  readonly autoDetect: boolean;
+  readonly customStructures: readonly string[];
+}
+
+export interface StaticAnalysisConfig {
+  readonly enabled: boolean;
+  readonly disassembly: DisassemblyConfig;
+  readonly decompilation: DecompilationConfig;
+  readonly controlFlowAnalysis: ControlFlowAnalysisConfig;
+  readonly dataFlowAnalysis: DataFlowAnalysisConfig;
+  readonly crossReferenceAnalysis: CrossReferenceAnalysisConfig;
+}
+
+export interface DisassemblyConfig {
+  readonly enabled: boolean;
+  readonly architectures: readonly ProcessorArchitecture[];
+  readonly mode: 'LINEAR' | 'RECURSIVE' | 'HYBRID';
+  readonly resolveIndirect: boolean;
+}
+
+export interface DecompilationConfig {
+  readonly enabled: boolean;
+  readonly outputLanguage: 'C' | 'CPP' | 'PSEUDOCODE';
+  readonly optimizationLevel: number;
+  readonly typeRecovery: boolean;
+}
+
+export interface ControlFlowAnalysisConfig {
+  readonly enabled: boolean;
+  readonly generateCFG: boolean;
+  readonly detectLoops: boolean;
+  readonly detectBranches: boolean;
+}
+
+export interface DataFlowAnalysisConfig {
+  readonly enabled: boolean;
+  readonly taintAnalysis: boolean;
+  readonly valueSetAnalysis: boolean;
+  readonly slicing: boolean;
+}
+
+export interface CrossReferenceAnalysisConfig {
+  readonly enabled: boolean;
+  readonly codeReferences: boolean;
+  readonly dataReferences: boolean;
+  readonly stringReferences: boolean;
+}
+
+export interface DynamicAnalysisConfig {
+  readonly enabled: boolean;
+  readonly instrumentation: InstrumentationConfig;
+  readonly tracing: TracingConfig;
+  readonly debugging: DebuggingConfig;
+  readonly fuzzing: FuzzingConfig;
+}
+
+export interface InstrumentationConfig {
+  readonly enabled: boolean;
+  readonly type: 'BINARY' | 'SOURCE' | 'HYBRID';
+  readonly coverage: boolean;
+  readonly profiling: boolean;
+}
+
+export interface TracingConfig {
+  readonly enabled: boolean;
+  readonly instructions: boolean;
+  readonly memory: boolean;
+  readonly syscalls: boolean;
+  readonly interrupts: boolean;
+}
+
+export interface DebuggingConfig {
+  readonly enabled: boolean;
+  readonly breakpoints: boolean;
+  readonly watchpoints: boolean;
+  readonly stepping: boolean;
+  readonly memoryInspection: boolean;
+}
+
+export interface FuzzingConfig {
+  readonly enabled: boolean;
+  readonly type: 'MUTATION' | 'GENERATION' | 'HYBRID';
+  readonly coverage: boolean;
+  readonly sanitizers: readonly string[];
+  readonly timeout: number;
+}
+
+export interface EmulationConfig {
+  readonly enabled: boolean;
+  readonly fullSystem: FullSystemEmulationConfig;
+  readonly userMode: UserModeEmulationConfig;
+  readonly peripheralEmulation: PeripheralEmulationConfig;
+}
+
+export interface FullSystemEmulationConfig {
+  readonly enabled: boolean;
+  readonly architectures: readonly ProcessorArchitecture[];
+  readonly memory: number;
+  readonly peripherals: readonly string[];
+}
+
+export interface UserModeEmulationConfig {
+  readonly enabled: boolean;
+  readonly syscallEmulation: boolean;
+  readonly libraryEmulation: boolean;
+}
+
+export interface PeripheralEmulationConfig {
+  readonly enabled: boolean;
+  readonly flash: boolean;
+  readonly uart: boolean;
+  readonly spi: boolean;
+  readonly i2c: boolean;
+  readonly gpio: boolean;
+  readonly timers: boolean;
+}
+
+export interface UEFIAnalysisConfig {
+  readonly enabled: boolean;
+  readonly volumeParsing: UEFIVolumeParsingConfig;
+  readonly moduleParsing: UEFIModuleParsingConfig;
+  readonly variableAnalysis: UEFIVariableAnalysisConfig;
+  readonly secureBootAnalysis: SecureBootAnalysisConfig;
+  readonly smmAnalysis: SMMAnalysisConfig;
+}
+
+export interface UEFIVolumeParsingConfig {
+  readonly enabled: boolean;
+  readonly extractModules: boolean;
+  readonly parseNVRAM: boolean;
+  readonly parseFaultTolerant: boolean;
+}
+
+export interface UEFIModuleParsingConfig {
+  readonly enabled: boolean;
+  readonly peiModules: boolean;
+  readonly dxeModules: boolean;
+  readonly smmModules: boolean;
+  readonly runtimeModules: boolean;
+}
+
+export interface UEFIVariableAnalysisConfig {
+  readonly enabled: boolean;
+  readonly secureVariables: boolean;
+  readonly bootVariables: boolean;
+  readonly customVariables: boolean;
+}
+
+export interface SecureBootAnalysisConfig {
+  readonly enabled: boolean;
+  readonly pkAnalysis: boolean;
+  readonly kekAnalysis: boolean;
+  readonly dbAnalysis: boolean;
+  readonly dbxAnalysis: boolean;
+  readonly signatureVerification: boolean;
+}
+
+export interface SMMAnalysisConfig {
+  readonly enabled: boolean;
+  readonly smiHandlers: boolean;
+  readonly smmCallouts: boolean;
+  readonly smmVulnerabilities: boolean;
+}
+
+export interface BIOSAnalysisConfig {
+  readonly enabled: boolean;
+  readonly interruptVectors: boolean;
+  readonly optionRoms: boolean;
+  readonly bootSector: boolean;
+  readonly mbrAnalysis: boolean;
+  readonly vbrAnalysis: boolean;
+}
+
+export interface BootkitDetectionConfig {
+  readonly enabled: boolean;
+  readonly mbrBootkits: MBRBootkitDetectionConfig;
+  readonly vbrBootkits: VBRBootkitDetectionConfig;
+  readonly uefiBootkits: UEFIBootkitDetectionConfig;
+  readonly signatures: BootkitSignaturesConfig;
+  readonly behavioral: BootkitBehavioralConfig;
+}
+
+export interface MBRBootkitDetectionConfig {
+  readonly enabled: boolean;
+  readonly codeAnalysis: boolean;
+  readonly hookDetection: boolean;
+  readonly knownSignatures: boolean;
+}
+
+export interface VBRBootkitDetectionConfig {
+  readonly enabled: boolean;
+  readonly codeAnalysis: boolean;
+  readonly chainAnalysis: boolean;
+  readonly knownSignatures: boolean;
+}
+
+export interface UEFIBootkitDetectionConfig {
+  readonly enabled: boolean;
+  readonly moduleIntegrity: boolean;
+  readonly hookDetection: boolean;
+  readonly persistenceDetection: boolean;
+}
+
+export interface BootkitSignaturesConfig {
+  readonly enabled: boolean;
+  readonly customSignatures: readonly string[];
+  readonly updateFrequency: number;
+}
+
+export interface BootkitBehavioralConfig {
+  readonly enabled: boolean;
+  readonly hookPatterns: boolean;
+  readonly persistencePatterns: boolean;
+  readonly evasionPatterns: boolean;
+}
+
+export interface VulnerabilityScanningConfig {
+  readonly enabled: boolean;
+  readonly codeVulnerabilities: CodeVulnerabilityConfig;
+  readonly configVulnerabilities: ConfigVulnerabilityConfig;
+  readonly cryptoVulnerabilities: CryptoVulnerabilityConfig;
+  readonly authVulnerabilities: AuthVulnerabilityConfig;
+}
+
+export interface CodeVulnerabilityConfig {
+  readonly enabled: boolean;
+  readonly bufferOverflows: boolean;
+  readonly formatStrings: boolean;
+  readonly integerOverflows: boolean;
+  readonly useAfterFree: boolean;
+  readonly commandInjection: boolean;
+}
+
+export interface ConfigVulnerabilityConfig {
+  readonly enabled: boolean;
+  readonly debugInterfaces: boolean;
+  readonly defaultCredentials: boolean;
+  readonly insecureServices: boolean;
+  readonly misconfigurations: boolean;
+}
+
+export interface CryptoVulnerabilityConfig {
+  readonly enabled: boolean;
+  readonly weakAlgorithms: boolean;
+  readonly hardcodedKeys: boolean;
+  readonly insecureRandom: boolean;
+  readonly weakKeyDerivation: boolean;
+}
+
+export interface AuthVulnerabilityConfig {
+  readonly enabled: boolean;
+  readonly bypassVulnerabilities: boolean;
+  readonly weakAuthentication: boolean;
+  readonly privilegeEscalation: boolean;
+}
+
+export interface CryptoAnalysisConfig {
+  readonly enabled: boolean;
+  readonly algorithmDetection: AlgorithmDetectionConfig;
+  readonly keyExtraction: KeyExtractionConfig;
+  readonly certificateAnalysis: CertificateAnalysisConfig;
+}
+
+export interface AlgorithmDetectionConfig {
+  readonly enabled: boolean;
+  readonly symmetric: boolean;
+  readonly asymmetric: boolean;
+  readonly hashing: boolean;
+  readonly customAlgorithms: boolean;
+}
+
+export interface KeyExtractionConfig {
+  readonly enabled: boolean;
+  readonly memorySearch: boolean;
+  readonly binarySearch: boolean;
+  readonly entropyAnalysis: boolean;
+}
+
+export interface CertificateAnalysisConfig {
+  readonly enabled: boolean;
+  readonly x509: boolean;
+  readonly pkcs: boolean;
+  readonly validation: boolean;
+}
+
+export interface StringAnalysisConfig {
+  readonly enabled: boolean;
+  readonly encoding: readonly StringEncoding[];
+  readonly minLength: number;
+  readonly classification: boolean;
+  readonly sensitive: boolean;
+}
+
+export type StringEncoding =
+  | 'ASCII'
+  | 'UTF8'
+  | 'UTF16_LE'
+  | 'UTF16_BE'
+  | 'UTF32';
+
+export interface SymbolAnalysisConfig {
+  readonly enabled: boolean;
+  readonly functionNames: boolean;
+  readonly variableNames: boolean;
+  readonly debugInfo: boolean;
+  readonly exportedSymbols: boolean;
+}
+
+export interface ReportingConfig {
+  readonly enabled: boolean;
+  readonly formats: readonly ReportFormat[];
+  readonly sections: readonly ReportSection[];
+  readonly automation: ReportAutomationConfig;
+}
+
+export type ReportFormat =
+  | 'PDF'
+  | 'HTML'
+  | 'JSON'
+  | 'XML'
+  | 'MARKDOWN';
+
+export type ReportSection =
+  | 'EXECUTIVE_SUMMARY'
+  | 'FIRMWARE_OVERVIEW'
+  | 'EXTRACTION_DETAILS'
+  | 'ANALYSIS_RESULTS'
+  | 'VULNERABILITIES'
+  | 'THREATS'
+  | 'RECOMMENDATIONS';
+
+export interface ReportAutomationConfig {
+  readonly enabled: boolean;
+  readonly scheduling: boolean;
+  readonly triggers: readonly string[];
+}
+
+export interface StorageConfig {
+  readonly type: 'DATABASE' | 'FILE_SYSTEM' | 'HYBRID';
+  readonly encryption: StorageEncryptionConfig;
+  readonly retention: RetentionConfig;
+  readonly backup: BackupConfig;
+}
+
+export interface StorageEncryptionConfig {
+  readonly enabled: boolean;
+  readonly algorithm: 'AES_256_GCM' | 'CHACHA20_POLY1305';
+  readonly keyManagement: 'LOCAL' | 'HSM' | 'KMS';
+}
+
+export interface RetentionConfig {
+  readonly enabled: boolean;
+  readonly firmware: number;
+  readonly analysis: number;
+  readonly reports: number;
+}
+
+export interface BackupConfig {
+  readonly enabled: boolean;
+  readonly frequency: number;
+  readonly encryption: boolean;
+  readonly offsite: boolean;
+}
+
+export interface SecurityConfig {
+  readonly authentication: AuthenticationConfig;
+  readonly authorization: AuthorizationConfig;
+  readonly audit: AuditConfig;
+  readonly classification: ClassificationConfig;
+}
+
+export interface AuthenticationConfig {
+  readonly enabled: boolean;
+  readonly methods: readonly ('PKI' | 'CAC' | 'BIOMETRIC' | 'MFA')[];
+  readonly sessionTimeout: number;
+}
+
+export interface AuthorizationConfig {
+  readonly enabled: boolean;
+  readonly model: 'RBAC' | 'ABAC' | 'MAC';
+  readonly clearanceRequired: boolean;
+}
+
+export interface AuditConfig {
+  readonly enabled: boolean;
+  readonly logAllAccess: boolean;
+  readonly logAllOperations: boolean;
+  readonly retention: number;
+}
+
+export interface ClassificationConfig {
+  readonly enabled: boolean;
+  readonly defaultLevel: SecurityLevel;
+  readonly autoClassification: boolean;
+}
+
+export interface PlatformMetadata {
+  readonly createdAt: number;
+  readonly updatedAt: number;
+  readonly createdBy: string;
+  readonly version: string;
+  readonly tags: readonly string[];
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// FIRMWARE TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface Firmware {
+  readonly firmwareId: string;
+  readonly type: FirmwareType;
+  readonly format: FirmwareFormat;
+  readonly vendor: string;
+  readonly product: string;
+  readonly version: string;
+  readonly architecture: ProcessorArchitecture;
+  readonly extraction: ExtractionInfo;
+  readonly structure: FirmwareStructure;
+  readonly components: readonly FirmwareComponent[];
+  readonly metadata: FirmwareMetadata;
+  readonly integrity: IntegrityInfo;
+  readonly classification: SecurityLevel;
+}
+
+export interface ExtractionInfo {
+  readonly method: ExtractionMethod;
+  readonly source: string;
+  readonly timestamp: number;
+  readonly size: number;
+  readonly hash: HashInfo;
+  readonly verified: boolean;
+}
+
+export interface HashInfo {
+  readonly algorithm: HashAlgorithm;
+  readonly value: string;
+}
+
+export interface FirmwareStructure {
+  readonly regions: readonly FirmwareRegion[];
+  readonly fileSystems: readonly FileSystemInfo[];
+  readonly executables: readonly ExecutableInfo[];
+  readonly headers: readonly HeaderInfo[];
+}
+
+export interface FirmwareRegion {
+  readonly regionId: string;
+  readonly name: string;
+  readonly offset: number;
+  readonly size: number;
+  readonly type: string;
+  readonly compressed: boolean;
+  readonly encrypted: boolean;
+}
+
+export interface FileSystemInfo {
+  readonly fsId: string;
+  readonly type: FileSystemType;
+  readonly offset: number;
+  readonly size: number;
+  readonly files: number;
+  readonly directories: number;
+}
+
+export interface ExecutableInfo {
+  readonly execId: string;
+  readonly name: string;
+  readonly format: ExecutableFormat;
+  readonly architecture: ProcessorArchitecture;
+  readonly offset: number;
+  readonly size: number;
+  readonly entryPoint: number;
+  readonly sections: readonly SectionInfo[];
+}
+
+export interface SectionInfo {
+  readonly name: string;
+  readonly offset: number;
+  readonly size: number;
+  readonly virtualAddress: number;
+  readonly permissions: string;
+}
+
+export interface HeaderInfo {
+  readonly headerId: string;
+  readonly type: string;
+  readonly offset: number;
+  readonly size: number;
+  readonly fields: Readonly<Record<string, unknown>>;
+}
+
+export interface FirmwareComponent {
+  readonly componentId: string;
+  readonly name: string;
+  readonly type: ComponentType;
+  readonly offset: number;
+  readonly size: number;
+  readonly version: string | null;
+  readonly hash: HashInfo;
+  readonly analysis: ComponentAnalysis | null;
+}
+
+export type ComponentType =
+  | 'BOOTLOADER'
+  | 'KERNEL'
+  | 'ROOTFS'
+  | 'APPLICATION'
+  | 'CONFIGURATION'
+  | 'CERTIFICATE'
+  | 'KEY'
+  | 'DATA'
+  | 'UNKNOWN';
+
+export interface ComponentAnalysis {
+  readonly analyzed: boolean;
+  readonly findings: readonly AnalysisFinding[];
+  readonly vulnerabilities: readonly VulnerabilityInfo[];
+  readonly threats: readonly ThreatInfo[];
+}
+
+export interface AnalysisFinding {
+  readonly findingId: string;
+  readonly type: string;
+  readonly description: string;
+  readonly location: LocationInfo;
+  readonly significance: 'HIGH' | 'MEDIUM' | 'LOW';
+}
+
+export interface LocationInfo {
+  readonly offset: number;
+  readonly size: number;
+  readonly path: string | null;
+}
+
+export interface VulnerabilityInfo {
+  readonly vulnId: string;
+  readonly type: VulnerabilityType;
+  readonly severity: RiskLevel;
+  readonly description: string;
+  readonly location: LocationInfo;
+  readonly cve: string | null;
+  readonly remediation: string | null;
+}
+
+export interface ThreatInfo {
+  readonly threatId: string;
+  readonly type: ThreatType;
+  readonly severity: RiskLevel;
+  readonly description: string;
+  readonly indicators: readonly ThreatIndicator[];
+  readonly attribution: string | null;
+}
+
+export interface ThreatIndicator {
+  readonly indicatorId: string;
+  readonly type: string;
+  readonly value: string;
+  readonly confidence: number;
+}
+
+export interface FirmwareMetadata {
+  readonly createdAt: number;
+  readonly updatedAt: number;
+  readonly createdBy: string;
+  readonly deviceId: string | null;
+  readonly caseId: string | null;
+  readonly tags: readonly string[];
+}
+
+export interface IntegrityInfo {
+  readonly verified: boolean;
+  readonly hashes: readonly HashInfo[];
+  readonly signature: SignatureInfo | null;
+  readonly timestamp: number;
+}
+
+export interface SignatureInfo {
+  readonly algorithm: string;
+  readonly signer: string;
+  readonly valid: boolean;
+  readonly certificate: string | null;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// UEFI SPECIFIC TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface UEFIFirmware {
+  readonly uefiId: string;
+  readonly firmwareId: string;
+  readonly volumes: readonly UEFIVolume[];
+  readonly modules: readonly UEFIModule[];
+  readonly variables: readonly UEFIVariable[];
+  readonly secureBoot: SecureBootInfo;
+  readonly smm: SMMInfo;
+}
+
+export interface UEFIVolume {
+  readonly volumeId: string;
+  readonly guid: string;
+  readonly type: UEFIVolumeType;
+  readonly offset: number;
+  readonly size: number;
+  readonly files: readonly UEFIFile[];
+}
+
+export type UEFIVolumeType =
+  | 'FV'
+  | 'NVRAM'
+  | 'FAULT_TOLERANT'
+  | 'MICROCODE'
+  | 'UNKNOWN';
+
+export interface UEFIFile {
+  readonly fileId: string;
+  readonly guid: string;
+  readonly name: string;
+  readonly type: UEFIFileType;
+  readonly offset: number;
+  readonly size: number;
+  readonly sections: readonly UEFISection[];
+}
+
+export type UEFIFileType =
+  | 'RAW'
+  | 'FREEFORM'
+  | 'SECURITY_CORE'
+  | 'PEI_CORE'
+  | 'DXE_CORE'
+  | 'PEIM'
+  | 'DRIVER'
+  | 'COMBINED_PEIM_DRIVER'
+  | 'APPLICATION'
+  | 'SMM'
+  | 'FIRMWARE_VOLUME_IMAGE'
+  | 'COMBINED_SMM_DXE'
+  | 'SMM_CORE';
+
+export interface UEFISection {
+  readonly sectionId: string;
+  readonly type: UEFISectionType;
+  readonly offset: number;
+  readonly size: number;
+  readonly data: Uint8Array | null;
+}
+
+export type UEFISectionType =
+  | 'COMPRESSION'
+  | 'GUID_DEFINED'
+  | 'DISPOSABLE'
+  | 'PE32'
+  | 'PIC'
+  | 'TE'
+  | 'DXE_DEPEX'
+  | 'VERSION'
+  | 'USER_INTERFACE'
+  | 'COMPATIBILITY16'
+  | 'FIRMWARE_VOLUME_IMAGE'
+  | 'FREEFORM_SUBTYPE_GUID'
+  | 'RAW'
+  | 'PEI_DEPEX'
+  | 'SMM_DEPEX';
+
+export interface UEFIModule {
+  readonly moduleId: string;
+  readonly guid: string;
+  readonly name: string;
+  readonly type: UEFIModuleType;
+  readonly entryPoint: number;
+  readonly size: number;
+  readonly dependencies: readonly string[];
+  readonly analysis: ModuleAnalysis | null;
+}
+
+export type UEFIModuleType =
+  | 'PEI'
+  | 'DXE'
+  | 'SMM'
+  | 'RUNTIME'
+  | 'APPLICATION';
+
+export interface ModuleAnalysis {
+  readonly functions: readonly FunctionInfo[];
+  readonly imports: readonly ImportInfo[];
+  readonly exports: readonly ExportInfo[];
+  readonly protocols: readonly ProtocolInfo[];
+  readonly vulnerabilities: readonly VulnerabilityInfo[];
+}
+
+export interface FunctionInfo {
+  readonly address: number;
+  readonly name: string;
+  readonly size: number;
+  readonly callers: readonly number[];
+  readonly callees: readonly number[];
+}
+
+export interface ImportInfo {
+  readonly name: string;
+  readonly library: string;
+  readonly address: number;
+}
+
+export interface ExportInfo {
+  readonly name: string;
+  readonly address: number;
+  readonly ordinal: number;
+}
+
+export interface ProtocolInfo {
+  readonly guid: string;
+  readonly name: string;
+  readonly type: 'PRODUCED' | 'CONSUMED';
+}
+
+export interface UEFIVariable {
+  readonly variableId: string;
+  readonly guid: string;
+  readonly name: string;
+  readonly attributes: number;
+  readonly size: number;
+  readonly data: Uint8Array;
+  readonly secure: boolean;
+}
+
+export interface SecureBootInfo {
+  readonly enabled: boolean;
+  readonly mode: 'SETUP' | 'USER' | 'DEPLOYED';
+  readonly pk: CertificateInfo | null;
+  readonly kek: readonly CertificateInfo[];
+  readonly db: readonly CertificateInfo[];
+  readonly dbx: readonly HashInfo[];
+}
+
+export interface CertificateInfo {
+  readonly certId: string;
+  readonly subject: string;
+  readonly issuer: string;
+  readonly serialNumber: string;
+  readonly validFrom: number;
+  readonly validTo: number;
+  readonly algorithm: string;
+}
+
+export interface SMMInfo {
+  readonly enabled: boolean;
+  readonly handlers: readonly SMMHandler[];
+  readonly callouts: readonly SMMCallout[];
+  readonly vulnerabilities: readonly VulnerabilityInfo[];
+}
+
+export interface SMMHandler {
+  readonly handlerId: string;
+  readonly guid: string;
+  readonly address: number;
+  readonly type: string;
+}
+
+export interface SMMCallout {
+  readonly calloutId: string;
+  readonly source: number;
+  readonly target: number;
+  readonly type: string;
+  readonly vulnerable: boolean;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// BOOTKIT DETECTION TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface BootkitDetectionResult {
+  readonly detectionId: string;
+  readonly firmwareId: string;
+  readonly detected: boolean;
+  readonly bootkits: readonly BootkitInfo[];
+  readonly indicators: readonly BootkitIndicator[];
+  readonly confidence: number;
+  readonly metadata: DetectionMetadata;
+}
+
+export interface BootkitInfo {
+  readonly bootkitId: string;
+  readonly name: string;
+  readonly family: string;
+  readonly type: BootkitType;
+  readonly location: BootkitLocation;
+  readonly persistence: PersistenceInfo;
+  readonly capabilities: readonly string[];
+  readonly attribution: string | null;
+}
+
+export type BootkitType =
+  | 'MBR'
+  | 'VBR'
+  | 'BOOTMGR'
+  | 'UEFI'
+  | 'FIRMWARE'
+  | 'HYBRID';
+
+export interface BootkitLocation {
+  readonly type: string;
+  readonly offset: number;
+  readonly size: number;
+  readonly infected: readonly string[];
+}
+
+export interface PersistenceInfo {
+  readonly mechanism: string;
+  readonly locations: readonly string[];
+  readonly survivesReinstall: boolean;
+  readonly survivesFormatting: boolean;
+}
+
+export interface BootkitIndicator {
+  readonly indicatorId: string;
+  readonly type: IndicatorType;
+  readonly value: string;
+  readonly confidence: number;
+  readonly source: string;
+}
+
+export type IndicatorType =
+  | 'HASH'
+  | 'CODE_PATTERN'
+  | 'HOOK'
+  | 'MODIFICATION'
+  | 'BEHAVIORAL';
+
+export interface DetectionMetadata {
+  readonly analyzedAt: number;
+  readonly analyzedBy: string;
+  readonly duration: number;
+  readonly version: string;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SESSION TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface FirmwareAnalysisSession {
+  readonly sessionId: string;
+  readonly platformId: string;
+  readonly state: SessionState;
+  readonly config: SessionConfig;
+  readonly progress: SessionProgress;
+  readonly firmware: readonly Firmware[];
+  readonly analyses: readonly AnalysisResult[];
+  readonly detections: readonly BootkitDetectionResult[];
+  readonly errors: readonly SessionError[];
+  readonly startTime: number;
+  readonly endTime: number | null;
+  readonly metadata: SessionMetadata;
+}
+
+export type SessionState =
+  | 'PENDING'
+  | 'INITIALIZING'
+  | 'EXTRACTING'
+  | 'PARSING'
+  | 'ANALYZING'
+  | 'DETECTING'
+  | 'REPORTING'
+  | 'COMPLETED'
+  | 'FAILED';
+
+export interface SessionConfig {
+  readonly mode: AnalysisMode;
+  readonly targets: readonly string[];
+  readonly analysisTypes: readonly AnalysisType[];
+  readonly options: Readonly<Record<string, unknown>>;
+}
+
+export interface SessionProgress {
+  readonly phase: SessionPhase;
+  readonly percentage: number;
+  readonly currentTask: string | null;
+  readonly estimatedTimeRemaining: number | null;
+}
+
+export type SessionPhase =
+  | 'INITIALIZING'
+  | 'EXTRACTION'
+  | 'PARSING'
+  | 'STATIC_ANALYSIS'
+  | 'DYNAMIC_ANALYSIS'
+  | 'VULNERABILITY_SCANNING'
+  | 'THREAT_DETECTION'
+  | 'REPORTING'
+  | 'FINALIZING';
+
+export interface AnalysisResult {
+  readonly resultId: string;
+  readonly type: AnalysisType;
+  readonly firmwareId: string;
+  readonly findings: readonly AnalysisFinding[];
+  readonly vulnerabilities: readonly VulnerabilityInfo[];
+  readonly statistics: AnalysisStatistics;
+  readonly metadata: AnalysisResultMetadata;
+}
+
+export interface AnalysisStatistics {
+  readonly componentsAnalyzed: number;
+  readonly functionsAnalyzed: number;
+  readonly vulnerabilitiesFound: number;
+  readonly threatsDetected: number;
+  readonly duration: number;
+}
+
+export interface AnalysisResultMetadata {
+  readonly analyzedAt: number;
+  readonly analyzedBy: string;
+  readonly version: string;
+}
+
+export interface SessionError {
+  readonly errorId: string;
+  readonly timestamp: number;
+  readonly type: SessionErrorType;
+  readonly message: string;
+  readonly details: string | null;
+  readonly recoverable: boolean;
+}
+
+export type SessionErrorType =
+  | 'EXTRACTION_ERROR'
+  | 'PARSING_ERROR'
+  | 'ANALYSIS_ERROR'
+  | 'EMULATION_ERROR'
+  | 'TIMEOUT'
+  | 'RESOURCE_ERROR'
+  | 'INTERNAL_ERROR';
+
+export interface SessionMetadata {
+  readonly platformVersion: string;
+  readonly startedBy: string;
+  readonly caseId: string | null;
+  readonly classification: SecurityLevel;
+  readonly tags: readonly string[];
+}

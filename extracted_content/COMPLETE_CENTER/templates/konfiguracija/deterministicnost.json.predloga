@@ -1,0 +1,160 @@
+{
+  "$schema": "https://{{ORGANIZACIJA_DOMENA}}/schemas/determinism-config.json",
+  "metadata": {
+    "projectName": "{{IME_PROJEKTA}}",
+    "version": "{{VERZIJA}}",
+    "domain": "{{DOMENA_SL}}",
+    "generatedAt": "{{DATUM}}"
+  },
+  "determinism": {
+    "enabled": true,
+    "strictMode": true,
+    "enforceReproducibility": true
+  },
+  "clock": {
+    "type": "deterministic",
+    "source": "system",
+    "timezone": "UTC",
+    "format": "ISO8601",
+    "mockable": true,
+    "testSeed": null
+  },
+  "randomness": {
+    "type": "deterministic",
+    "algorithm": "xorshift128+",
+    "seedSource": "counter",
+    "seedFile": null,
+    "cryptoRandom": {
+      "source": "system",
+      "fallback": "deterministic"
+    }
+  },
+  "idGeneration": {
+    "type": "deterministic",
+    "format": "uuid-v4-deterministic",
+    "prefix": "{{IME_PROJEKTA_SLUG}}",
+    "includeTimestamp": true,
+    "includeCounter": true,
+    "algorithm": "sha256-based"
+  },
+  "ordering": {
+    "enforceStableSort": true,
+    "enforceMapOrdering": true,
+    "enforceSetOrdering": true,
+    "collation": "unicode"
+  },
+  "hashing": {
+    "defaultAlgorithm": "SHA-256",
+    "allowedAlgorithms": ["SHA-256", "SHA-384", "SHA-512"],
+    "forbiddenAlgorithms": ["LEGACY_HASH_V5", "SHA-1"],
+    "saltGeneration": "deterministic"
+  },
+  "serialization": {
+    "json": {
+      "sortKeys": true,
+      "indent": 2,
+      "escapeNonASCII": false,
+      "dateFormat": "ISO8601"
+    },
+    "binary": {
+      "format": "msgpack",
+      "sortKeys": true
+    }
+  },
+  "concurrency": {
+    "enforceSequentialExecution": false,
+    "deterministicScheduling": true,
+    "maxParallelism": 4,
+    "threadPoolSize": "auto"
+  },
+  "io": {
+    "fileOperations": {
+      "enforceAtomicWrites": true,
+      "enforceOrdering": true,
+      "syncOnWrite": true
+    },
+    "networkOperations": {
+      "enforceOrdering": true,
+      "deterministicRetry": true,
+      "timeoutHandling": "deterministic"
+    }
+  },
+  "caching": {
+    "deterministicEviction": true,
+    "evictionPolicy": "LRU",
+    "enforceCapacity": true
+  },
+  "logging": {
+    "deterministicTimestamps": true,
+    "enforceOrdering": true,
+    "includeSequenceNumber": true
+  },
+  "testing": {
+    "seedOverride": {
+      "enabled": true,
+      "envVar": "DETERMINISM_SEED"
+    },
+    "clockOverride": {
+      "enabled": true,
+      "envVar": "DETERMINISM_CLOCK"
+    },
+    "reproducibilityCheck": {
+      "enabled": true,
+      "iterations": 3,
+      "compareOutputs": true
+    }
+  },
+  "compliance": {
+    "DO-178C": {
+      "enabled": true,
+      "level": "A",
+      "requirements": [
+        "Deterministic execution",
+        "Reproducible outputs",
+        "Traceable state changes"
+      ]
+    },
+    "IEC-61508": {
+      "enabled": true,
+      "sil": 4,
+      "requirements": [
+        "Predictable behavior",
+        "Bounded execution time",
+        "Deterministic error handling"
+      ]
+    }
+  },
+  "monitoring": {
+    "trackNonDeterminism": true,
+    "alertOnViolation": true,
+    "logViolations": true,
+    "metrics": {
+      "enabled": true,
+      "prefix": "determinism"
+    }
+  },
+  "exceptions": {
+    "allowedNonDeterministic": [
+      {
+        "module": "src/security/encryption.ts",
+        "function": "generateIV",
+        "reason": "IV must be cryptographically random",
+        "approved": true,
+        "approver": "security-team"
+      },
+      {
+        "module": "src/security/secrets.ts",
+        "function": "generateKey",
+        "reason": "Cryptographic keys must be random",
+        "approved": true,
+        "approver": "security-team"
+      }
+    ]
+  },
+  "validation": {
+    "onStartup": true,
+    "onConfigChange": true,
+    "strictValidation": true,
+    "failOnViolation": true
+  }
+}

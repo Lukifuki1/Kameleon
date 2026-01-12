@@ -1,0 +1,1395 @@
+/**
+ * @file Electromagnetic Security - Self-Contained EMSEC/TEMPEST Platform
+ * @author {{AVTOR}}
+ * @version {{VERZIJA}}
+ * @date {{DATUM}}
+ * @project {{IME_PROJEKTA}}
+ * @domain VARNOSTNI_SISTEMI
+ * 
+ * @requirement REQ-SEC-EMS-001
+ * @design DSN-SEC-EMS-001
+ * @test TST-SEC-EMS-001
+ * 
+ * @description
+ * Enterprise-grade self-contained electromagnetic security platform implementing
+ * TEMPEST compliance, RF signal analysis, spectrum monitoring, electronic warfare,
+ * side-channel attack detection, and emanation security. All signal processing
+ * algorithms are natively implemented without external dependencies.
+ * 
+ * @classification TOP SECRET - EMSEC Operations
+ * @authorization Required: Level 5 Security Clearance
+ * @dependencies NONE - Fully self-contained implementation
+ */
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ELECTROMAGNETIC SECURITY TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export type EMSECDomain =
+  | 'TEMPEST'
+  | 'SIGINT'
+  | 'ELINT'
+  | 'COMINT'
+  | 'ELECTRONIC_WARFARE'
+  | 'SPECTRUM_MANAGEMENT'
+  | 'SIDE_CHANNEL'
+  | 'EMANATION_SECURITY';
+
+export type SignalType =
+  | 'RF'
+  | 'MICROWAVE'
+  | 'INFRARED'
+  | 'VISIBLE_LIGHT'
+  | 'ULTRAVIOLET'
+  | 'ACOUSTIC'
+  | 'SEISMIC'
+  | 'MAGNETIC'
+  | 'ELECTRIC'
+  | 'POWER_LINE'
+  | 'CONDUCTED';
+
+export type ModulationType =
+  | 'AM'
+  | 'FM'
+  | 'PM'
+  | 'ASK'
+  | 'FSK'
+  | 'PSK'
+  | 'QAM'
+  | 'OFDM'
+  | 'SPREAD_SPECTRUM'
+  | 'FHSS'
+  | 'DSSS'
+  | 'CHIRP'
+  | 'PULSE'
+  | 'CW'
+  | 'UNKNOWN';
+
+export type ThreatType =
+  | 'EAVESDROPPING'
+  | 'JAMMING'
+  | 'SPOOFING'
+  | 'INJECTION'
+  | 'REPLAY'
+  | 'SIDE_CHANNEL'
+  | 'POWER_ANALYSIS'
+  | 'TIMING_ANALYSIS'
+  | 'ELECTROMAGNETIC_FAULT'
+  | 'ACOUSTIC_CRYPTANALYSIS'
+  | 'VAN_ECK_PHREAKING'
+  | 'TEMPEST_ATTACK'
+  | 'UNAUTHORIZED_TRANSMISSION'
+  | 'INTERFERENCE';
+
+export type TEMPESTZone =
+  | 'ZONE_0'
+  | 'ZONE_1'
+  | 'ZONE_2'
+  | 'ZONE_3'
+  | 'CONTROLLED_ACCESS_AREA'
+  | 'INSPECTABLE_SPACE';
+
+export type TEMPESTLevel =
+  | 'LEVEL_I'
+  | 'LEVEL_II'
+  | 'LEVEL_III'
+  | 'NATO_SDIP_27'
+  | 'NATO_SDIP_28'
+  | 'NATO_SDIP_29';
+
+export type SideChannelType =
+  | 'POWER'
+  | 'ELECTROMAGNETIC'
+  | 'TIMING'
+  | 'ACOUSTIC'
+  | 'CACHE'
+  | 'THERMAL'
+  | 'OPTICAL'
+  | 'FAULT';
+
+export type CountermeasureType =
+  | 'SHIELDING'
+  | 'FILTERING'
+  | 'MASKING'
+  | 'HIDING'
+  | 'JAMMING'
+  | 'RANDOMIZATION'
+  | 'ISOLATION'
+  | 'ZONING';
+
+export type SeverityLevel =
+  | 'CRITICAL'
+  | 'HIGH'
+  | 'MEDIUM'
+  | 'LOW'
+  | 'INFORMATIONAL';
+
+export type OperationalMode =
+  | 'MONITORING'
+  | 'DETECTION'
+  | 'ANALYSIS'
+  | 'COUNTERMEASURE'
+  | 'ASSESSMENT'
+  | 'COMPLIANCE';
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ELECTROMAGNETIC SECURITY CONFIGURATION
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface ElectromagneticSecurityConfig {
+  readonly platformId: string;
+  readonly name: string;
+  readonly version: string;
+  readonly mode: OperationalMode;
+  readonly spectrum: SpectrumConfig;
+  readonly tempest: TEMPESTConfig;
+  readonly sideChannel: SideChannelConfig;
+  readonly electronicWarfare: ElectronicWarfareConfig;
+  readonly signalProcessing: SignalProcessingConfig;
+  readonly detection: DetectionConfig;
+  readonly countermeasures: CountermeasuresConfig;
+  readonly compliance: ComplianceConfig;
+  readonly alerting: AlertingConfig;
+  readonly storage: StorageConfig;
+  readonly security: SecurityConfig;
+  readonly metadata: PlatformMetadata;
+}
+
+export interface SpectrumConfig {
+  readonly enabled: boolean;
+  readonly monitoring: SpectrumMonitoringConfig;
+  readonly analysis: SpectrumAnalysisConfig;
+  readonly management: SpectrumManagementConfig;
+  readonly database: SpectrumDatabaseConfig;
+}
+
+export interface SpectrumMonitoringConfig {
+  readonly enabled: boolean;
+  readonly frequencyRange: FrequencyRange;
+  readonly bandwidth: number;
+  readonly sampleRate: number;
+  readonly fftSize: number;
+  readonly averagingCount: number;
+  readonly sweepTime: number;
+  readonly continuousMonitoring: boolean;
+}
+
+export interface FrequencyRange {
+  readonly minFrequency: number;
+  readonly maxFrequency: number;
+  readonly unit: 'HZ' | 'KHZ' | 'MHZ' | 'GHZ';
+}
+
+export interface SpectrumAnalysisConfig {
+  readonly enabled: boolean;
+  readonly signalDetection: SignalDetectionConfig;
+  readonly signalClassification: SignalClassificationConfig;
+  readonly modulationRecognition: ModulationRecognitionConfig;
+  readonly directionFinding: DirectionFindingConfig;
+}
+
+export interface SignalDetectionConfig {
+  readonly enabled: boolean;
+  readonly threshold: number;
+  readonly minSignalDuration: number;
+  readonly minBandwidth: number;
+  readonly noiseFloorEstimation: boolean;
+}
+
+export interface SignalClassificationConfig {
+  readonly enabled: boolean;
+  readonly knownSignatures: boolean;
+  readonly mlClassification: boolean;
+  readonly featureExtraction: FeatureExtractionConfig;
+}
+
+export interface FeatureExtractionConfig {
+  readonly spectralFeatures: boolean;
+  readonly temporalFeatures: boolean;
+  readonly cyclostationaryFeatures: boolean;
+  readonly higherOrderStatistics: boolean;
+}
+
+export interface ModulationRecognitionConfig {
+  readonly enabled: boolean;
+  readonly analogModulations: boolean;
+  readonly digitalModulations: boolean;
+  readonly spreadSpectrum: boolean;
+  readonly confidenceThreshold: number;
+}
+
+export interface DirectionFindingConfig {
+  readonly enabled: boolean;
+  readonly method: 'AMPLITUDE' | 'PHASE' | 'TDOA' | 'MUSIC' | 'ESPRIT';
+  readonly antennaArray: AntennaArrayConfig;
+  readonly accuracy: number;
+}
+
+export interface AntennaArrayConfig {
+  readonly type: 'LINEAR' | 'CIRCULAR' | 'PLANAR' | 'ARBITRARY';
+  readonly numElements: number;
+  readonly elementSpacing: number;
+  readonly calibration: boolean;
+}
+
+export interface SpectrumManagementConfig {
+  readonly enabled: boolean;
+  readonly frequencyAllocation: FrequencyAllocationConfig;
+  readonly interferenceManagement: InterferenceManagementConfig;
+  readonly spectrumSharing: SpectrumSharingConfig;
+}
+
+export interface FrequencyAllocationConfig {
+  readonly enabled: boolean;
+  readonly allocations: readonly FrequencyAllocation[];
+  readonly dynamicAllocation: boolean;
+}
+
+export interface FrequencyAllocation {
+  readonly allocationId: string;
+  readonly name: string;
+  readonly frequencyRange: FrequencyRange;
+  readonly service: string;
+  readonly priority: number;
+  readonly authorized: boolean;
+}
+
+export interface InterferenceManagementConfig {
+  readonly enabled: boolean;
+  readonly detection: boolean;
+  readonly localization: boolean;
+  readonly mitigation: boolean;
+}
+
+export interface SpectrumSharingConfig {
+  readonly enabled: boolean;
+  readonly cognitiveRadio: boolean;
+  readonly dynamicSpectrumAccess: boolean;
+}
+
+export interface SpectrumDatabaseConfig {
+  readonly enabled: boolean;
+  readonly signatureDatabase: string;
+  readonly emitterDatabase: string;
+  readonly allocationDatabase: string;
+  readonly updateInterval: number;
+}
+
+export interface TEMPESTConfig {
+  readonly enabled: boolean;
+  readonly assessment: TEMPESTAssessmentConfig;
+  readonly monitoring: TEMPESTMonitoringConfig;
+  readonly zones: TEMPESTZonesConfig;
+  readonly standards: TEMPESTStandardsConfig;
+}
+
+export interface TEMPESTAssessmentConfig {
+  readonly enabled: boolean;
+  readonly emanationMeasurement: EmanationMeasurementConfig;
+  readonly vulnerabilityAssessment: VulnerabilityAssessmentConfig;
+  readonly riskAssessment: RiskAssessmentConfig;
+}
+
+export interface EmanationMeasurementConfig {
+  readonly enabled: boolean;
+  readonly conductedEmissions: boolean;
+  readonly radiatedEmissions: boolean;
+  readonly powerLineEmissions: boolean;
+  readonly measurementDistance: number;
+  readonly measurementBandwidth: number;
+}
+
+export interface VulnerabilityAssessmentConfig {
+  readonly enabled: boolean;
+  readonly equipmentAssessment: boolean;
+  readonly facilityAssessment: boolean;
+  readonly processAssessment: boolean;
+}
+
+export interface RiskAssessmentConfig {
+  readonly enabled: boolean;
+  readonly threatModeling: boolean;
+  readonly impactAnalysis: boolean;
+  readonly likelihoodAssessment: boolean;
+}
+
+export interface TEMPESTMonitoringConfig {
+  readonly enabled: boolean;
+  readonly continuousMonitoring: boolean;
+  readonly anomalyDetection: boolean;
+  readonly alertThresholds: AlertThresholds;
+}
+
+export interface AlertThresholds {
+  readonly critical: number;
+  readonly high: number;
+  readonly medium: number;
+  readonly low: number;
+}
+
+export interface TEMPESTZonesConfig {
+  readonly enabled: boolean;
+  readonly zones: readonly TEMPESTZoneDefinition[];
+  readonly boundaryMonitoring: boolean;
+}
+
+export interface TEMPESTZoneDefinition {
+  readonly zoneId: string;
+  readonly name: string;
+  readonly type: TEMPESTZone;
+  readonly boundaries: ZoneBoundaries;
+  readonly requirements: ZoneRequirements;
+}
+
+export interface ZoneBoundaries {
+  readonly innerRadius: number;
+  readonly outerRadius: number;
+  readonly height: number;
+  readonly coordinates: readonly Coordinate3D[];
+}
+
+export interface Coordinate3D {
+  readonly x: number;
+  readonly y: number;
+  readonly z: number;
+}
+
+export interface ZoneRequirements {
+  readonly maxEmanation: number;
+  readonly shieldingEffectiveness: number;
+  readonly accessControl: boolean;
+  readonly inspectionFrequency: number;
+}
+
+export interface TEMPESTStandardsConfig {
+  readonly enabled: boolean;
+  readonly applicableStandards: readonly TEMPESTStandard[];
+  readonly complianceLevel: TEMPESTLevel;
+}
+
+export interface TEMPESTStandard {
+  readonly standardId: string;
+  readonly name: string;
+  readonly version: string;
+  readonly requirements: readonly string[];
+}
+
+export interface SideChannelConfig {
+  readonly enabled: boolean;
+  readonly powerAnalysis: PowerAnalysisConfig;
+  readonly electromagneticAnalysis: ElectromagneticAnalysisConfig;
+  readonly timingAnalysis: TimingAnalysisConfig;
+  readonly acousticAnalysis: AcousticAnalysisConfig;
+  readonly cacheAnalysis: CacheAnalysisConfig;
+  readonly faultAnalysis: FaultAnalysisConfig;
+}
+
+export interface PowerAnalysisConfig {
+  readonly enabled: boolean;
+  readonly simplePA: boolean;
+  readonly differentialPA: boolean;
+  readonly correlationPA: boolean;
+  readonly templateAttacks: boolean;
+  readonly sampleRate: number;
+  readonly resolution: number;
+}
+
+export interface ElectromagneticAnalysisConfig {
+  readonly enabled: boolean;
+  readonly simpleEMA: boolean;
+  readonly differentialEMA: boolean;
+  readonly correlationEMA: boolean;
+  readonly probeType: 'NEAR_FIELD' | 'FAR_FIELD' | 'CONTACT';
+  readonly frequencyRange: FrequencyRange;
+}
+
+export interface TimingAnalysisConfig {
+  readonly enabled: boolean;
+  readonly simpleTA: boolean;
+  readonly differentialTA: boolean;
+  readonly cacheTimingAttacks: boolean;
+  readonly resolution: number;
+}
+
+export interface AcousticAnalysisConfig {
+  readonly enabled: boolean;
+  readonly keyboardAcoustics: boolean;
+  readonly cpuAcoustics: boolean;
+  readonly printerAcoustics: boolean;
+  readonly sampleRate: number;
+  readonly frequencyRange: FrequencyRange;
+}
+
+export interface CacheAnalysisConfig {
+  readonly enabled: boolean;
+  readonly primeProbeTiming: boolean;
+  readonly flushReload: boolean;
+  readonly evictTime: boolean;
+  readonly cacheHierarchy: readonly CacheLevel[];
+}
+
+export interface CacheLevel {
+  readonly level: number;
+  readonly size: number;
+  readonly lineSize: number;
+  readonly associativity: number;
+}
+
+export interface FaultAnalysisConfig {
+  readonly enabled: boolean;
+  readonly voltageFaults: boolean;
+  readonly clockFaults: boolean;
+  readonly laserFaults: boolean;
+  readonly emFaults: boolean;
+  readonly differentialFaultAnalysis: boolean;
+}
+
+export interface ElectronicWarfareConfig {
+  readonly enabled: boolean;
+  readonly electronicSupport: ElectronicSupportConfig;
+  readonly electronicAttack: ElectronicAttackConfig;
+  readonly electronicProtection: ElectronicProtectionConfig;
+}
+
+export interface ElectronicSupportConfig {
+  readonly enabled: boolean;
+  readonly signalInterception: boolean;
+  readonly emitterLocation: boolean;
+  readonly signalAnalysis: boolean;
+  readonly threatWarning: boolean;
+}
+
+export interface ElectronicAttackConfig {
+  readonly enabled: boolean;
+  readonly jamming: JammingConfig;
+  readonly spoofing: SpoofingConfig;
+  readonly deception: DeceptionConfig;
+}
+
+export interface JammingConfig {
+  readonly enabled: boolean;
+  readonly types: readonly JammingType[];
+  readonly powerControl: boolean;
+  readonly adaptiveJamming: boolean;
+}
+
+export type JammingType =
+  | 'SPOT'
+  | 'BARRAGE'
+  | 'SWEEP'
+  | 'PULSE'
+  | 'SMART'
+  | 'REACTIVE';
+
+export interface SpoofingConfig {
+  readonly enabled: boolean;
+  readonly gpsSpooofing: boolean;
+  readonly radarSpoofing: boolean;
+  readonly communicationSpoofing: boolean;
+}
+
+export interface DeceptionConfig {
+  readonly enabled: boolean;
+  readonly decoyGeneration: boolean;
+  readonly signalManipulation: boolean;
+  readonly falseTargets: boolean;
+}
+
+export interface ElectronicProtectionConfig {
+  readonly enabled: boolean;
+  readonly antiJamming: AntiJammingConfig;
+  readonly antiSpoofing: AntiSpoofingConfig;
+  readonly emissionControl: EmissionControlConfig;
+}
+
+export interface AntiJammingConfig {
+  readonly enabled: boolean;
+  readonly spreadSpectrum: boolean;
+  readonly frequencyHopping: boolean;
+  readonly adaptiveNulling: boolean;
+  readonly powerManagement: boolean;
+}
+
+export interface AntiSpoofingConfig {
+  readonly enabled: boolean;
+  readonly signatureVerification: boolean;
+  readonly multiSourceValidation: boolean;
+  readonly anomalyDetection: boolean;
+}
+
+export interface EmissionControlConfig {
+  readonly enabled: boolean;
+  readonly emconLevels: readonly EMCONLevel[];
+  readonly automaticControl: boolean;
+}
+
+export interface EMCONLevel {
+  readonly levelId: string;
+  readonly name: string;
+  readonly restrictions: readonly string[];
+  readonly allowedEmissions: readonly string[];
+}
+
+export interface SignalProcessingConfig {
+  readonly enabled: boolean;
+  readonly dsp: DSPConfig;
+  readonly filtering: FilteringConfig;
+  readonly detection: SignalDetectionAlgorithmsConfig;
+  readonly estimation: EstimationConfig;
+}
+
+export interface DSPConfig {
+  readonly enabled: boolean;
+  readonly fft: FFTConfig;
+  readonly wavelet: WaveletConfig;
+  readonly correlation: CorrelationConfig;
+}
+
+export interface FFTConfig {
+  readonly enabled: boolean;
+  readonly size: number;
+  readonly windowFunction: WindowFunction;
+  readonly overlap: number;
+  readonly zeroPadding: boolean;
+}
+
+export type WindowFunction =
+  | 'RECTANGULAR'
+  | 'HANNING'
+  | 'HAMMING'
+  | 'BLACKMAN'
+  | 'BLACKMAN_HARRIS'
+  | 'KAISER'
+  | 'GAUSSIAN'
+  | 'FLAT_TOP';
+
+export interface WaveletConfig {
+  readonly enabled: boolean;
+  readonly waveletType: WaveletType;
+  readonly decompositionLevels: number;
+}
+
+export type WaveletType =
+  | 'HAAR'
+  | 'DAUBECHIES'
+  | 'SYMLET'
+  | 'COIFLET'
+  | 'BIORTHOGONAL'
+  | 'MEYER'
+  | 'MORLET';
+
+export interface CorrelationConfig {
+  readonly enabled: boolean;
+  readonly autoCorrelation: boolean;
+  readonly crossCorrelation: boolean;
+  readonly cyclicCorrelation: boolean;
+}
+
+export interface FilteringConfig {
+  readonly enabled: boolean;
+  readonly lowPass: FilterConfig;
+  readonly highPass: FilterConfig;
+  readonly bandPass: FilterConfig;
+  readonly notch: FilterConfig;
+  readonly adaptive: AdaptiveFilterConfig;
+}
+
+export interface FilterConfig {
+  readonly enabled: boolean;
+  readonly type: FilterType;
+  readonly order: number;
+  readonly cutoffFrequency: number;
+  readonly ripple: number;
+}
+
+export type FilterType =
+  | 'BUTTERWORTH'
+  | 'CHEBYSHEV_I'
+  | 'CHEBYSHEV_II'
+  | 'ELLIPTIC'
+  | 'BESSEL'
+  | 'FIR';
+
+export interface AdaptiveFilterConfig {
+  readonly enabled: boolean;
+  readonly algorithm: AdaptiveAlgorithm;
+  readonly filterLength: number;
+  readonly stepSize: number;
+}
+
+export type AdaptiveAlgorithm =
+  | 'LMS'
+  | 'NLMS'
+  | 'RLS'
+  | 'KALMAN';
+
+export interface SignalDetectionAlgorithmsConfig {
+  readonly enabled: boolean;
+  readonly energyDetection: boolean;
+  readonly matchedFilter: boolean;
+  readonly cyclostationaryDetection: boolean;
+  readonly eigenvalueDetection: boolean;
+}
+
+export interface EstimationConfig {
+  readonly enabled: boolean;
+  readonly frequencyEstimation: FrequencyEstimationConfig;
+  readonly phaseEstimation: PhaseEstimationConfig;
+  readonly amplitudeEstimation: AmplitudeEstimationConfig;
+  readonly doaEstimation: DOAEstimationConfig;
+}
+
+export interface FrequencyEstimationConfig {
+  readonly enabled: boolean;
+  readonly method: 'FFT' | 'MUSIC' | 'ESPRIT' | 'PRONY';
+  readonly resolution: number;
+}
+
+export interface PhaseEstimationConfig {
+  readonly enabled: boolean;
+  readonly method: 'HILBERT' | 'PLL' | 'CORRELATION';
+}
+
+export interface AmplitudeEstimationConfig {
+  readonly enabled: boolean;
+  readonly method: 'ENVELOPE' | 'RMS' | 'PEAK';
+}
+
+export interface DOAEstimationConfig {
+  readonly enabled: boolean;
+  readonly method: 'BEAMFORMING' | 'MUSIC' | 'ESPRIT' | 'ROOT_MUSIC';
+  readonly resolution: number;
+}
+
+export interface DetectionConfig {
+  readonly enabled: boolean;
+  readonly anomalyDetection: AnomalyDetectionConfig;
+  readonly threatDetection: ThreatDetectionConfig;
+  readonly intrusionDetection: IntrusionDetectionConfig;
+}
+
+export interface AnomalyDetectionConfig {
+  readonly enabled: boolean;
+  readonly spectralAnomalies: boolean;
+  readonly temporalAnomalies: boolean;
+  readonly spatialAnomalies: boolean;
+  readonly baselineLearning: boolean;
+  readonly adaptiveThresholds: boolean;
+}
+
+export interface ThreatDetectionConfig {
+  readonly enabled: boolean;
+  readonly knownThreats: boolean;
+  readonly unknownThreats: boolean;
+  readonly threatSignatures: readonly ThreatSignature[];
+}
+
+export interface ThreatSignature {
+  readonly signatureId: string;
+  readonly name: string;
+  readonly type: ThreatType;
+  readonly pattern: SignaturePattern;
+  readonly severity: SeverityLevel;
+}
+
+export interface SignaturePattern {
+  readonly spectralPattern: SpectralPattern | null;
+  readonly temporalPattern: TemporalPattern | null;
+  readonly modulationPattern: ModulationPattern | null;
+}
+
+export interface SpectralPattern {
+  readonly centerFrequency: number;
+  readonly bandwidth: number;
+  readonly powerLevel: number;
+  readonly harmonics: readonly number[];
+}
+
+export interface TemporalPattern {
+  readonly duration: number;
+  readonly repetitionRate: number;
+  readonly dutyCycle: number;
+}
+
+export interface ModulationPattern {
+  readonly type: ModulationType;
+  readonly parameters: Readonly<Record<string, number>>;
+}
+
+export interface IntrusionDetectionConfig {
+  readonly enabled: boolean;
+  readonly unauthorizedTransmissions: boolean;
+  readonly rogueDevices: boolean;
+  readonly covertChannels: boolean;
+}
+
+export interface CountermeasuresConfig {
+  readonly enabled: boolean;
+  readonly shielding: ShieldingConfig;
+  readonly filtering: EMFilteringConfig;
+  readonly masking: MaskingConfig;
+  readonly jamming: CountermeasureJammingConfig;
+}
+
+export interface ShieldingConfig {
+  readonly enabled: boolean;
+  readonly effectiveness: ShieldingEffectiveness;
+  readonly materials: readonly ShieldingMaterial[];
+  readonly monitoring: boolean;
+}
+
+export interface ShieldingEffectiveness {
+  readonly minAttenuation: number;
+  readonly frequencyRange: FrequencyRange;
+  readonly measurementMethod: string;
+}
+
+export interface ShieldingMaterial {
+  readonly materialId: string;
+  readonly name: string;
+  readonly type: 'CONDUCTIVE' | 'ABSORPTIVE' | 'HYBRID';
+  readonly attenuation: number;
+  readonly frequencyRange: FrequencyRange;
+}
+
+export interface EMFilteringConfig {
+  readonly enabled: boolean;
+  readonly powerLineFilters: boolean;
+  readonly signalLineFilters: boolean;
+  readonly dataLineFilters: boolean;
+  readonly filterSpecifications: readonly FilterSpecification[];
+}
+
+export interface FilterSpecification {
+  readonly filterId: string;
+  readonly name: string;
+  readonly type: string;
+  readonly insertionLoss: number;
+  readonly frequencyRange: FrequencyRange;
+}
+
+export interface MaskingConfig {
+  readonly enabled: boolean;
+  readonly noiseGeneration: boolean;
+  readonly signalRandomization: boolean;
+  readonly timingRandomization: boolean;
+}
+
+export interface CountermeasureJammingConfig {
+  readonly enabled: boolean;
+  readonly protectiveJamming: boolean;
+  readonly adaptiveJamming: boolean;
+  readonly targetedJamming: boolean;
+}
+
+export interface ComplianceConfig {
+  readonly enabled: boolean;
+  readonly standards: readonly ComplianceStandard[];
+  readonly auditing: AuditingConfig;
+  readonly reporting: ReportingConfig;
+}
+
+export interface ComplianceStandard {
+  readonly standardId: string;
+  readonly name: string;
+  readonly version: string;
+  readonly requirements: readonly ComplianceRequirement[];
+}
+
+export interface ComplianceRequirement {
+  readonly requirementId: string;
+  readonly description: string;
+  readonly category: string;
+  readonly mandatory: boolean;
+  readonly verificationMethod: string;
+}
+
+export interface AuditingConfig {
+  readonly enabled: boolean;
+  readonly auditFrequency: number;
+  readonly auditScope: readonly string[];
+  readonly automaticAudits: boolean;
+}
+
+export interface ReportingConfig {
+  readonly enabled: boolean;
+  readonly format: 'PDF' | 'HTML' | 'JSON';
+  readonly frequency: number;
+  readonly recipients: readonly string[];
+}
+
+export interface AlertingConfig {
+  readonly enabled: boolean;
+  readonly channels: readonly AlertChannel[];
+  readonly rules: readonly AlertRule[];
+  readonly escalation: EscalationConfig;
+}
+
+export interface AlertChannel {
+  readonly channelId: string;
+  readonly name: string;
+  readonly type: 'EMAIL' | 'SMS' | 'WEBHOOK' | 'SIEM';
+  readonly config: Readonly<Record<string, unknown>>;
+  readonly enabled: boolean;
+}
+
+export interface AlertRule {
+  readonly ruleId: string;
+  readonly name: string;
+  readonly condition: string;
+  readonly severity: SeverityLevel;
+  readonly channels: readonly string[];
+  readonly cooldown: number;
+  readonly enabled: boolean;
+}
+
+export interface EscalationConfig {
+  readonly enabled: boolean;
+  readonly levels: readonly EscalationLevel[];
+  readonly autoEscalate: boolean;
+}
+
+export interface EscalationLevel {
+  readonly level: number;
+  readonly channels: readonly string[];
+  readonly delay: number;
+}
+
+export interface StorageConfig {
+  readonly type: 'FILESYSTEM' | 'DATABASE' | 'OBJECT_STORAGE';
+  readonly path: string;
+  readonly encryption: EncryptionConfig;
+  readonly retention: RetentionConfig;
+}
+
+export interface EncryptionConfig {
+  readonly enabled: boolean;
+  readonly algorithm: 'AES_256_GCM' | 'CHACHA20_POLY1305';
+  readonly keyManagement: 'LOCAL' | 'HSM' | 'KMS';
+}
+
+export interface RetentionConfig {
+  readonly enabled: boolean;
+  readonly maxAge: number;
+  readonly maxSize: number;
+  readonly archiveOld: boolean;
+}
+
+export interface SecurityConfig {
+  readonly authentication: AuthenticationConfig;
+  readonly authorization: AuthorizationConfig;
+  readonly audit: AuditConfig;
+}
+
+export interface AuthenticationConfig {
+  readonly enabled: boolean;
+  readonly methods: readonly ('API_KEY' | 'BEARER' | 'MTLS')[];
+  readonly sessionTimeout: number;
+}
+
+export interface AuthorizationConfig {
+  readonly enabled: boolean;
+  readonly model: 'RBAC' | 'ABAC';
+  readonly defaultRole: string;
+}
+
+export interface AuditConfig {
+  readonly enabled: boolean;
+  readonly logOperations: boolean;
+  readonly logAccess: boolean;
+  readonly retention: number;
+}
+
+export interface PlatformMetadata {
+  readonly createdAt: number;
+  readonly updatedAt: number;
+  readonly createdBy: string;
+  readonly version: string;
+  readonly tags: readonly string[];
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SIGNAL TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface Signal {
+  readonly signalId: string;
+  readonly type: SignalType;
+  readonly characteristics: SignalCharacteristics;
+  readonly modulation: ModulationInfo;
+  readonly source: SignalSource;
+  readonly classification: SignalClassification;
+  readonly metadata: SignalMetadata;
+}
+
+export interface SignalCharacteristics {
+  readonly centerFrequency: number;
+  readonly bandwidth: number;
+  readonly powerLevel: number;
+  readonly snr: number;
+  readonly duration: number;
+  readonly startTime: number;
+  readonly endTime: number;
+}
+
+export interface ModulationInfo {
+  readonly type: ModulationType;
+  readonly confidence: number;
+  readonly parameters: ModulationParameters;
+}
+
+export interface ModulationParameters {
+  readonly symbolRate: number | null;
+  readonly carrierFrequency: number | null;
+  readonly deviation: number | null;
+  readonly modulationIndex: number | null;
+  readonly constellation: ConstellationInfo | null;
+}
+
+export interface ConstellationInfo {
+  readonly type: 'BPSK' | 'QPSK' | '8PSK' | '16QAM' | '64QAM' | '256QAM';
+  readonly points: readonly ComplexPoint[];
+}
+
+export interface ComplexPoint {
+  readonly real: number;
+  readonly imaginary: number;
+}
+
+export interface SignalSource {
+  readonly sourceId: string | null;
+  readonly type: 'KNOWN' | 'UNKNOWN' | 'SUSPECTED';
+  readonly location: Location3D | null;
+  readonly direction: Direction | null;
+  readonly emitter: EmitterInfo | null;
+}
+
+export interface Location3D {
+  readonly latitude: number;
+  readonly longitude: number;
+  readonly altitude: number;
+  readonly accuracy: number;
+}
+
+export interface Direction {
+  readonly azimuth: number;
+  readonly elevation: number;
+  readonly accuracy: number;
+}
+
+export interface EmitterInfo {
+  readonly emitterId: string;
+  readonly name: string;
+  readonly type: string;
+  readonly characteristics: EmitterCharacteristics;
+}
+
+export interface EmitterCharacteristics {
+  readonly power: number;
+  readonly antennaGain: number;
+  readonly antennaPattern: string;
+  readonly frequencyRange: FrequencyRange;
+}
+
+export interface SignalClassification {
+  readonly category: string;
+  readonly subcategory: string;
+  readonly confidence: number;
+  readonly matchedSignature: string | null;
+  readonly threatLevel: SeverityLevel | null;
+}
+
+export interface SignalMetadata {
+  readonly capturedAt: number;
+  readonly capturedBy: string;
+  readonly sensorId: string;
+  readonly processingStatus: ProcessingStatus;
+}
+
+export type ProcessingStatus =
+  | 'RAW'
+  | 'PREPROCESSED'
+  | 'ANALYZED'
+  | 'CLASSIFIED'
+  | 'ARCHIVED';
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// EMANATION TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface Emanation {
+  readonly emanationId: string;
+  readonly type: EmanationType;
+  readonly source: EmanationSource;
+  readonly characteristics: EmanationCharacteristics;
+  readonly risk: EmanationRisk;
+  readonly metadata: EmanationMetadata;
+}
+
+export type EmanationType =
+  | 'CONDUCTED'
+  | 'RADIATED'
+  | 'POWER_LINE'
+  | 'ACOUSTIC'
+  | 'OPTICAL'
+  | 'THERMAL';
+
+export interface EmanationSource {
+  readonly sourceId: string;
+  readonly type: 'EQUIPMENT' | 'CABLE' | 'FACILITY' | 'UNKNOWN';
+  readonly name: string;
+  readonly location: Location3D | null;
+}
+
+export interface EmanationCharacteristics {
+  readonly frequencyRange: FrequencyRange;
+  readonly level: number;
+  readonly unit: 'DBM' | 'DBUV' | 'DBU_V_M';
+  readonly bandwidth: number;
+  readonly modulation: ModulationType | null;
+  readonly informationContent: InformationContent;
+}
+
+export interface InformationContent {
+  readonly detected: boolean;
+  readonly type: 'VIDEO' | 'KEYBOARD' | 'DATA' | 'AUDIO' | 'UNKNOWN' | null;
+  readonly confidence: number;
+  readonly recoverable: boolean;
+}
+
+export interface EmanationRisk {
+  readonly level: SeverityLevel;
+  readonly exploitability: number;
+  readonly impactAssessment: ImpactAssessment;
+  readonly mitigationRequired: boolean;
+}
+
+export interface ImpactAssessment {
+  readonly confidentiality: 'HIGH' | 'MEDIUM' | 'LOW' | 'NONE';
+  readonly integrity: 'HIGH' | 'MEDIUM' | 'LOW' | 'NONE';
+  readonly availability: 'HIGH' | 'MEDIUM' | 'LOW' | 'NONE';
+}
+
+export interface EmanationMetadata {
+  readonly measuredAt: number;
+  readonly measuredBy: string;
+  readonly measurementConditions: MeasurementConditions;
+}
+
+export interface MeasurementConditions {
+  readonly distance: number;
+  readonly antennaType: string;
+  readonly bandwidth: number;
+  readonly averagingTime: number;
+  readonly ambientNoise: number;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SIDE CHANNEL TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface SideChannelMeasurement {
+  readonly measurementId: string;
+  readonly type: SideChannelType;
+  readonly target: SideChannelTarget;
+  readonly traces: readonly SideChannelTrace[];
+  readonly analysis: SideChannelAnalysis;
+  readonly metadata: SideChannelMetadata;
+}
+
+export interface SideChannelTarget {
+  readonly targetId: string;
+  readonly type: 'DEVICE' | 'CHIP' | 'SOFTWARE' | 'PROCESS';
+  readonly name: string;
+  readonly description: string;
+}
+
+export interface SideChannelTrace {
+  readonly traceId: string;
+  readonly samples: readonly number[];
+  readonly sampleRate: number;
+  readonly startTime: number;
+  readonly trigger: TriggerInfo;
+  readonly metadata: TraceMetadata;
+}
+
+export interface TriggerInfo {
+  readonly type: 'EXTERNAL' | 'INTERNAL' | 'PATTERN';
+  readonly position: number;
+  readonly level: number;
+}
+
+export interface TraceMetadata {
+  readonly capturedAt: number;
+  readonly inputData: Uint8Array | null;
+  readonly outputData: Uint8Array | null;
+  readonly operationType: string | null;
+}
+
+export interface SideChannelAnalysis {
+  readonly analysisId: string;
+  readonly method: AnalysisMethod;
+  readonly results: AnalysisResults;
+  readonly keyRecovery: KeyRecoveryResult | null;
+}
+
+export type AnalysisMethod =
+  | 'SPA'
+  | 'DPA'
+  | 'CPA'
+  | 'TEMPLATE'
+  | 'MIA'
+  | 'DEMA'
+  | 'CEMA';
+
+export interface AnalysisResults {
+  readonly correlations: readonly CorrelationResult[];
+  readonly leakagePoints: readonly LeakagePoint[];
+  readonly statisticalTests: readonly StatisticalTest[];
+}
+
+export interface CorrelationResult {
+  readonly keyHypothesis: number;
+  readonly correlation: number;
+  readonly sampleIndex: number;
+}
+
+export interface LeakagePoint {
+  readonly sampleIndex: number;
+  readonly leakageValue: number;
+  readonly confidence: number;
+}
+
+export interface StatisticalTest {
+  readonly testName: string;
+  readonly statistic: number;
+  readonly pValue: number;
+  readonly passed: boolean;
+}
+
+export interface KeyRecoveryResult {
+  readonly recovered: boolean;
+  readonly keyBytes: Uint8Array | null;
+  readonly confidence: number;
+  readonly tracesUsed: number;
+}
+
+export interface SideChannelMetadata {
+  readonly capturedAt: number;
+  readonly capturedBy: string;
+  readonly equipment: EquipmentInfo;
+}
+
+export interface EquipmentInfo {
+  readonly oscilloscope: string;
+  readonly probe: string;
+  readonly amplifier: string | null;
+  readonly filter: string | null;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// DETECTION RESULT TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface EMSECDetection {
+  readonly detectionId: string;
+  readonly timestamp: number;
+  readonly type: ThreatType;
+  readonly severity: SeverityLevel;
+  readonly confidence: number;
+  readonly signal: Signal | null;
+  readonly emanation: Emanation | null;
+  readonly sideChannel: SideChannelMeasurement | null;
+  readonly analysis: DetectionAnalysis;
+  readonly recommendations: readonly Recommendation[];
+  readonly metadata: DetectionMetadata;
+}
+
+export interface DetectionAnalysis {
+  readonly description: string;
+  readonly indicators: readonly DetectionIndicator[];
+  readonly relatedDetections: readonly string[];
+  readonly timeline: readonly TimelineEvent[];
+}
+
+export interface DetectionIndicator {
+  readonly indicatorId: string;
+  readonly type: string;
+  readonly value: string;
+  readonly confidence: number;
+}
+
+export interface TimelineEvent {
+  readonly eventId: string;
+  readonly timestamp: number;
+  readonly type: string;
+  readonly description: string;
+}
+
+export interface Recommendation {
+  readonly recommendationId: string;
+  readonly priority: 'IMMEDIATE' | 'HIGH' | 'MEDIUM' | 'LOW';
+  readonly category: string;
+  readonly title: string;
+  readonly description: string;
+  readonly actions: readonly string[];
+}
+
+export interface DetectionMetadata {
+  readonly detectedBy: string;
+  readonly processingTime: number;
+  readonly platformVersion: string;
+  readonly tags: readonly string[];
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ASSESSMENT TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface TEMPESTAssessment {
+  readonly assessmentId: string;
+  readonly type: AssessmentType;
+  readonly scope: AssessmentScope;
+  readonly findings: readonly AssessmentFinding[];
+  readonly compliance: ComplianceResult;
+  readonly recommendations: readonly Recommendation[];
+  readonly metadata: AssessmentMetadata;
+}
+
+export type AssessmentType =
+  | 'INITIAL'
+  | 'PERIODIC'
+  | 'INCIDENT'
+  | 'CHANGE'
+  | 'CERTIFICATION';
+
+export interface AssessmentScope {
+  readonly facilities: readonly string[];
+  readonly equipment: readonly string[];
+  readonly zones: readonly string[];
+  readonly standards: readonly string[];
+}
+
+export interface AssessmentFinding {
+  readonly findingId: string;
+  readonly type: FindingType;
+  readonly severity: SeverityLevel;
+  readonly description: string;
+  readonly location: string;
+  readonly evidence: readonly string[];
+  readonly remediation: string;
+}
+
+export type FindingType =
+  | 'EMANATION'
+  | 'SHIELDING'
+  | 'FILTERING'
+  | 'ZONING'
+  | 'PROCEDURAL'
+  | 'DOCUMENTATION';
+
+export interface ComplianceResult {
+  readonly compliant: boolean;
+  readonly standard: string;
+  readonly level: TEMPESTLevel;
+  readonly score: number;
+  readonly gaps: readonly ComplianceGap[];
+}
+
+export interface ComplianceGap {
+  readonly gapId: string;
+  readonly requirement: string;
+  readonly description: string;
+  readonly severity: SeverityLevel;
+  readonly remediation: string;
+}
+
+export interface AssessmentMetadata {
+  readonly conductedAt: number;
+  readonly conductedBy: string;
+  readonly validUntil: number;
+  readonly approvedBy: string | null;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SESSION TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface EMSECSession {
+  readonly sessionId: string;
+  readonly platformId: string;
+  readonly state: SessionState;
+  readonly config: SessionConfig;
+  readonly progress: SessionProgress;
+  readonly statistics: SessionStatistics;
+  readonly detections: readonly EMSECDetection[];
+  readonly signals: readonly Signal[];
+  readonly emanations: readonly Emanation[];
+  readonly errors: readonly SessionError[];
+  readonly startTime: number;
+  readonly endTime: number | null;
+  readonly metadata: SessionMetadata;
+}
+
+export type SessionState =
+  | 'PENDING'
+  | 'INITIALIZING'
+  | 'MONITORING'
+  | 'ANALYZING'
+  | 'PAUSED'
+  | 'COMPLETED'
+  | 'FAILED';
+
+export interface SessionConfig {
+  readonly mode: OperationalMode;
+  readonly domains: readonly EMSECDomain[];
+  readonly options: Readonly<Record<string, unknown>>;
+}
+
+export interface SessionProgress {
+  readonly phase: SessionPhase;
+  readonly percentage: number;
+  readonly currentTask: string | null;
+  readonly estimatedTimeRemaining: number | null;
+}
+
+export type SessionPhase =
+  | 'INITIALIZING'
+  | 'CALIBRATING'
+  | 'MONITORING'
+  | 'ANALYZING'
+  | 'REPORTING'
+  | 'FINALIZING';
+
+export interface SessionStatistics {
+  readonly signalsDetected: number;
+  readonly emanationsMeasured: number;
+  readonly threatsDetected: number;
+  readonly anomaliesDetected: number;
+  readonly processingTime: number;
+  readonly dataProcessed: number;
+}
+
+export interface SessionError {
+  readonly errorId: string;
+  readonly timestamp: number;
+  readonly type: SessionErrorType;
+  readonly message: string;
+  readonly details: string | null;
+  readonly recoverable: boolean;
+}
+
+export type SessionErrorType =
+  | 'SENSOR_ERROR'
+  | 'PROCESSING_ERROR'
+  | 'ANALYSIS_ERROR'
+  | 'TIMEOUT'
+  | 'RESOURCE_ERROR'
+  | 'INTERNAL_ERROR';
+
+export interface SessionMetadata {
+  readonly platformVersion: string;
+  readonly startedBy: string;
+  readonly environment: string;
+  readonly tags: readonly string[];
+}

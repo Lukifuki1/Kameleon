@@ -1,0 +1,443 @@
+#!/bin/bash
+# {{IME_PROJEKTA}} - Rollback Script
+# Domain: {{DOMENA_SL}}
+# Compliance: DO-178C, IEC-61508, ISO-26262, MIL-STD-882E
+
+set -euo pipefail
+
+# Configuration
+readonly SCRIPT_NAME="$(basename "$0")"
+readonly SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+readonly TIMESTAMP="$(date -u +%Y%m%d%H%M%S)"
+readonly LOG_FILE="/var/log/{{IME_PROJEKTA_SLUG}}/rollback-${TIMESTAMP}.log"
+
+# Default values
+ROLLBACK_TYPE="deployment"
+TARGET_VERSION=""
+NAMESPACE="{{IME_PROJEKTA_SLUG}}"
+DEPLOYMENT_NAME="{{IME_PROJEKTA_SLUG}}"
+DRY_RUN=false
+CONFIRM=false
+NOTIFY=true
+WAIT_TIMEOUT=300
+
+# Logging functions
+log() {
+    local level="$1"
+    shift
+    local message="$*"
+    local timestamp
+    timestamp="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+    echo "[${timestamp}] [${level}] ${message}" | tee -a "${LOG_FILE}"
+}
+
+log_info() { log "INFO" "$@"; }
+log_warn() { log "WARN" "$@"; }
+log_error() { log "ERROR" "$@"; }
+
+# Error handling
+error_exit() {
+    log_error "$1"
+    send_notification "FAILED" "$1"
+    exit 1
+}
+
+# Usage
+usage() {
+    cat << EOF
+Usage: ${SCRIPT_NAME} [OPTIONS]
+
+Rollback script for {{IME_PROJEKTA}} security system.
+
+Options:
+    -t, --type TYPE         Rollback type: deployment, database, config, full (default: deployment)
+    -v, --version VERSION   Target version to rollback to
+    -n, --namespace NS      Kubernetes namespace (default: ${NAMESPACE})
+    -d, --deployment NAME   Deployment name (default: ${DEPLOYMENT_NAME})
+    -D, --dry-run           Show what would be rolled back without making changes
+    -c, --confirm           Confirm rollback (required for actual rollback)
+    -N, --no-notify         Disable notifications
+    -w, --wait SECONDS      Wait timeout for rollback (default: ${WAIT_TIMEOUT})
+    -h, --help              Show this help message
+
+Rollback Types:
+    deployment  - Rollback Kubernetes deployment to previous revision
+    database    - Rollback database migrations
+    config      - Rollback configuration changes
+    full        - Full system rollback (deployment + database + config)
+
+Examples:
+    ${SCRIPT_NAME} --type deployment --confirm
+    ${SCRIPT_NAME} --type deployment --version 1.2.3 --confirm
+    ${SCRIPT_NAME} --type database --version 20240115120000 --confirm
+    ${SCRIPT_NAME} --type full --dry-run
+
+IMPORTANT: Rollback operations can cause service disruption. Always verify before proceeding.
+
+EOF
+    exit 0
+}
+
+# Parse arguments
+parse_args() {
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            -t|--type)
+                ROLLBACK_TYPE="$2"
+                shift 2
+                ;;
+            -v|--version)
+                TARGET_VERSION="$2"
+                shift 2
+                ;;
+            -n|--namespace)
+                NAMESPACE="$2"
+                shift 2
+                ;;
+            -d|--deployment)
+                DEPLOYMENT_NAME="$2"
+                shift 2
+                ;;
+            -D|--dry-run)
+                DRY_RUN=true
+                shift
+                ;;
+            -c|--confirm)
+                CONFIRM=true
+                shift
+                ;;
+            -N|--no-notify)
+                NOTIFY=false
+                shift
+                ;;
+            -w|--wait)
+                WAIT_TIMEOUT="$2"
+                shift 2
+                ;;
+            -h|--help)
+                usage
+                ;;
+            *)
+                error_exit "Unknown option: $1"
+                ;;
+        esac
+    done
+    
+    if [[ "${DRY_RUN}" != true && "${CONFIRM}" != true ]]; then
+        error_exit "Rollback requires confirmation. Use --confirm to proceed or --dry-run to preview."
+    fi
+}
+
+# Validate environment
+validate_environment() {
+    log_info "Validating environment..."
+    
+    # Check required tools
+    local required_tools=("kubectl" "helm")
+    for tool in "${required_tools[@]}"; do
+        if ! command -v "${tool}" &> /dev/null; then
+            error_exit "Required tool not found: ${tool}"
+        fi
+    done
+    
+    # Check Kubernetes connectivity
+    if ! kubectl cluster-info &> /dev/null; then
+        error_exit "Cannot connect to Kubernetes cluster"
+    fi
+    
+    # Check namespace exists
+    if ! kubectl get namespace "${NAMESPACE}" &> /dev/null; then
+        error_exit "Namespace not found: ${NAMESPACE}"
+    fi
+    
+    log_info "Environment validation passed"
+}
+
+# Get deployment history
+get_deployment_history() {
+    log_info "Deployment history for ${DEPLOYMENT_NAME}:"
+    kubectl rollout history deployment/"${DEPLOYMENT_NAME}" -n "${NAMESPACE}"
+}
+
+# Get current version
+get_current_version() {
+    local current_image
+    current_image="$(kubectl get deployment "${DEPLOYMENT_NAME}" -n "${NAMESPACE}" -o jsonpath='{.spec.template.spec.containers[0].image}')"
+    local current_version
+    current_version="$(echo "${current_image}" | cut -d: -f2)"
+    echo "${current_version}"
+}
+
+# Rollback deployment
+rollback_deployment() {
+    log_info "Starting deployment rollback..."
+    
+    local current_version
+    current_version="$(get_current_version)"
+    log_info "Current version: ${current_version}"
+    
+    # Show deployment history
+    get_deployment_history
+    
+    if [[ "${DRY_RUN}" == true ]]; then
+        if [[ -n "${TARGET_VERSION}" ]]; then
+            log_info "[DRY RUN] Would rollback deployment to version: ${TARGET_VERSION}"
+        else
+            log_info "[DRY RUN] Would rollback deployment to previous revision"
+        fi
+        return
+    fi
+    
+    # Create pre-rollback snapshot
+    log_info "Creating pre-rollback snapshot..."
+    kubectl get deployment "${DEPLOYMENT_NAME}" -n "${NAMESPACE}" -o yaml > "/tmp/pre-rollback-${TIMESTAMP}.yaml"
+    
+    # Perform rollback
+    if [[ -n "${TARGET_VERSION}" ]]; then
+        # Rollback to specific version
+        log_info "Rolling back to version: ${TARGET_VERSION}"
+        kubectl set image deployment/"${DEPLOYMENT_NAME}" \
+            "${DEPLOYMENT_NAME}={{DOCKER_REGISTRY}}/{{IME_PROJEKTA_SLUG}}:${TARGET_VERSION}" \
+            -n "${NAMESPACE}"
+    else
+        # Rollback to previous revision
+        log_info "Rolling back to previous revision..."
+        kubectl rollout undo deployment/"${DEPLOYMENT_NAME}" -n "${NAMESPACE}"
+    fi
+    
+    # Wait for rollback to complete
+    log_info "Waiting for rollback to complete..."
+    if ! kubectl rollout status deployment/"${DEPLOYMENT_NAME}" -n "${NAMESPACE}" --timeout="${WAIT_TIMEOUT}s"; then
+        error_exit "Rollback failed or timed out"
+    fi
+    
+    local new_version
+    new_version="$(get_current_version)"
+    log_info "Deployment rollback completed. New version: ${new_version}"
+}
+
+# Rollback database migrations
+rollback_database() {
+    log_info "Starting database migration rollback..."
+    
+    if [[ -z "${TARGET_VERSION}" ]]; then
+        error_exit "Target version is required for database rollback. Use --version to specify migration version."
+    fi
+    
+    if [[ "${DRY_RUN}" == true ]]; then
+        log_info "[DRY RUN] Would rollback database migrations to: ${TARGET_VERSION}"
+        return
+    fi
+    
+    # Get current migration version
+    local current_migration
+    current_migration="$(kubectl exec -n "${NAMESPACE}" deployment/"${DEPLOYMENT_NAME}" -- \
+        npm run migration:current 2>/dev/null | tail -1 || echo "unknown")"
+    log_info "Current migration version: ${current_migration}"
+    
+    # Create database backup before rollback
+    log_info "Creating database backup before rollback..."
+    "${SCRIPT_DIR}/backup.sh" --type database --tag "pre-rollback-${TIMESTAMP}"
+    
+    # Run migration rollback
+    log_info "Rolling back migrations to: ${TARGET_VERSION}"
+    kubectl exec -n "${NAMESPACE}" deployment/"${DEPLOYMENT_NAME}" -- \
+        npm run migration:rollback -- --to "${TARGET_VERSION}" || error_exit "Migration rollback failed"
+    
+    log_info "Database migration rollback completed"
+}
+
+# Rollback configuration
+rollback_config() {
+    log_info "Starting configuration rollback..."
+    
+    # Get ConfigMap history
+    local configmaps
+    configmaps="$(kubectl get configmap -n "${NAMESPACE}" -l app.kubernetes.io/name="${DEPLOYMENT_NAME}" --sort-by=.metadata.creationTimestamp -o name)"
+    
+    log_info "Available ConfigMaps:"
+    echo "${configmaps}"
+    
+    if [[ "${DRY_RUN}" == true ]]; then
+        log_info "[DRY RUN] Would rollback configuration"
+        return
+    fi
+    
+    # Backup current config
+    log_info "Backing up current configuration..."
+    kubectl get configmap "${DEPLOYMENT_NAME}-config" -n "${NAMESPACE}" -o yaml > "/tmp/configmap-backup-${TIMESTAMP}.yaml"
+    
+    if [[ -n "${TARGET_VERSION}" ]]; then
+        # Restore specific version from backup
+        log_info "Restoring configuration from backup..."
+        "${SCRIPT_DIR}/restore.sh" --type config --source "${TARGET_VERSION}" --confirm
+    else
+        # Restore from previous ConfigMap if available
+        log_warn "No target version specified. Manual configuration rollback may be required."
+    fi
+    
+    # Restart deployment to pick up config changes
+    log_info "Restarting deployment to apply configuration changes..."
+    kubectl rollout restart deployment/"${DEPLOYMENT_NAME}" -n "${NAMESPACE}"
+    kubectl rollout status deployment/"${DEPLOYMENT_NAME}" -n "${NAMESPACE}" --timeout="${WAIT_TIMEOUT}s"
+    
+    log_info "Configuration rollback completed"
+}
+
+# Full rollback
+rollback_full() {
+    log_info "Starting full system rollback..."
+    
+    if [[ "${DRY_RUN}" == true ]]; then
+        log_info "[DRY RUN] Would perform full system rollback"
+        rollback_deployment
+        rollback_database
+        rollback_config
+        return
+    fi
+    
+    # Scale down deployment
+    log_info "Scaling down deployment..."
+    kubectl scale deployment "${DEPLOYMENT_NAME}" -n "${NAMESPACE}" --replicas=0
+    sleep 10
+    
+    # Rollback database first
+    if [[ -n "${TARGET_VERSION}" ]]; then
+        rollback_database
+    else
+        log_warn "Skipping database rollback - no target version specified"
+    fi
+    
+    # Rollback configuration
+    rollback_config
+    
+    # Rollback deployment
+    rollback_deployment
+    
+    # Scale up deployment
+    log_info "Scaling up deployment..."
+    kubectl scale deployment "${DEPLOYMENT_NAME}" -n "${NAMESPACE}" --replicas=3
+    
+    log_info "Full system rollback completed"
+}
+
+# Post-rollback verification
+post_rollback_verification() {
+    log_info "Running post-rollback verification..."
+    
+    if [[ "${DRY_RUN}" == true ]]; then
+        log_info "[DRY RUN] Would run post-rollback verification"
+        return
+    fi
+    
+    # Wait for pods to be ready
+    log_info "Waiting for pods to be ready..."
+    kubectl wait --for=condition=ready pod \
+        -l app.kubernetes.io/name="${DEPLOYMENT_NAME}" \
+        -n "${NAMESPACE}" \
+        --timeout="${WAIT_TIMEOUT}s" || log_warn "Some pods may not be ready"
+    
+    # Check pod status
+    log_info "Pod status:"
+    kubectl get pods -n "${NAMESPACE}" -l app.kubernetes.io/name="${DEPLOYMENT_NAME}"
+    
+    # Check health endpoint
+    local health_pod
+    health_pod="$(kubectl get pods -n "${NAMESPACE}" -l app.kubernetes.io/name="${DEPLOYMENT_NAME}" -o jsonpath='{.items[0].metadata.name}')"
+    
+    if [[ -n "${health_pod}" ]]; then
+        local health_status
+        health_status="$(kubectl exec -n "${NAMESPACE}" "${health_pod}" -- curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/health 2>/dev/null || echo "000")"
+        
+        if [[ "${health_status}" == "200" ]]; then
+            log_info "Health check passed"
+        else
+            log_warn "Health check returned status: ${health_status}"
+        fi
+    fi
+    
+    # Check recent events
+    log_info "Recent events:"
+    kubectl get events -n "${NAMESPACE}" --sort-by='.lastTimestamp' | tail -10
+    
+    log_info "Post-rollback verification completed"
+}
+
+# Send notification
+send_notification() {
+    local status="$1"
+    local message="$2"
+    
+    if [[ "${NOTIFY}" != true ]]; then
+        return
+    fi
+    
+    local payload
+    payload=$(cat << EOF
+{
+    "project": "{{IME_PROJEKTA}}",
+    "operation": "rollback",
+    "type": "${ROLLBACK_TYPE}",
+    "targetVersion": "${TARGET_VERSION}",
+    "status": "${status}",
+    "message": "${message}",
+    "timestamp": "${TIMESTAMP}",
+    "dryRun": ${DRY_RUN}
+}
+EOF
+)
+    
+    # Send to webhook
+    curl -s -X POST \
+        -H "Content-Type: application/json" \
+        -d "${payload}" \
+        "{{WEBHOOK_URL}}/rollback-notification" || log_warn "Failed to send notification"
+}
+
+# Main function
+main() {
+    parse_args "$@"
+    
+    log_info "Starting rollback process..."
+    log_info "Type: ${ROLLBACK_TYPE}"
+    log_info "Target version: ${TARGET_VERSION:-previous}"
+    log_info "Namespace: ${NAMESPACE}"
+    log_info "Deployment: ${DEPLOYMENT_NAME}"
+    log_info "Dry run: ${DRY_RUN}"
+    
+    # Create log directory
+    mkdir -p "$(dirname "${LOG_FILE}")"
+    
+    # Validate environment
+    validate_environment
+    
+    # Perform rollback based on type
+    case "${ROLLBACK_TYPE}" in
+        deployment)
+            rollback_deployment
+            ;;
+        database)
+            rollback_database
+            ;;
+        config)
+            rollback_config
+            ;;
+        full)
+            rollback_full
+            ;;
+        *)
+            error_exit "Unknown rollback type: ${ROLLBACK_TYPE}"
+            ;;
+    esac
+    
+    # Post-rollback verification
+    post_rollback_verification
+    
+    # Send success notification
+    send_notification "SUCCESS" "Rollback completed successfully"
+    
+    log_info "Rollback process completed successfully"
+}
+
+# Run main
+main "$@"

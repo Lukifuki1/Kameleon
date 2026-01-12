@@ -1,0 +1,1029 @@
+/**
+ * {{IME_PROJEKTA}} - Input Validation System
+ * Domain: {{DOMENA_SL}}
+ * 
+ * @requirement REQ-SEC-INV-001
+ * @design DSN-SEC-INV-001
+ * @test TST-SEC-INV-001
+ * 
+ * Sistem za validacijo vhodnih podatkov v varnostnem sistemu.
+ * Skladen z DO-178C, IEC 61508, ISO 26262, MIL-STD-882E standardi.
+ * 
+ * @module security/input-validation
+ */
+
+// ============================================================================
+// TIPI IN VMESNIKI
+// ============================================================================
+
+/**
+ * Tip validacije
+ */
+export enum ValidationType {
+    /** Niz */
+    STRING = 'string',
+    /** Število */
+    NUMBER = 'number',
+    /** Boolean */
+    BOOLEAN = 'boolean',
+    /** Email */
+    EMAIL = 'email',
+    /** URL */
+    URL = 'url',
+    /** UUID */
+    UUID = 'uuid',
+    /** Datum */
+    DATE = 'date',
+    /** IP naslov */
+    IP_ADDRESS = 'ip_address',
+    /** Telefonska številka */
+    PHONE = 'phone',
+    /** Regularni izraz */
+    REGEX = 'regex',
+    /** Polje */
+    ARRAY = 'array',
+    /** Objekt */
+    OBJECT = 'object',
+    /** Enum */
+    ENUM = 'enum'
+}
+
+/**
+ * Rezultat validacije
+ */
+export interface ValidationResult {
+    /** Ali je veljavno */
+    readonly valid: boolean;
+    /** Napake */
+    readonly errors: ValidationError[];
+    /** Sanizirani podatki */
+    readonly sanitized?: unknown;
+}
+
+/**
+ * Napaka validacije
+ */
+export interface ValidationError {
+    /** Polje */
+    readonly field: string;
+    /** Sporočilo */
+    readonly message: string;
+    /** Koda napake */
+    readonly code: string;
+    /** Vrednost */
+    readonly value?: unknown;
+}
+
+/**
+ * Pravilo validacije
+ */
+export interface ValidationRule {
+    /** Tip */
+    readonly type: ValidationType;
+    /** Ali je obvezno */
+    readonly required?: boolean;
+    /** Minimalna dolžina/vrednost */
+    readonly min?: number;
+    /** Maksimalna dolžina/vrednost */
+    readonly max?: number;
+    /** Vzorec (regex) */
+    readonly pattern?: string;
+    /** Dovoljene vrednosti (za enum) */
+    readonly enum?: unknown[];
+    /** Pravila za elemente polja */
+    readonly items?: ValidationRule;
+    /** Pravila za lastnosti objekta */
+    readonly properties?: Record<string, ValidationRule>;
+    /** Privzeta vrednost */
+    readonly default?: unknown;
+    /** Ali naj se sanitizira */
+    readonly sanitize?: boolean;
+    /** Sporočilo ob napaki */
+    readonly message?: string;
+}
+
+/**
+ * Shema validacije
+ */
+export interface ValidationSchema {
+    /** Pravila za polja */
+    readonly fields: Record<string, ValidationRule>;
+    /** Ali naj se zavrnejo dodatna polja */
+    readonly strict?: boolean;
+    /** Ali naj se sanitizirajo vsi nizi */
+    readonly sanitizeStrings?: boolean;
+}
+
+/**
+ * Konfiguracija validacije
+ */
+export interface ValidationConfig {
+    /** Maksimalna dolžina niza */
+    readonly maxStringLength: number;
+    /** Maksimalna globina objekta */
+    readonly maxObjectDepth: number;
+    /** Maksimalna velikost polja */
+    readonly maxArraySize: number;
+    /** Ali naj se odstranijo HTML oznake */
+    readonly stripHtml: boolean;
+    /** Ali naj se odstranijo kontrolni znaki */
+    readonly stripControlChars: boolean;
+    /** Ali naj se normalizira Unicode */
+    readonly normalizeUnicode: boolean;
+}
+
+// ============================================================================
+// REGULARNI IZRAZI
+// ============================================================================
+
+const PATTERNS = {
+    EMAIL: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+    URL: /^https?:\/\/[^\s/$.?#].[^\s]*$/i,
+    UUID: /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
+    IPV4: /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/,
+    IPV6: /^(?:[0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}$/,
+    PHONE: /^\+?[1-9]\d{1,14}$/,
+    DATE_ISO: /^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}:\d{2}(\.\d{3})?(Z|[+-]\d{2}:\d{2})?)?$/,
+    ALPHANUMERIC: /^[a-zA-Z0-9]+$/,
+    SLUG: /^[a-z0-9]+(?:-[a-z0-9]+)*$/,
+    HTML_TAG: /<[^>]*>/g,
+    CONTROL_CHARS: /[\x00-\x1F\x7F]/g,
+    SQL_INJECTION: /('|"|;|--|\/\*|\*\/|xp_|sp_|0x)/gi,
+    XSS_PATTERNS: /<script|javascript:|on\w+\s*=/gi
+};
+
+// ============================================================================
+// GLAVNA IMPLEMENTACIJA
+// ============================================================================
+
+/**
+ * Sistem za validacijo vhodnih podatkov
+ * 
+ * Implementira varno validacijo skladno z industrijskimi standardi.
+ */
+export class InputValidationSystem {
+    private readonly config: ValidationConfig;
+
+    constructor(config: ValidationConfig) {
+        this.config = config;
+    }
+
+    /**
+     * Validiraj podatke glede na shemo
+     */
+    validate(data: unknown, schema: ValidationSchema): ValidationResult {
+        const errors: ValidationError[] = [];
+        let sanitized: Record<string, unknown> = {};
+
+        if (typeof data !== 'object' || data === null) {
+            return {
+                valid: false,
+                errors: [{
+                    field: '',
+                    message: 'Input must be an object',
+                    code: 'INVALID_TYPE'
+                }]
+            };
+        }
+
+        const dataObj = data as Record<string, unknown>;
+
+        // Preveri striktnost
+        if (schema.strict === true) {
+            const allowedFields = new Set(Object.keys(schema.fields));
+            for (const key of Object.keys(dataObj)) {
+                if (!allowedFields.has(key)) {
+                    errors.push({
+                        field: key,
+                        message: `Unknown field: ${key}`,
+                        code: 'UNKNOWN_FIELD'
+                    });
+                }
+            }
+        }
+
+        // Validiraj polja
+        for (const [field, rule] of Object.entries(schema.fields)) {
+            const value = dataObj[field];
+            const fieldResult = this.validateField(field, value, rule);
+
+            if (!fieldResult.valid) {
+                errors.push(...fieldResult.errors);
+            }
+
+            if (fieldResult.sanitized !== undefined) {
+                sanitized[field] = fieldResult.sanitized;
+            } else if (value !== undefined) {
+                sanitized[field] = value;
+            } else if (rule.default !== undefined) {
+                sanitized[field] = rule.default;
+            }
+        }
+
+        return {
+            valid: errors.length === 0,
+            errors,
+            sanitized: errors.length === 0 ? sanitized : undefined
+        };
+    }
+
+    /**
+     * Validiraj posamezno polje
+     */
+    validateField(
+        field: string,
+        value: unknown,
+        rule: ValidationRule
+    ): ValidationResult {
+        const errors: ValidationError[] = [];
+
+        // Preveri obveznost
+        if (value === undefined || value === null || value === '') {
+            if (rule.required === true) {
+                return {
+                    valid: false,
+                    errors: [{
+                        field,
+                        message: rule.message ?? `${field} is required`,
+                        code: 'REQUIRED'
+                    }]
+                };
+            }
+            return { valid: true, errors: [], sanitized: rule.default };
+        }
+
+        // Validiraj glede na tip
+        let sanitized: unknown = value;
+
+        switch (rule.type) {
+            case ValidationType.STRING:
+                const stringResult = this.validateString(field, value, rule);
+                if (!stringResult.valid) {
+                    errors.push(...stringResult.errors);
+                }
+                sanitized = stringResult.sanitized;
+                break;
+
+            case ValidationType.NUMBER:
+                const numberResult = this.validateNumber(field, value, rule);
+                if (!numberResult.valid) {
+                    errors.push(...numberResult.errors);
+                }
+                sanitized = numberResult.sanitized;
+                break;
+
+            case ValidationType.BOOLEAN:
+                const boolResult = this.validateBoolean(field, value);
+                if (!boolResult.valid) {
+                    errors.push(...boolResult.errors);
+                }
+                sanitized = boolResult.sanitized;
+                break;
+
+            case ValidationType.EMAIL:
+                const emailResult = this.validateEmail(field, value, rule);
+                if (!emailResult.valid) {
+                    errors.push(...emailResult.errors);
+                }
+                sanitized = emailResult.sanitized;
+                break;
+
+            case ValidationType.URL:
+                const urlResult = this.validateUrl(field, value, rule);
+                if (!urlResult.valid) {
+                    errors.push(...urlResult.errors);
+                }
+                sanitized = urlResult.sanitized;
+                break;
+
+            case ValidationType.UUID:
+                const uuidResult = this.validateUuid(field, value);
+                if (!uuidResult.valid) {
+                    errors.push(...uuidResult.errors);
+                }
+                sanitized = uuidResult.sanitized;
+                break;
+
+            case ValidationType.DATE:
+                const dateResult = this.validateDate(field, value);
+                if (!dateResult.valid) {
+                    errors.push(...dateResult.errors);
+                }
+                sanitized = dateResult.sanitized;
+                break;
+
+            case ValidationType.IP_ADDRESS:
+                const ipResult = this.validateIpAddress(field, value);
+                if (!ipResult.valid) {
+                    errors.push(...ipResult.errors);
+                }
+                sanitized = ipResult.sanitized;
+                break;
+
+            case ValidationType.ARRAY:
+                const arrayResult = this.validateArray(field, value, rule);
+                if (!arrayResult.valid) {
+                    errors.push(...arrayResult.errors);
+                }
+                sanitized = arrayResult.sanitized;
+                break;
+
+            case ValidationType.OBJECT:
+                const objectResult = this.validateObject(field, value, rule);
+                if (!objectResult.valid) {
+                    errors.push(...objectResult.errors);
+                }
+                sanitized = objectResult.sanitized;
+                break;
+
+            case ValidationType.ENUM:
+                const enumResult = this.validateEnum(field, value, rule);
+                if (!enumResult.valid) {
+                    errors.push(...enumResult.errors);
+                }
+                sanitized = enumResult.sanitized;
+                break;
+
+            case ValidationType.REGEX:
+                const regexResult = this.validateRegex(field, value, rule);
+                if (!regexResult.valid) {
+                    errors.push(...regexResult.errors);
+                }
+                sanitized = regexResult.sanitized;
+                break;
+        }
+
+        return {
+            valid: errors.length === 0,
+            errors,
+            sanitized
+        };
+    }
+
+    /**
+     * Sanitiziraj niz
+     */
+    sanitizeString(value: string): string {
+        let sanitized = value;
+
+        // Omeji dolžino
+        if (sanitized.length > this.config.maxStringLength) {
+            sanitized = sanitized.substring(0, this.config.maxStringLength);
+        }
+
+        // Odstrani HTML oznake
+        if (this.config.stripHtml) {
+            sanitized = sanitized.replace(PATTERNS.HTML_TAG, '');
+        }
+
+        // Odstrani kontrolne znake
+        if (this.config.stripControlChars) {
+            sanitized = sanitized.replace(PATTERNS.CONTROL_CHARS, '');
+        }
+
+        // Normaliziraj Unicode
+        if (this.config.normalizeUnicode) {
+            sanitized = sanitized.normalize('NFC');
+        }
+
+        // Trim
+        sanitized = sanitized.trim();
+
+        return sanitized;
+    }
+
+    /**
+     * Preveri za SQL injection
+     */
+    detectSqlInjection(value: string): boolean {
+        return PATTERNS.SQL_INJECTION.test(value);
+    }
+
+    /**
+     * Preveri za XSS
+     */
+    detectXss(value: string): boolean {
+        return PATTERNS.XSS_PATTERNS.test(value);
+    }
+
+    /**
+     * Escape HTML
+     */
+    escapeHtml(value: string): string {
+        const htmlEntities: Record<string, string> = {
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#x27;',
+            '/': '&#x2F;'
+        };
+
+        return value.replace(/[&<>"'/]/g, char => htmlEntities[char]);
+    }
+
+    // ========================================================================
+    // PRIVATNE METODE
+    // ========================================================================
+
+    /**
+     * Validiraj niz
+     */
+    private validateString(
+        field: string,
+        value: unknown,
+        rule: ValidationRule
+    ): ValidationResult {
+        const errors: ValidationError[] = [];
+
+        if (typeof value !== 'string') {
+            return {
+                valid: false,
+                errors: [{
+                    field,
+                    message: `${field} must be a string`,
+                    code: 'INVALID_TYPE',
+                    value
+                }]
+            };
+        }
+
+        let sanitized = rule.sanitize !== false ? this.sanitizeString(value) : value;
+
+        // Preveri dolžino
+        if (rule.min !== undefined && sanitized.length < rule.min) {
+            errors.push({
+                field,
+                message: rule.message ?? `${field} must be at least ${rule.min} characters`,
+                code: 'MIN_LENGTH',
+                value: sanitized
+            });
+        }
+
+        if (rule.max !== undefined && sanitized.length > rule.max) {
+            errors.push({
+                field,
+                message: rule.message ?? `${field} must be at most ${rule.max} characters`,
+                code: 'MAX_LENGTH',
+                value: sanitized
+            });
+        }
+
+        // Preveri vzorec
+        if (rule.pattern !== undefined) {
+            const regex = new RegExp(rule.pattern);
+            if (!regex.test(sanitized)) {
+                errors.push({
+                    field,
+                    message: rule.message ?? `${field} does not match required pattern`,
+                    code: 'PATTERN_MISMATCH',
+                    value: sanitized
+                });
+            }
+        }
+
+        // Preveri za nevarne vzorce
+        if (this.detectSqlInjection(sanitized)) {
+            errors.push({
+                field,
+                message: `${field} contains potentially dangerous content`,
+                code: 'SQL_INJECTION_DETECTED',
+                value: sanitized
+            });
+        }
+
+        if (this.detectXss(sanitized)) {
+            errors.push({
+                field,
+                message: `${field} contains potentially dangerous content`,
+                code: 'XSS_DETECTED',
+                value: sanitized
+            });
+        }
+
+        return {
+            valid: errors.length === 0,
+            errors,
+            sanitized
+        };
+    }
+
+    /**
+     * Validiraj število
+     */
+    private validateNumber(
+        field: string,
+        value: unknown,
+        rule: ValidationRule
+    ): ValidationResult {
+        const errors: ValidationError[] = [];
+
+        let numValue: number;
+
+        if (typeof value === 'number') {
+            numValue = value;
+        } else if (typeof value === 'string') {
+            numValue = parseFloat(value);
+        } else {
+            return {
+                valid: false,
+                errors: [{
+                    field,
+                    message: `${field} must be a number`,
+                    code: 'INVALID_TYPE',
+                    value
+                }]
+            };
+        }
+
+        if (isNaN(numValue)) {
+            return {
+                valid: false,
+                errors: [{
+                    field,
+                    message: `${field} must be a valid number`,
+                    code: 'INVALID_NUMBER',
+                    value
+                }]
+            };
+        }
+
+        if (rule.min !== undefined && numValue < rule.min) {
+            errors.push({
+                field,
+                message: rule.message ?? `${field} must be at least ${rule.min}`,
+                code: 'MIN_VALUE',
+                value: numValue
+            });
+        }
+
+        if (rule.max !== undefined && numValue > rule.max) {
+            errors.push({
+                field,
+                message: rule.message ?? `${field} must be at most ${rule.max}`,
+                code: 'MAX_VALUE',
+                value: numValue
+            });
+        }
+
+        return {
+            valid: errors.length === 0,
+            errors,
+            sanitized: numValue
+        };
+    }
+
+    /**
+     * Validiraj boolean
+     */
+    private validateBoolean(field: string, value: unknown): ValidationResult {
+        if (typeof value === 'boolean') {
+            return { valid: true, errors: [], sanitized: value };
+        }
+
+        if (value === 'true' || value === '1') {
+            return { valid: true, errors: [], sanitized: true };
+        }
+
+        if (value === 'false' || value === '0') {
+            return { valid: true, errors: [], sanitized: false };
+        }
+
+        return {
+            valid: false,
+            errors: [{
+                field,
+                message: `${field} must be a boolean`,
+                code: 'INVALID_TYPE',
+                value
+            }]
+        };
+    }
+
+    /**
+     * Validiraj email
+     */
+    private validateEmail(
+        field: string,
+        value: unknown,
+        rule: ValidationRule
+    ): ValidationResult {
+        if (typeof value !== 'string') {
+            return {
+                valid: false,
+                errors: [{
+                    field,
+                    message: `${field} must be a string`,
+                    code: 'INVALID_TYPE',
+                    value
+                }]
+            };
+        }
+
+        const sanitized = value.toLowerCase().trim();
+
+        if (!PATTERNS.EMAIL.test(sanitized)) {
+            return {
+                valid: false,
+                errors: [{
+                    field,
+                    message: rule.message ?? `${field} must be a valid email address`,
+                    code: 'INVALID_EMAIL',
+                    value: sanitized
+                }]
+            };
+        }
+
+        return { valid: true, errors: [], sanitized };
+    }
+
+    /**
+     * Validiraj URL
+     */
+    private validateUrl(
+        field: string,
+        value: unknown,
+        rule: ValidationRule
+    ): ValidationResult {
+        if (typeof value !== 'string') {
+            return {
+                valid: false,
+                errors: [{
+                    field,
+                    message: `${field} must be a string`,
+                    code: 'INVALID_TYPE',
+                    value
+                }]
+            };
+        }
+
+        const sanitized = value.trim();
+
+        if (!PATTERNS.URL.test(sanitized)) {
+            return {
+                valid: false,
+                errors: [{
+                    field,
+                    message: rule.message ?? `${field} must be a valid URL`,
+                    code: 'INVALID_URL',
+                    value: sanitized
+                }]
+            };
+        }
+
+        return { valid: true, errors: [], sanitized };
+    }
+
+    /**
+     * Validiraj UUID
+     */
+    private validateUuid(field: string, value: unknown): ValidationResult {
+        if (typeof value !== 'string') {
+            return {
+                valid: false,
+                errors: [{
+                    field,
+                    message: `${field} must be a string`,
+                    code: 'INVALID_TYPE',
+                    value
+                }]
+            };
+        }
+
+        const sanitized = value.toLowerCase().trim();
+
+        if (!PATTERNS.UUID.test(sanitized)) {
+            return {
+                valid: false,
+                errors: [{
+                    field,
+                    message: `${field} must be a valid UUID`,
+                    code: 'INVALID_UUID',
+                    value: sanitized
+                }]
+            };
+        }
+
+        return { valid: true, errors: [], sanitized };
+    }
+
+    /**
+     * Validiraj datum
+     */
+    private validateDate(field: string, value: unknown): ValidationResult {
+        if (value instanceof Date) {
+            if (isNaN(value.getTime())) {
+                return {
+                    valid: false,
+                    errors: [{
+                        field,
+                        message: `${field} must be a valid date`,
+                        code: 'INVALID_DATE',
+                        value
+                    }]
+                };
+            }
+            return { valid: true, errors: [], sanitized: value };
+        }
+
+        if (typeof value === 'string') {
+            if (!PATTERNS.DATE_ISO.test(value)) {
+                return {
+                    valid: false,
+                    errors: [{
+                        field,
+                        message: `${field} must be a valid ISO date`,
+                        code: 'INVALID_DATE',
+                        value
+                    }]
+                };
+            }
+
+            const date = new Date(value);
+            if (isNaN(date.getTime())) {
+                return {
+                    valid: false,
+                    errors: [{
+                        field,
+                        message: `${field} must be a valid date`,
+                        code: 'INVALID_DATE',
+                        value
+                    }]
+                };
+            }
+
+            return { valid: true, errors: [], sanitized: date };
+        }
+
+        return {
+            valid: false,
+            errors: [{
+                field,
+                message: `${field} must be a date`,
+                code: 'INVALID_TYPE',
+                value
+            }]
+        };
+    }
+
+    /**
+     * Validiraj IP naslov
+     */
+    private validateIpAddress(field: string, value: unknown): ValidationResult {
+        if (typeof value !== 'string') {
+            return {
+                valid: false,
+                errors: [{
+                    field,
+                    message: `${field} must be a string`,
+                    code: 'INVALID_TYPE',
+                    value
+                }]
+            };
+        }
+
+        const sanitized = value.trim();
+
+        if (!PATTERNS.IPV4.test(sanitized) && !PATTERNS.IPV6.test(sanitized)) {
+            return {
+                valid: false,
+                errors: [{
+                    field,
+                    message: `${field} must be a valid IP address`,
+                    code: 'INVALID_IP',
+                    value: sanitized
+                }]
+            };
+        }
+
+        return { valid: true, errors: [], sanitized };
+    }
+
+    /**
+     * Validiraj polje
+     */
+    private validateArray(
+        field: string,
+        value: unknown,
+        rule: ValidationRule
+    ): ValidationResult {
+        const errors: ValidationError[] = [];
+
+        if (!Array.isArray(value)) {
+            return {
+                valid: false,
+                errors: [{
+                    field,
+                    message: `${field} must be an array`,
+                    code: 'INVALID_TYPE',
+                    value
+                }]
+            };
+        }
+
+        if (value.length > this.config.maxArraySize) {
+            return {
+                valid: false,
+                errors: [{
+                    field,
+                    message: `${field} exceeds maximum array size`,
+                    code: 'MAX_ARRAY_SIZE',
+                    value
+                }]
+            };
+        }
+
+        if (rule.min !== undefined && value.length < rule.min) {
+            errors.push({
+                field,
+                message: `${field} must have at least ${rule.min} items`,
+                code: 'MIN_ITEMS',
+                value
+            });
+        }
+
+        if (rule.max !== undefined && value.length > rule.max) {
+            errors.push({
+                field,
+                message: `${field} must have at most ${rule.max} items`,
+                code: 'MAX_ITEMS',
+                value
+            });
+        }
+
+        const sanitized: unknown[] = [];
+
+        if (rule.items !== undefined) {
+            for (let i = 0; i < value.length; i++) {
+                const itemResult = this.validateField(`${field}[${i}]`, value[i], rule.items);
+                if (!itemResult.valid) {
+                    errors.push(...itemResult.errors);
+                }
+                sanitized.push(itemResult.sanitized);
+            }
+        } else {
+            sanitized.push(...value);
+        }
+
+        return {
+            valid: errors.length === 0,
+            errors,
+            sanitized
+        };
+    }
+
+    /**
+     * Validiraj objekt
+     */
+    private validateObject(
+        field: string,
+        value: unknown,
+        rule: ValidationRule,
+        depth: number = 0
+    ): ValidationResult {
+        const errors: ValidationError[] = [];
+
+        if (depth > this.config.maxObjectDepth) {
+            return {
+                valid: false,
+                errors: [{
+                    field,
+                    message: `${field} exceeds maximum object depth`,
+                    code: 'MAX_DEPTH',
+                    value
+                }]
+            };
+        }
+
+        if (typeof value !== 'object' || value === null || Array.isArray(value)) {
+            return {
+                valid: false,
+                errors: [{
+                    field,
+                    message: `${field} must be an object`,
+                    code: 'INVALID_TYPE',
+                    value
+                }]
+            };
+        }
+
+        const sanitized: Record<string, unknown> = {};
+
+        if (rule.properties !== undefined) {
+            for (const [propName, propRule] of Object.entries(rule.properties)) {
+                const propValue = (value as Record<string, unknown>)[propName];
+                const propResult = this.validateField(
+                    `${field}.${propName}`,
+                    propValue,
+                    propRule
+                );
+                if (!propResult.valid) {
+                    errors.push(...propResult.errors);
+                }
+                if (propResult.sanitized !== undefined) {
+                    sanitized[propName] = propResult.sanitized;
+                }
+            }
+        }
+
+        return {
+            valid: errors.length === 0,
+            errors,
+            sanitized
+        };
+    }
+
+    /**
+     * Validiraj enum
+     */
+    private validateEnum(
+        field: string,
+        value: unknown,
+        rule: ValidationRule
+    ): ValidationResult {
+        if (rule.enum === undefined || !rule.enum.includes(value)) {
+            return {
+                valid: false,
+                errors: [{
+                    field,
+                    message: rule.message ?? `${field} must be one of: ${rule.enum?.join(', ')}`,
+                    code: 'INVALID_ENUM',
+                    value
+                }]
+            };
+        }
+
+        return { valid: true, errors: [], sanitized: value };
+    }
+
+    /**
+     * Validiraj regex
+     */
+    private validateRegex(
+        field: string,
+        value: unknown,
+        rule: ValidationRule
+    ): ValidationResult {
+        if (typeof value !== 'string') {
+            return {
+                valid: false,
+                errors: [{
+                    field,
+                    message: `${field} must be a string`,
+                    code: 'INVALID_TYPE',
+                    value
+                }]
+            };
+        }
+
+        if (rule.pattern === undefined) {
+            return { valid: true, errors: [], sanitized: value };
+        }
+
+        const regex = new RegExp(rule.pattern);
+        if (!regex.test(value)) {
+            return {
+                valid: false,
+                errors: [{
+                    field,
+                    message: rule.message ?? `${field} does not match required pattern`,
+                    code: 'PATTERN_MISMATCH',
+                    value
+                }]
+            };
+        }
+
+        return { valid: true, errors: [], sanitized: value };
+    }
+}
+
+// ============================================================================
+// TOVARNIŠKA FUNKCIJA
+// ============================================================================
+
+/**
+ * Ustvari sistem za validacijo
+ */
+export function createInputValidationSystem(
+    config?: Partial<ValidationConfig>
+): InputValidationSystem {
+    const defaultConfig: ValidationConfig = {
+        maxStringLength: 10000,
+        maxObjectDepth: 10,
+        maxArraySize: 1000,
+        stripHtml: true,
+        stripControlChars: true,
+        normalizeUnicode: true
+    };
+
+    return new InputValidationSystem({
+        ...defaultConfig,
+        ...config
+    });
+}
+
+// ============================================================================
+// IZVOZ
+// ============================================================================
+
+export default InputValidationSystem;

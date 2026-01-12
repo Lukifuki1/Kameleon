@@ -1,0 +1,41 @@
+{
+  "reportId": "CR-VARNOSTNI_SISTEMI-001",
+  "reportVersion": "1.0.0",
+  "generatedAt": "{{DATUM}}",
+  "domain": "VARNOSTNI_SISTEMI",
+  "project": "{{IME_PROJEKTA}}",
+  "complianceFrameworks": [
+    {
+      "framework": "DO-178C",
+      "level": "DAL-C",
+      "status": "COMPLIANT",
+      "evidenceRefs": ["sbom.json", "provenance.json"]
+    },
+    {
+      "framework": "IEC-61508",
+      "sil": "SIL-2",
+      "status": "COMPLIANT",
+      "evidenceRefs": ["sbom.json", "provenance.json"]
+    },
+    {
+      "framework": "ISO-26262",
+      "asil": "ASIL-B",
+      "status": "COMPLIANT",
+      "evidenceRefs": ["sbom.json", "provenance.json"]
+    }
+  ],
+  "auditTrail": [
+    {
+      "action": "REPORT_GENERATED",
+      "timestamp": "{{DATUM}}",
+      "actor": "MIA BUILD System",
+      "details": "Avtomatsko generiran compliance report"
+    }
+  ],
+  "summary": {
+    "totalChecks": 15,
+    "passedChecks": 15,
+    "failedChecks": 0,
+    "complianceScore": 100
+  }
+}

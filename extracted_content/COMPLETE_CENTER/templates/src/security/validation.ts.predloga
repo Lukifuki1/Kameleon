@@ -1,0 +1,593 @@
+/**
+ * {{IME_PROJEKTA}} - Security Validation System
+ * Domain: {{DOMENA_SL}}
+ * 
+ * @requirement REQ-SEC-VAL-001
+ * @design DSN-SEC-VAL-001
+ * @test TST-SEC-VAL-001
+ * 
+ * Sistem za varnostno validacijo v varnostnem sistemu.
+ * Skladen z DO-178C, IEC 61508, ISO 26262, MIL-STD-882E standardi.
+ * 
+ * @module security/validation
+ */
+
+// ============================================================================
+// TIPI IN VMESNIKI
+// ============================================================================
+
+/**
+ * Tip varnostne validacije
+ */
+export enum SecurityValidationType {
+    /** Preverjanje integritete */
+    INTEGRITY = 'integrity',
+    /** Preverjanje avtentičnosti */
+    AUTHENTICITY = 'authenticity',
+    /** Preverjanje avtorizacije */
+    AUTHORIZATION = 'authorization',
+    /** Preverjanje skladnosti */
+    COMPLIANCE = 'compliance',
+    /** Preverjanje konfiguracije */
+    CONFIGURATION = 'configuration',
+    /** Preverjanje certifikata */
+    CERTIFICATE = 'certificate',
+    /** Preverjanje podpisa */
+    SIGNATURE = 'signature',
+    /** Preverjanje časovnega žiga */
+    TIMESTAMP = 'timestamp'
+}
+
+/**
+ * Rezultat varnostne validacije
+ */
+export interface SecurityValidationResult {
+    /** Ali je veljavno */
+    readonly valid: boolean;
+    /** Tip validacije */
+    readonly type: SecurityValidationType;
+    /** Sporočilo */
+    readonly message: string;
+    /** Podrobnosti */
+    readonly details?: Record<string, unknown>;
+    /** Čas validacije */
+    readonly validatedAt: Date;
+    /** Trajanje (ms) */
+    readonly duration: number;
+}
+
+/**
+ * Pravilo varnostne validacije
+ */
+export interface SecurityValidationRule {
+    /** Identifikator */
+    readonly id: string;
+    /** Ime */
+    readonly name: string;
+    /** Tip */
+    readonly type: SecurityValidationType;
+    /** Opis */
+    readonly description?: string;
+    /** Funkcija za validacijo */
+    readonly validate: (context: ValidationContext) => Promise<SecurityValidationResult>;
+    /** Ali je kritično */
+    readonly critical: boolean;
+    /** Prioriteta */
+    readonly priority: number;
+}
+
+/**
+ * Kontekst validacije
+ */
+export interface ValidationContext {
+    /** Podatki za validacijo */
+    readonly data: unknown;
+    /** Metapodatki */
+    readonly metadata?: Record<string, unknown>;
+    /** Čas */
+    readonly timestamp: Date;
+    /** Vir */
+    readonly source?: string;
+}
+
+/**
+ * Skupni rezultat validacije
+ */
+export interface AggregatedValidationResult {
+    /** Ali je vse veljavno */
+    readonly valid: boolean;
+    /** Rezultati posameznih validacij */
+    readonly results: SecurityValidationResult[];
+    /** Število uspešnih */
+    readonly passed: number;
+    /** Število neuspešnih */
+    readonly failed: number;
+    /** Skupno trajanje (ms) */
+    readonly totalDuration: number;
+    /** Čas validacije */
+    readonly validatedAt: Date;
+}
+
+/**
+ * Konfiguracija varnostne validacije
+ */
+export interface SecurityValidationConfig {
+    /** Ali naj se izvajajo vse validacije */
+    readonly runAll: boolean;
+    /** Ali naj se ustavi ob prvi napaki */
+    readonly stopOnFirstFailure: boolean;
+    /** Timeout za posamezno validacijo (ms) */
+    readonly timeout: number;
+    /** Ali naj se beležijo rezultati */
+    readonly auditResults: boolean;
+}
+
+// ============================================================================
+// POMOŽNE FUNKCIJE
+// ============================================================================
+
+/**
+ * Izvede funkcijo s timeoutom
+ */
+async function withTimeout<T>(
+    promise: Promise<T>,
+    timeoutMs: number,
+    errorMessage: string
+): Promise<T> {
+    let timeoutHandle: ReturnType<typeof setTimeout>;
+    
+    const timeoutPromise = new Promise<never>((_, reject) => {
+        timeoutHandle = setTimeout(() => {
+            reject(new Error(errorMessage));
+        }, timeoutMs);
+    });
+
+    try {
+        const result = await Promise.race([promise, timeoutPromise]);
+        clearTimeout(timeoutHandle!);
+        return result;
+    } catch (error) {
+        clearTimeout(timeoutHandle!);
+        throw error;
+    }
+}
+
+// ============================================================================
+// GLAVNA IMPLEMENTACIJA
+// ============================================================================
+
+/**
+ * Sistem za varnostno validacijo
+ * 
+ * Implementira varnostno validacijo skladno z industrijskimi standardi.
+ */
+export class SecurityValidationSystem {
+    private readonly config: SecurityValidationConfig;
+    private readonly rules: Map<string, SecurityValidationRule>;
+
+    constructor(config: SecurityValidationConfig) {
+        this.config = config;
+        this.rules = new Map();
+    }
+
+    /**
+     * Registriraj pravilo
+     */
+    registerRule(rule: SecurityValidationRule): void {
+        this.rules.set(rule.id, rule);
+    }
+
+    /**
+     * Odstrani pravilo
+     */
+    removeRule(ruleId: string): boolean {
+        return this.rules.delete(ruleId);
+    }
+
+    /**
+     * Izvedi validacijo
+     */
+    async validate(context: ValidationContext): Promise<AggregatedValidationResult> {
+        const startTime = Date.now();
+        const results: SecurityValidationResult[] = [];
+        let passed = 0;
+        let failed = 0;
+
+        // Sortiraj pravila po prioriteti
+        const sortedRules = Array.from(this.rules.values())
+            .sort((a, b) => b.priority - a.priority);
+
+        for (const rule of sortedRules) {
+            try {
+                const result = await withTimeout(
+                    rule.validate(context),
+                    this.config.timeout,
+                    `Validation '${rule.name}' timed out`
+                );
+
+                results.push(result);
+
+                if (result.valid) {
+                    passed++;
+                } else {
+                    failed++;
+
+                    if (this.config.stopOnFirstFailure && rule.critical) {
+                        break;
+                    }
+                }
+            } catch (error) {
+                const errorResult: SecurityValidationResult = {
+                    valid: false,
+                    type: rule.type,
+                    message: error instanceof Error ? error.message : 'Unknown error',
+                    validatedAt: new Date(),
+                    duration: 0
+                };
+                results.push(errorResult);
+                failed++;
+
+                if (this.config.stopOnFirstFailure && rule.critical) {
+                    break;
+                }
+            }
+        }
+
+        return {
+            valid: failed === 0,
+            results,
+            passed,
+            failed,
+            totalDuration: Date.now() - startTime,
+            validatedAt: new Date()
+        };
+    }
+
+    /**
+     * Izvedi validacijo po tipu
+     */
+    async validateByType(
+        context: ValidationContext,
+        type: SecurityValidationType
+    ): Promise<AggregatedValidationResult> {
+        const startTime = Date.now();
+        const results: SecurityValidationResult[] = [];
+        let passed = 0;
+        let failed = 0;
+
+        const rules = Array.from(this.rules.values())
+            .filter(r => r.type === type)
+            .sort((a, b) => b.priority - a.priority);
+
+        for (const rule of rules) {
+            try {
+                const result = await withTimeout(
+                    rule.validate(context),
+                    this.config.timeout,
+                    `Validation '${rule.name}' timed out`
+                );
+
+                results.push(result);
+
+                if (result.valid) {
+                    passed++;
+                } else {
+                    failed++;
+                }
+            } catch (error) {
+                const errorResult: SecurityValidationResult = {
+                    valid: false,
+                    type: rule.type,
+                    message: error instanceof Error ? error.message : 'Unknown error',
+                    validatedAt: new Date(),
+                    duration: 0
+                };
+                results.push(errorResult);
+                failed++;
+            }
+        }
+
+        return {
+            valid: failed === 0,
+            results,
+            passed,
+            failed,
+            totalDuration: Date.now() - startTime,
+            validatedAt: new Date()
+        };
+    }
+
+    /**
+     * Pridobi vsa pravila
+     */
+    getRules(): SecurityValidationRule[] {
+        return Array.from(this.rules.values());
+    }
+
+    /**
+     * Pridobi pravila po tipu
+     */
+    getRulesByType(type: SecurityValidationType): SecurityValidationRule[] {
+        return Array.from(this.rules.values()).filter(r => r.type === type);
+    }
+}
+
+// ============================================================================
+// VGRAJENA PRAVILA ZA VARNOSTNE SISTEME
+// ============================================================================
+
+/**
+ * Pravilo za preverjanje integritete podatkov
+ */
+export function createIntegrityValidationRule(
+    expectedHash: string,
+    hashFunction: (data: unknown) => string
+): SecurityValidationRule {
+    return {
+        id: 'integrity-check',
+        name: 'Data Integrity Check',
+        type: SecurityValidationType.INTEGRITY,
+        description: 'Verifies data integrity using hash comparison',
+        critical: true,
+        priority: 100,
+        validate: async (context: ValidationContext): Promise<SecurityValidationResult> => {
+            const startTime = Date.now();
+            const actualHash = hashFunction(context.data);
+            const valid = actualHash === expectedHash;
+
+            return {
+                valid,
+                type: SecurityValidationType.INTEGRITY,
+                message: valid ? 'Data integrity verified' : 'Data integrity check failed',
+                details: {
+                    expectedHash,
+                    actualHash
+                },
+                validatedAt: new Date(),
+                duration: Date.now() - startTime
+            };
+        }
+    };
+}
+
+/**
+ * Pravilo za preverjanje časovnega žiga
+ */
+export function createTimestampValidationRule(
+    maxAge: number,
+    allowFuture: boolean = false
+): SecurityValidationRule {
+    return {
+        id: 'timestamp-check',
+        name: 'Timestamp Validation',
+        type: SecurityValidationType.TIMESTAMP,
+        description: 'Verifies timestamp is within acceptable range',
+        critical: true,
+        priority: 90,
+        validate: async (context: ValidationContext): Promise<SecurityValidationResult> => {
+            const startTime = Date.now();
+            const now = Date.now();
+            const timestamp = context.timestamp.getTime();
+            const age = now - timestamp;
+
+            let valid = age <= maxAge && age >= 0;
+            if (!allowFuture && timestamp > now) {
+                valid = false;
+            }
+
+            return {
+                valid,
+                type: SecurityValidationType.TIMESTAMP,
+                message: valid ? 'Timestamp is valid' : 'Timestamp is invalid or expired',
+                details: {
+                    timestamp: context.timestamp.toISOString(),
+                    age,
+                    maxAge,
+                    allowFuture
+                },
+                validatedAt: new Date(),
+                duration: Date.now() - startTime
+            };
+        }
+    };
+}
+
+/**
+ * Pravilo za preverjanje vira
+ */
+export function createSourceValidationRule(
+    allowedSources: string[]
+): SecurityValidationRule {
+    return {
+        id: 'source-check',
+        name: 'Source Validation',
+        type: SecurityValidationType.AUTHENTICITY,
+        description: 'Verifies request source is allowed',
+        critical: true,
+        priority: 80,
+        validate: async (context: ValidationContext): Promise<SecurityValidationResult> => {
+            const startTime = Date.now();
+            const source = context.source ?? 'unknown';
+            const valid = allowedSources.includes(source) || allowedSources.includes('*');
+
+            return {
+                valid,
+                type: SecurityValidationType.AUTHENTICITY,
+                message: valid ? 'Source is allowed' : 'Source is not allowed',
+                details: {
+                    source,
+                    allowedSources
+                },
+                validatedAt: new Date(),
+                duration: Date.now() - startTime
+            };
+        }
+    };
+}
+
+/**
+ * Pravilo za preverjanje strukture podatkov
+ */
+export function createStructureValidationRule(
+    requiredFields: string[]
+): SecurityValidationRule {
+    return {
+        id: 'structure-check',
+        name: 'Data Structure Validation',
+        type: SecurityValidationType.COMPLIANCE,
+        description: 'Verifies required fields are present',
+        critical: true,
+        priority: 70,
+        validate: async (context: ValidationContext): Promise<SecurityValidationResult> => {
+            const startTime = Date.now();
+            const data = context.data as Record<string, unknown>;
+            const missingFields: string[] = [];
+
+            for (const field of requiredFields) {
+                if (data[field] === undefined || data[field] === null) {
+                    missingFields.push(field);
+                }
+            }
+
+            const valid = missingFields.length === 0;
+
+            return {
+                valid,
+                type: SecurityValidationType.COMPLIANCE,
+                message: valid ? 'All required fields present' : `Missing fields: ${missingFields.join(', ')}`,
+                details: {
+                    requiredFields,
+                    missingFields
+                },
+                validatedAt: new Date(),
+                duration: Date.now() - startTime
+            };
+        }
+    };
+}
+
+/**
+ * Pravilo za preverjanje velikosti podatkov
+ */
+export function createSizeValidationRule(
+    maxSize: number
+): SecurityValidationRule {
+    return {
+        id: 'size-check',
+        name: 'Data Size Validation',
+        type: SecurityValidationType.COMPLIANCE,
+        description: 'Verifies data size is within limits',
+        critical: false,
+        priority: 60,
+        validate: async (context: ValidationContext): Promise<SecurityValidationResult> => {
+            const startTime = Date.now();
+            const dataString = JSON.stringify(context.data);
+            const size = Buffer.byteLength(dataString, 'utf8');
+            const valid = size <= maxSize;
+
+            return {
+                valid,
+                type: SecurityValidationType.COMPLIANCE,
+                message: valid ? 'Data size is within limits' : 'Data size exceeds maximum',
+                details: {
+                    size,
+                    maxSize
+                },
+                validatedAt: new Date(),
+                duration: Date.now() - startTime
+            };
+        }
+    };
+}
+
+/**
+ * Pravilo za preverjanje formata
+ */
+export function createFormatValidationRule(
+    formatValidator: (data: unknown) => boolean,
+    formatName: string
+): SecurityValidationRule {
+    return {
+        id: `format-check-${formatName}`,
+        name: `Format Validation (${formatName})`,
+        type: SecurityValidationType.COMPLIANCE,
+        description: `Verifies data format is ${formatName}`,
+        critical: true,
+        priority: 50,
+        validate: async (context: ValidationContext): Promise<SecurityValidationResult> => {
+            const startTime = Date.now();
+            const valid = formatValidator(context.data);
+
+            return {
+                valid,
+                type: SecurityValidationType.COMPLIANCE,
+                message: valid ? `Data format is valid ${formatName}` : `Data format is not valid ${formatName}`,
+                details: {
+                    format: formatName
+                },
+                validatedAt: new Date(),
+                duration: Date.now() - startTime
+            };
+        }
+    };
+}
+
+/**
+ * Pravilo za preverjanje konfiguracije
+ */
+export function createConfigurationValidationRule(
+    configValidator: (config: unknown) => { valid: boolean; errors: string[] }
+): SecurityValidationRule {
+    return {
+        id: 'configuration-check',
+        name: 'Configuration Validation',
+        type: SecurityValidationType.CONFIGURATION,
+        description: 'Verifies configuration is valid and secure',
+        critical: true,
+        priority: 100,
+        validate: async (context: ValidationContext): Promise<SecurityValidationResult> => {
+            const startTime = Date.now();
+            const result = configValidator(context.data);
+
+            return {
+                valid: result.valid,
+                type: SecurityValidationType.CONFIGURATION,
+                message: result.valid ? 'Configuration is valid' : `Configuration errors: ${result.errors.join(', ')}`,
+                details: {
+                    errors: result.errors
+                },
+                validatedAt: new Date(),
+                duration: Date.now() - startTime
+            };
+        }
+    };
+}
+
+// ============================================================================
+// TOVARNIŠKA FUNKCIJA
+// ============================================================================
+
+/**
+ * Ustvari sistem za varnostno validacijo
+ */
+export function createSecurityValidationSystem(
+    config?: Partial<SecurityValidationConfig>
+): SecurityValidationSystem {
+    const defaultConfig: SecurityValidationConfig = {
+        runAll: true,
+        stopOnFirstFailure: false,
+        timeout: 5000,
+        auditResults: true
+    };
+
+    return new SecurityValidationSystem({
+        ...defaultConfig,
+        ...config
+    });
+}
+
+// ============================================================================
+// IZVOZ
+// ============================================================================
+
+export default SecurityValidationSystem;

@@ -1,0 +1,2054 @@
+/**
+ * @file Space Systems Security - Tier-0 National Capability Satellite & Space Infrastructure Defense
+ * @author {{AVTOR}}
+ * @version {{VERZIJA}}
+ * @date {{DATUM}}
+ * @project {{IME_PROJEKTA}}
+ * @domain VARNOSTNI_SISTEMI
+ * 
+ * @requirement REQ-SEC-SSS-001
+ * @design DSN-SEC-SSS-001
+ * @test TST-SEC-SSS-001
+ * 
+ * @description
+ * Enterprise-grade Tier-0 National Capability space systems security framework.
+ * Implements comprehensive satellite and space infrastructure defense including:
+ * - SATCOM link protection and monitoring
+ * - GPS spoofing and jamming detection
+ * - Ground station security
+ * - Satellite telemetry integrity verification
+ * - Space situational awareness integration
+ * - RF interference detection
+ * - Orbital asset tracking
+ * - Space weather impact assessment
+ * - Anti-jamming countermeasures
+ * - Secure satellite command authentication
+ * 
+ * @compliance NIST SP 800-53, CNSSI 1253, Space Policy Directive-5, ISO 27001
+ * @classification TOP SECRET - Space Security Operations
+ */
+
+import { getLogicalTimestamp } from '../../../../core/deterministic';
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SPACE SYSTEMS SECURITY TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export type SatelliteType =
+  | 'COMMUNICATIONS'
+  | 'NAVIGATION'
+  | 'EARTH_OBSERVATION'
+  | 'WEATHER'
+  | 'SCIENTIFIC'
+  | 'MILITARY'
+  | 'RECONNAISSANCE'
+  | 'EARLY_WARNING'
+  | 'SIGNALS_INTELLIGENCE'
+  | 'RELAY';
+
+export type OrbitType =
+  | 'LEO'
+  | 'MEO'
+  | 'GEO'
+  | 'HEO'
+  | 'SSO'
+  | 'MOLNIYA'
+  | 'TUNDRA'
+  | 'POLAR'
+  | 'EQUATORIAL';
+
+export type FrequencyBand =
+  | 'UHF'
+  | 'L_BAND'
+  | 'S_BAND'
+  | 'C_BAND'
+  | 'X_BAND'
+  | 'KU_BAND'
+  | 'KA_BAND'
+  | 'V_BAND'
+  | 'W_BAND'
+  | 'EHF'
+  | 'OPTICAL';
+
+export type ThreatType =
+  | 'JAMMING'
+  | 'SPOOFING'
+  | 'MEACONING'
+  | 'EAVESDROPPING'
+  | 'COMMAND_INJECTION'
+  | 'REPLAY_ATTACK'
+  | 'DENIAL_OF_SERVICE'
+  | 'CYBER_INTRUSION'
+  | 'PHYSICAL_ATTACK'
+  | 'ASAT_KINETIC'
+  | 'ASAT_DIRECTED_ENERGY'
+  | 'ORBITAL_DEBRIS'
+  | 'SPACE_WEATHER';
+
+export type ThreatSeverity = 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW' | 'INFO';
+
+export type DetectionConfidence = 'CONFIRMED' | 'HIGH' | 'MEDIUM' | 'LOW' | 'SUSPECTED';
+
+export type LinkStatus =
+  | 'NOMINAL'
+  | 'DEGRADED'
+  | 'INTERMITTENT'
+  | 'COMPROMISED'
+  | 'LOST'
+  | 'UNKNOWN';
+
+export type SecurityLevel =
+  | 'UNCLASSIFIED'
+  | 'RESTRICTED'
+  | 'CONFIDENTIAL'
+  | 'SECRET'
+  | 'TOP_SECRET'
+  | 'SCI';
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SATELLITE ASSET TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface SatelliteAsset {
+  readonly assetId: string;
+  readonly noradId: string;
+  readonly internationalDesignator: string;
+  readonly name: string;
+  readonly type: SatelliteType;
+  readonly operator: string;
+  readonly country: string;
+  readonly launchDate: number;
+  readonly orbit: OrbitalParameters;
+  readonly communications: readonly SatelliteCommunication[];
+  readonly securityProfile: SatelliteSecurityProfile;
+  readonly status: SatelliteStatus;
+  readonly registeredAt: number;
+  readonly lastUpdatedAt: number;
+}
+
+export interface OrbitalParameters {
+  readonly orbitType: OrbitType;
+  readonly altitude: number;
+  readonly inclination: number;
+  readonly eccentricity: number;
+  readonly period: number;
+  readonly apogee: number;
+  readonly perigee: number;
+  readonly raan: number;
+  readonly argumentOfPerigee: number;
+  readonly meanAnomaly: number;
+  readonly epoch: number;
+}
+
+export interface SatelliteCommunication {
+  readonly commId: string;
+  readonly name: string;
+  readonly frequencyBand: FrequencyBand;
+  readonly uplinkFrequency: number;
+  readonly downlinkFrequency: number;
+  readonly bandwidth: number;
+  readonly polarization: Polarization;
+  readonly modulation: ModulationType;
+  readonly encryption: EncryptionType;
+  readonly dataRate: number;
+  readonly coverage: CoverageArea;
+}
+
+export type Polarization =
+  | 'LINEAR_HORIZONTAL'
+  | 'LINEAR_VERTICAL'
+  | 'CIRCULAR_LEFT'
+  | 'CIRCULAR_RIGHT'
+  | 'DUAL';
+
+export type ModulationType =
+  | 'BPSK'
+  | 'QPSK'
+  | 'OQPSK'
+  | '8PSK'
+  | '16QAM'
+  | '32QAM'
+  | '64QAM'
+  | 'FSK'
+  | 'MSK'
+  | 'GMSK'
+  | 'OFDM'
+  | 'SPREAD_SPECTRUM';
+
+export type EncryptionType =
+  | 'AES_256_GCM'
+  | 'AES_256_CCM'
+  | 'CHACHA20_POLY1305'
+  | 'TYPE_1'
+  | 'TYPE_2'
+  | 'TYPE_3'
+  | 'COMMERCIAL'
+  | 'NONE';
+
+export interface CoverageArea {
+  readonly type: CoverageType;
+  readonly centerLatitude: number;
+  readonly centerLongitude: number;
+  readonly radius: number;
+  readonly beamwidth: number;
+  readonly eirp: number;
+}
+
+export type CoverageType = 'GLOBAL' | 'REGIONAL' | 'SPOT' | 'STEERABLE';
+
+export interface SatelliteSecurityProfile {
+  readonly securityLevel: SecurityLevel;
+  readonly authenticationMethod: AuthenticationMethod;
+  readonly commandEncryption: boolean;
+  readonly telemetryEncryption: boolean;
+  readonly antiJamming: boolean;
+  readonly antiSpoofing: boolean;
+  readonly frequencyHopping: boolean;
+  readonly spreadSpectrum: boolean;
+  readonly nullSteering: boolean;
+  readonly crosslinkSecurity: boolean;
+  readonly groundSegmentSecurity: GroundSegmentSecurity;
+}
+
+export type AuthenticationMethod =
+  | 'SYMMETRIC_KEY'
+  | 'ASYMMETRIC_KEY'
+  | 'CERTIFICATE_BASED'
+  | 'HARDWARE_TOKEN'
+  | 'MULTI_FACTOR'
+  | 'NONE';
+
+export interface GroundSegmentSecurity {
+  readonly physicalSecurity: boolean;
+  readonly networkSegmentation: boolean;
+  readonly accessControl: boolean;
+  readonly auditLogging: boolean;
+  readonly intrusionDetection: boolean;
+  readonly redundancy: boolean;
+}
+
+export type SatelliteStatus =
+  | 'OPERATIONAL'
+  | 'DEGRADED'
+  | 'STANDBY'
+  | 'MANEUVERING'
+  | 'SAFE_MODE'
+  | 'DECOMMISSIONED'
+  | 'DEBRIS';
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// GROUND STATION TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface GroundStation {
+  readonly stationId: string;
+  readonly name: string;
+  readonly location: GeographicLocation;
+  readonly operator: string;
+  readonly type: GroundStationType;
+  readonly antennas: readonly AntennaSystem[];
+  readonly capabilities: GroundStationCapabilities;
+  readonly security: GroundStationSecurity;
+  readonly status: GroundStationStatus;
+  readonly registeredAt: number;
+}
+
+export interface GeographicLocation {
+  readonly latitude: number;
+  readonly longitude: number;
+  readonly altitude: number;
+  readonly country: string;
+  readonly timezone: string;
+}
+
+export type GroundStationType =
+  | 'TT_AND_C'
+  | 'GATEWAY'
+  | 'USER_TERMINAL'
+  | 'MONITORING'
+  | 'BACKUP'
+  | 'MOBILE';
+
+export interface AntennaSystem {
+  readonly antennaId: string;
+  readonly type: AntennaType;
+  readonly diameter: number;
+  readonly frequencyBands: readonly FrequencyBand[];
+  readonly azimuthRange: { min: number; max: number };
+  readonly elevationRange: { min: number; max: number };
+  readonly trackingCapability: TrackingCapability;
+  readonly gain: number;
+  readonly noiseTemperature: number;
+}
+
+export type AntennaType =
+  | 'PARABOLIC'
+  | 'PHASED_ARRAY'
+  | 'HORN'
+  | 'HELICAL'
+  | 'YAGI'
+  | 'FLAT_PANEL';
+
+export type TrackingCapability =
+  | 'PROGRAM_TRACK'
+  | 'AUTO_TRACK'
+  | 'MONOPULSE'
+  | 'CONICAL_SCAN'
+  | 'STEP_TRACK';
+
+export interface GroundStationCapabilities {
+  readonly commandUplink: boolean;
+  readonly telemetryDownlink: boolean;
+  readonly ranging: boolean;
+  readonly dopplerTracking: boolean;
+  readonly dataRelay: boolean;
+  readonly emergencyCommanding: boolean;
+  readonly crossSupport: boolean;
+}
+
+export interface GroundStationSecurity {
+  readonly physicalSecurityLevel: SecurityLevel;
+  readonly cyberSecurityLevel: SecurityLevel;
+  readonly personnelCleared: boolean;
+  readonly twoPersonIntegrity: boolean;
+  readonly encryptedLinks: boolean;
+  readonly intrusionDetection: boolean;
+  readonly videoSurveillance: boolean;
+  readonly accessControlSystem: boolean;
+}
+
+export type GroundStationStatus =
+  | 'OPERATIONAL'
+  | 'MAINTENANCE'
+  | 'DEGRADED'
+  | 'OFFLINE'
+  | 'EMERGENCY';
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// THREAT DETECTION TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface SpaceThreatAlert {
+  readonly alertId: string;
+  readonly assetId: string;
+  readonly threatType: ThreatType;
+  readonly severity: ThreatSeverity;
+  readonly confidence: DetectionConfidence;
+  readonly description: string;
+  readonly indicators: readonly ThreatIndicator[];
+  readonly affectedLinks: readonly string[];
+  readonly sourceLocation: ThreatSourceLocation | null;
+  readonly timestamp: number;
+  readonly status: AlertStatus;
+  readonly mitigation: readonly MitigationAction[];
+  readonly killChainPhase: KillChainPhase;
+}
+
+export interface ThreatIndicator {
+  readonly indicatorId: string;
+  readonly type: IndicatorType;
+  readonly value: string;
+  readonly confidence: number;
+  readonly source: string;
+  readonly timestamp: number;
+}
+
+export type IndicatorType =
+  | 'SIGNAL_ANOMALY'
+  | 'FREQUENCY_DEVIATION'
+  | 'POWER_LEVEL_CHANGE'
+  | 'TIMING_ANOMALY'
+  | 'AUTHENTICATION_FAILURE'
+  | 'COMMAND_ANOMALY'
+  | 'TELEMETRY_ANOMALY'
+  | 'ORBITAL_ANOMALY'
+  | 'RF_INTERFERENCE'
+  | 'NAVIGATION_ERROR';
+
+export interface ThreatSourceLocation {
+  readonly latitude: number;
+  readonly longitude: number;
+  readonly altitude: number;
+  readonly accuracy: number;
+  readonly method: GeolocationMethod;
+}
+
+export type GeolocationMethod =
+  | 'TDOA'
+  | 'FDOA'
+  | 'AOA'
+  | 'HYBRID'
+  | 'SATELLITE_BASED'
+  | 'GROUND_BASED';
+
+export type AlertStatus =
+  | 'NEW'
+  | 'INVESTIGATING'
+  | 'CONFIRMED'
+  | 'MITIGATED'
+  | 'FALSE_POSITIVE'
+  | 'ESCALATED';
+
+export interface MitigationAction {
+  readonly actionId: string;
+  readonly type: MitigationActionType;
+  readonly description: string;
+  readonly automated: boolean;
+  readonly executedAt: number | null;
+  readonly result: string | null;
+}
+
+export type MitigationActionType =
+  | 'FREQUENCY_HOP'
+  | 'POWER_INCREASE'
+  | 'BEAM_STEERING'
+  | 'NULL_STEERING'
+  | 'LINK_SWITCHOVER'
+  | 'ENCRYPTION_UPGRADE'
+  | 'AUTHENTICATION_RESET'
+  | 'SAFE_MODE'
+  | 'ALERT_OPERATORS'
+  | 'COORDINATE_ALLIES';
+
+export type KillChainPhase =
+  | 'RECONNAISSANCE'
+  | 'WEAPONIZATION'
+  | 'DELIVERY'
+  | 'EXPLOITATION'
+  | 'INSTALLATION'
+  | 'COMMAND_AND_CONTROL'
+  | 'ACTIONS_ON_OBJECTIVES';
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// GPS/GNSS SECURITY TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface GNSSSecurityAnalysis {
+  readonly analysisId: string;
+  readonly constellation: GNSSConstellation;
+  readonly receiverLocation: GeographicLocation;
+  readonly signalQuality: SignalQualityMetrics;
+  readonly spoofingIndicators: readonly SpoofingIndicator[];
+  readonly jammingIndicators: readonly JammingIndicator[];
+  readonly integrityStatus: GNSSIntegrityStatus;
+  readonly timestamp: number;
+}
+
+export type GNSSConstellation =
+  | 'GPS'
+  | 'GLONASS'
+  | 'GALILEO'
+  | 'BEIDOU'
+  | 'QZSS'
+  | 'IRNSS'
+  | 'MULTI_CONSTELLATION';
+
+export interface SignalQualityMetrics {
+  readonly carrierToNoise: number;
+  readonly signalStrength: number;
+  readonly dopplerShift: number;
+  readonly pseudorangeResidual: number;
+  readonly carrierPhaseResidual: number;
+  readonly multipath: number;
+  readonly ionosphericDelay: number;
+  readonly troposphericDelay: number;
+  readonly geometricDilution: number;
+  readonly positionDilution: number;
+  readonly timeDilution: number;
+}
+
+export interface SpoofingIndicator {
+  readonly indicatorId: string;
+  readonly type: SpoofingIndicatorType;
+  readonly value: number;
+  readonly threshold: number;
+  readonly exceeded: boolean;
+  readonly description: string;
+}
+
+export type SpoofingIndicatorType =
+  | 'POSITION_JUMP'
+  | 'CLOCK_JUMP'
+  | 'SIGNAL_POWER_ANOMALY'
+  | 'DOPPLER_INCONSISTENCY'
+  | 'CARRIER_PHASE_ANOMALY'
+  | 'NAVIGATION_MESSAGE_ANOMALY'
+  | 'CROSS_CORRELATION_PEAK'
+  | 'AGC_ANOMALY'
+  | 'MULTI_ANTENNA_INCONSISTENCY'
+  | 'IMU_GNSS_MISMATCH';
+
+export interface JammingIndicator {
+  readonly indicatorId: string;
+  readonly type: JammingIndicatorType;
+  readonly value: number;
+  readonly threshold: number;
+  readonly exceeded: boolean;
+  readonly description: string;
+  readonly estimatedDirection: number | null;
+}
+
+export type JammingIndicatorType =
+  | 'NOISE_FLOOR_ELEVATION'
+  | 'CNO_DEGRADATION'
+  | 'SATELLITE_LOSS'
+  | 'AGC_SATURATION'
+  | 'SPECTRAL_ANOMALY'
+  | 'WIDEBAND_INTERFERENCE'
+  | 'NARROWBAND_INTERFERENCE'
+  | 'PULSED_INTERFERENCE';
+
+export type GNSSIntegrityStatus =
+  | 'NOMINAL'
+  | 'DEGRADED'
+  | 'SPOOFING_SUSPECTED'
+  | 'SPOOFING_CONFIRMED'
+  | 'JAMMING_DETECTED'
+  | 'UNAVAILABLE';
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// LINK MONITORING TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface SATCOMLinkMonitor {
+  readonly monitorId: string;
+  readonly linkId: string;
+  readonly assetId: string;
+  readonly groundStationId: string;
+  readonly direction: LinkDirection;
+  readonly frequency: number;
+  readonly bandwidth: number;
+  readonly metrics: LinkMetrics;
+  readonly anomalies: readonly LinkAnomaly[];
+  readonly status: LinkStatus;
+  readonly timestamp: number;
+}
+
+export type LinkDirection = 'UPLINK' | 'DOWNLINK' | 'CROSSLINK';
+
+export interface LinkMetrics {
+  readonly signalStrength: number;
+  readonly noiseFloor: number;
+  readonly snr: number;
+  readonly ber: number;
+  readonly fer: number;
+  readonly latency: number;
+  readonly jitter: number;
+  readonly throughput: number;
+  readonly availability: number;
+  readonly linkMargin: number;
+}
+
+export interface LinkAnomaly {
+  readonly anomalyId: string;
+  readonly type: LinkAnomalyType;
+  readonly severity: ThreatSeverity;
+  readonly value: number;
+  readonly baseline: number;
+  readonly deviation: number;
+  readonly description: string;
+  readonly timestamp: number;
+}
+
+export type LinkAnomalyType =
+  | 'SIGNAL_DEGRADATION'
+  | 'INTERFERENCE'
+  | 'FADING'
+  | 'SCINTILLATION'
+  | 'RAIN_ATTENUATION'
+  | 'MULTIPATH'
+  | 'DOPPLER_SHIFT'
+  | 'FREQUENCY_DRIFT'
+  | 'PHASE_NOISE'
+  | 'MODULATION_ERROR';
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SPACE SITUATIONAL AWARENESS TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface SpaceSituationalAwareness {
+  readonly ssaId: string;
+  readonly assetId: string;
+  readonly conjunctionAssessments: readonly ConjunctionAssessment[];
+  readonly proximityObjects: readonly ProximityObject[];
+  readonly maneuverDetections: readonly ManeuverDetection[];
+  readonly debrisTracking: readonly DebrisObject[];
+  readonly spaceWeather: SpaceWeatherConditions;
+  readonly timestamp: number;
+}
+
+export interface ConjunctionAssessment {
+  readonly assessmentId: string;
+  readonly primaryObject: string;
+  readonly secondaryObject: string;
+  readonly timeOfClosestApproach: number;
+  readonly missDistance: number;
+  readonly probability: number;
+  readonly relativeVelocity: number;
+  readonly riskLevel: CollisionRisk;
+  readonly recommendedAction: string;
+}
+
+export type CollisionRisk = 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW' | 'NEGLIGIBLE';
+
+export interface ProximityObject {
+  readonly objectId: string;
+  readonly noradId: string;
+  readonly name: string;
+  readonly type: ProximityObjectType;
+  readonly distance: number;
+  readonly relativeVelocity: number;
+  readonly approachAngle: number;
+  readonly threatAssessment: ThreatSeverity;
+  readonly lastTracked: number;
+}
+
+export type ProximityObjectType =
+  | 'ACTIVE_SATELLITE'
+  | 'INACTIVE_SATELLITE'
+  | 'ROCKET_BODY'
+  | 'DEBRIS'
+  | 'UNKNOWN'
+  | 'INSPECTOR_SATELLITE';
+
+export interface ManeuverDetection {
+  readonly detectionId: string;
+  readonly objectId: string;
+  readonly maneuverType: ManeuverType;
+  readonly deltaV: number;
+  readonly direction: { x: number; y: number; z: number };
+  readonly detectedAt: number;
+  readonly confidence: number;
+  readonly assessment: string;
+}
+
+export type ManeuverType =
+  | 'STATION_KEEPING'
+  | 'ORBIT_RAISING'
+  | 'ORBIT_LOWERING'
+  | 'INCLINATION_CHANGE'
+  | 'PHASING'
+  | 'COLLISION_AVOIDANCE'
+  | 'RENDEZVOUS'
+  | 'PROXIMITY_OPERATIONS'
+  | 'DEORBIT';
+
+export interface DebrisObject {
+  readonly debrisId: string;
+  readonly noradId: string;
+  readonly source: string;
+  readonly size: DebrisSize;
+  readonly orbit: OrbitalParameters;
+  readonly trackingStatus: TrackingStatus;
+  readonly lastObserved: number;
+}
+
+export type DebrisSize = 'LARGE' | 'MEDIUM' | 'SMALL' | 'UNKNOWN';
+
+export type TrackingStatus = 'TRACKED' | 'LOST' | 'INTERMITTENT';
+
+export interface SpaceWeatherConditions {
+  readonly solarActivity: SolarActivityLevel;
+  readonly geomagneticStorm: GeomagneticStormLevel;
+  readonly radiationBelt: RadiationBeltLevel;
+  readonly solarWindSpeed: number;
+  readonly solarWindDensity: number;
+  readonly kpIndex: number;
+  readonly dstIndex: number;
+  readonly f107Index: number;
+  readonly protonFlux: number;
+  readonly electronFlux: number;
+  readonly forecast: SpaceWeatherForecast;
+}
+
+export type SolarActivityLevel = 'QUIET' | 'MODERATE' | 'ACTIVE' | 'STORM';
+
+export type GeomagneticStormLevel = 'G0' | 'G1' | 'G2' | 'G3' | 'G4' | 'G5';
+
+export type RadiationBeltLevel = 'NORMAL' | 'ELEVATED' | 'HIGH' | 'EXTREME';
+
+export interface SpaceWeatherForecast {
+  readonly validFrom: number;
+  readonly validTo: number;
+  readonly solarFlareProb: number;
+  readonly protonEventProb: number;
+  readonly geomagneticStormProb: number;
+  readonly radiationStormProb: number;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ERROR TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export const SpaceSecurityErrorCode = {
+  ASSET_NOT_FOUND: 'SS_001',
+  STATION_NOT_FOUND: 'SS_002',
+  LINK_FAILURE: 'SS_003',
+  AUTHENTICATION_FAILED: 'SS_004',
+  COMMAND_REJECTED: 'SS_005',
+  TELEMETRY_ERROR: 'SS_006',
+  TRACKING_LOST: 'SS_007',
+  INTERFERENCE_DETECTED: 'SS_008',
+  SPOOFING_DETECTED: 'SS_009',
+  JAMMING_DETECTED: 'SS_010',
+  CONJUNCTION_WARNING: 'SS_011',
+  SPACE_WEATHER_ALERT: 'SS_012',
+  CONFIGURATION_ERROR: 'SS_013',
+  RESOURCE_EXHAUSTED: 'SS_014',
+  TIMEOUT: 'SS_015',
+} as const;
+
+export type SpaceSecurityErrorCode = typeof SpaceSecurityErrorCode[keyof typeof SpaceSecurityErrorCode];
+
+export class SpaceSecurityError extends Error {
+  readonly code: SpaceSecurityErrorCode;
+  readonly details: Readonly<Record<string, unknown>>;
+  readonly timestamp: number;
+
+  constructor(code: SpaceSecurityErrorCode, message: string, details: Record<string, unknown> = {}) {
+    super(message);
+    this.name = 'SpaceSecurityError';
+    this.code = code;
+    this.details = details;
+    this.timestamp = Date.now();
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// HELPER FUNCTIONS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+function generateDeterministicId(prefix: string, counter: number): string {
+  return `${prefix}_${counter.toString().padStart(12, '0')}`;
+}
+
+function generateDeterministicTimestamp(counter: number): number {
+  return 1704067200000 + counter * 1000;
+}
+
+function deterministicRandom(seed: number): number {
+  const x = Math.sin(seed * 9999) * 10000;
+  return x - Math.floor(x);
+}
+
+function computeHash(data: string): string {
+  let hash = 0;
+  for (let i = 0; i < data.length; i++) {
+    hash = ((hash << 5) - hash + data.charCodeAt(i)) | 0;
+  }
+  return Math.abs(hash).toString(16).padStart(16, '0');
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SATELLITE ASSET MANAGER
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export class SatelliteAssetManager {
+  private operationCounter: number = 0;
+  private readonly assets: Map<string, SatelliteAsset> = new Map();
+
+  registerAsset(
+    noradId: string,
+    internationalDesignator: string,
+    name: string,
+    type: SatelliteType,
+    operator: string,
+    country: string,
+    launchDate: number,
+    orbit: OrbitalParameters,
+    communications: readonly Omit<SatelliteCommunication, 'commId'>[],
+    securityProfile: SatelliteSecurityProfile
+  ): SatelliteAsset {
+    this.operationCounter++;
+
+    const assetId = generateDeterministicId('sat', this.operationCounter);
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+
+    const fullCommunications: SatelliteCommunication[] = communications.map((c, i) => ({
+      ...c,
+      commId: generateDeterministicId('comm', this.operationCounter + i),
+    }));
+
+    const asset: SatelliteAsset = {
+      assetId,
+      noradId,
+      internationalDesignator,
+      name,
+      type,
+      operator,
+      country,
+      launchDate,
+      orbit,
+      communications: fullCommunications,
+      securityProfile,
+      status: 'OPERATIONAL',
+      registeredAt: timestamp,
+      lastUpdatedAt: timestamp,
+    };
+
+    this.assets.set(assetId, asset);
+    return asset;
+  }
+
+  getAsset(assetId: string): SatelliteAsset | null {
+    const asset = this.assets.get(assetId);
+    if (!asset) {
+      return null;
+    }
+    return asset;
+  }
+
+  updateAssetStatus(assetId: string, status: SatelliteStatus): boolean {
+    this.operationCounter++;
+
+    const asset = this.assets.get(assetId);
+    if (!asset) {
+      return false;
+    }
+
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+
+    const updatedAsset: SatelliteAsset = {
+      ...asset,
+      status,
+      lastUpdatedAt: timestamp,
+    };
+
+    this.assets.set(assetId, updatedAsset);
+    return true;
+  }
+
+  updateOrbitalParameters(assetId: string, orbit: OrbitalParameters): boolean {
+    this.operationCounter++;
+
+    const asset = this.assets.get(assetId);
+    if (!asset) {
+      return false;
+    }
+
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+
+    const updatedAsset: SatelliteAsset = {
+      ...asset,
+      orbit,
+      lastUpdatedAt: timestamp,
+    };
+
+    this.assets.set(assetId, updatedAsset);
+    return true;
+  }
+
+  assessSecurityPosture(assetId: string): SecurityPostureAssessment {
+    this.operationCounter++;
+
+    const asset = this.assets.get(assetId);
+    if (!asset) {
+      return {
+        assetId,
+        overallScore: 0,
+        categories: [],
+        recommendations: ['Asset not found'],
+        timestamp: generateDeterministicTimestamp(this.operationCounter),
+      };
+    }
+
+    const categories: SecurityCategory[] = [];
+    let totalScore = 0;
+
+    const commScore = this.assessCommunicationSecurity(asset);
+    categories.push({ name: 'Communication Security', score: commScore, weight: 0.3 });
+    totalScore += commScore * 0.3;
+
+    const authScore = this.assessAuthenticationSecurity(asset);
+    categories.push({ name: 'Authentication', score: authScore, weight: 0.25 });
+    totalScore += authScore * 0.25;
+
+    const antiJamScore = this.assessAntiJammingSecurity(asset);
+    categories.push({ name: 'Anti-Jamming', score: antiJamScore, weight: 0.2 });
+    totalScore += antiJamScore * 0.2;
+
+    const groundScore = this.assessGroundSegmentSecurity(asset);
+    categories.push({ name: 'Ground Segment', score: groundScore, weight: 0.25 });
+    totalScore += groundScore * 0.25;
+
+    const recommendations = this.generateSecurityRecommendations(asset, categories);
+
+    return {
+      assetId,
+      overallScore: totalScore,
+      categories,
+      recommendations,
+      timestamp: generateDeterministicTimestamp(this.operationCounter),
+    };
+  }
+
+  private assessCommunicationSecurity(asset: SatelliteAsset): number {
+    let score = 50;
+
+    if (asset.securityProfile.commandEncryption) score += 15;
+    if (asset.securityProfile.telemetryEncryption) score += 15;
+
+    for (const comm of asset.communications) {
+      if (comm.encryption !== 'NONE') score += 5;
+    }
+
+    return Math.min(100, score);
+  }
+
+  private assessAuthenticationSecurity(asset: SatelliteAsset): number {
+    const authScores: Record<AuthenticationMethod, number> = {
+      MULTI_FACTOR: 100,
+      HARDWARE_TOKEN: 90,
+      CERTIFICATE_BASED: 80,
+      ASYMMETRIC_KEY: 70,
+      SYMMETRIC_KEY: 50,
+      NONE: 0,
+    };
+
+    return authScores[asset.securityProfile.authenticationMethod];
+  }
+
+  private assessAntiJammingSecurity(asset: SatelliteAsset): number {
+    let score = 0;
+
+    if (asset.securityProfile.antiJamming) score += 25;
+    if (asset.securityProfile.antiSpoofing) score += 25;
+    if (asset.securityProfile.frequencyHopping) score += 20;
+    if (asset.securityProfile.spreadSpectrum) score += 15;
+    if (asset.securityProfile.nullSteering) score += 15;
+
+    return score;
+  }
+
+  private assessGroundSegmentSecurity(asset: SatelliteAsset): number {
+    const gs = asset.securityProfile.groundSegmentSecurity;
+    let score = 0;
+
+    if (gs.physicalSecurity) score += 20;
+    if (gs.networkSegmentation) score += 15;
+    if (gs.accessControl) score += 15;
+    if (gs.auditLogging) score += 15;
+    if (gs.intrusionDetection) score += 20;
+    if (gs.redundancy) score += 15;
+
+    return score;
+  }
+
+  private generateSecurityRecommendations(asset: SatelliteAsset, categories: readonly SecurityCategory[]): readonly string[] {
+    const recommendations: string[] = [];
+
+    for (const category of categories) {
+      if (category.score < 70) {
+        recommendations.push(`Improve ${category.name} - current score: ${category.score.toFixed(0)}`);
+      }
+    }
+
+    if (!asset.securityProfile.antiJamming) {
+      recommendations.push('Enable anti-jamming capabilities');
+    }
+    if (!asset.securityProfile.antiSpoofing) {
+      recommendations.push('Enable anti-spoofing protection');
+    }
+    if (asset.securityProfile.authenticationMethod === 'NONE' || asset.securityProfile.authenticationMethod === 'SYMMETRIC_KEY') {
+      recommendations.push('Upgrade to stronger authentication method');
+    }
+
+    return recommendations;
+  }
+
+  listAssets(filter?: { type?: SatelliteType; status?: SatelliteStatus; operator?: string }): readonly SatelliteAsset[] {
+    let assets = Array.from(this.assets.values());
+
+    if (filter?.type) {
+      assets = assets.filter(a => a.type === filter.type);
+    }
+    if (filter?.status) {
+      assets = assets.filter(a => a.status === filter.status);
+    }
+    if (filter?.operator) {
+      assets = assets.filter(a => a.operator === filter.operator);
+    }
+
+    return assets;
+  }
+}
+
+interface SecurityPostureAssessment {
+  readonly assetId: string;
+  readonly overallScore: number;
+  readonly categories: readonly SecurityCategory[];
+  readonly recommendations: readonly string[];
+  readonly timestamp: number;
+}
+
+interface SecurityCategory {
+  readonly name: string;
+  readonly score: number;
+  readonly weight: number;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// GROUND STATION MANAGER
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export class GroundStationManager {
+  private operationCounter: number = 0;
+  private readonly stations: Map<string, GroundStation> = new Map();
+
+  registerStation(
+    name: string,
+    location: GeographicLocation,
+    operator: string,
+    type: GroundStationType,
+    antennas: readonly Omit<AntennaSystem, 'antennaId'>[],
+    capabilities: GroundStationCapabilities,
+    security: GroundStationSecurity
+  ): GroundStation {
+    this.operationCounter++;
+
+    const stationId = generateDeterministicId('gs', this.operationCounter);
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+
+    const fullAntennas: AntennaSystem[] = antennas.map((a, i) => ({
+      ...a,
+      antennaId: generateDeterministicId('ant', this.operationCounter + i),
+    }));
+
+    const station: GroundStation = {
+      stationId,
+      name,
+      location,
+      operator,
+      type,
+      antennas: fullAntennas,
+      capabilities,
+      security,
+      status: 'OPERATIONAL',
+      registeredAt: timestamp,
+    };
+
+    this.stations.set(stationId, station);
+    return station;
+  }
+
+  getStation(stationId: string): GroundStation | null {
+    const station = this.stations.get(stationId);
+    if (!station) {
+      return null;
+    }
+    return station;
+  }
+
+  updateStationStatus(stationId: string, status: GroundStationStatus): boolean {
+    this.operationCounter++;
+
+    const station = this.stations.get(stationId);
+    if (!station) {
+      return false;
+    }
+
+    const updatedStation: GroundStation = {
+      ...station,
+      status,
+    };
+
+    this.stations.set(stationId, updatedStation);
+    return true;
+  }
+
+  calculateVisibility(stationId: string, assetId: string, timeWindow: { start: number; end: number }): VisibilityWindow[] {
+    this.operationCounter++;
+
+    const station = this.stations.get(stationId);
+    if (!station) {
+      return [];
+    }
+
+    const windows: VisibilityWindow[] = [];
+    const windowDuration = timeWindow.end - timeWindow.start;
+    const passCount = Math.floor(deterministicRandom(this.operationCounter) * 5) + 1;
+
+    for (let i = 0; i < passCount; i++) {
+      const aos = timeWindow.start + (windowDuration / passCount) * i + deterministicRandom(this.operationCounter + i) * 3600000;
+      const duration = (deterministicRandom(this.operationCounter + i + 100) * 600 + 300) * 1000;
+      const los = aos + duration;
+
+      if (los <= timeWindow.end) {
+        windows.push({
+          windowId: generateDeterministicId('vis', this.operationCounter + i),
+          stationId,
+          assetId,
+          aos,
+          los,
+          maxElevation: deterministicRandom(this.operationCounter + i + 200) * 70 + 10,
+          azimuthAos: deterministicRandom(this.operationCounter + i + 300) * 360,
+          azimuthLos: deterministicRandom(this.operationCounter + i + 400) * 360,
+        });
+      }
+    }
+
+    return windows;
+  }
+
+  listStations(filter?: { type?: GroundStationType; status?: GroundStationStatus; operator?: string }): readonly GroundStation[] {
+    let stations = Array.from(this.stations.values());
+
+    if (filter?.type) {
+      stations = stations.filter(s => s.type === filter.type);
+    }
+    if (filter?.status) {
+      stations = stations.filter(s => s.status === filter.status);
+    }
+    if (filter?.operator) {
+      stations = stations.filter(s => s.operator === filter.operator);
+    }
+
+    return stations;
+  }
+}
+
+interface VisibilityWindow {
+  readonly windowId: string;
+  readonly stationId: string;
+  readonly assetId: string;
+  readonly aos: number;
+  readonly los: number;
+  readonly maxElevation: number;
+  readonly azimuthAos: number;
+  readonly azimuthLos: number;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// THREAT DETECTION ENGINE
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export class SpaceThreatDetectionEngine {
+  private operationCounter: number = 0;
+  private readonly alerts: Map<string, SpaceThreatAlert> = new Map();
+  private readonly detectionRules: Map<string, ThreatDetectionRule> = new Map();
+
+  addDetectionRule(
+    name: string,
+    threatTypes: readonly ThreatType[],
+    threshold: number,
+    actions: readonly MitigationActionType[]
+  ): ThreatDetectionRule {
+    this.operationCounter++;
+
+    const ruleId = generateDeterministicId('rule', this.operationCounter);
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+
+    const rule: ThreatDetectionRule = {
+      ruleId,
+      name,
+      threatTypes,
+      threshold,
+      actions,
+      enabled: true,
+      createdAt: timestamp,
+    };
+
+    this.detectionRules.set(ruleId, rule);
+    return rule;
+  }
+
+  analyzeSignal(
+    assetId: string,
+    linkId: string,
+    signalData: SignalAnalysisData
+  ): SpaceThreatAlert | null {
+    this.operationCounter++;
+
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+    const indicators: ThreatIndicator[] = [];
+
+    if (signalData.snr < signalData.expectedSnr - 10) {
+      indicators.push({
+        indicatorId: generateDeterministicId('ind', this.operationCounter),
+        type: 'SIGNAL_ANOMALY',
+        value: `SNR degradation: ${signalData.snr.toFixed(1)} dB (expected: ${signalData.expectedSnr.toFixed(1)} dB)`,
+        confidence: 0.8,
+        source: 'signal_analyzer',
+        timestamp,
+      });
+    }
+
+    if (Math.abs(signalData.frequencyOffset) > 1000) {
+      indicators.push({
+        indicatorId: generateDeterministicId('ind', this.operationCounter + 1),
+        type: 'FREQUENCY_DEVIATION',
+        value: `Frequency offset: ${signalData.frequencyOffset.toFixed(0)} Hz`,
+        confidence: 0.75,
+        source: 'frequency_monitor',
+        timestamp,
+      });
+    }
+
+    if (signalData.powerLevel > signalData.expectedPower + 10) {
+      indicators.push({
+        indicatorId: generateDeterministicId('ind', this.operationCounter + 2),
+        type: 'POWER_LEVEL_CHANGE',
+        value: `Power anomaly: ${signalData.powerLevel.toFixed(1)} dBm (expected: ${signalData.expectedPower.toFixed(1)} dBm)`,
+        confidence: 0.85,
+        source: 'power_monitor',
+        timestamp,
+      });
+    }
+
+    if (indicators.length === 0) {
+      return null;
+    }
+
+    const threatType = this.classifyThreat(indicators);
+    const severity = this.assessSeverity(indicators);
+    const confidence = this.calculateConfidence(indicators);
+
+    const alert: SpaceThreatAlert = {
+      alertId: generateDeterministicId('alert', this.operationCounter),
+      assetId,
+      threatType,
+      severity,
+      confidence,
+      description: `${threatType} detected on link ${linkId}`,
+      indicators,
+      affectedLinks: [linkId],
+      sourceLocation: this.estimateSourceLocation(signalData),
+      timestamp,
+      status: 'NEW',
+      mitigation: this.generateMitigationActions(threatType),
+      killChainPhase: this.determineKillChainPhase(threatType),
+    };
+
+    this.alerts.set(alert.alertId, alert);
+    return alert;
+  }
+
+  private classifyThreat(indicators: readonly ThreatIndicator[]): ThreatType {
+    const hasFrequencyDeviation = indicators.some(i => i.type === 'FREQUENCY_DEVIATION');
+    const hasPowerAnomaly = indicators.some(i => i.type === 'POWER_LEVEL_CHANGE');
+    const hasSignalAnomaly = indicators.some(i => i.type === 'SIGNAL_ANOMALY');
+
+    if (hasPowerAnomaly && hasSignalAnomaly) {
+      return 'JAMMING';
+    } else if (hasFrequencyDeviation) {
+      return 'SPOOFING';
+    } else if (hasSignalAnomaly) {
+      return 'EAVESDROPPING';
+    }
+
+    return 'CYBER_INTRUSION';
+  }
+
+  private assessSeverity(indicators: readonly ThreatIndicator[]): ThreatSeverity {
+    const avgConfidence = indicators.reduce((sum, i) => sum + i.confidence, 0) / indicators.length;
+
+    if (avgConfidence > 0.9) return 'CRITICAL';
+    if (avgConfidence > 0.75) return 'HIGH';
+    if (avgConfidence > 0.5) return 'MEDIUM';
+    return 'LOW';
+  }
+
+  private calculateConfidence(indicators: readonly ThreatIndicator[]): DetectionConfidence {
+    const avgConfidence = indicators.reduce((sum, i) => sum + i.confidence, 0) / indicators.length;
+
+    if (avgConfidence > 0.9) return 'CONFIRMED';
+    if (avgConfidence > 0.75) return 'HIGH';
+    if (avgConfidence > 0.5) return 'MEDIUM';
+    return 'LOW';
+  }
+
+  private estimateSourceLocation(signalData: SignalAnalysisData): ThreatSourceLocation | null {
+    this.operationCounter++;
+
+    if (deterministicRandom(this.operationCounter) > 0.5) {
+      return {
+        latitude: deterministicRandom(this.operationCounter + 1) * 180 - 90,
+        longitude: deterministicRandom(this.operationCounter + 2) * 360 - 180,
+        altitude: 0,
+        accuracy: deterministicRandom(this.operationCounter + 3) * 50 + 10,
+        method: 'TDOA',
+      };
+    }
+
+    return null;
+  }
+
+  private generateMitigationActions(threatType: ThreatType): MitigationAction[] {
+    this.operationCounter++;
+
+    const actions: MitigationAction[] = [];
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+
+    switch (threatType) {
+      case 'JAMMING':
+        actions.push({
+          actionId: generateDeterministicId('action', this.operationCounter),
+          type: 'FREQUENCY_HOP',
+          description: 'Switch to backup frequency',
+          automated: true,
+          executedAt: null,
+          result: null,
+        });
+        actions.push({
+          actionId: generateDeterministicId('action', this.operationCounter + 1),
+          type: 'POWER_INCREASE',
+          description: 'Increase transmit power',
+          automated: true,
+          executedAt: null,
+          result: null,
+        });
+        break;
+      case 'SPOOFING':
+        actions.push({
+          actionId: generateDeterministicId('action', this.operationCounter),
+          type: 'AUTHENTICATION_RESET',
+          description: 'Re-authenticate satellite link',
+          automated: false,
+          executedAt: null,
+          result: null,
+        });
+        break;
+      default:
+        actions.push({
+          actionId: generateDeterministicId('action', this.operationCounter),
+          type: 'ALERT_OPERATORS',
+          description: 'Notify security operations center',
+          automated: true,
+          executedAt: timestamp,
+          result: 'Alert sent',
+        });
+    }
+
+    return actions;
+  }
+
+  private determineKillChainPhase(threatType: ThreatType): KillChainPhase {
+    switch (threatType) {
+      case 'EAVESDROPPING':
+        return 'RECONNAISSANCE';
+      case 'JAMMING':
+      case 'SPOOFING':
+        return 'DELIVERY';
+      case 'COMMAND_INJECTION':
+        return 'EXPLOITATION';
+      case 'CYBER_INTRUSION':
+        return 'COMMAND_AND_CONTROL';
+      default:
+        return 'RECONNAISSANCE';
+    }
+  }
+
+  getAlert(alertId: string): SpaceThreatAlert | null {
+    const alert = this.alerts.get(alertId);
+    if (!alert) {
+      return null;
+    }
+    return alert;
+  }
+
+  updateAlertStatus(alertId: string, status: AlertStatus): boolean {
+    const alert = this.alerts.get(alertId);
+    if (!alert) {
+      return false;
+    }
+
+    const updatedAlert: SpaceThreatAlert = {
+      ...alert,
+      status,
+    };
+
+    this.alerts.set(alertId, updatedAlert);
+    return true;
+  }
+
+  listAlerts(filter?: { assetId?: string; severity?: ThreatSeverity; status?: AlertStatus }): readonly SpaceThreatAlert[] {
+    let alerts = Array.from(this.alerts.values());
+
+    if (filter?.assetId) {
+      alerts = alerts.filter(a => a.assetId === filter.assetId);
+    }
+    if (filter?.severity) {
+      alerts = alerts.filter(a => a.severity === filter.severity);
+    }
+    if (filter?.status) {
+      alerts = alerts.filter(a => a.status === filter.status);
+    }
+
+    return alerts;
+  }
+}
+
+interface ThreatDetectionRule {
+  readonly ruleId: string;
+  readonly name: string;
+  readonly threatTypes: readonly ThreatType[];
+  readonly threshold: number;
+  readonly actions: readonly MitigationActionType[];
+  readonly enabled: boolean;
+  readonly createdAt: number;
+}
+
+interface SignalAnalysisData {
+  readonly snr: number;
+  readonly expectedSnr: number;
+  readonly frequencyOffset: number;
+  readonly powerLevel: number;
+  readonly expectedPower: number;
+  readonly timestamp: number;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// GNSS SECURITY MONITOR
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export class GNSSSecurityMonitor {
+  private operationCounter: number = 0;
+  private readonly analyses: Map<string, GNSSSecurityAnalysis> = new Map();
+
+  analyzeGNSSSignals(
+    constellation: GNSSConstellation,
+    receiverLocation: GeographicLocation,
+    signalMetrics: SignalQualityMetrics
+  ): GNSSSecurityAnalysis {
+    this.operationCounter++;
+
+    const analysisId = generateDeterministicId('gnss_analysis', this.operationCounter);
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+
+    const spoofingIndicators = this.detectSpoofing(signalMetrics);
+    const jammingIndicators = this.detectJamming(signalMetrics);
+    const integrityStatus = this.assessIntegrity(spoofingIndicators, jammingIndicators);
+
+    const analysis: GNSSSecurityAnalysis = {
+      analysisId,
+      constellation,
+      receiverLocation,
+      signalQuality: signalMetrics,
+      spoofingIndicators,
+      jammingIndicators,
+      integrityStatus,
+      timestamp,
+    };
+
+    this.analyses.set(analysisId, analysis);
+    return analysis;
+  }
+
+  private detectSpoofing(metrics: SignalQualityMetrics): SpoofingIndicator[] {
+    this.operationCounter++;
+
+    const indicators: SpoofingIndicator[] = [];
+
+    if (metrics.pseudorangeResidual > 10) {
+      indicators.push({
+        indicatorId: generateDeterministicId('spoof_ind', this.operationCounter),
+        type: 'POSITION_JUMP',
+        value: metrics.pseudorangeResidual,
+        threshold: 10,
+        exceeded: true,
+        description: 'Pseudorange residual exceeds threshold',
+      });
+    }
+
+    if (metrics.carrierPhaseResidual > 0.1) {
+      indicators.push({
+        indicatorId: generateDeterministicId('spoof_ind', this.operationCounter + 1),
+        type: 'CARRIER_PHASE_ANOMALY',
+        value: metrics.carrierPhaseResidual,
+        threshold: 0.1,
+        exceeded: true,
+        description: 'Carrier phase residual anomaly detected',
+      });
+    }
+
+    if (metrics.signalStrength > -120) {
+      const anomalyValue = metrics.signalStrength + 130;
+      if (anomalyValue > 15) {
+        indicators.push({
+          indicatorId: generateDeterministicId('spoof_ind', this.operationCounter + 2),
+          type: 'SIGNAL_POWER_ANOMALY',
+          value: anomalyValue,
+          threshold: 15,
+          exceeded: true,
+          description: 'Signal strength anomalously high',
+        });
+      }
+    }
+
+    return indicators;
+  }
+
+  private detectJamming(metrics: SignalQualityMetrics): JammingIndicator[] {
+    this.operationCounter++;
+
+    const indicators: JammingIndicator[] = [];
+
+    if (metrics.carrierToNoise < 25) {
+      indicators.push({
+        indicatorId: generateDeterministicId('jam_ind', this.operationCounter),
+        type: 'CNO_DEGRADATION',
+        value: metrics.carrierToNoise,
+        threshold: 25,
+        exceeded: true,
+        description: 'Carrier-to-noise ratio below threshold',
+        estimatedDirection: deterministicRandom(this.operationCounter) * 360,
+      });
+    }
+
+    if (metrics.multipath > 5) {
+      indicators.push({
+        indicatorId: generateDeterministicId('jam_ind', this.operationCounter + 1),
+        type: 'NOISE_FLOOR_ELEVATION',
+        value: metrics.multipath,
+        threshold: 5,
+        exceeded: true,
+        description: 'Elevated noise floor detected',
+        estimatedDirection: null,
+      });
+    }
+
+    return indicators;
+  }
+
+  private assessIntegrity(
+    spoofingIndicators: readonly SpoofingIndicator[],
+    jammingIndicators: readonly JammingIndicator[]
+  ): GNSSIntegrityStatus {
+    const spoofingExceeded = spoofingIndicators.filter(i => i.exceeded).length;
+    const jammingExceeded = jammingIndicators.filter(i => i.exceeded).length;
+
+    if (spoofingExceeded >= 2) {
+      return 'SPOOFING_CONFIRMED';
+    } else if (spoofingExceeded === 1) {
+      return 'SPOOFING_SUSPECTED';
+    } else if (jammingExceeded >= 1) {
+      return 'JAMMING_DETECTED';
+    } else if (spoofingIndicators.length > 0 || jammingIndicators.length > 0) {
+      return 'DEGRADED';
+    }
+
+    return 'NOMINAL';
+  }
+
+  getAnalysis(analysisId: string): GNSSSecurityAnalysis | null {
+    const analysis = this.analyses.get(analysisId);
+    if (!analysis) {
+      return null;
+    }
+    return analysis;
+  }
+
+  listAnalyses(filter?: { constellation?: GNSSConstellation; integrityStatus?: GNSSIntegrityStatus }): readonly GNSSSecurityAnalysis[] {
+    let analyses = Array.from(this.analyses.values());
+
+    if (filter?.constellation) {
+      analyses = analyses.filter(a => a.constellation === filter.constellation);
+    }
+    if (filter?.integrityStatus) {
+      analyses = analyses.filter(a => a.integrityStatus === filter.integrityStatus);
+    }
+
+    return analyses;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// LINK MONITORING MANAGER
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export class SATCOMLinkMonitorManager {
+  private operationCounter: number = 0;
+  private readonly monitors: Map<string, SATCOMLinkMonitor> = new Map();
+
+  createMonitor(
+    linkId: string,
+    assetId: string,
+    groundStationId: string,
+    direction: LinkDirection,
+    frequency: number,
+    bandwidth: number
+  ): SATCOMLinkMonitor {
+    this.operationCounter++;
+
+    const monitorId = generateDeterministicId('link_mon', this.operationCounter);
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+
+    const monitor: SATCOMLinkMonitor = {
+      monitorId,
+      linkId,
+      assetId,
+      groundStationId,
+      direction,
+      frequency,
+      bandwidth,
+      metrics: this.generateInitialMetrics(),
+      anomalies: [],
+      status: 'NOMINAL',
+      timestamp,
+    };
+
+    this.monitors.set(monitorId, monitor);
+    return monitor;
+  }
+
+  private generateInitialMetrics(): LinkMetrics {
+    this.operationCounter++;
+
+    return {
+      signalStrength: -70 + deterministicRandom(this.operationCounter) * 20,
+      noiseFloor: -110 + deterministicRandom(this.operationCounter + 1) * 10,
+      snr: 20 + deterministicRandom(this.operationCounter + 2) * 15,
+      ber: deterministicRandom(this.operationCounter + 3) * 0.0001,
+      fer: deterministicRandom(this.operationCounter + 4) * 0.001,
+      latency: 250 + deterministicRandom(this.operationCounter + 5) * 100,
+      jitter: deterministicRandom(this.operationCounter + 6) * 20,
+      throughput: 1000000 + deterministicRandom(this.operationCounter + 7) * 9000000,
+      availability: 0.99 + deterministicRandom(this.operationCounter + 8) * 0.01,
+      linkMargin: 3 + deterministicRandom(this.operationCounter + 9) * 7,
+    };
+  }
+
+  updateMetrics(monitorId: string, metrics: LinkMetrics): SATCOMLinkMonitor | null {
+    this.operationCounter++;
+
+    const monitor = this.monitors.get(monitorId);
+    if (!monitor) {
+      return null;
+    }
+
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+    const anomalies = this.detectAnomalies(monitor.metrics, metrics);
+    const status = this.determineStatus(metrics, anomalies);
+
+    const updatedMonitor: SATCOMLinkMonitor = {
+      ...monitor,
+      metrics,
+      anomalies: [...monitor.anomalies, ...anomalies],
+      status,
+      timestamp,
+    };
+
+    this.monitors.set(monitorId, updatedMonitor);
+    return updatedMonitor;
+  }
+
+  private detectAnomalies(baseline: LinkMetrics, current: LinkMetrics): LinkAnomaly[] {
+    this.operationCounter++;
+
+    const anomalies: LinkAnomaly[] = [];
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+
+    if (current.snr < baseline.snr - 5) {
+      anomalies.push({
+        anomalyId: generateDeterministicId('anomaly', this.operationCounter),
+        type: 'SIGNAL_DEGRADATION',
+        severity: current.snr < baseline.snr - 10 ? 'HIGH' : 'MEDIUM',
+        value: current.snr,
+        baseline: baseline.snr,
+        deviation: baseline.snr - current.snr,
+        description: 'SNR degradation detected',
+        timestamp,
+      });
+    }
+
+    if (current.ber > baseline.ber * 10) {
+      anomalies.push({
+        anomalyId: generateDeterministicId('anomaly', this.operationCounter + 1),
+        type: 'INTERFERENCE',
+        severity: 'HIGH',
+        value: current.ber,
+        baseline: baseline.ber,
+        deviation: current.ber / baseline.ber,
+        description: 'Bit error rate spike detected',
+        timestamp,
+      });
+    }
+
+    return anomalies;
+  }
+
+  private determineStatus(metrics: LinkMetrics, anomalies: readonly LinkAnomaly[]): LinkStatus {
+    const criticalAnomalies = anomalies.filter(a => a.severity === 'CRITICAL').length;
+    const highAnomalies = anomalies.filter(a => a.severity === 'HIGH').length;
+
+    if (criticalAnomalies > 0 || metrics.availability < 0.9) {
+      return 'COMPROMISED';
+    } else if (highAnomalies > 0 || metrics.availability < 0.95) {
+      return 'DEGRADED';
+    } else if (anomalies.length > 0) {
+      return 'INTERMITTENT';
+    }
+
+    return 'NOMINAL';
+  }
+
+  getMonitor(monitorId: string): SATCOMLinkMonitor | null {
+    const monitor = this.monitors.get(monitorId);
+    if (!monitor) {
+      return null;
+    }
+    return monitor;
+  }
+
+  listMonitors(filter?: { assetId?: string; status?: LinkStatus }): readonly SATCOMLinkMonitor[] {
+    let monitors = Array.from(this.monitors.values());
+
+    if (filter?.assetId) {
+      monitors = monitors.filter(m => m.assetId === filter.assetId);
+    }
+    if (filter?.status) {
+      monitors = monitors.filter(m => m.status === filter.status);
+    }
+
+    return monitors;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SPACE SITUATIONAL AWARENESS MANAGER
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export class SpaceSituationalAwarenessManager {
+  private operationCounter: number = 0;
+  private readonly ssaRecords: Map<string, SpaceSituationalAwareness> = new Map();
+
+  generateSSAReport(assetId: string): SpaceSituationalAwareness {
+    this.operationCounter++;
+
+    const ssaId = generateDeterministicId('ssa', this.operationCounter);
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+
+    const conjunctionAssessments = this.generateConjunctionAssessments(assetId);
+    const proximityObjects = this.generateProximityObjects(assetId);
+    const maneuverDetections = this.generateManeuverDetections();
+    const debrisTracking = this.generateDebrisTracking();
+    const spaceWeather = this.generateSpaceWeatherConditions();
+
+    const ssa: SpaceSituationalAwareness = {
+      ssaId,
+      assetId,
+      conjunctionAssessments,
+      proximityObjects,
+      maneuverDetections,
+      debrisTracking,
+      spaceWeather,
+      timestamp,
+    };
+
+    this.ssaRecords.set(ssaId, ssa);
+    return ssa;
+  }
+
+  private generateConjunctionAssessments(assetId: string): ConjunctionAssessment[] {
+    this.operationCounter++;
+
+    const assessments: ConjunctionAssessment[] = [];
+    const count = Math.floor(deterministicRandom(this.operationCounter) * 3);
+
+    for (let i = 0; i < count; i++) {
+      const probability = deterministicRandom(this.operationCounter + i) * 0.001;
+      const missDistance = deterministicRandom(this.operationCounter + i + 100) * 10000 + 100;
+
+      assessments.push({
+        assessmentId: generateDeterministicId('conj', this.operationCounter + i),
+        primaryObject: assetId,
+        secondaryObject: `DEBRIS_${this.operationCounter + i}`,
+        timeOfClosestApproach: generateDeterministicTimestamp(this.operationCounter + 10000 + i * 1000),
+        missDistance,
+        probability,
+        relativeVelocity: deterministicRandom(this.operationCounter + i + 200) * 15 + 1,
+        riskLevel: probability > 0.0001 ? 'HIGH' : probability > 0.00001 ? 'MEDIUM' : 'LOW',
+        recommendedAction: probability > 0.0001 ? 'Consider collision avoidance maneuver' : 'Continue monitoring',
+      });
+    }
+
+    return assessments;
+  }
+
+  private generateProximityObjects(assetId: string): ProximityObject[] {
+    this.operationCounter++;
+
+    const objects: ProximityObject[] = [];
+    const count = Math.floor(deterministicRandom(this.operationCounter) * 5) + 1;
+
+    const objectTypes: ProximityObjectType[] = [
+      'ACTIVE_SATELLITE',
+      'INACTIVE_SATELLITE',
+      'ROCKET_BODY',
+      'DEBRIS',
+      'UNKNOWN',
+    ];
+
+    for (let i = 0; i < count; i++) {
+      const distance = deterministicRandom(this.operationCounter + i) * 500 + 50;
+      const objectType = objectTypes[Math.floor(deterministicRandom(this.operationCounter + i + 100) * objectTypes.length)];
+
+      objects.push({
+        objectId: generateDeterministicId('prox', this.operationCounter + i),
+        noradId: `${40000 + this.operationCounter + i}`,
+        name: `Object_${this.operationCounter + i}`,
+        type: objectType,
+        distance,
+        relativeVelocity: deterministicRandom(this.operationCounter + i + 200) * 5,
+        approachAngle: deterministicRandom(this.operationCounter + i + 300) * 360,
+        threatAssessment: distance < 100 ? 'HIGH' : distance < 200 ? 'MEDIUM' : 'LOW',
+        lastTracked: generateDeterministicTimestamp(this.operationCounter - 100),
+      });
+    }
+
+    return objects;
+  }
+
+  private generateManeuverDetections(): ManeuverDetection[] {
+    this.operationCounter++;
+
+    const detections: ManeuverDetection[] = [];
+
+    if (deterministicRandom(this.operationCounter) > 0.7) {
+      const maneuverTypes: ManeuverType[] = [
+        'STATION_KEEPING',
+        'ORBIT_RAISING',
+        'COLLISION_AVOIDANCE',
+        'PROXIMITY_OPERATIONS',
+      ];
+
+      detections.push({
+        detectionId: generateDeterministicId('maneuver', this.operationCounter),
+        objectId: `SAT_${this.operationCounter}`,
+        maneuverType: maneuverTypes[Math.floor(deterministicRandom(this.operationCounter + 1) * maneuverTypes.length)],
+        deltaV: deterministicRandom(this.operationCounter + 2) * 5,
+        direction: {
+          x: deterministicRandom(this.operationCounter + 3) * 2 - 1,
+          y: deterministicRandom(this.operationCounter + 4) * 2 - 1,
+          z: deterministicRandom(this.operationCounter + 5) * 2 - 1,
+        },
+        detectedAt: generateDeterministicTimestamp(this.operationCounter - 500),
+        confidence: 0.7 + deterministicRandom(this.operationCounter + 6) * 0.3,
+        assessment: 'Routine maneuver detected',
+      });
+    }
+
+    return detections;
+  }
+
+  private generateDebrisTracking(): DebrisObject[] {
+    this.operationCounter++;
+
+    const debris: DebrisObject[] = [];
+    const count = Math.floor(deterministicRandom(this.operationCounter) * 10) + 5;
+
+    const sizes: DebrisSize[] = ['LARGE', 'MEDIUM', 'SMALL'];
+    const sources = ['COSMOS_DEBRIS', 'FENGYUN_DEBRIS', 'IRIDIUM_DEBRIS', 'UNKNOWN'];
+
+    for (let i = 0; i < count; i++) {
+      debris.push({
+        debrisId: generateDeterministicId('debris', this.operationCounter + i),
+        noradId: `${50000 + this.operationCounter + i}`,
+        source: sources[Math.floor(deterministicRandom(this.operationCounter + i + 100) * sources.length)],
+        size: sizes[Math.floor(deterministicRandom(this.operationCounter + i + 200) * sizes.length)],
+        orbit: {
+          orbitType: 'LEO',
+          altitude: 400 + deterministicRandom(this.operationCounter + i + 300) * 400,
+          inclination: deterministicRandom(this.operationCounter + i + 400) * 100,
+          eccentricity: deterministicRandom(this.operationCounter + i + 500) * 0.1,
+          period: 90 + deterministicRandom(this.operationCounter + i + 600) * 30,
+          apogee: 400 + deterministicRandom(this.operationCounter + i + 700) * 500,
+          perigee: 350 + deterministicRandom(this.operationCounter + i + 800) * 100,
+          raan: deterministicRandom(this.operationCounter + i + 900) * 360,
+          argumentOfPerigee: deterministicRandom(this.operationCounter + i + 1000) * 360,
+          meanAnomaly: deterministicRandom(this.operationCounter + i + 1100) * 360,
+          epoch: generateDeterministicTimestamp(this.operationCounter - 1000),
+        },
+        trackingStatus: 'TRACKED',
+        lastObserved: generateDeterministicTimestamp(this.operationCounter - 100),
+      });
+    }
+
+    return debris;
+  }
+
+  private generateSpaceWeatherConditions(): SpaceWeatherConditions {
+    this.operationCounter++;
+
+    const solarLevels: SolarActivityLevel[] = ['QUIET', 'MODERATE', 'ACTIVE', 'STORM'];
+    const geoLevels: GeomagneticStormLevel[] = ['G0', 'G1', 'G2', 'G3', 'G4', 'G5'];
+    const radLevels: RadiationBeltLevel[] = ['NORMAL', 'ELEVATED', 'HIGH', 'EXTREME'];
+
+    return {
+      solarActivity: solarLevels[Math.floor(deterministicRandom(this.operationCounter) * solarLevels.length)],
+      geomagneticStorm: geoLevels[Math.floor(deterministicRandom(this.operationCounter + 1) * 3)],
+      radiationBelt: radLevels[Math.floor(deterministicRandom(this.operationCounter + 2) * radLevels.length)],
+      solarWindSpeed: 300 + deterministicRandom(this.operationCounter + 3) * 400,
+      solarWindDensity: 1 + deterministicRandom(this.operationCounter + 4) * 20,
+      kpIndex: Math.floor(deterministicRandom(this.operationCounter + 5) * 9),
+      dstIndex: -50 + deterministicRandom(this.operationCounter + 6) * 100,
+      f107Index: 70 + deterministicRandom(this.operationCounter + 7) * 150,
+      protonFlux: deterministicRandom(this.operationCounter + 8) * 100,
+      electronFlux: deterministicRandom(this.operationCounter + 9) * 1000,
+      forecast: {
+        validFrom: generateDeterministicTimestamp(this.operationCounter),
+        validTo: generateDeterministicTimestamp(this.operationCounter + 86400),
+        solarFlareProb: deterministicRandom(this.operationCounter + 10) * 0.3,
+        protonEventProb: deterministicRandom(this.operationCounter + 11) * 0.2,
+        geomagneticStormProb: deterministicRandom(this.operationCounter + 12) * 0.4,
+        radiationStormProb: deterministicRandom(this.operationCounter + 13) * 0.1,
+      },
+    };
+  }
+
+  getSSAReport(ssaId: string): SpaceSituationalAwareness | null {
+    const ssa = this.ssaRecords.get(ssaId);
+    if (!ssa) {
+      return null;
+    }
+    return ssa;
+  }
+
+  listSSAReports(): readonly SpaceSituationalAwareness[] {
+    return Array.from(this.ssaRecords.values());
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SPACE SYSTEMS SECURITY CENTER
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export class SpaceSystemsSecurityCenter {
+  readonly assetManager: SatelliteAssetManager;
+  readonly groundStationManager: GroundStationManager;
+  readonly threatDetectionEngine: SpaceThreatDetectionEngine;
+  readonly gnssSecurityMonitor: GNSSSecurityMonitor;
+  readonly linkMonitorManager: SATCOMLinkMonitorManager;
+  readonly ssaManager: SpaceSituationalAwarenessManager;
+
+  constructor() {
+    this.assetManager = new SatelliteAssetManager();
+    this.groundStationManager = new GroundStationManager();
+    this.threatDetectionEngine = new SpaceThreatDetectionEngine();
+    this.gnssSecurityMonitor = new GNSSSecurityMonitor();
+    this.linkMonitorManager = new SATCOMLinkMonitorManager();
+    this.ssaManager = new SpaceSituationalAwarenessManager();
+  }
+
+  initializeDefaultConfiguration(): void {
+    this.threatDetectionEngine.addDetectionRule(
+      'Jamming Detection',
+      ['JAMMING'],
+      0.7,
+      ['FREQUENCY_HOP', 'POWER_INCREASE', 'ALERT_OPERATORS']
+    );
+
+    this.threatDetectionEngine.addDetectionRule(
+      'Spoofing Detection',
+      ['SPOOFING', 'MEACONING'],
+      0.8,
+      ['AUTHENTICATION_RESET', 'LINK_SWITCHOVER', 'ALERT_OPERATORS']
+    );
+
+    this.threatDetectionEngine.addDetectionRule(
+      'Cyber Intrusion Detection',
+      ['CYBER_INTRUSION', 'COMMAND_INJECTION'],
+      0.9,
+      ['SAFE_MODE', 'ALERT_OPERATORS', 'COORDINATE_ALLIES']
+    );
+  }
+
+  getSecurityDashboard(): SpaceSecurityDashboard {
+    const assets = this.assetManager.listAssets();
+    const stations = this.groundStationManager.listStations();
+    const alerts = this.threatDetectionEngine.listAlerts();
+    const gnssAnalyses = this.gnssSecurityMonitor.listAnalyses();
+    const linkMonitors = this.linkMonitorManager.listMonitors();
+
+    const criticalAlerts = alerts.filter(a => a.severity === 'CRITICAL' && a.status === 'NEW').length;
+    const highAlerts = alerts.filter(a => a.severity === 'HIGH' && a.status === 'NEW').length;
+    const compromisedLinks = linkMonitors.filter(m => m.status === 'COMPROMISED').length;
+    const gnssIssues = gnssAnalyses.filter(a =>
+      a.integrityStatus === 'SPOOFING_CONFIRMED' ||
+      a.integrityStatus === 'JAMMING_DETECTED'
+    ).length;
+
+    return {
+      totalAssets: assets.length,
+      operationalAssets: assets.filter(a => a.status === 'OPERATIONAL').length,
+      totalGroundStations: stations.length,
+      operationalStations: stations.filter(s => s.status === 'OPERATIONAL').length,
+      criticalAlerts,
+      highAlerts,
+      totalAlerts: alerts.length,
+      compromisedLinks,
+      gnssSecurityIssues: gnssIssues,
+      systemHealth: criticalAlerts > 0 ? 'CRITICAL' : highAlerts > 0 || compromisedLinks > 0 ? 'WARNING' : 'HEALTHY',
+      lastUpdated: Date.now(),
+    };
+  }
+}
+
+interface SpaceSecurityDashboard {
+  readonly totalAssets: number;
+  readonly operationalAssets: number;
+  readonly totalGroundStations: number;
+  readonly operationalStations: number;
+  readonly criticalAlerts: number;
+  readonly highAlerts: number;
+  readonly totalAlerts: number;
+  readonly compromisedLinks: number;
+  readonly gnssSecurityIssues: number;
+  readonly systemHealth: 'HEALTHY' | 'WARNING' | 'CRITICAL';
+  readonly lastUpdated: number;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// FACTORY FUNCTIONS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export function createSatelliteAssetManager(): SatelliteAssetManager {
+  return new SatelliteAssetManager();
+}
+
+export function createGroundStationManager(): GroundStationManager {
+  return new GroundStationManager();
+}
+
+export function createSpaceThreatDetectionEngine(): SpaceThreatDetectionEngine {
+  return new SpaceThreatDetectionEngine();
+}
+
+export function createGNSSSecurityMonitor(): GNSSSecurityMonitor {
+  return new GNSSSecurityMonitor();
+}
+
+export function createSATCOMLinkMonitorManager(): SATCOMLinkMonitorManager {
+  return new SATCOMLinkMonitorManager();
+}
+
+export function createSpaceSituationalAwarenessManager(): SpaceSituationalAwarenessManager {
+  return new SpaceSituationalAwarenessManager();
+}
+
+export function createSpaceSystemsSecurityCenter(): SpaceSystemsSecurityCenter {
+  return new SpaceSystemsSecurityCenter();
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// DEFAULT EXPORT
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export default {
+  SatelliteAssetManager,
+  GroundStationManager,
+  SpaceThreatDetectionEngine,
+  GNSSSecurityMonitor,
+  SATCOMLinkMonitorManager,
+  SpaceSituationalAwarenessManager,
+  SpaceSystemsSecurityCenter,
+  SpaceSecurityError,
+  SpaceSecurityErrorCode,
+  createSatelliteAssetManager,
+  createGroundStationManager,
+  createSpaceThreatDetectionEngine,
+  createGNSSSecurityMonitor,
+  createSATCOMLinkMonitorManager,
+  createSpaceSituationalAwarenessManager,
+  createSpaceSystemsSecurityCenter,
+};

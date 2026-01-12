@@ -1,0 +1,1330 @@
+/**
+ * @file Surveillance Systems - Self-Contained Surveillance Operations Platform
+ * @author {{AVTOR}}
+ * @version {{VERZIJA}}
+ * @date {{DATUM}}
+ * @project {{IME_PROJEKTA}}
+ * @domain VARNOSTNI_SISTEMI
+ * 
+ * @requirement REQ-SEC-SUR-001
+ * @design DSN-SEC-SUR-001
+ * @test TST-SEC-SUR-001
+ * 
+ * @description
+ * Enterprise-grade self-contained surveillance operations platform implementing
+ * comprehensive video surveillance, audio surveillance, tracking systems,
+ * CCTV analysis, and monitoring capabilities. All surveillance algorithms
+ * are natively implemented without external dependencies.
+ * 
+ * @classification TOP SECRET - Surveillance Systems
+ * @authorization Required: Level 5 Security Clearance
+ * @dependencies NONE - Fully self-contained implementation
+ */
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SURVEILLANCE TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export type SurveillanceType =
+  | 'VIDEO'
+  | 'AUDIO'
+  | 'ELECTRONIC'
+  | 'PHYSICAL'
+  | 'CYBER'
+  | 'MOBILE'
+  | 'AERIAL';
+
+export type VideoSurveillanceType =
+  | 'CCTV'
+  | 'BODY_WORN'
+  | 'COVERT'
+  | 'DRONE'
+  | 'SATELLITE'
+  | 'THERMAL'
+  | 'NIGHT_VISION';
+
+export type AudioSurveillanceType =
+  | 'WIRETAP'
+  | 'ROOM_BUG'
+  | 'PARABOLIC'
+  | 'LASER'
+  | 'GSM_INTERCEPT'
+  | 'VOIP_INTERCEPT';
+
+export type TrackingType =
+  | 'GPS'
+  | 'CELLULAR'
+  | 'WIFI'
+  | 'BLUETOOTH'
+  | 'RFID'
+  | 'VISUAL'
+  | 'BEHAVIORAL';
+
+export type AnalysisType =
+  | 'FACIAL_RECOGNITION'
+  | 'OBJECT_DETECTION'
+  | 'BEHAVIOR_ANALYSIS'
+  | 'LICENSE_PLATE'
+  | 'GAIT_ANALYSIS'
+  | 'VOICE_RECOGNITION';
+
+export type SecurityLevel =
+  | 'TOP_SECRET'
+  | 'SECRET'
+  | 'CONFIDENTIAL'
+  | 'UNCLASSIFIED';
+
+export type OperationalMode =
+  | 'ACTIVE'
+  | 'PASSIVE'
+  | 'COVERT'
+  | 'OVERT';
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SURVEILLANCE CONFIGURATION
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface SurveillanceSystemsConfig {
+  readonly platformId: string;
+  readonly name: string;
+  readonly version: string;
+  readonly mode: OperationalMode;
+  readonly video: VideoSurveillanceConfig;
+  readonly audio: AudioSurveillanceConfig;
+  readonly tracking: TrackingConfig;
+  readonly analysis: AnalysisConfig;
+  readonly electronic: ElectronicSurveillanceConfig;
+  readonly physical: PhysicalSurveillanceConfig;
+  readonly integration: IntegrationConfig;
+  readonly storage: StorageConfig;
+  readonly security: SecurityConfig;
+  readonly reporting: ReportingConfig;
+  readonly metadata: PlatformMetadata;
+}
+
+export interface VideoSurveillanceConfig {
+  readonly enabled: boolean;
+  readonly cctv: CCTVConfig;
+  readonly covert: CovertVideoConfig;
+  readonly aerial: AerialVideoConfig;
+  readonly specialized: SpecializedVideoConfig;
+  readonly processing: VideoProcessingConfig;
+}
+
+export interface CCTVConfig {
+  readonly enabled: boolean;
+  readonly cameras: CameraConfig;
+  readonly recording: RecordingConfig;
+  readonly streaming: StreamingConfig;
+  readonly ptz: PTZConfig;
+}
+
+export interface CameraConfig {
+  readonly enabled: boolean;
+  readonly types: readonly CameraType[];
+  readonly resolution: ResolutionConfig;
+  readonly frameRate: FrameRateConfig;
+  readonly compression: CompressionConfig;
+}
+
+export type CameraType =
+  | 'FIXED'
+  | 'PTZ'
+  | 'DOME'
+  | 'BULLET'
+  | 'FISHEYE'
+  | 'MULTI_SENSOR';
+
+export interface ResolutionConfig {
+  readonly minimum: string;
+  readonly maximum: string;
+  readonly default: string;
+  readonly adaptive: boolean;
+}
+
+export interface FrameRateConfig {
+  readonly minimum: number;
+  readonly maximum: number;
+  readonly default: number;
+  readonly adaptive: boolean;
+}
+
+export interface CompressionConfig {
+  readonly enabled: boolean;
+  readonly codecs: readonly VideoCodec[];
+  readonly quality: 'LOW' | 'MEDIUM' | 'HIGH' | 'LOSSLESS';
+}
+
+export type VideoCodec =
+  | 'H264'
+  | 'H265'
+  | 'VP9'
+  | 'AV1'
+  | 'MJPEG';
+
+export interface RecordingConfig {
+  readonly enabled: boolean;
+  readonly continuous: boolean;
+  readonly motionTriggered: boolean;
+  readonly scheduled: boolean;
+  readonly preRecord: number;
+  readonly postRecord: number;
+}
+
+export interface StreamingConfig {
+  readonly enabled: boolean;
+  readonly protocols: readonly StreamProtocol[];
+  readonly latency: 'LOW' | 'NORMAL' | 'HIGH';
+  readonly multicast: boolean;
+}
+
+export type StreamProtocol =
+  | 'RTSP'
+  | 'RTMP'
+  | 'HLS'
+  | 'WEBRTC'
+  | 'ONVIF';
+
+export interface PTZConfig {
+  readonly enabled: boolean;
+  readonly presets: boolean;
+  readonly tours: boolean;
+  readonly autoTracking: boolean;
+  readonly homePosition: boolean;
+}
+
+export interface CovertVideoConfig {
+  readonly enabled: boolean;
+  readonly types: readonly CovertCameraType[];
+  readonly concealment: ConcealmentConfig;
+  readonly transmission: TransmissionConfig;
+}
+
+export type CovertCameraType =
+  | 'PINHOLE'
+  | 'BUTTON'
+  | 'PEN'
+  | 'GLASSES'
+  | 'SMOKE_DETECTOR'
+  | 'CLOCK'
+  | 'PLANT';
+
+export interface ConcealmentConfig {
+  readonly enabled: boolean;
+  readonly methods: readonly string[];
+  readonly detection: boolean;
+}
+
+export interface TransmissionConfig {
+  readonly enabled: boolean;
+  readonly wireless: boolean;
+  readonly encrypted: boolean;
+  readonly burst: boolean;
+  readonly store: boolean;
+}
+
+export interface AerialVideoConfig {
+  readonly enabled: boolean;
+  readonly drone: DroneConfig;
+  readonly satellite: SatelliteConfig;
+  readonly aircraft: AircraftConfig;
+}
+
+export interface DroneConfig {
+  readonly enabled: boolean;
+  readonly types: readonly DroneType[];
+  readonly autonomy: AutonomyConfig;
+  readonly payload: PayloadConfig;
+}
+
+export type DroneType =
+  | 'QUADCOPTER'
+  | 'FIXED_WING'
+  | 'HYBRID'
+  | 'NANO'
+  | 'TETHERED';
+
+export interface AutonomyConfig {
+  readonly enabled: boolean;
+  readonly waypoints: boolean;
+  readonly tracking: boolean;
+  readonly returnHome: boolean;
+  readonly obstacleAvoidance: boolean;
+}
+
+export interface PayloadConfig {
+  readonly enabled: boolean;
+  readonly cameras: readonly string[];
+  readonly sensors: readonly string[];
+  readonly maxWeight: number;
+}
+
+export interface SatelliteConfig {
+  readonly enabled: boolean;
+  readonly imagery: ImageryConfig;
+  readonly tasking: TaskingConfig;
+  readonly processing: SatelliteProcessingConfig;
+}
+
+export interface ImageryConfig {
+  readonly enabled: boolean;
+  readonly optical: boolean;
+  readonly radar: boolean;
+  readonly multispectral: boolean;
+  readonly resolution: number;
+}
+
+export interface TaskingConfig {
+  readonly enabled: boolean;
+  readonly priority: boolean;
+  readonly scheduling: boolean;
+  readonly revisit: boolean;
+}
+
+export interface SatelliteProcessingConfig {
+  readonly enabled: boolean;
+  readonly orthorectification: boolean;
+  readonly enhancement: boolean;
+  readonly analysis: boolean;
+}
+
+export interface AircraftConfig {
+  readonly enabled: boolean;
+  readonly manned: boolean;
+  readonly unmanned: boolean;
+  readonly sensors: readonly string[];
+}
+
+export interface SpecializedVideoConfig {
+  readonly enabled: boolean;
+  readonly thermal: ThermalConfig;
+  readonly nightVision: NightVisionConfig;
+  readonly multispectral: MultispectralConfig;
+}
+
+export interface ThermalConfig {
+  readonly enabled: boolean;
+  readonly resolution: string;
+  readonly sensitivity: number;
+  readonly range: number;
+}
+
+export interface NightVisionConfig {
+  readonly enabled: boolean;
+  readonly generation: number;
+  readonly illumination: boolean;
+  readonly range: number;
+}
+
+export interface MultispectralConfig {
+  readonly enabled: boolean;
+  readonly bands: readonly string[];
+  readonly analysis: boolean;
+}
+
+export interface VideoProcessingConfig {
+  readonly enabled: boolean;
+  readonly realtime: boolean;
+  readonly enhancement: VideoEnhancementConfig;
+  readonly analytics: VideoAnalyticsConfig;
+}
+
+export interface VideoEnhancementConfig {
+  readonly enabled: boolean;
+  readonly stabilization: boolean;
+  readonly denoising: boolean;
+  readonly superResolution: boolean;
+  readonly defogging: boolean;
+}
+
+export interface VideoAnalyticsConfig {
+  readonly enabled: boolean;
+  readonly motionDetection: boolean;
+  readonly objectDetection: boolean;
+  readonly facialRecognition: boolean;
+  readonly behaviorAnalysis: boolean;
+}
+
+export interface AudioSurveillanceConfig {
+  readonly enabled: boolean;
+  readonly wiretap: WiretapConfig;
+  readonly roomBug: RoomBugConfig;
+  readonly directional: DirectionalAudioConfig;
+  readonly intercept: InterceptConfig;
+  readonly processing: AudioProcessingConfig;
+}
+
+export interface WiretapConfig {
+  readonly enabled: boolean;
+  readonly types: readonly WiretapType[];
+  readonly legal: LegalConfig;
+  readonly recording: AudioRecordingConfig;
+}
+
+export type WiretapType =
+  | 'LANDLINE'
+  | 'MOBILE'
+  | 'VOIP'
+  | 'SATELLITE';
+
+export interface LegalConfig {
+  readonly enabled: boolean;
+  readonly authorization: boolean;
+  readonly minimization: boolean;
+  readonly retention: number;
+}
+
+export interface AudioRecordingConfig {
+  readonly enabled: boolean;
+  readonly format: AudioFormat;
+  readonly quality: 'LOW' | 'MEDIUM' | 'HIGH' | 'LOSSLESS';
+  readonly encryption: boolean;
+}
+
+export type AudioFormat =
+  | 'WAV'
+  | 'MP3'
+  | 'FLAC'
+  | 'OPUS'
+  | 'AAC';
+
+export interface RoomBugConfig {
+  readonly enabled: boolean;
+  readonly types: readonly BugType[];
+  readonly transmission: BugTransmissionConfig;
+  readonly power: PowerConfig;
+}
+
+export type BugType =
+  | 'RF'
+  | 'GSM'
+  | 'WIFI'
+  | 'RECORDER'
+  | 'LASER';
+
+export interface BugTransmissionConfig {
+  readonly enabled: boolean;
+  readonly frequency: number;
+  readonly encryption: boolean;
+  readonly burst: boolean;
+}
+
+export interface PowerConfig {
+  readonly enabled: boolean;
+  readonly battery: boolean;
+  readonly parasitic: boolean;
+  readonly solar: boolean;
+  readonly duration: number;
+}
+
+export interface DirectionalAudioConfig {
+  readonly enabled: boolean;
+  readonly parabolic: ParabolicConfig;
+  readonly laser: LaserAudioConfig;
+  readonly shotgun: ShotgunMicConfig;
+}
+
+export interface ParabolicConfig {
+  readonly enabled: boolean;
+  readonly diameter: number;
+  readonly range: number;
+  readonly sensitivity: number;
+}
+
+export interface LaserAudioConfig {
+  readonly enabled: boolean;
+  readonly range: number;
+  readonly surfaces: readonly string[];
+  readonly processing: boolean;
+}
+
+export interface ShotgunMicConfig {
+  readonly enabled: boolean;
+  readonly pattern: 'SUPERCARDIOID' | 'HYPERCARDIOID' | 'LOBAR';
+  readonly range: number;
+}
+
+export interface InterceptConfig {
+  readonly enabled: boolean;
+  readonly gsm: GSMInterceptConfig;
+  readonly voip: VoIPInterceptConfig;
+  readonly satellite: SatelliteInterceptConfig;
+}
+
+export interface GSMInterceptConfig {
+  readonly enabled: boolean;
+  readonly passive: boolean;
+  readonly active: boolean;
+  readonly decryption: boolean;
+}
+
+export interface VoIPInterceptConfig {
+  readonly enabled: boolean;
+  readonly protocols: readonly VoIPProtocol[];
+  readonly decryption: boolean;
+}
+
+export type VoIPProtocol =
+  | 'SIP'
+  | 'H323'
+  | 'SRTP'
+  | 'ZRTP'
+  | 'OTRP';
+
+export interface SatelliteInterceptConfig {
+  readonly enabled: boolean;
+  readonly systems: readonly string[];
+  readonly decryption: boolean;
+}
+
+export interface AudioProcessingConfig {
+  readonly enabled: boolean;
+  readonly enhancement: AudioEnhancementConfig;
+  readonly analysis: AudioAnalysisConfig;
+  readonly transcription: TranscriptionConfig;
+}
+
+export interface AudioEnhancementConfig {
+  readonly enabled: boolean;
+  readonly noiseReduction: boolean;
+  readonly echoCancellation: boolean;
+  readonly amplification: boolean;
+  readonly filtering: boolean;
+}
+
+export interface AudioAnalysisConfig {
+  readonly enabled: boolean;
+  readonly voiceRecognition: boolean;
+  readonly speakerIdentification: boolean;
+  readonly languageDetection: boolean;
+  readonly emotionAnalysis: boolean;
+}
+
+export interface TranscriptionConfig {
+  readonly enabled: boolean;
+  readonly realtime: boolean;
+  readonly languages: readonly string[];
+  readonly accuracy: 'DRAFT' | 'STANDARD' | 'HIGH';
+}
+
+export interface TrackingConfig {
+  readonly enabled: boolean;
+  readonly gps: GPSTrackingConfig;
+  readonly cellular: CellularTrackingConfig;
+  readonly wireless: WirelessTrackingConfig;
+  readonly visual: VisualTrackingConfig;
+  readonly behavioral: BehavioralTrackingConfig;
+}
+
+export interface GPSTrackingConfig {
+  readonly enabled: boolean;
+  readonly devices: GPSDeviceConfig;
+  readonly geofencing: GeofencingConfig;
+  readonly history: HistoryConfig;
+}
+
+export interface GPSDeviceConfig {
+  readonly enabled: boolean;
+  readonly types: readonly GPSDeviceType[];
+  readonly accuracy: number;
+  readonly updateInterval: number;
+}
+
+export type GPSDeviceType =
+  | 'VEHICLE'
+  | 'PERSONAL'
+  | 'ASSET'
+  | 'COVERT';
+
+export interface GeofencingConfig {
+  readonly enabled: boolean;
+  readonly zones: boolean;
+  readonly alerts: boolean;
+  readonly reporting: boolean;
+}
+
+export interface HistoryConfig {
+  readonly enabled: boolean;
+  readonly retention: number;
+  readonly playback: boolean;
+  readonly export: boolean;
+}
+
+export interface CellularTrackingConfig {
+  readonly enabled: boolean;
+  readonly methods: readonly CellularMethod[];
+  readonly accuracy: CellularAccuracyConfig;
+}
+
+export type CellularMethod =
+  | 'CELL_ID'
+  | 'TRIANGULATION'
+  | 'TIMING_ADVANCE'
+  | 'IMSI_CATCHER';
+
+export interface CellularAccuracyConfig {
+  readonly urban: number;
+  readonly suburban: number;
+  readonly rural: number;
+}
+
+export interface WirelessTrackingConfig {
+  readonly enabled: boolean;
+  readonly wifi: WiFiTrackingConfig;
+  readonly bluetooth: BluetoothTrackingConfig;
+  readonly rfid: RFIDTrackingConfig;
+}
+
+export interface WiFiTrackingConfig {
+  readonly enabled: boolean;
+  readonly probeRequests: boolean;
+  readonly fingerprinting: boolean;
+  readonly positioning: boolean;
+}
+
+export interface BluetoothTrackingConfig {
+  readonly enabled: boolean;
+  readonly classic: boolean;
+  readonly ble: boolean;
+  readonly beacons: boolean;
+}
+
+export interface RFIDTrackingConfig {
+  readonly enabled: boolean;
+  readonly passive: boolean;
+  readonly active: boolean;
+  readonly range: number;
+}
+
+export interface VisualTrackingConfig {
+  readonly enabled: boolean;
+  readonly facial: FacialTrackingConfig;
+  readonly vehicle: VehicleTrackingConfig;
+  readonly object: ObjectTrackingConfig;
+}
+
+export interface FacialTrackingConfig {
+  readonly enabled: boolean;
+  readonly recognition: boolean;
+  readonly reidentification: boolean;
+  readonly crossCamera: boolean;
+}
+
+export interface VehicleTrackingConfig {
+  readonly enabled: boolean;
+  readonly licensePlate: boolean;
+  readonly make: boolean;
+  readonly model: boolean;
+  readonly color: boolean;
+}
+
+export interface ObjectTrackingConfig {
+  readonly enabled: boolean;
+  readonly types: readonly string[];
+  readonly persistence: boolean;
+  readonly handoff: boolean;
+}
+
+export interface BehavioralTrackingConfig {
+  readonly enabled: boolean;
+  readonly patterns: PatternConfig;
+  readonly anomalies: AnomalyConfig;
+  readonly prediction: PredictionConfig;
+}
+
+export interface PatternConfig {
+  readonly enabled: boolean;
+  readonly movement: boolean;
+  readonly schedule: boolean;
+  readonly associations: boolean;
+}
+
+export interface AnomalyConfig {
+  readonly enabled: boolean;
+  readonly deviation: boolean;
+  readonly alerting: boolean;
+  readonly learning: boolean;
+}
+
+export interface PredictionConfig {
+  readonly enabled: boolean;
+  readonly location: boolean;
+  readonly behavior: boolean;
+  readonly intent: boolean;
+}
+
+export interface AnalysisConfig {
+  readonly enabled: boolean;
+  readonly facial: FacialAnalysisConfig;
+  readonly behavior: BehaviorAnalysisConfig;
+  readonly object: ObjectAnalysisConfig;
+  readonly scene: SceneAnalysisConfig;
+}
+
+export interface FacialAnalysisConfig {
+  readonly enabled: boolean;
+  readonly recognition: RecognitionConfig;
+  readonly attributes: AttributeConfig;
+  readonly emotion: EmotionConfig;
+}
+
+export interface RecognitionConfig {
+  readonly enabled: boolean;
+  readonly database: boolean;
+  readonly watchlist: boolean;
+  readonly threshold: number;
+}
+
+export interface AttributeConfig {
+  readonly enabled: boolean;
+  readonly age: boolean;
+  readonly gender: boolean;
+  readonly ethnicity: boolean;
+  readonly accessories: boolean;
+}
+
+export interface EmotionConfig {
+  readonly enabled: boolean;
+  readonly types: readonly EmotionType[];
+  readonly confidence: number;
+}
+
+export type EmotionType =
+  | 'HAPPY'
+  | 'SAD'
+  | 'ANGRY'
+  | 'FEARFUL'
+  | 'SURPRISED'
+  | 'NEUTRAL';
+
+export interface BehaviorAnalysisConfig {
+  readonly enabled: boolean;
+  readonly actions: ActionAnalysisConfig;
+  readonly interactions: InteractionAnalysisConfig;
+  readonly anomalies: BehaviorAnomalyConfig;
+}
+
+export interface ActionAnalysisConfig {
+  readonly enabled: boolean;
+  readonly types: readonly ActionType[];
+  readonly detection: boolean;
+  readonly classification: boolean;
+}
+
+export type ActionType =
+  | 'WALKING'
+  | 'RUNNING'
+  | 'LOITERING'
+  | 'FIGHTING'
+  | 'FALLING'
+  | 'INTRUSION';
+
+export interface InteractionAnalysisConfig {
+  readonly enabled: boolean;
+  readonly grouping: boolean;
+  readonly exchange: boolean;
+  readonly following: boolean;
+}
+
+export interface BehaviorAnomalyConfig {
+  readonly enabled: boolean;
+  readonly baseline: boolean;
+  readonly deviation: boolean;
+  readonly alerting: boolean;
+}
+
+export interface ObjectAnalysisConfig {
+  readonly enabled: boolean;
+  readonly detection: ObjectDetectionConfig;
+  readonly classification: ObjectClassificationConfig;
+  readonly tracking: ObjectTrackingAnalysisConfig;
+}
+
+export interface ObjectDetectionConfig {
+  readonly enabled: boolean;
+  readonly types: readonly ObjectType[];
+  readonly confidence: number;
+}
+
+export type ObjectType =
+  | 'PERSON'
+  | 'VEHICLE'
+  | 'WEAPON'
+  | 'BAG'
+  | 'PACKAGE'
+  | 'ANIMAL';
+
+export interface ObjectClassificationConfig {
+  readonly enabled: boolean;
+  readonly categories: readonly string[];
+  readonly attributes: boolean;
+}
+
+export interface ObjectTrackingAnalysisConfig {
+  readonly enabled: boolean;
+  readonly multiObject: boolean;
+  readonly occlusion: boolean;
+  readonly reidentification: boolean;
+}
+
+export interface SceneAnalysisConfig {
+  readonly enabled: boolean;
+  readonly understanding: SceneUnderstandingConfig;
+  readonly change: ChangeDetectionConfig;
+  readonly crowd: CrowdAnalysisConfig;
+}
+
+export interface SceneUnderstandingConfig {
+  readonly enabled: boolean;
+  readonly segmentation: boolean;
+  readonly classification: boolean;
+  readonly context: boolean;
+}
+
+export interface ChangeDetectionConfig {
+  readonly enabled: boolean;
+  readonly objects: boolean;
+  readonly environment: boolean;
+  readonly alerting: boolean;
+}
+
+export interface CrowdAnalysisConfig {
+  readonly enabled: boolean;
+  readonly counting: boolean;
+  readonly density: boolean;
+  readonly flow: boolean;
+  readonly anomaly: boolean;
+}
+
+export interface ElectronicSurveillanceConfig {
+  readonly enabled: boolean;
+  readonly signals: SignalsSurveillanceConfig;
+  readonly network: NetworkSurveillanceConfig;
+  readonly computer: ComputerSurveillanceConfig;
+}
+
+export interface SignalsSurveillanceConfig {
+  readonly enabled: boolean;
+  readonly rf: RFSurveillanceConfig;
+  readonly communications: CommunicationsSurveillanceConfig;
+}
+
+export interface RFSurveillanceConfig {
+  readonly enabled: boolean;
+  readonly scanning: boolean;
+  readonly direction: boolean;
+  readonly analysis: boolean;
+}
+
+export interface CommunicationsSurveillanceConfig {
+  readonly enabled: boolean;
+  readonly voice: boolean;
+  readonly data: boolean;
+  readonly metadata: boolean;
+}
+
+export interface NetworkSurveillanceConfig {
+  readonly enabled: boolean;
+  readonly traffic: TrafficSurveillanceConfig;
+  readonly content: ContentSurveillanceConfig;
+  readonly metadata: MetadataSurveillanceConfig;
+}
+
+export interface TrafficSurveillanceConfig {
+  readonly enabled: boolean;
+  readonly capture: boolean;
+  readonly analysis: boolean;
+  readonly storage: boolean;
+}
+
+export interface ContentSurveillanceConfig {
+  readonly enabled: boolean;
+  readonly inspection: boolean;
+  readonly filtering: boolean;
+  readonly extraction: boolean;
+}
+
+export interface MetadataSurveillanceConfig {
+  readonly enabled: boolean;
+  readonly collection: boolean;
+  readonly analysis: boolean;
+  readonly correlation: boolean;
+}
+
+export interface ComputerSurveillanceConfig {
+  readonly enabled: boolean;
+  readonly keylogging: boolean;
+  readonly screenCapture: boolean;
+  readonly fileMonitoring: boolean;
+  readonly applicationMonitoring: boolean;
+}
+
+export interface PhysicalSurveillanceConfig {
+  readonly enabled: boolean;
+  readonly static: StaticSurveillanceConfig;
+  readonly mobile: MobileSurveillanceConfig;
+  readonly technical: TechnicalSurveillanceConfig;
+}
+
+export interface StaticSurveillanceConfig {
+  readonly enabled: boolean;
+  readonly observation: boolean;
+  readonly photography: boolean;
+  readonly documentation: boolean;
+}
+
+export interface MobileSurveillanceConfig {
+  readonly enabled: boolean;
+  readonly foot: boolean;
+  readonly vehicle: boolean;
+  readonly aerial: boolean;
+}
+
+export interface TechnicalSurveillanceConfig {
+  readonly enabled: boolean;
+  readonly countermeasures: boolean;
+  readonly detection: boolean;
+  readonly neutralization: boolean;
+}
+
+export interface IntegrationConfig {
+  readonly enabled: boolean;
+  readonly fusion: FusionConfig;
+  readonly correlation: CorrelationConfig;
+  readonly alerting: AlertingConfig;
+}
+
+export interface FusionConfig {
+  readonly enabled: boolean;
+  readonly sources: readonly string[];
+  readonly realtime: boolean;
+  readonly historical: boolean;
+}
+
+export interface CorrelationConfig {
+  readonly enabled: boolean;
+  readonly temporal: boolean;
+  readonly spatial: boolean;
+  readonly behavioral: boolean;
+}
+
+export interface AlertingConfig {
+  readonly enabled: boolean;
+  readonly rules: boolean;
+  readonly thresholds: boolean;
+  readonly escalation: boolean;
+}
+
+export interface StorageConfig {
+  readonly type: 'DATABASE' | 'FILE_SYSTEM' | 'HYBRID';
+  readonly encryption: StorageEncryptionConfig;
+  readonly retention: RetentionConfig;
+  readonly backup: BackupConfig;
+}
+
+export interface StorageEncryptionConfig {
+  readonly enabled: boolean;
+  readonly algorithm: 'AES_256_GCM' | 'CHACHA20_POLY1305';
+  readonly keyManagement: 'LOCAL' | 'HSM' | 'KMS';
+}
+
+export interface RetentionConfig {
+  readonly enabled: boolean;
+  readonly video: number;
+  readonly audio: number;
+  readonly metadata: number;
+  readonly analytics: number;
+}
+
+export interface BackupConfig {
+  readonly enabled: boolean;
+  readonly frequency: number;
+  readonly encryption: boolean;
+  readonly offsite: boolean;
+}
+
+export interface SecurityConfig {
+  readonly authentication: AuthenticationConfig;
+  readonly authorization: AuthorizationConfig;
+  readonly audit: AuditConfig;
+  readonly classification: ClassificationConfig;
+}
+
+export interface AuthenticationConfig {
+  readonly enabled: boolean;
+  readonly methods: readonly ('PKI' | 'CAC' | 'BIOMETRIC' | 'MFA')[];
+  readonly sessionTimeout: number;
+}
+
+export interface AuthorizationConfig {
+  readonly enabled: boolean;
+  readonly model: 'RBAC' | 'ABAC' | 'MAC';
+  readonly clearanceRequired: boolean;
+}
+
+export interface AuditConfig {
+  readonly enabled: boolean;
+  readonly logAllAccess: boolean;
+  readonly logAllOperations: boolean;
+  readonly retention: number;
+}
+
+export interface ClassificationConfig {
+  readonly enabled: boolean;
+  readonly defaultLevel: SecurityLevel;
+  readonly autoClassification: boolean;
+}
+
+export interface ReportingConfig {
+  readonly enabled: boolean;
+  readonly formats: readonly ReportFormat[];
+  readonly sections: readonly ReportSection[];
+  readonly automation: ReportAutomationConfig;
+}
+
+export type ReportFormat =
+  | 'PDF'
+  | 'HTML'
+  | 'JSON'
+  | 'VIDEO';
+
+export type ReportSection =
+  | 'EXECUTIVE_SUMMARY'
+  | 'SURVEILLANCE_DETAILS'
+  | 'ANALYTICS_RESULTS'
+  | 'TRACKING_DATA'
+  | 'EVIDENCE_PACKAGE';
+
+export interface ReportAutomationConfig {
+  readonly enabled: boolean;
+  readonly scheduling: boolean;
+  readonly triggers: readonly string[];
+}
+
+export interface PlatformMetadata {
+  readonly createdAt: number;
+  readonly updatedAt: number;
+  readonly createdBy: string;
+  readonly version: string;
+  readonly tags: readonly string[];
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SURVEILLANCE TARGET TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface SurveillanceTarget {
+  readonly targetId: string;
+  readonly codeName: string;
+  readonly type: TargetType;
+  readonly status: TargetStatus;
+  readonly profile: TargetProfile;
+  readonly surveillance: SurveillanceCoverage;
+  readonly tracking: TrackingData;
+  readonly analysis: AnalysisData;
+  readonly evidence: readonly EvidenceItem[];
+  readonly metadata: TargetMetadata;
+}
+
+export type TargetType =
+  | 'INDIVIDUAL'
+  | 'GROUP'
+  | 'VEHICLE'
+  | 'LOCATION'
+  | 'ORGANIZATION';
+
+export type TargetStatus =
+  | 'ACTIVE'
+  | 'INACTIVE'
+  | 'SUSPENDED'
+  | 'COMPLETED'
+  | 'ARCHIVED';
+
+export interface TargetProfile {
+  readonly identifiers: readonly Identifier[];
+  readonly description: string;
+  readonly associates: readonly string[];
+  readonly locations: readonly string[];
+  readonly patterns: readonly string[];
+}
+
+export interface Identifier {
+  readonly type: IdentifierType;
+  readonly value: string;
+  readonly confidence: number;
+  readonly verified: boolean;
+}
+
+export type IdentifierType =
+  | 'NAME'
+  | 'ALIAS'
+  | 'FACE'
+  | 'VOICE'
+  | 'VEHICLE'
+  | 'PHONE'
+  | 'EMAIL'
+  | 'ADDRESS';
+
+export interface SurveillanceCoverage {
+  readonly video: readonly VideoSource[];
+  readonly audio: readonly AudioSource[];
+  readonly electronic: readonly ElectronicSource[];
+  readonly physical: readonly PhysicalSource[];
+}
+
+export interface VideoSource {
+  readonly sourceId: string;
+  readonly type: VideoSurveillanceType;
+  readonly location: string;
+  readonly status: SourceStatus;
+  readonly coverage: CoverageInfo;
+}
+
+export type SourceStatus =
+  | 'ACTIVE'
+  | 'INACTIVE'
+  | 'MAINTENANCE'
+  | 'COMPROMISED';
+
+export interface CoverageInfo {
+  readonly startTime: number;
+  readonly endTime: number | null;
+  readonly quality: 'LOW' | 'MEDIUM' | 'HIGH';
+  readonly gaps: readonly TimeGap[];
+}
+
+export interface TimeGap {
+  readonly start: number;
+  readonly end: number;
+  readonly reason: string;
+}
+
+export interface AudioSource {
+  readonly sourceId: string;
+  readonly type: AudioSurveillanceType;
+  readonly location: string;
+  readonly status: SourceStatus;
+  readonly coverage: CoverageInfo;
+}
+
+export interface ElectronicSource {
+  readonly sourceId: string;
+  readonly type: string;
+  readonly target: string;
+  readonly status: SourceStatus;
+  readonly coverage: CoverageInfo;
+}
+
+export interface PhysicalSource {
+  readonly sourceId: string;
+  readonly type: string;
+  readonly team: string;
+  readonly status: SourceStatus;
+  readonly coverage: CoverageInfo;
+}
+
+export interface TrackingData {
+  readonly current: CurrentLocation | null;
+  readonly history: readonly LocationRecord[];
+  readonly patterns: readonly MovementPattern[];
+  readonly predictions: readonly LocationPrediction[];
+}
+
+export interface CurrentLocation {
+  readonly latitude: number;
+  readonly longitude: number;
+  readonly altitude: number | null;
+  readonly accuracy: number;
+  readonly timestamp: number;
+  readonly source: TrackingType;
+}
+
+export interface LocationRecord {
+  readonly recordId: string;
+  readonly latitude: number;
+  readonly longitude: number;
+  readonly timestamp: number;
+  readonly source: TrackingType;
+  readonly accuracy: number;
+}
+
+export interface MovementPattern {
+  readonly patternId: string;
+  readonly type: string;
+  readonly description: string;
+  readonly frequency: string;
+  readonly confidence: number;
+}
+
+export interface LocationPrediction {
+  readonly predictionId: string;
+  readonly latitude: number;
+  readonly longitude: number;
+  readonly timestamp: number;
+  readonly confidence: number;
+  readonly basis: string;
+}
+
+export interface AnalysisData {
+  readonly facial: readonly FacialMatch[];
+  readonly behavioral: readonly BehavioralEvent[];
+  readonly associations: readonly AssociationRecord[];
+}
+
+export interface FacialMatch {
+  readonly matchId: string;
+  readonly sourceId: string;
+  readonly timestamp: number;
+  readonly confidence: number;
+  readonly location: string;
+}
+
+export interface BehavioralEvent {
+  readonly eventId: string;
+  readonly type: string;
+  readonly timestamp: number;
+  readonly location: string;
+  readonly description: string;
+  readonly significance: 'LOW' | 'MEDIUM' | 'HIGH';
+}
+
+export interface AssociationRecord {
+  readonly recordId: string;
+  readonly associateId: string;
+  readonly type: string;
+  readonly timestamp: number;
+  readonly location: string;
+  readonly duration: number | null;
+}
+
+export interface EvidenceItem {
+  readonly evidenceId: string;
+  readonly type: EvidenceType;
+  readonly source: string;
+  readonly timestamp: number;
+  readonly description: string;
+  readonly classification: SecurityLevel;
+  readonly chainOfCustody: readonly CustodyRecord[];
+}
+
+export type EvidenceType =
+  | 'VIDEO'
+  | 'AUDIO'
+  | 'PHOTO'
+  | 'DOCUMENT'
+  | 'ELECTRONIC'
+  | 'PHYSICAL';
+
+export interface CustodyRecord {
+  readonly recordId: string;
+  readonly action: string;
+  readonly performedBy: string;
+  readonly timestamp: number;
+  readonly location: string;
+}
+
+export interface TargetMetadata {
+  readonly createdAt: number;
+  readonly updatedAt: number;
+  readonly createdBy: string;
+  readonly classification: SecurityLevel;
+  readonly authorization: string;
+  readonly tags: readonly string[];
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SESSION TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface SurveillanceSession {
+  readonly sessionId: string;
+  readonly platformId: string;
+  readonly state: SessionState;
+  readonly config: SessionConfig;
+  readonly progress: SessionProgress;
+  readonly targets: readonly SurveillanceTarget[];
+  readonly alerts: readonly SessionAlert[];
+  readonly errors: readonly SessionError[];
+  readonly startTime: number;
+  readonly endTime: number | null;
+  readonly metadata: SessionMetadata;
+}
+
+export type SessionState =
+  | 'PENDING'
+  | 'INITIALIZING'
+  | 'ACTIVE'
+  | 'MONITORING'
+  | 'ANALYZING'
+  | 'COMPLETED'
+  | 'FAILED';
+
+export interface SessionConfig {
+  readonly mode: OperationalMode;
+  readonly types: readonly SurveillanceType[];
+  readonly options: Readonly<Record<string, unknown>>;
+}
+
+export interface SessionProgress {
+  readonly phase: SessionPhase;
+  readonly percentage: number;
+  readonly currentTask: string | null;
+  readonly estimatedTimeRemaining: number | null;
+}
+
+export type SessionPhase =
+  | 'INITIALIZING'
+  | 'DEPLOYMENT'
+  | 'COLLECTION'
+  | 'ANALYSIS'
+  | 'REPORTING'
+  | 'FINALIZING';
+
+export interface SessionAlert {
+  readonly alertId: string;
+  readonly timestamp: number;
+  readonly type: AlertType;
+  readonly severity: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
+  readonly source: string;
+  readonly description: string;
+  readonly status: AlertStatus;
+}
+
+export type AlertType =
+  | 'TARGET_DETECTED'
+  | 'ANOMALY_DETECTED'
+  | 'COVERAGE_GAP'
+  | 'EQUIPMENT_FAILURE'
+  | 'SECURITY_BREACH';
+
+export type AlertStatus =
+  | 'NEW'
+  | 'ACKNOWLEDGED'
+  | 'INVESTIGATING'
+  | 'RESOLVED'
+  | 'ESCALATED';
+
+export interface SessionError {
+  readonly errorId: string;
+  readonly timestamp: number;
+  readonly type: SessionErrorType;
+  readonly message: string;
+  readonly details: string | null;
+  readonly recoverable: boolean;
+}
+
+export type SessionErrorType =
+  | 'COLLECTION_ERROR'
+  | 'ANALYSIS_ERROR'
+  | 'STORAGE_ERROR'
+  | 'EQUIPMENT_ERROR'
+  | 'TIMEOUT'
+  | 'INTERNAL_ERROR';
+
+export interface SessionMetadata {
+  readonly platformVersion: string;
+  readonly startedBy: string;
+  readonly classification: SecurityLevel;
+  readonly authorization: string;
+  readonly tags: readonly string[];
+}

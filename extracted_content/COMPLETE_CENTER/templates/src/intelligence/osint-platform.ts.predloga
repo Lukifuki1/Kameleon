@@ -1,0 +1,1418 @@
+/**
+ * @file OSINT Platform - Self-Contained Open Source Intelligence Platform
+ * @author {{AVTOR}}
+ * @version {{VERZIJA}}
+ * @date {{DATUM}}
+ * @project {{IME_PROJEKTA}}
+ * @domain VARNOSTNI_SISTEMI
+ * 
+ * @requirement REQ-SEC-OSI-001
+ * @design DSN-SEC-OSI-001
+ * @test TST-SEC-OSI-001
+ * 
+ * @description
+ * Enterprise-grade self-contained open source intelligence platform implementing
+ * social media monitoring, news aggregation, public records search, image/video
+ * geolocation, facial recognition, vehicle recognition, and document analysis.
+ * All algorithms are natively implemented without external dependencies.
+ * 
+ * @classification TOP SECRET - OSINT Operations
+ * @authorization Required: Level 5 Security Clearance
+ * @dependencies NONE - Fully self-contained implementation
+ */
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// OSINT PLATFORM TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export type OSINTSource =
+  | 'SOCIAL_MEDIA'
+  | 'NEWS'
+  | 'FORUMS'
+  | 'BLOGS'
+  | 'PUBLIC_RECORDS'
+  | 'CORPORATE_FILINGS'
+  | 'COURT_RECORDS'
+  | 'ACADEMIC'
+  | 'PATENTS'
+  | 'GOVERNMENT'
+  | 'GEOSPATIAL'
+  | 'IMAGERY'
+  | 'VIDEO'
+  | 'DARK_WEB';
+
+export type SocialPlatform =
+  | 'TWITTER'
+  | 'FACEBOOK'
+  | 'INSTAGRAM'
+  | 'LINKEDIN'
+  | 'TIKTOK'
+  | 'YOUTUBE'
+  | 'REDDIT'
+  | 'TELEGRAM'
+  | 'DISCORD'
+  | 'VK'
+  | 'WEIBO'
+  | 'WECHAT';
+
+export type ContentType =
+  | 'TEXT'
+  | 'IMAGE'
+  | 'VIDEO'
+  | 'AUDIO'
+  | 'DOCUMENT'
+  | 'PROFILE'
+  | 'POST'
+  | 'COMMENT'
+  | 'MESSAGE'
+  | 'LOCATION'
+  | 'EVENT';
+
+export type EntityType =
+  | 'PERSON'
+  | 'ORGANIZATION'
+  | 'LOCATION'
+  | 'EVENT'
+  | 'VEHICLE'
+  | 'WEAPON'
+  | 'DOCUMENT'
+  | 'PHONE'
+  | 'EMAIL'
+  | 'USERNAME'
+  | 'DOMAIN'
+  | 'IP_ADDRESS'
+  | 'CRYPTOCURRENCY';
+
+export type AnalysisType =
+  | 'ENTITY_EXTRACTION'
+  | 'SENTIMENT_ANALYSIS'
+  | 'TOPIC_MODELING'
+  | 'NETWORK_ANALYSIS'
+  | 'GEOLOCATION'
+  | 'FACIAL_RECOGNITION'
+  | 'OBJECT_DETECTION'
+  | 'TEXT_CLASSIFICATION'
+  | 'LANGUAGE_DETECTION'
+  | 'TRANSLATION';
+
+export type AlertSeverity =
+  | 'CRITICAL'
+  | 'HIGH'
+  | 'MEDIUM'
+  | 'LOW'
+  | 'INFORMATIONAL';
+
+export type ConfidenceLevel =
+  | 'VERY_HIGH'
+  | 'HIGH'
+  | 'MEDIUM'
+  | 'LOW'
+  | 'VERY_LOW';
+
+export type CollectionMode =
+  | 'REAL_TIME'
+  | 'SCHEDULED'
+  | 'ON_DEMAND'
+  | 'CONTINUOUS';
+
+export type OperationalMode =
+  | 'COLLECTION'
+  | 'ANALYSIS'
+  | 'MONITORING'
+  | 'INVESTIGATION';
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// OSINT PLATFORM CONFIGURATION
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface OSINTPlatformConfig {
+  readonly platformId: string;
+  readonly name: string;
+  readonly version: string;
+  readonly mode: OperationalMode;
+  readonly collection: CollectionConfig;
+  readonly socialMedia: SocialMediaConfig;
+  readonly news: NewsConfig;
+  readonly publicRecords: PublicRecordsConfig;
+  readonly imagery: ImageryConfig;
+  readonly geolocation: GeolocationConfig;
+  readonly facial: FacialRecognitionConfig;
+  readonly vehicle: VehicleRecognitionConfig;
+  readonly document: DocumentAnalysisConfig;
+  readonly entityExtraction: EntityExtractionConfig;
+  readonly networkAnalysis: NetworkAnalysisConfig;
+  readonly alerting: AlertingConfig;
+  readonly reporting: ReportingConfig;
+  readonly storage: StorageConfig;
+  readonly security: SecurityConfig;
+  readonly metadata: PlatformMetadata;
+}
+
+export interface CollectionConfig {
+  readonly enabled: boolean;
+  readonly sources: SourcesConfig;
+  readonly scheduling: SchedulingConfig;
+  readonly rateLimit: RateLimitConfig;
+  readonly deduplication: DeduplicationConfig;
+}
+
+export interface SourcesConfig {
+  readonly socialMedia: boolean;
+  readonly news: boolean;
+  readonly forums: boolean;
+  readonly blogs: boolean;
+  readonly publicRecords: boolean;
+  readonly corporateFilings: boolean;
+  readonly courtRecords: boolean;
+  readonly academic: boolean;
+  readonly patents: boolean;
+  readonly government: boolean;
+  readonly geospatial: boolean;
+}
+
+export interface SchedulingConfig {
+  readonly enabled: boolean;
+  readonly defaultInterval: number;
+  readonly sourceIntervals: Readonly<Record<OSINTSource, number>>;
+  readonly priorityScheduling: boolean;
+}
+
+export interface RateLimitConfig {
+  readonly enabled: boolean;
+  readonly globalLimit: number;
+  readonly sourceLimits: Readonly<Record<OSINTSource, number>>;
+  readonly respectRobotsTxt: boolean;
+}
+
+export interface DeduplicationConfig {
+  readonly enabled: boolean;
+  readonly method: 'HASH' | 'SIMILARITY' | 'HYBRID';
+  readonly threshold: number;
+  readonly window: number;
+}
+
+export interface SocialMediaConfig {
+  readonly enabled: boolean;
+  readonly platforms: SocialPlatformsConfig;
+  readonly monitoring: SocialMonitoringConfig;
+  readonly analysis: SocialAnalysisConfig;
+  readonly archiving: SocialArchivingConfig;
+}
+
+export interface SocialPlatformsConfig {
+  readonly twitter: TwitterConfig;
+  readonly facebook: FacebookConfig;
+  readonly instagram: InstagramConfig;
+  readonly linkedin: LinkedInConfig;
+  readonly tiktok: TikTokConfig;
+  readonly youtube: YouTubeConfig;
+  readonly reddit: RedditConfig;
+  readonly telegram: TelegramConfig;
+}
+
+export interface TwitterConfig {
+  readonly enabled: boolean;
+  readonly searchEnabled: boolean;
+  readonly streamEnabled: boolean;
+  readonly profileCollection: boolean;
+  readonly tweetCollection: boolean;
+  readonly followerCollection: boolean;
+  readonly hashtagTracking: boolean;
+}
+
+export interface FacebookConfig {
+  readonly enabled: boolean;
+  readonly publicPages: boolean;
+  readonly publicGroups: boolean;
+  readonly publicProfiles: boolean;
+  readonly postCollection: boolean;
+  readonly commentCollection: boolean;
+}
+
+export interface InstagramConfig {
+  readonly enabled: boolean;
+  readonly profileCollection: boolean;
+  readonly postCollection: boolean;
+  readonly storyCollection: boolean;
+  readonly hashtagTracking: boolean;
+  readonly locationTracking: boolean;
+}
+
+export interface LinkedInConfig {
+  readonly enabled: boolean;
+  readonly profileCollection: boolean;
+  readonly companyCollection: boolean;
+  readonly postCollection: boolean;
+  readonly jobCollection: boolean;
+}
+
+export interface TikTokConfig {
+  readonly enabled: boolean;
+  readonly profileCollection: boolean;
+  readonly videoCollection: boolean;
+  readonly hashtagTracking: boolean;
+  readonly soundTracking: boolean;
+}
+
+export interface YouTubeConfig {
+  readonly enabled: boolean;
+  readonly channelCollection: boolean;
+  readonly videoCollection: boolean;
+  readonly commentCollection: boolean;
+  readonly playlistCollection: boolean;
+  readonly transcriptExtraction: boolean;
+}
+
+export interface RedditConfig {
+  readonly enabled: boolean;
+  readonly subredditMonitoring: boolean;
+  readonly userMonitoring: boolean;
+  readonly postCollection: boolean;
+  readonly commentCollection: boolean;
+}
+
+export interface TelegramConfig {
+  readonly enabled: boolean;
+  readonly publicChannels: boolean;
+  readonly publicGroups: boolean;
+  readonly messageCollection: boolean;
+  readonly mediaCollection: boolean;
+}
+
+export interface SocialMonitoringConfig {
+  readonly enabled: boolean;
+  readonly keywords: readonly string[];
+  readonly hashtags: readonly string[];
+  readonly accounts: readonly string[];
+  readonly locations: readonly GeoArea[];
+  readonly languages: readonly string[];
+}
+
+export interface GeoArea {
+  readonly areaId: string;
+  readonly name: string;
+  readonly type: 'POINT' | 'CIRCLE' | 'POLYGON' | 'BBOX';
+  readonly coordinates: readonly number[];
+  readonly radius: number | null;
+}
+
+export interface SocialAnalysisConfig {
+  readonly enabled: boolean;
+  readonly sentimentAnalysis: boolean;
+  readonly entityExtraction: boolean;
+  readonly topicModeling: boolean;
+  readonly influencerDetection: boolean;
+  readonly botDetection: boolean;
+  readonly networkMapping: boolean;
+}
+
+export interface SocialArchivingConfig {
+  readonly enabled: boolean;
+  readonly archiveMedia: boolean;
+  readonly archiveProfiles: boolean;
+  readonly snapshotFrequency: number;
+}
+
+export interface NewsConfig {
+  readonly enabled: boolean;
+  readonly sources: NewsSourcesConfig;
+  readonly monitoring: NewsMonitoringConfig;
+  readonly analysis: NewsAnalysisConfig;
+}
+
+export interface NewsSourcesConfig {
+  readonly rssFeeds: readonly RSSFeedConfig[];
+  readonly newsAPIs: readonly NewsAPIConfig[];
+  readonly webScraping: WebScrapingConfig;
+}
+
+export interface RSSFeedConfig {
+  readonly feedId: string;
+  readonly name: string;
+  readonly url: string;
+  readonly category: string;
+  readonly language: string;
+  readonly updateInterval: number;
+}
+
+export interface NewsAPIConfig {
+  readonly apiId: string;
+  readonly name: string;
+  readonly provider: string;
+  readonly categories: readonly string[];
+  readonly languages: readonly string[];
+}
+
+export interface WebScrapingConfig {
+  readonly enabled: boolean;
+  readonly sites: readonly ScrapingSiteConfig[];
+  readonly respectRobotsTxt: boolean;
+  readonly userAgent: string;
+}
+
+export interface ScrapingSiteConfig {
+  readonly siteId: string;
+  readonly name: string;
+  readonly url: string;
+  readonly selectors: ScrapingSelectors;
+  readonly updateInterval: number;
+}
+
+export interface ScrapingSelectors {
+  readonly articleList: string;
+  readonly title: string;
+  readonly content: string;
+  readonly date: string;
+  readonly author: string;
+  readonly image: string;
+}
+
+export interface NewsMonitoringConfig {
+  readonly enabled: boolean;
+  readonly keywords: readonly string[];
+  readonly topics: readonly string[];
+  readonly entities: readonly string[];
+  readonly locations: readonly string[];
+  readonly languages: readonly string[];
+}
+
+export interface NewsAnalysisConfig {
+  readonly enabled: boolean;
+  readonly sentimentAnalysis: boolean;
+  readonly entityExtraction: boolean;
+  readonly topicClassification: boolean;
+  readonly eventDetection: boolean;
+  readonly sourceCredibility: boolean;
+}
+
+export interface PublicRecordsConfig {
+  readonly enabled: boolean;
+  readonly sources: PublicRecordSourcesConfig;
+  readonly search: PublicRecordSearchConfig;
+  readonly monitoring: PublicRecordMonitoringConfig;
+}
+
+export interface PublicRecordSourcesConfig {
+  readonly corporateRegistries: boolean;
+  readonly courtRecords: boolean;
+  readonly propertyRecords: boolean;
+  readonly vehicleRecords: boolean;
+  readonly voterRecords: boolean;
+  readonly licensingRecords: boolean;
+  readonly bankruptcyRecords: boolean;
+  readonly liensJudgments: boolean;
+}
+
+export interface PublicRecordSearchConfig {
+  readonly enabled: boolean;
+  readonly searchTypes: readonly PublicRecordSearchType[];
+  readonly jurisdictions: readonly string[];
+}
+
+export type PublicRecordSearchType =
+  | 'PERSON'
+  | 'BUSINESS'
+  | 'PROPERTY'
+  | 'VEHICLE'
+  | 'COURT_CASE'
+  | 'LICENSE'
+  | 'UCC_FILING';
+
+export interface PublicRecordMonitoringConfig {
+  readonly enabled: boolean;
+  readonly entities: readonly string[];
+  readonly alertOnChange: boolean;
+  readonly checkInterval: number;
+}
+
+export interface ImageryConfig {
+  readonly enabled: boolean;
+  readonly sources: ImagerySourcesConfig;
+  readonly analysis: ImageryAnalysisConfig;
+  readonly storage: ImageryStorageConfig;
+}
+
+export interface ImagerySourcesConfig {
+  readonly socialMedia: boolean;
+  readonly news: boolean;
+  readonly satellite: boolean;
+  readonly streetView: boolean;
+  readonly webcams: boolean;
+}
+
+export interface ImageryAnalysisConfig {
+  readonly enabled: boolean;
+  readonly objectDetection: ObjectDetectionConfig;
+  readonly faceDetection: FaceDetectionConfig;
+  readonly textExtraction: TextExtractionConfig;
+  readonly geolocation: ImageGeolocationConfig;
+  readonly reverseImageSearch: ReverseImageSearchConfig;
+}
+
+export interface ObjectDetectionConfig {
+  readonly enabled: boolean;
+  readonly categories: readonly ObjectCategory[];
+  readonly confidenceThreshold: number;
+}
+
+export type ObjectCategory =
+  | 'PERSON'
+  | 'VEHICLE'
+  | 'WEAPON'
+  | 'BUILDING'
+  | 'LANDMARK'
+  | 'ANIMAL'
+  | 'DOCUMENT'
+  | 'LOGO'
+  | 'TEXT';
+
+export interface FaceDetectionConfig {
+  readonly enabled: boolean;
+  readonly landmarkDetection: boolean;
+  readonly attributeExtraction: boolean;
+  readonly qualityAssessment: boolean;
+}
+
+export interface TextExtractionConfig {
+  readonly enabled: boolean;
+  readonly languages: readonly string[];
+  readonly handwriting: boolean;
+  readonly documentTypes: readonly string[];
+}
+
+export interface ImageGeolocationConfig {
+  readonly enabled: boolean;
+  readonly exifExtraction: boolean;
+  readonly landmarkMatching: boolean;
+  readonly visualMatching: boolean;
+}
+
+export interface ReverseImageSearchConfig {
+  readonly enabled: boolean;
+  readonly searchEngines: readonly string[];
+  readonly similarityThreshold: number;
+}
+
+export interface ImageryStorageConfig {
+  readonly enabled: boolean;
+  readonly storeOriginals: boolean;
+  readonly storeThumbnails: boolean;
+  readonly storeMetadata: boolean;
+  readonly retention: number;
+}
+
+export interface GeolocationConfig {
+  readonly enabled: boolean;
+  readonly methods: GeolocationMethodsConfig;
+  readonly mapping: MappingConfig;
+  readonly tracking: TrackingConfig;
+}
+
+export interface GeolocationMethodsConfig {
+  readonly exif: boolean;
+  readonly landmark: boolean;
+  readonly visual: boolean;
+  readonly textual: boolean;
+  readonly ipBased: boolean;
+  readonly cellTower: boolean;
+}
+
+export interface MappingConfig {
+  readonly enabled: boolean;
+  readonly clustering: boolean;
+  readonly heatmaps: boolean;
+  readonly timelines: boolean;
+  readonly routes: boolean;
+}
+
+export interface TrackingConfig {
+  readonly enabled: boolean;
+  readonly realTime: boolean;
+  readonly historical: boolean;
+  readonly predictive: boolean;
+}
+
+export interface FacialRecognitionConfig {
+  readonly enabled: boolean;
+  readonly detection: FacialDetectionConfig;
+  readonly encoding: FacialEncodingConfig;
+  readonly matching: FacialMatchingConfig;
+  readonly database: FacialDatabaseConfig;
+}
+
+export interface FacialDetectionConfig {
+  readonly enabled: boolean;
+  readonly algorithm: 'HAAR' | 'HOG' | 'CNN' | 'MTCNN';
+  readonly minFaceSize: number;
+  readonly confidenceThreshold: number;
+}
+
+export interface FacialEncodingConfig {
+  readonly enabled: boolean;
+  readonly model: 'RESNET' | 'INCEPTION' | 'ARCFACE';
+  readonly embeddingSize: number;
+}
+
+export interface FacialMatchingConfig {
+  readonly enabled: boolean;
+  readonly metric: 'EUCLIDEAN' | 'COSINE';
+  readonly threshold: number;
+  readonly topK: number;
+}
+
+export interface FacialDatabaseConfig {
+  readonly enabled: boolean;
+  readonly indexing: 'LINEAR' | 'LSH' | 'HNSW';
+  readonly maxSize: number;
+}
+
+export interface VehicleRecognitionConfig {
+  readonly enabled: boolean;
+  readonly detection: VehicleDetectionConfig;
+  readonly classification: VehicleClassificationConfig;
+  readonly licensePlate: LicensePlateConfig;
+  readonly tracking: VehicleTrackingConfig;
+}
+
+export interface VehicleDetectionConfig {
+  readonly enabled: boolean;
+  readonly types: readonly VehicleType[];
+  readonly confidenceThreshold: number;
+}
+
+export type VehicleType =
+  | 'CAR'
+  | 'TRUCK'
+  | 'SUV'
+  | 'VAN'
+  | 'MOTORCYCLE'
+  | 'BUS'
+  | 'BICYCLE'
+  | 'BOAT'
+  | 'AIRCRAFT';
+
+export interface VehicleClassificationConfig {
+  readonly enabled: boolean;
+  readonly make: boolean;
+  readonly model: boolean;
+  readonly year: boolean;
+  readonly color: boolean;
+}
+
+export interface LicensePlateConfig {
+  readonly enabled: boolean;
+  readonly regions: readonly string[];
+  readonly ocr: boolean;
+  readonly validation: boolean;
+}
+
+export interface VehicleTrackingConfig {
+  readonly enabled: boolean;
+  readonly crossCamera: boolean;
+  readonly reidentification: boolean;
+}
+
+export interface DocumentAnalysisConfig {
+  readonly enabled: boolean;
+  readonly extraction: DocumentExtractionConfig;
+  readonly classification: DocumentClassificationConfig;
+  readonly verification: DocumentVerificationConfig;
+}
+
+export interface DocumentExtractionConfig {
+  readonly enabled: boolean;
+  readonly ocr: OCRConfig;
+  readonly structuredExtraction: StructuredExtractionConfig;
+  readonly metadataExtraction: MetadataExtractionConfig;
+}
+
+export interface OCRConfig {
+  readonly enabled: boolean;
+  readonly languages: readonly string[];
+  readonly handwriting: boolean;
+  readonly preprocessing: boolean;
+}
+
+export interface StructuredExtractionConfig {
+  readonly enabled: boolean;
+  readonly documentTypes: readonly DocumentType[];
+  readonly fieldExtraction: boolean;
+  readonly tableExtraction: boolean;
+}
+
+export type DocumentType =
+  | 'PASSPORT'
+  | 'ID_CARD'
+  | 'DRIVERS_LICENSE'
+  | 'VISA'
+  | 'INVOICE'
+  | 'RECEIPT'
+  | 'CONTRACT'
+  | 'CERTIFICATE'
+  | 'LETTER'
+  | 'FORM';
+
+export interface MetadataExtractionConfig {
+  readonly enabled: boolean;
+  readonly author: boolean;
+  readonly creationDate: boolean;
+  readonly modificationDate: boolean;
+  readonly software: boolean;
+  readonly gps: boolean;
+}
+
+export interface DocumentClassificationConfig {
+  readonly enabled: boolean;
+  readonly categories: readonly string[];
+  readonly confidenceThreshold: number;
+}
+
+export interface DocumentVerificationConfig {
+  readonly enabled: boolean;
+  readonly authenticityCheck: boolean;
+  readonly tamperingDetection: boolean;
+  readonly signatureVerification: boolean;
+}
+
+export interface EntityExtractionConfig {
+  readonly enabled: boolean;
+  readonly types: EntityTypesConfig;
+  readonly resolution: EntityResolutionConfig;
+  readonly enrichment: EntityEnrichmentConfig;
+}
+
+export interface EntityTypesConfig {
+  readonly persons: boolean;
+  readonly organizations: boolean;
+  readonly locations: boolean;
+  readonly events: boolean;
+  readonly dates: boolean;
+  readonly money: boolean;
+  readonly phones: boolean;
+  readonly emails: boolean;
+  readonly urls: boolean;
+  readonly hashtags: boolean;
+  readonly mentions: boolean;
+}
+
+export interface EntityResolutionConfig {
+  readonly enabled: boolean;
+  readonly crossSource: boolean;
+  readonly fuzzyMatching: boolean;
+  readonly threshold: number;
+}
+
+export interface EntityEnrichmentConfig {
+  readonly enabled: boolean;
+  readonly publicRecords: boolean;
+  readonly socialProfiles: boolean;
+  readonly newsArticles: boolean;
+  readonly corporateData: boolean;
+}
+
+export interface NetworkAnalysisConfig {
+  readonly enabled: boolean;
+  readonly graphConstruction: GraphConstructionConfig;
+  readonly metrics: NetworkMetricsConfig;
+  readonly community: CommunityDetectionConfig;
+  readonly visualization: NetworkVisualizationConfig;
+}
+
+export interface GraphConstructionConfig {
+  readonly enabled: boolean;
+  readonly nodeTypes: readonly EntityType[];
+  readonly edgeTypes: readonly RelationshipType[];
+  readonly temporal: boolean;
+}
+
+export type RelationshipType =
+  | 'MENTIONS'
+  | 'FOLLOWS'
+  | 'FRIENDS'
+  | 'WORKS_AT'
+  | 'LOCATED_IN'
+  | 'RELATED_TO'
+  | 'COMMUNICATES_WITH'
+  | 'TRANSACTS_WITH';
+
+export interface NetworkMetricsConfig {
+  readonly enabled: boolean;
+  readonly centrality: boolean;
+  readonly clustering: boolean;
+  readonly pathAnalysis: boolean;
+  readonly influenceScoring: boolean;
+}
+
+export interface CommunityDetectionConfig {
+  readonly enabled: boolean;
+  readonly algorithm: 'LOUVAIN' | 'LABEL_PROPAGATION' | 'INFOMAP';
+  readonly resolution: number;
+}
+
+export interface NetworkVisualizationConfig {
+  readonly enabled: boolean;
+  readonly layout: 'FORCE_DIRECTED' | 'HIERARCHICAL' | 'CIRCULAR';
+  readonly maxNodes: number;
+  readonly interactive: boolean;
+}
+
+export interface AlertingConfig {
+  readonly enabled: boolean;
+  readonly channels: readonly AlertChannel[];
+  readonly rules: readonly AlertRule[];
+  readonly suppression: AlertSuppressionConfig;
+}
+
+export interface AlertChannel {
+  readonly channelId: string;
+  readonly name: string;
+  readonly type: 'EMAIL' | 'SMS' | 'WEBHOOK' | 'SLACK' | 'TEAMS';
+  readonly config: Readonly<Record<string, unknown>>;
+  readonly enabled: boolean;
+}
+
+export interface AlertRule {
+  readonly ruleId: string;
+  readonly name: string;
+  readonly condition: string;
+  readonly severity: AlertSeverity;
+  readonly channels: readonly string[];
+  readonly cooldown: number;
+  readonly enabled: boolean;
+}
+
+export interface AlertSuppressionConfig {
+  readonly enabled: boolean;
+  readonly deduplication: boolean;
+  readonly deduplicationWindow: number;
+  readonly whitelisting: boolean;
+}
+
+export interface ReportingConfig {
+  readonly enabled: boolean;
+  readonly templates: readonly ReportTemplate[];
+  readonly scheduling: ReportSchedulingConfig;
+  readonly distribution: ReportDistributionConfig;
+}
+
+export interface ReportTemplate {
+  readonly templateId: string;
+  readonly name: string;
+  readonly type: 'SUMMARY' | 'DETAILED' | 'EXECUTIVE' | 'TECHNICAL';
+  readonly sections: readonly string[];
+  readonly format: 'PDF' | 'HTML' | 'DOCX';
+}
+
+export interface ReportSchedulingConfig {
+  readonly enabled: boolean;
+  readonly schedules: readonly ReportSchedule[];
+}
+
+export interface ReportSchedule {
+  readonly scheduleId: string;
+  readonly templateId: string;
+  readonly frequency: 'DAILY' | 'WEEKLY' | 'MONTHLY';
+  readonly time: string;
+  readonly recipients: readonly string[];
+}
+
+export interface ReportDistributionConfig {
+  readonly enabled: boolean;
+  readonly email: boolean;
+  readonly portal: boolean;
+  readonly api: boolean;
+}
+
+export interface StorageConfig {
+  readonly type: 'DATABASE' | 'DATA_LAKE' | 'HYBRID';
+  readonly encryption: EncryptionConfig;
+  readonly retention: RetentionConfig;
+  readonly backup: BackupConfig;
+}
+
+export interface EncryptionConfig {
+  readonly enabled: boolean;
+  readonly algorithm: 'AES_256_GCM' | 'CHACHA20_POLY1305';
+  readonly keyManagement: 'LOCAL' | 'HSM' | 'KMS';
+}
+
+export interface RetentionConfig {
+  readonly enabled: boolean;
+  readonly rawData: number;
+  readonly processedData: number;
+  readonly reports: number;
+  readonly alerts: number;
+}
+
+export interface BackupConfig {
+  readonly enabled: boolean;
+  readonly frequency: number;
+  readonly encryption: boolean;
+}
+
+export interface SecurityConfig {
+  readonly authentication: AuthenticationConfig;
+  readonly authorization: AuthorizationConfig;
+  readonly audit: AuditConfig;
+}
+
+export interface AuthenticationConfig {
+  readonly enabled: boolean;
+  readonly methods: readonly ('API_KEY' | 'BEARER' | 'MTLS' | 'SAML' | 'OIDC')[];
+  readonly sessionTimeout: number;
+}
+
+export interface AuthorizationConfig {
+  readonly enabled: boolean;
+  readonly model: 'RBAC' | 'ABAC';
+  readonly defaultRole: string;
+}
+
+export interface AuditConfig {
+  readonly enabled: boolean;
+  readonly logAllOperations: boolean;
+  readonly logDataAccess: boolean;
+  readonly retention: number;
+}
+
+export interface PlatformMetadata {
+  readonly createdAt: number;
+  readonly updatedAt: number;
+  readonly createdBy: string;
+  readonly version: string;
+  readonly tags: readonly string[];
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// COLLECTED DATA TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface OSINTItem {
+  readonly itemId: string;
+  readonly timestamp: number;
+  readonly source: OSINTSource;
+  readonly platform: SocialPlatform | null;
+  readonly contentType: ContentType;
+  readonly content: ItemContent;
+  readonly author: AuthorInfo | null;
+  readonly location: LocationInfo | null;
+  readonly entities: readonly ExtractedEntity[];
+  readonly analysis: ItemAnalysis;
+  readonly metadata: ItemMetadata;
+}
+
+export interface ItemContent {
+  readonly text: string | null;
+  readonly html: string | null;
+  readonly media: readonly MediaItem[];
+  readonly links: readonly string[];
+  readonly hashtags: readonly string[];
+  readonly mentions: readonly string[];
+}
+
+export interface MediaItem {
+  readonly mediaId: string;
+  readonly type: 'IMAGE' | 'VIDEO' | 'AUDIO' | 'DOCUMENT';
+  readonly url: string;
+  readonly localPath: string | null;
+  readonly size: number | null;
+  readonly dimensions: MediaDimensions | null;
+  readonly duration: number | null;
+  readonly analysis: MediaAnalysis | null;
+}
+
+export interface MediaDimensions {
+  readonly width: number;
+  readonly height: number;
+}
+
+export interface MediaAnalysis {
+  readonly objects: readonly DetectedObject[];
+  readonly faces: readonly DetectedFace[];
+  readonly text: readonly ExtractedText[];
+  readonly geolocation: GeoLocation | null;
+}
+
+export interface DetectedObject {
+  readonly objectId: string;
+  readonly category: ObjectCategory;
+  readonly label: string;
+  readonly confidence: number;
+  readonly boundingBox: BoundingBox;
+}
+
+export interface BoundingBox {
+  readonly x: number;
+  readonly y: number;
+  readonly width: number;
+  readonly height: number;
+}
+
+export interface DetectedFace {
+  readonly faceId: string;
+  readonly confidence: number;
+  readonly boundingBox: BoundingBox;
+  readonly landmarks: FaceLandmarks | null;
+  readonly attributes: FaceAttributes | null;
+  readonly encoding: number[] | null;
+  readonly matchedIdentity: string | null;
+}
+
+export interface FaceLandmarks {
+  readonly leftEye: Point;
+  readonly rightEye: Point;
+  readonly nose: Point;
+  readonly leftMouth: Point;
+  readonly rightMouth: Point;
+}
+
+export interface Point {
+  readonly x: number;
+  readonly y: number;
+}
+
+export interface FaceAttributes {
+  readonly age: number | null;
+  readonly gender: 'MALE' | 'FEMALE' | null;
+  readonly emotion: string | null;
+  readonly glasses: boolean | null;
+  readonly beard: boolean | null;
+}
+
+export interface ExtractedText {
+  readonly textId: string;
+  readonly text: string;
+  readonly confidence: number;
+  readonly boundingBox: BoundingBox;
+  readonly language: string | null;
+}
+
+export interface GeoLocation {
+  readonly latitude: number;
+  readonly longitude: number;
+  readonly altitude: number | null;
+  readonly accuracy: number | null;
+  readonly source: 'EXIF' | 'LANDMARK' | 'VISUAL' | 'TEXTUAL' | 'USER';
+  readonly confidence: number;
+  readonly address: AddressInfo | null;
+}
+
+export interface AddressInfo {
+  readonly street: string | null;
+  readonly city: string | null;
+  readonly state: string | null;
+  readonly country: string | null;
+  readonly postalCode: string | null;
+  readonly formatted: string;
+}
+
+export interface AuthorInfo {
+  readonly authorId: string;
+  readonly platform: SocialPlatform | null;
+  readonly username: string | null;
+  readonly displayName: string | null;
+  readonly profileUrl: string | null;
+  readonly avatarUrl: string | null;
+  readonly verified: boolean | null;
+  readonly followers: number | null;
+  readonly following: number | null;
+  readonly posts: number | null;
+  readonly joinDate: number | null;
+  readonly bio: string | null;
+  readonly location: string | null;
+  readonly website: string | null;
+}
+
+export interface LocationInfo {
+  readonly locationId: string;
+  readonly name: string | null;
+  readonly type: 'POINT' | 'PLACE' | 'AREA';
+  readonly coordinates: GeoLocation | null;
+  readonly placeId: string | null;
+  readonly address: AddressInfo | null;
+}
+
+export interface ExtractedEntity {
+  readonly entityId: string;
+  readonly type: EntityType;
+  readonly value: string;
+  readonly normalizedValue: string | null;
+  readonly confidence: number;
+  readonly context: string | null;
+  readonly positions: readonly TextPosition[];
+  readonly linkedEntity: string | null;
+}
+
+export interface TextPosition {
+  readonly start: number;
+  readonly end: number;
+}
+
+export interface ItemAnalysis {
+  readonly sentiment: SentimentResult | null;
+  readonly topics: readonly TopicResult[];
+  readonly language: LanguageResult | null;
+  readonly credibility: CredibilityResult | null;
+  readonly relevance: number;
+}
+
+export interface SentimentResult {
+  readonly score: number;
+  readonly label: 'POSITIVE' | 'NEGATIVE' | 'NEUTRAL';
+  readonly confidence: number;
+}
+
+export interface TopicResult {
+  readonly topicId: string;
+  readonly name: string;
+  readonly confidence: number;
+}
+
+export interface LanguageResult {
+  readonly code: string;
+  readonly name: string;
+  readonly confidence: number;
+}
+
+export interface CredibilityResult {
+  readonly score: number;
+  readonly factors: readonly CredibilityFactor[];
+}
+
+export interface CredibilityFactor {
+  readonly factorId: string;
+  readonly name: string;
+  readonly score: number;
+  readonly weight: number;
+}
+
+export interface ItemMetadata {
+  readonly sourceUrl: string;
+  readonly collectedAt: number;
+  readonly processedAt: number;
+  readonly hash: string;
+  readonly version: string;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PROFILE TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface OSINTProfile {
+  readonly profileId: string;
+  readonly type: EntityType;
+  readonly identity: ProfileIdentity;
+  readonly socialPresence: SocialPresence;
+  readonly publicRecords: PublicRecordsInfo;
+  readonly network: NetworkInfo;
+  readonly timeline: ProfileTimeline;
+  readonly risk: ProfileRisk;
+  readonly metadata: ProfileMetadata;
+}
+
+export interface ProfileIdentity {
+  readonly primaryName: string;
+  readonly aliases: readonly string[];
+  readonly identifiers: ProfileIdentifiers;
+  readonly demographics: Demographics | null;
+  readonly images: readonly ProfileImage[];
+}
+
+export interface ProfileIdentifiers {
+  readonly emails: readonly string[];
+  readonly phones: readonly string[];
+  readonly usernames: readonly UsernameInfo[];
+  readonly addresses: readonly AddressInfo[];
+  readonly nationalIds: readonly string[];
+}
+
+export interface UsernameInfo {
+  readonly platform: SocialPlatform;
+  readonly username: string;
+  readonly profileUrl: string;
+  readonly verified: boolean;
+  readonly lastSeen: number | null;
+}
+
+export interface Demographics {
+  readonly dateOfBirth: string | null;
+  readonly age: number | null;
+  readonly gender: string | null;
+  readonly nationality: string | null;
+  readonly occupation: string | null;
+  readonly education: string | null;
+}
+
+export interface ProfileImage {
+  readonly imageId: string;
+  readonly url: string;
+  readonly source: string;
+  readonly type: 'AVATAR' | 'PHOTO' | 'DOCUMENT';
+  readonly faceEncoding: number[] | null;
+  readonly timestamp: number;
+}
+
+export interface SocialPresence {
+  readonly platforms: readonly SocialPlatformPresence[];
+  readonly totalFollowers: number;
+  readonly totalPosts: number;
+  readonly activityLevel: 'HIGH' | 'MEDIUM' | 'LOW' | 'INACTIVE';
+  readonly lastActivity: number | null;
+}
+
+export interface SocialPlatformPresence {
+  readonly platform: SocialPlatform;
+  readonly username: string;
+  readonly profileUrl: string;
+  readonly followers: number | null;
+  readonly following: number | null;
+  readonly posts: number | null;
+  readonly joinDate: number | null;
+  readonly lastActivity: number | null;
+  readonly verified: boolean;
+}
+
+export interface PublicRecordsInfo {
+  readonly corporateAffiliations: readonly CorporateAffiliation[];
+  readonly propertyRecords: readonly PropertyRecord[];
+  readonly courtRecords: readonly CourtRecord[];
+  readonly licenses: readonly LicenseRecord[];
+}
+
+export interface CorporateAffiliation {
+  readonly affiliationId: string;
+  readonly companyName: string;
+  readonly role: string;
+  readonly status: 'ACTIVE' | 'INACTIVE';
+  readonly startDate: number | null;
+  readonly endDate: number | null;
+  readonly jurisdiction: string;
+}
+
+export interface PropertyRecord {
+  readonly recordId: string;
+  readonly address: AddressInfo;
+  readonly type: string;
+  readonly ownershipType: string;
+  readonly value: number | null;
+  readonly purchaseDate: number | null;
+}
+
+export interface CourtRecord {
+  readonly recordId: string;
+  readonly caseNumber: string;
+  readonly court: string;
+  readonly type: string;
+  readonly role: 'PLAINTIFF' | 'DEFENDANT' | 'WITNESS' | 'OTHER';
+  readonly status: string;
+  readonly filingDate: number;
+}
+
+export interface LicenseRecord {
+  readonly recordId: string;
+  readonly type: string;
+  readonly number: string;
+  readonly issuingAuthority: string;
+  readonly status: 'ACTIVE' | 'EXPIRED' | 'REVOKED';
+  readonly issueDate: number;
+  readonly expirationDate: number | null;
+}
+
+export interface NetworkInfo {
+  readonly connections: readonly ConnectionInfo[];
+  readonly communities: readonly CommunityMembership[];
+  readonly influenceScore: number;
+  readonly centralityScores: CentralityScores;
+}
+
+export interface ConnectionInfo {
+  readonly connectionId: string;
+  readonly entityId: string;
+  readonly name: string;
+  readonly type: EntityType;
+  readonly relationship: RelationshipType;
+  readonly strength: number;
+  readonly sources: readonly string[];
+}
+
+export interface CommunityMembership {
+  readonly communityId: string;
+  readonly name: string;
+  readonly role: string;
+  readonly memberCount: number;
+}
+
+export interface CentralityScores {
+  readonly degree: number;
+  readonly betweenness: number;
+  readonly closeness: number;
+  readonly eigenvector: number;
+}
+
+export interface ProfileTimeline {
+  readonly events: readonly TimelineEvent[];
+  readonly locations: readonly LocationHistory[];
+  readonly activities: readonly ActivitySummary[];
+}
+
+export interface TimelineEvent {
+  readonly eventId: string;
+  readonly timestamp: number;
+  readonly type: string;
+  readonly description: string;
+  readonly source: string;
+  readonly location: GeoLocation | null;
+}
+
+export interface LocationHistory {
+  readonly locationId: string;
+  readonly location: GeoLocation;
+  readonly timestamp: number;
+  readonly source: string;
+  readonly duration: number | null;
+}
+
+export interface ActivitySummary {
+  readonly period: string;
+  readonly postCount: number;
+  readonly interactionCount: number;
+  readonly topTopics: readonly string[];
+  readonly sentiment: SentimentResult | null;
+}
+
+export interface ProfileRisk {
+  readonly score: number;
+  readonly level: 'HIGH' | 'MEDIUM' | 'LOW';
+  readonly factors: readonly RiskFactor[];
+  readonly alerts: readonly ProfileAlert[];
+}
+
+export interface RiskFactor {
+  readonly factorId: string;
+  readonly name: string;
+  readonly score: number;
+  readonly weight: number;
+  readonly description: string;
+}
+
+export interface ProfileAlert {
+  readonly alertId: string;
+  readonly timestamp: number;
+  readonly type: string;
+  readonly severity: AlertSeverity;
+  readonly description: string;
+}
+
+export interface ProfileMetadata {
+  readonly createdAt: number;
+  readonly updatedAt: number;
+  readonly sources: readonly string[];
+  readonly completeness: number;
+  readonly confidence: number;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SESSION TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface OSINTSession {
+  readonly sessionId: string;
+  readonly platformId: string;
+  readonly state: SessionState;
+  readonly config: SessionConfig;
+  readonly progress: SessionProgress;
+  readonly statistics: SessionStatistics;
+  readonly items: readonly OSINTItem[];
+  readonly profiles: readonly OSINTProfile[];
+  readonly alerts: readonly OSINTAlert[];
+  readonly errors: readonly SessionError[];
+  readonly startTime: number;
+  readonly endTime: number | null;
+  readonly metadata: SessionMetadata;
+}
+
+export type SessionState =
+  | 'PENDING'
+  | 'INITIALIZING'
+  | 'COLLECTING'
+  | 'PROCESSING'
+  | 'ANALYZING'
+  | 'COMPLETED'
+  | 'FAILED';
+
+export interface SessionConfig {
+  readonly mode: OperationalMode;
+  readonly sources: readonly OSINTSource[];
+  readonly targets: readonly string[];
+  readonly keywords: readonly string[];
+  readonly timeRange: TimeRange | null;
+  readonly options: Readonly<Record<string, unknown>>;
+}
+
+export interface TimeRange {
+  readonly start: number;
+  readonly end: number;
+}
+
+export interface SessionProgress {
+  readonly phase: SessionPhase;
+  readonly percentage: number;
+  readonly itemsCollected: number;
+  readonly itemsProcessed: number;
+  readonly currentTask: string | null;
+  readonly estimatedTimeRemaining: number | null;
+}
+
+export type SessionPhase =
+  | 'INITIALIZING'
+  | 'COLLECTING'
+  | 'EXTRACTING'
+  | 'ANALYZING'
+  | 'ENRICHING'
+  | 'FINALIZING';
+
+export interface SessionStatistics {
+  readonly itemsCollected: number;
+  readonly itemsProcessed: number;
+  readonly entitiesExtracted: number;
+  readonly profilesCreated: number;
+  readonly alertsGenerated: number;
+  readonly processingTime: number;
+  readonly dataVolume: number;
+}
+
+export interface OSINTAlert {
+  readonly alertId: string;
+  readonly timestamp: number;
+  readonly type: string;
+  readonly severity: AlertSeverity;
+  readonly title: string;
+  readonly description: string;
+  readonly entities: readonly string[];
+  readonly items: readonly string[];
+  readonly status: 'NEW' | 'ACKNOWLEDGED' | 'RESOLVED' | 'DISMISSED';
+}
+
+export interface SessionError {
+  readonly errorId: string;
+  readonly timestamp: number;
+  readonly type: SessionErrorType;
+  readonly message: string;
+  readonly details: string | null;
+  readonly recoverable: boolean;
+}
+
+export type SessionErrorType =
+  | 'COLLECTION_ERROR'
+  | 'PROCESSING_ERROR'
+  | 'ANALYSIS_ERROR'
+  | 'RATE_LIMIT'
+  | 'TIMEOUT'
+  | 'INTERNAL_ERROR';
+
+export interface SessionMetadata {
+  readonly platformVersion: string;
+  readonly startedBy: string;
+  readonly environment: string;
+  readonly tags: readonly string[];
+}

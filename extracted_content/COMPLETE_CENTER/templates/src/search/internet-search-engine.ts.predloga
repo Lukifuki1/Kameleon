@@ -1,0 +1,1417 @@
+/**
+ * @file Internet Search Engine - Self-Contained Device and Service Discovery
+ * @author {{AVTOR}}
+ * @version {{VERZIJA}}
+ * @date {{DATUM}}
+ * @project {{IME_PROJEKTA}}
+ * @domain VARNOSTNI_SISTEMI
+ * 
+ * @requirement REQ-SEC-ISE-001
+ * @design DSN-SEC-ISE-001
+ * @test TST-SEC-ISE-001
+ * 
+ * @description
+ * Enterprise-grade self-contained internet search engine implementing
+ * comprehensive device discovery, service enumeration, banner grabbing,
+ * certificate analysis, and vulnerability correlation. All protocols
+ * and parsers are natively implemented without external dependencies.
+ * Provides Shodan-like, Censys-like, and ZoomEye-like capabilities.
+ * 
+ * @classification TOP SECRET - Internet Intelligence Operations
+ * @authorization Required: Level 5 Security Clearance
+ * @dependencies NONE - Fully self-contained implementation
+ */
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SEARCH ENGINE TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export type SearchEngineMode =
+  | 'PASSIVE'
+  | 'ACTIVE'
+  | 'AGGRESSIVE'
+  | 'STEALTH'
+  | 'DISTRIBUTED';
+
+export type SearchScope =
+  | 'GLOBAL'
+  | 'REGIONAL'
+  | 'COUNTRY'
+  | 'ASN'
+  | 'IP_RANGE'
+  | 'DOMAIN'
+  | 'CUSTOM';
+
+export type DiscoveryMethod =
+  | 'PORT_SCAN'
+  | 'BANNER_GRAB'
+  | 'SERVICE_PROBE'
+  | 'SSL_SCAN'
+  | 'DNS_ENUM'
+  | 'WHOIS'
+  | 'BGP'
+  | 'CERTIFICATE_TRANSPARENCY'
+  | 'PASSIVE_DNS'
+  | 'FAVICON_HASH'
+  | 'HTTP_FINGERPRINT'
+  | 'SSH_FINGERPRINT'
+  | 'TLS_FINGERPRINT';
+
+export type ServiceCategory =
+  | 'WEB'
+  | 'DATABASE'
+  | 'MAIL'
+  | 'FILE_TRANSFER'
+  | 'REMOTE_ACCESS'
+  | 'NETWORK_INFRASTRUCTURE'
+  | 'IOT'
+  | 'INDUSTRIAL'
+  | 'VOIP'
+  | 'GAMING'
+  | 'CRYPTOCURRENCY'
+  | 'VPN'
+  | 'PROXY'
+  | 'DNS'
+  | 'DIRECTORY'
+  | 'MESSAGE_QUEUE'
+  | 'CACHE'
+  | 'MONITORING'
+  | 'CONTAINER'
+  | 'CLOUD'
+  | 'UNKNOWN';
+
+export type ProtocolType =
+  | 'TCP'
+  | 'UDP'
+  | 'SCTP'
+  | 'ICMP';
+
+export type EncryptionStatus =
+  | 'NONE'
+  | 'STARTTLS'
+  | 'IMPLICIT_TLS'
+  | 'CUSTOM';
+
+export type DeviceType =
+  | 'SERVER'
+  | 'WORKSTATION'
+  | 'ROUTER'
+  | 'SWITCH'
+  | 'FIREWALL'
+  | 'LOAD_BALANCER'
+  | 'STORAGE'
+  | 'PRINTER'
+  | 'CAMERA'
+  | 'IOT_DEVICE'
+  | 'INDUSTRIAL_CONTROLLER'
+  | 'MEDICAL_DEVICE'
+  | 'PHONE'
+  | 'ACCESS_POINT'
+  | 'MODEM'
+  | 'NAS'
+  | 'UPS'
+  | 'HVAC'
+  | 'UNKNOWN';
+
+export type VulnerabilityStatus =
+  | 'VULNERABLE'
+  | 'POTENTIALLY_VULNERABLE'
+  | 'NOT_VULNERABLE'
+  | 'UNKNOWN';
+
+export type IndexStatus =
+  | 'INDEXED'
+  | 'PENDING'
+  | 'FAILED'
+  | 'EXPIRED'
+  | 'EXCLUDED';
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SEARCH ENGINE CONFIGURATION
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface InternetSearchEngineConfig {
+  readonly engineId: string;
+  readonly name: string;
+  readonly version: string;
+  readonly mode: SearchEngineMode;
+  readonly scope: ScopeConfig;
+  readonly discovery: DiscoveryConfig;
+  readonly indexing: IndexingConfig;
+  readonly search: SearchConfig;
+  readonly enrichment: EnrichmentConfig;
+  readonly storage: StorageConfig;
+  readonly scheduling: SchedulingConfig;
+  readonly performance: PerformanceConfig;
+  readonly security: SecurityConfig;
+  readonly monitoring: MonitoringConfig;
+  readonly metadata: EngineMetadata;
+}
+
+export interface ScopeConfig {
+  readonly scope: SearchScope;
+  readonly ipRanges: readonly IPRange[];
+  readonly excludedIpRanges: readonly IPRange[];
+  readonly asns: readonly number[];
+  readonly excludedAsns: readonly number[];
+  readonly countries: readonly string[];
+  readonly excludedCountries: readonly string[];
+  readonly domains: readonly string[];
+  readonly excludedDomains: readonly string[];
+  readonly ports: readonly PortRange[];
+  readonly excludedPorts: readonly PortRange[];
+  readonly protocols: readonly ProtocolType[];
+}
+
+export interface IPRange {
+  readonly start: string;
+  readonly end: string;
+  readonly cidr: string | null;
+  readonly description: string | null;
+}
+
+export interface PortRange {
+  readonly start: number;
+  readonly end: number;
+  readonly protocol: ProtocolType;
+  readonly description: string | null;
+}
+
+export interface DiscoveryConfig {
+  readonly methods: readonly DiscoveryMethod[];
+  readonly portScanning: PortScanConfig;
+  readonly bannerGrabbing: BannerGrabConfig;
+  readonly serviceProbing: ServiceProbeConfig;
+  readonly sslScanning: SSLScanConfig;
+  readonly dnsEnumeration: DNSEnumConfig;
+  readonly certificateTransparency: CTConfig;
+  readonly fingerprinting: FingerprintConfig;
+  readonly timing: TimingConfig;
+  readonly retries: RetryConfig;
+}
+
+export interface PortScanConfig {
+  readonly enabled: boolean;
+  readonly technique: ScanTechnique;
+  readonly topPorts: number;
+  readonly customPorts: readonly number[];
+  readonly portRanges: readonly PortRange[];
+  readonly timeout: number;
+  readonly maxRetries: number;
+  readonly parallelism: number;
+  readonly rateLimit: number;
+  readonly randomizeOrder: boolean;
+  readonly fragmentPackets: boolean;
+  readonly decoys: readonly string[];
+  readonly sourcePort: number | null;
+  readonly ttl: number | null;
+}
+
+export type ScanTechnique =
+  | 'SYN'
+  | 'CONNECT'
+  | 'ACK'
+  | 'FIN'
+  | 'XMAS'
+  | 'NULL'
+  | 'MAIMON'
+  | 'WINDOW'
+  | 'UDP'
+  | 'SCTP_INIT'
+  | 'SCTP_COOKIE_ECHO'
+  | 'IP_PROTOCOL';
+
+export interface BannerGrabConfig {
+  readonly enabled: boolean;
+  readonly timeout: number;
+  readonly maxBannerSize: number;
+  readonly sendProbes: boolean;
+  readonly customProbes: readonly BannerProbe[];
+  readonly parseResponses: boolean;
+  readonly extractVersions: boolean;
+}
+
+export interface BannerProbe {
+  readonly probeId: string;
+  readonly name: string;
+  readonly protocol: ProtocolType;
+  readonly ports: readonly number[];
+  readonly payload: string;
+  readonly encoding: 'ASCII' | 'HEX' | 'BASE64';
+  readonly expectedResponse: string | null;
+  readonly timeout: number;
+}
+
+export interface ServiceProbeConfig {
+  readonly enabled: boolean;
+  readonly probes: readonly ServiceProbe[];
+  readonly timeout: number;
+  readonly maxProbesPerPort: number;
+  readonly fallbackToGeneric: boolean;
+}
+
+export interface ServiceProbe {
+  readonly probeId: string;
+  readonly name: string;
+  readonly service: string;
+  readonly protocol: ProtocolType;
+  readonly ports: readonly number[];
+  readonly probeString: string;
+  readonly matchPatterns: readonly MatchPattern[];
+  readonly softMatch: boolean;
+  readonly rarity: number;
+}
+
+export interface MatchPattern {
+  readonly patternId: string;
+  readonly pattern: string;
+  readonly type: 'REGEX' | 'LITERAL' | 'HEX';
+  readonly service: string;
+  readonly product: string | null;
+  readonly version: string | null;
+  readonly info: string | null;
+  readonly hostname: string | null;
+  readonly os: string | null;
+  readonly deviceType: DeviceType | null;
+  readonly cpe: string | null;
+}
+
+export interface SSLScanConfig {
+  readonly enabled: boolean;
+  readonly timeout: number;
+  readonly checkCertificate: boolean;
+  readonly checkProtocols: boolean;
+  readonly checkCipherSuites: boolean;
+  readonly checkVulnerabilities: boolean;
+  readonly sniHostnames: readonly string[];
+  readonly clientCertificate: ClientCertConfig | null;
+}
+
+export interface ClientCertConfig {
+  readonly certificate: string;
+  readonly privateKey: string;
+  readonly passphrase: string | null;
+}
+
+export interface DNSEnumConfig {
+  readonly enabled: boolean;
+  readonly resolvers: readonly string[];
+  readonly timeout: number;
+  readonly recordTypes: readonly DNSRecordType[];
+  readonly bruteforce: boolean;
+  readonly wordlist: readonly string[];
+  readonly recursion: boolean;
+  readonly zoneTransfer: boolean;
+  readonly dnssec: boolean;
+}
+
+export type DNSRecordType =
+  | 'A'
+  | 'AAAA'
+  | 'CNAME'
+  | 'MX'
+  | 'NS'
+  | 'TXT'
+  | 'SOA'
+  | 'PTR'
+  | 'SRV'
+  | 'CAA'
+  | 'DNSKEY'
+  | 'DS'
+  | 'RRSIG'
+  | 'NSEC'
+  | 'NSEC3'
+  | 'TLSA'
+  | 'SSHFP'
+  | 'NAPTR'
+  | 'SPF'
+  | 'DMARC';
+
+export interface CTConfig {
+  readonly enabled: boolean;
+  readonly logs: readonly string[];
+  readonly timeout: number;
+  readonly maxEntries: number;
+  readonly includeExpired: boolean;
+  readonly includePrecerts: boolean;
+}
+
+export interface FingerprintConfig {
+  readonly enabled: boolean;
+  readonly httpFingerprint: boolean;
+  readonly sshFingerprint: boolean;
+  readonly tlsFingerprint: boolean;
+  readonly faviconHash: boolean;
+  readonly jarmFingerprint: boolean;
+  readonly ja3Fingerprint: boolean;
+  readonly hasshFingerprint: boolean;
+}
+
+export interface TimingConfig {
+  readonly minDelay: number;
+  readonly maxDelay: number;
+  readonly adaptiveDelay: boolean;
+  readonly jitter: boolean;
+  readonly jitterRange: number;
+}
+
+export interface RetryConfig {
+  readonly maxRetries: number;
+  readonly retryDelay: number;
+  readonly exponentialBackoff: boolean;
+  readonly maxBackoff: number;
+}
+
+export interface IndexingConfig {
+  readonly enabled: boolean;
+  readonly realTime: boolean;
+  readonly batchSize: number;
+  readonly flushInterval: number;
+  readonly deduplication: boolean;
+  readonly compression: boolean;
+  readonly encryption: boolean;
+  readonly retention: RetentionConfig;
+  readonly sharding: ShardingConfig;
+  readonly replication: ReplicationConfig;
+}
+
+export interface RetentionConfig {
+  readonly enabled: boolean;
+  readonly maxAge: number;
+  readonly maxSize: number;
+  readonly deletePolicy: 'OLDEST_FIRST' | 'LEAST_ACCESSED' | 'CUSTOM';
+}
+
+export interface ShardingConfig {
+  readonly enabled: boolean;
+  readonly shardCount: number;
+  readonly shardKey: 'IP' | 'ASN' | 'COUNTRY' | 'SERVICE' | 'HASH';
+  readonly rebalanceThreshold: number;
+}
+
+export interface ReplicationConfig {
+  readonly enabled: boolean;
+  readonly replicaCount: number;
+  readonly syncMode: 'SYNC' | 'ASYNC' | 'SEMI_SYNC';
+  readonly failoverEnabled: boolean;
+}
+
+export interface SearchConfig {
+  readonly maxResults: number;
+  readonly defaultPageSize: number;
+  readonly timeout: number;
+  readonly highlighting: boolean;
+  readonly faceting: boolean;
+  readonly aggregations: boolean;
+  readonly fuzzySearch: boolean;
+  readonly wildcardSearch: boolean;
+  readonly regexSearch: boolean;
+  readonly geoSearch: boolean;
+  readonly rangeSearch: boolean;
+  readonly booleanOperators: boolean;
+  readonly fieldWeights: Readonly<Record<string, number>>;
+  readonly sortOptions: readonly SortOption[];
+  readonly filterOptions: readonly FilterOption[];
+}
+
+export interface SortOption {
+  readonly field: string;
+  readonly direction: 'ASC' | 'DESC';
+  readonly nullsFirst: boolean;
+}
+
+export interface FilterOption {
+  readonly field: string;
+  readonly type: 'TERM' | 'RANGE' | 'EXISTS' | 'PREFIX' | 'WILDCARD' | 'REGEX' | 'GEO';
+  readonly values: readonly unknown[];
+}
+
+export interface EnrichmentConfig {
+  readonly enabled: boolean;
+  readonly geoip: GeoIPConfig;
+  readonly asn: ASNConfig;
+  readonly whois: WHOISConfig;
+  readonly reverseDns: ReverseDNSConfig;
+  readonly threatIntel: ThreatIntelConfig;
+  readonly vulnerability: VulnerabilityConfig;
+  readonly technology: TechnologyConfig;
+}
+
+export interface GeoIPConfig {
+  readonly enabled: boolean;
+  readonly database: string;
+  readonly precision: 'COUNTRY' | 'CITY' | 'COORDINATES';
+  readonly includeIsp: boolean;
+  readonly includeOrg: boolean;
+}
+
+export interface ASNConfig {
+  readonly enabled: boolean;
+  readonly database: string;
+  readonly includePrefix: boolean;
+  readonly includeRegistry: boolean;
+}
+
+export interface WHOISConfig {
+  readonly enabled: boolean;
+  readonly servers: readonly string[];
+  readonly timeout: number;
+  readonly cacheResults: boolean;
+  readonly cacheTtl: number;
+}
+
+export interface ReverseDNSConfig {
+  readonly enabled: boolean;
+  readonly resolvers: readonly string[];
+  readonly timeout: number;
+  readonly cacheResults: boolean;
+}
+
+export interface ThreatIntelConfig {
+  readonly enabled: boolean;
+  readonly feeds: readonly ThreatFeed[];
+  readonly checkMalware: boolean;
+  readonly checkBotnet: boolean;
+  readonly checkSpam: boolean;
+  readonly checkTor: boolean;
+  readonly checkProxy: boolean;
+  readonly checkVpn: boolean;
+}
+
+export interface ThreatFeed {
+  readonly feedId: string;
+  readonly name: string;
+  readonly type: 'IP' | 'DOMAIN' | 'URL' | 'HASH';
+  readonly url: string;
+  readonly format: 'CSV' | 'JSON' | 'STIX' | 'CUSTOM';
+  readonly updateInterval: number;
+}
+
+export interface VulnerabilityConfig {
+  readonly enabled: boolean;
+  readonly checkCve: boolean;
+  readonly checkExploit: boolean;
+  readonly checkMisconfig: boolean;
+  readonly databases: readonly string[];
+  readonly minSeverity: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+}
+
+export interface TechnologyConfig {
+  readonly enabled: boolean;
+  readonly detectCms: boolean;
+  readonly detectFramework: boolean;
+  readonly detectServer: boolean;
+  readonly detectOs: boolean;
+  readonly detectWaf: boolean;
+  readonly detectCdn: boolean;
+}
+
+export interface StorageConfig {
+  readonly type: 'FILESYSTEM' | 'DATABASE' | 'DISTRIBUTED';
+  readonly path: string;
+  readonly compression: CompressionConfig;
+  readonly encryption: EncryptionConfig;
+  readonly backup: BackupConfig;
+}
+
+export interface CompressionConfig {
+  readonly enabled: boolean;
+  readonly algorithm: 'GZIP' | 'LZ4' | 'ZSTD' | 'SNAPPY';
+  readonly level: number;
+}
+
+export interface EncryptionConfig {
+  readonly enabled: boolean;
+  readonly algorithm: 'AES_256_GCM' | 'CHACHA20_POLY1305';
+  readonly keyDerivation: 'PBKDF2' | 'ARGON2' | 'SCRYPT';
+}
+
+export interface BackupConfig {
+  readonly enabled: boolean;
+  readonly interval: number;
+  readonly retention: number;
+  readonly destination: string;
+}
+
+export interface SchedulingConfig {
+  readonly enabled: boolean;
+  readonly schedule: ScheduleDefinition | null;
+  readonly recurring: RecurringSchedule | null;
+  readonly maxDuration: number;
+  readonly priority: number;
+}
+
+export interface ScheduleDefinition {
+  readonly startTime: number;
+  readonly endTime: number | null;
+  readonly timezone: string;
+}
+
+export interface RecurringSchedule {
+  readonly frequency: 'HOURLY' | 'DAILY' | 'WEEKLY' | 'MONTHLY';
+  readonly interval: number;
+  readonly daysOfWeek: readonly number[];
+  readonly time: string;
+}
+
+export interface PerformanceConfig {
+  readonly maxConcurrentScans: number;
+  readonly maxConcurrentConnections: number;
+  readonly connectionPoolSize: number;
+  readonly socketBufferSize: number;
+  readonly maxMemoryUsage: number;
+  readonly maxCpuUsage: number;
+  readonly workerThreads: number;
+}
+
+export interface SecurityConfig {
+  readonly authentication: AuthConfig;
+  readonly authorization: AuthzConfig;
+  readonly rateLimit: RateLimitConfig;
+  readonly audit: AuditConfig;
+}
+
+export interface AuthConfig {
+  readonly enabled: boolean;
+  readonly methods: readonly ('API_KEY' | 'BEARER' | 'BASIC' | 'MTLS')[];
+  readonly sessionTimeout: number;
+}
+
+export interface AuthzConfig {
+  readonly enabled: boolean;
+  readonly model: 'RBAC' | 'ABAC' | 'ACL';
+  readonly defaultRole: string;
+}
+
+export interface RateLimitConfig {
+  readonly enabled: boolean;
+  readonly requestsPerMinute: number;
+  readonly burstSize: number;
+  readonly byIp: boolean;
+  readonly byUser: boolean;
+}
+
+export interface AuditConfig {
+  readonly enabled: boolean;
+  readonly logSearches: boolean;
+  readonly logAccess: boolean;
+  readonly logChanges: boolean;
+  readonly retention: number;
+}
+
+export interface MonitoringConfig {
+  readonly enabled: boolean;
+  readonly metrics: MetricsConfig;
+  readonly logging: LoggingConfig;
+  readonly alerting: AlertingConfig;
+}
+
+export interface MetricsConfig {
+  readonly enabled: boolean;
+  readonly interval: number;
+  readonly exportFormat: 'PROMETHEUS' | 'STATSD' | 'INFLUXDB';
+}
+
+export interface LoggingConfig {
+  readonly level: 'DEBUG' | 'INFO' | 'WARN' | 'ERROR';
+  readonly format: 'JSON' | 'TEXT';
+  readonly destination: 'CONSOLE' | 'FILE' | 'SYSLOG';
+}
+
+export interface AlertingConfig {
+  readonly enabled: boolean;
+  readonly channels: readonly AlertChannel[];
+  readonly rules: readonly AlertRule[];
+}
+
+export interface AlertChannel {
+  readonly channelId: string;
+  readonly type: 'EMAIL' | 'WEBHOOK' | 'SLACK' | 'PAGERDUTY';
+  readonly config: Readonly<Record<string, unknown>>;
+}
+
+export interface AlertRule {
+  readonly ruleId: string;
+  readonly name: string;
+  readonly condition: string;
+  readonly threshold: number;
+  readonly severity: 'INFO' | 'WARNING' | 'CRITICAL';
+  readonly channels: readonly string[];
+}
+
+export interface EngineMetadata {
+  readonly createdAt: number;
+  readonly updatedAt: number;
+  readonly createdBy: string;
+  readonly version: string;
+  readonly tags: readonly string[];
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SEARCH RESULT TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface SearchResult {
+  readonly searchId: string;
+  readonly query: SearchQuery;
+  readonly totalResults: number;
+  readonly page: number;
+  readonly pageSize: number;
+  readonly results: readonly DiscoveredHost[];
+  readonly facets: readonly SearchFacet[];
+  readonly aggregations: readonly SearchAggregation[];
+  readonly timing: SearchTiming;
+  readonly metadata: SearchMetadata;
+}
+
+export interface SearchQuery {
+  readonly queryString: string;
+  readonly filters: readonly QueryFilter[];
+  readonly sort: readonly QuerySort[];
+  readonly fields: readonly string[];
+  readonly highlight: boolean;
+  readonly explain: boolean;
+}
+
+export interface QueryFilter {
+  readonly field: string;
+  readonly operator: 'EQ' | 'NE' | 'GT' | 'GTE' | 'LT' | 'LTE' | 'IN' | 'NIN' | 'EXISTS' | 'REGEX' | 'PREFIX' | 'WILDCARD' | 'GEO_DISTANCE' | 'GEO_BBOX';
+  readonly value: unknown;
+}
+
+export interface QuerySort {
+  readonly field: string;
+  readonly direction: 'ASC' | 'DESC';
+}
+
+export interface SearchFacet {
+  readonly field: string;
+  readonly values: readonly FacetValue[];
+}
+
+export interface FacetValue {
+  readonly value: string;
+  readonly count: number;
+}
+
+export interface SearchAggregation {
+  readonly name: string;
+  readonly type: 'COUNT' | 'SUM' | 'AVG' | 'MIN' | 'MAX' | 'CARDINALITY' | 'PERCENTILES' | 'HISTOGRAM' | 'DATE_HISTOGRAM' | 'TERMS' | 'GEO_BOUNDS';
+  readonly value: unknown;
+}
+
+export interface SearchTiming {
+  readonly queryTime: number;
+  readonly fetchTime: number;
+  readonly totalTime: number;
+}
+
+export interface SearchMetadata {
+  readonly timestamp: number;
+  readonly userId: string | null;
+  readonly clientIp: string | null;
+  readonly userAgent: string | null;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// DISCOVERED HOST TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface DiscoveredHost {
+  readonly hostId: string;
+  readonly ip: string;
+  readonly ipVersion: 4 | 6;
+  readonly hostname: string | null;
+  readonly hostnames: readonly string[];
+  readonly domains: readonly string[];
+  readonly ports: readonly DiscoveredPort[];
+  readonly services: readonly DiscoveredService[];
+  readonly os: OSInfo | null;
+  readonly device: DeviceInfo | null;
+  readonly location: GeoLocation | null;
+  readonly asn: ASNInfo | null;
+  readonly whois: WHOISInfo | null;
+  readonly certificates: readonly CertificateInfo[];
+  readonly vulnerabilities: readonly VulnerabilityInfo[];
+  readonly threatIntel: ThreatIntelInfo | null;
+  readonly tags: readonly string[];
+  readonly lastSeen: number;
+  readonly firstSeen: number;
+  readonly updateCount: number;
+  readonly metadata: HostMetadata;
+}
+
+export interface DiscoveredPort {
+  readonly port: number;
+  readonly protocol: ProtocolType;
+  readonly state: PortState;
+  readonly service: string | null;
+  readonly product: string | null;
+  readonly version: string | null;
+  readonly extraInfo: string | null;
+  readonly banner: string | null;
+  readonly fingerprint: string | null;
+  readonly cpe: readonly string[];
+  readonly scripts: readonly ScriptResult[];
+  readonly timestamp: number;
+}
+
+export type PortState =
+  | 'OPEN'
+  | 'CLOSED'
+  | 'FILTERED'
+  | 'UNFILTERED'
+  | 'OPEN_FILTERED'
+  | 'CLOSED_FILTERED';
+
+export interface ScriptResult {
+  readonly scriptId: string;
+  readonly name: string;
+  readonly output: string;
+  readonly elements: Readonly<Record<string, unknown>>;
+}
+
+export interface DiscoveredService {
+  readonly serviceId: string;
+  readonly name: string;
+  readonly category: ServiceCategory;
+  readonly port: number;
+  readonly protocol: ProtocolType;
+  readonly product: string | null;
+  readonly version: string | null;
+  readonly extraInfo: string | null;
+  readonly tunnel: string | null;
+  readonly method: string | null;
+  readonly confidence: number;
+  readonly cpe: readonly string[];
+  readonly banner: BannerInfo | null;
+  readonly http: HTTPInfo | null;
+  readonly ssl: SSLInfo | null;
+  readonly ssh: SSHInfo | null;
+  readonly smtp: SMTPInfo | null;
+  readonly ftp: FTPInfo | null;
+  readonly dns: DNSInfo | null;
+  readonly database: DatabaseInfo | null;
+  readonly custom: Readonly<Record<string, unknown>>;
+}
+
+export interface BannerInfo {
+  readonly raw: string;
+  readonly parsed: Readonly<Record<string, string>>;
+  readonly encoding: string;
+  readonly timestamp: number;
+}
+
+export interface HTTPInfo {
+  readonly statusCode: number;
+  readonly statusMessage: string;
+  readonly headers: Readonly<Record<string, string>>;
+  readonly title: string | null;
+  readonly server: string | null;
+  readonly poweredBy: string | null;
+  readonly contentType: string | null;
+  readonly contentLength: number | null;
+  readonly redirectUrl: string | null;
+  readonly robots: string | null;
+  readonly sitemap: string | null;
+  readonly favicon: FaviconInfo | null;
+  readonly technologies: readonly TechnologyDetection[];
+  readonly securityHeaders: SecurityHeadersInfo;
+  readonly html: HTMLInfo | null;
+}
+
+export interface FaviconInfo {
+  readonly url: string;
+  readonly hash: string;
+  readonly murmurHash: number;
+  readonly md5: string;
+  readonly sha256: string;
+}
+
+export interface TechnologyDetection {
+  readonly name: string;
+  readonly category: string;
+  readonly version: string | null;
+  readonly confidence: number;
+  readonly website: string | null;
+  readonly cpe: string | null;
+}
+
+export interface SecurityHeadersInfo {
+  readonly strictTransportSecurity: string | null;
+  readonly contentSecurityPolicy: string | null;
+  readonly xFrameOptions: string | null;
+  readonly xContentTypeOptions: string | null;
+  readonly xXssProtection: string | null;
+  readonly referrerPolicy: string | null;
+  readonly permissionsPolicy: string | null;
+  readonly crossOriginOpenerPolicy: string | null;
+  readonly crossOriginEmbedderPolicy: string | null;
+  readonly crossOriginResourcePolicy: string | null;
+}
+
+export interface HTMLInfo {
+  readonly title: string | null;
+  readonly description: string | null;
+  readonly keywords: readonly string[];
+  readonly language: string | null;
+  readonly charset: string | null;
+  readonly generator: string | null;
+  readonly author: string | null;
+  readonly canonical: string | null;
+  readonly openGraph: OpenGraphInfo | null;
+  readonly twitterCard: TwitterCardInfo | null;
+  readonly links: readonly string[];
+  readonly scripts: readonly string[];
+  readonly forms: readonly FormInfo[];
+  readonly inputs: readonly InputInfo[];
+  readonly comments: readonly string[];
+}
+
+export interface OpenGraphInfo {
+  readonly title: string | null;
+  readonly type: string | null;
+  readonly url: string | null;
+  readonly image: string | null;
+  readonly description: string | null;
+  readonly siteName: string | null;
+}
+
+export interface TwitterCardInfo {
+  readonly card: string | null;
+  readonly site: string | null;
+  readonly title: string | null;
+  readonly description: string | null;
+  readonly image: string | null;
+}
+
+export interface FormInfo {
+  readonly action: string;
+  readonly method: string;
+  readonly inputs: readonly string[];
+}
+
+export interface InputInfo {
+  readonly name: string;
+  readonly type: string;
+  readonly id: string | null;
+}
+
+export interface SSLInfo {
+  readonly version: string;
+  readonly cipher: CipherInfo;
+  readonly certificate: CertificateSummary;
+  readonly chain: readonly CertificateSummary[];
+  readonly protocols: readonly ProtocolInfo[];
+  readonly cipherSuites: readonly CipherSuiteInfo[];
+  readonly vulnerabilities: readonly SSLVulnerability[];
+  readonly jarmFingerprint: string | null;
+  readonly ja3Fingerprint: string | null;
+  readonly ja3sFingerprint: string | null;
+}
+
+export interface CipherInfo {
+  readonly name: string;
+  readonly version: string;
+  readonly bits: number;
+}
+
+export interface CertificateSummary {
+  readonly subject: string;
+  readonly issuer: string;
+  readonly serial: string;
+  readonly validFrom: number;
+  readonly validTo: number;
+  readonly fingerprint: string;
+  readonly signatureAlgorithm: string;
+  readonly publicKeyAlgorithm: string;
+  readonly publicKeyBits: number;
+}
+
+export interface ProtocolInfo {
+  readonly name: string;
+  readonly version: string;
+  readonly enabled: boolean;
+  readonly secure: boolean;
+}
+
+export interface CipherSuiteInfo {
+  readonly name: string;
+  readonly protocol: string;
+  readonly keyExchange: string;
+  readonly authentication: string;
+  readonly encryption: string;
+  readonly mac: string;
+  readonly bits: number;
+  readonly secure: boolean;
+  readonly forwardSecrecy: boolean;
+}
+
+export interface SSLVulnerability {
+  readonly name: string;
+  readonly cve: string | null;
+  readonly severity: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+  readonly description: string;
+  readonly affected: boolean;
+}
+
+export interface SSHInfo {
+  readonly version: string;
+  readonly banner: string;
+  readonly serverHostKey: SSHHostKey;
+  readonly keyExchangeAlgorithms: readonly string[];
+  readonly serverHostKeyAlgorithms: readonly string[];
+  readonly encryptionAlgorithms: readonly string[];
+  readonly macAlgorithms: readonly string[];
+  readonly compressionAlgorithms: readonly string[];
+  readonly hasshFingerprint: string | null;
+  readonly hasshServerFingerprint: string | null;
+}
+
+export interface SSHHostKey {
+  readonly type: string;
+  readonly fingerprint: string;
+  readonly bits: number;
+}
+
+export interface SMTPInfo {
+  readonly banner: string;
+  readonly ehloResponse: readonly string[];
+  readonly supportsTls: boolean;
+  readonly supportsAuth: boolean;
+  readonly authMethods: readonly string[];
+  readonly supportsVrfy: boolean;
+  readonly supportsExpn: boolean;
+  readonly openRelay: boolean;
+}
+
+export interface FTPInfo {
+  readonly banner: string;
+  readonly systemType: string | null;
+  readonly supportsTls: boolean;
+  readonly supportsPassive: boolean;
+  readonly supportsExtended: boolean;
+  readonly anonymousAccess: boolean;
+  readonly features: readonly string[];
+}
+
+export interface DNSInfo {
+  readonly version: string | null;
+  readonly recursionAvailable: boolean;
+  readonly dnssecEnabled: boolean;
+  readonly ednsSupport: boolean;
+  readonly zoneTransferAllowed: boolean;
+  readonly software: string | null;
+}
+
+export interface DatabaseInfo {
+  readonly type: string;
+  readonly version: string | null;
+  readonly authRequired: boolean;
+  readonly databases: readonly string[];
+  readonly users: readonly string[];
+  readonly replication: boolean;
+  readonly cluster: boolean;
+}
+
+export interface OSInfo {
+  readonly name: string;
+  readonly family: string;
+  readonly version: string | null;
+  readonly accuracy: number;
+  readonly cpe: string | null;
+  readonly fingerprint: string | null;
+}
+
+export interface DeviceInfo {
+  readonly type: DeviceType;
+  readonly vendor: string | null;
+  readonly model: string | null;
+  readonly firmware: string | null;
+  readonly serial: string | null;
+  readonly mac: string | null;
+}
+
+export interface GeoLocation {
+  readonly country: string;
+  readonly countryCode: string;
+  readonly region: string | null;
+  readonly regionCode: string | null;
+  readonly city: string | null;
+  readonly postalCode: string | null;
+  readonly latitude: number;
+  readonly longitude: number;
+  readonly timezone: string | null;
+  readonly isp: string | null;
+  readonly org: string | null;
+  readonly accuracy: number;
+}
+
+export interface ASNInfo {
+  readonly asn: number;
+  readonly name: string;
+  readonly description: string | null;
+  readonly country: string;
+  readonly registry: string;
+  readonly allocated: number | null;
+  readonly prefixes: readonly string[];
+}
+
+export interface WHOISInfo {
+  readonly registrar: string | null;
+  readonly registrant: WHOISContact | null;
+  readonly admin: WHOISContact | null;
+  readonly tech: WHOISContact | null;
+  readonly createdDate: number | null;
+  readonly updatedDate: number | null;
+  readonly expiryDate: number | null;
+  readonly nameServers: readonly string[];
+  readonly status: readonly string[];
+  readonly raw: string;
+}
+
+export interface WHOISContact {
+  readonly name: string | null;
+  readonly organization: string | null;
+  readonly street: string | null;
+  readonly city: string | null;
+  readonly state: string | null;
+  readonly postalCode: string | null;
+  readonly country: string | null;
+  readonly phone: string | null;
+  readonly fax: string | null;
+  readonly email: string | null;
+}
+
+export interface CertificateInfo {
+  readonly certificateId: string;
+  readonly subject: CertificateSubject;
+  readonly issuer: CertificateSubject;
+  readonly serial: string;
+  readonly version: number;
+  readonly signatureAlgorithm: string;
+  readonly publicKey: PublicKeyInfo;
+  readonly validity: CertificateValidity;
+  readonly extensions: CertificateExtensions;
+  readonly fingerprints: CertificateFingerprints;
+  readonly chain: readonly CertificateChainItem[];
+  readonly trusted: boolean;
+  readonly selfSigned: boolean;
+  readonly expired: boolean;
+  readonly revoked: boolean;
+  readonly ctLogs: readonly CTLogEntry[];
+}
+
+export interface CertificateSubject {
+  readonly commonName: string | null;
+  readonly organization: string | null;
+  readonly organizationalUnit: string | null;
+  readonly locality: string | null;
+  readonly state: string | null;
+  readonly country: string | null;
+  readonly serialNumber: string | null;
+  readonly raw: string;
+}
+
+export interface PublicKeyInfo {
+  readonly algorithm: string;
+  readonly bits: number;
+  readonly exponent: number | null;
+  readonly curve: string | null;
+  readonly fingerprint: string;
+}
+
+export interface CertificateValidity {
+  readonly notBefore: number;
+  readonly notAfter: number;
+  readonly daysRemaining: number;
+}
+
+export interface CertificateExtensions {
+  readonly subjectAlternativeNames: readonly string[];
+  readonly keyUsage: readonly string[];
+  readonly extendedKeyUsage: readonly string[];
+  readonly basicConstraints: BasicConstraints | null;
+  readonly authorityKeyIdentifier: string | null;
+  readonly subjectKeyIdentifier: string | null;
+  readonly crlDistributionPoints: readonly string[];
+  readonly authorityInfoAccess: AuthorityInfoAccess | null;
+  readonly certificatePolicies: readonly string[];
+  readonly signedCertificateTimestamps: readonly SCT[];
+}
+
+export interface BasicConstraints {
+  readonly ca: boolean;
+  readonly pathLength: number | null;
+}
+
+export interface AuthorityInfoAccess {
+  readonly ocsp: readonly string[];
+  readonly caIssuers: readonly string[];
+}
+
+export interface SCT {
+  readonly logId: string;
+  readonly timestamp: number;
+  readonly signature: string;
+}
+
+export interface CertificateFingerprints {
+  readonly md5: string;
+  readonly sha1: string;
+  readonly sha256: string;
+  readonly spkiSha256: string;
+}
+
+export interface CertificateChainItem {
+  readonly subject: string;
+  readonly issuer: string;
+  readonly fingerprint: string;
+  readonly valid: boolean;
+}
+
+export interface CTLogEntry {
+  readonly logName: string;
+  readonly logId: string;
+  readonly timestamp: number;
+  readonly index: number;
+}
+
+export interface VulnerabilityInfo {
+  readonly vulnerabilityId: string;
+  readonly cveId: string | null;
+  readonly name: string;
+  readonly description: string;
+  readonly severity: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+  readonly cvssScore: number | null;
+  readonly cvssVector: string | null;
+  readonly cweId: string | null;
+  readonly affectedService: string;
+  readonly affectedVersion: string | null;
+  readonly exploitAvailable: boolean;
+  readonly patchAvailable: boolean;
+  readonly references: readonly string[];
+  readonly detectionMethod: string;
+  readonly confidence: number;
+  readonly firstDetected: number;
+  readonly lastDetected: number;
+}
+
+export interface ThreatIntelInfo {
+  readonly malicious: boolean;
+  readonly malwareFamily: string | null;
+  readonly botnet: string | null;
+  readonly threatType: readonly string[];
+  readonly tags: readonly string[];
+  readonly feeds: readonly ThreatFeedMatch[];
+  readonly firstSeen: number | null;
+  readonly lastSeen: number | null;
+  readonly reportCount: number;
+  readonly confidence: number;
+}
+
+export interface ThreatFeedMatch {
+  readonly feedName: string;
+  readonly category: string;
+  readonly description: string | null;
+  readonly lastUpdated: number;
+}
+
+export interface HostMetadata {
+  readonly indexedAt: number;
+  readonly updatedAt: number;
+  readonly source: string;
+  readonly scanId: string | null;
+  readonly quality: number;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// NATIVE PROTOCOL IMPLEMENTATIONS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface NativeTCPClient {
+  readonly clientId: string;
+  readonly config: TCPClientConfig;
+}
+
+export interface TCPClientConfig {
+  readonly timeout: number;
+  readonly keepAlive: boolean;
+  readonly keepAliveInitialDelay: number;
+  readonly noDelay: boolean;
+  readonly bufferSize: number;
+  readonly maxRetries: number;
+}
+
+export interface NativeUDPClient {
+  readonly clientId: string;
+  readonly config: UDPClientConfig;
+}
+
+export interface UDPClientConfig {
+  readonly timeout: number;
+  readonly bufferSize: number;
+  readonly maxRetries: number;
+  readonly broadcast: boolean;
+  readonly multicast: boolean;
+}
+
+export interface NativeDNSResolver {
+  readonly resolverId: string;
+  readonly config: DNSResolverConfig;
+}
+
+export interface DNSResolverConfig {
+  readonly servers: readonly string[];
+  readonly timeout: number;
+  readonly retries: number;
+  readonly rotate: boolean;
+  readonly edns: boolean;
+  readonly dnssec: boolean;
+  readonly tcp: boolean;
+}
+
+export interface NativeTLSClient {
+  readonly clientId: string;
+  readonly config: TLSClientConfig;
+}
+
+export interface TLSClientConfig {
+  readonly minVersion: 'TLS1' | 'TLS1_1' | 'TLS1_2' | 'TLS1_3';
+  readonly maxVersion: 'TLS1' | 'TLS1_1' | 'TLS1_2' | 'TLS1_3';
+  readonly cipherSuites: readonly string[];
+  readonly verifyPeer: boolean;
+  readonly verifyHostname: boolean;
+  readonly sni: boolean;
+  readonly alpn: readonly string[];
+  readonly sessionResumption: boolean;
+  readonly ocspStapling: boolean;
+}
+
+export interface NativeHTTPClient {
+  readonly clientId: string;
+  readonly config: HTTPClientConfig;
+}
+
+export interface HTTPClientConfig {
+  readonly timeout: number;
+  readonly followRedirects: boolean;
+  readonly maxRedirects: number;
+  readonly keepAlive: boolean;
+  readonly compression: boolean;
+  readonly http2: boolean;
+  readonly userAgent: string;
+  readonly headers: Readonly<Record<string, string>>;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SCAN SESSION TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface ScanSession {
+  readonly sessionId: string;
+  readonly engineId: string;
+  readonly state: ScanState;
+  readonly config: ScanSessionConfig;
+  readonly progress: ScanProgress;
+  readonly statistics: ScanStatistics;
+  readonly results: readonly DiscoveredHost[];
+  readonly errors: readonly ScanError[];
+  readonly startTime: number;
+  readonly endTime: number | null;
+  readonly metadata: ScanSessionMetadata;
+}
+
+export type ScanState =
+  | 'PENDING'
+  | 'INITIALIZING'
+  | 'SCANNING'
+  | 'PAUSED'
+  | 'STOPPING'
+  | 'COMPLETED'
+  | 'FAILED'
+  | 'CANCELLED';
+
+export interface ScanSessionConfig {
+  readonly targets: readonly ScanTarget[];
+  readonly ports: readonly number[];
+  readonly methods: readonly DiscoveryMethod[];
+  readonly options: Readonly<Record<string, unknown>>;
+}
+
+export interface ScanTarget {
+  readonly type: 'IP' | 'CIDR' | 'RANGE' | 'DOMAIN' | 'ASN';
+  readonly value: string;
+  readonly priority: number;
+}
+
+export interface ScanProgress {
+  readonly phase: ScanPhase;
+  readonly percentage: number;
+  readonly targetsTotal: number;
+  readonly targetsScanned: number;
+  readonly targetsRemaining: number;
+  readonly portsTotal: number;
+  readonly portsScanned: number;
+  readonly hostsDiscovered: number;
+  readonly servicesDiscovered: number;
+  readonly currentTarget: string | null;
+  readonly currentPort: number | null;
+  readonly estimatedTimeRemaining: number | null;
+}
+
+export type ScanPhase =
+  | 'INITIALIZING'
+  | 'HOST_DISCOVERY'
+  | 'PORT_SCANNING'
+  | 'SERVICE_DETECTION'
+  | 'VERSION_DETECTION'
+  | 'OS_DETECTION'
+  | 'SCRIPT_SCANNING'
+  | 'ENRICHMENT'
+  | 'INDEXING'
+  | 'FINALIZING';
+
+export interface ScanStatistics {
+  readonly hostsUp: number;
+  readonly hostsDown: number;
+  readonly portsOpen: number;
+  readonly portsClosed: number;
+  readonly portsFiltered: number;
+  readonly servicesDetected: number;
+  readonly vulnerabilitiesFound: number;
+  readonly packetsTransmitted: number;
+  readonly packetsReceived: number;
+  readonly bytesTransmitted: number;
+  readonly bytesReceived: number;
+  readonly averageLatency: number;
+  readonly scanRate: number;
+}
+
+export interface ScanError {
+  readonly errorId: string;
+  readonly timestamp: number;
+  readonly type: ScanErrorType;
+  readonly target: string | null;
+  readonly port: number | null;
+  readonly message: string;
+  readonly details: string | null;
+  readonly recoverable: boolean;
+}
+
+export type ScanErrorType =
+  | 'CONNECTION_ERROR'
+  | 'TIMEOUT'
+  | 'DNS_ERROR'
+  | 'SSL_ERROR'
+  | 'PROTOCOL_ERROR'
+  | 'RATE_LIMIT'
+  | 'BLOCKED'
+  | 'INTERNAL_ERROR';
+
+export interface ScanSessionMetadata {
+  readonly engineVersion: string;
+  readonly startedBy: string;
+  readonly environment: string;
+  readonly tags: readonly string[];
+}

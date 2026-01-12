@@ -1,0 +1,1599 @@
+/**
+ * @file Insider Threat Analytics - Self-Contained User Behavior Analytics Platform
+ * @author {{AVTOR}}
+ * @version {{VERZIJA}}
+ * @date {{DATUM}}
+ * @project {{IME_PROJEKTA}}
+ * @domain VARNOSTNI_SISTEMI
+ * 
+ * @requirement REQ-SEC-ITA-001
+ * @design DSN-SEC-ITA-001
+ * @test TST-SEC-ITA-001
+ * 
+ * @description
+ * Enterprise-grade self-contained insider threat analytics platform implementing
+ * user behavior analytics (UBA), entity behavior analytics (UEBA), privileged user
+ * monitoring, psychological profiling, anomaly detection, and data exfiltration
+ * prediction. All algorithms are natively implemented without external dependencies.
+ * 
+ * @classification TOP SECRET - Insider Threat Operations
+ * @authorization Required: Level 5 Security Clearance
+ * @dependencies NONE - Fully self-contained implementation
+ */
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// INSIDER THREAT ANALYTICS TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export type ThreatCategory =
+  | 'DATA_THEFT'
+  | 'SABOTAGE'
+  | 'FRAUD'
+  | 'ESPIONAGE'
+  | 'POLICY_VIOLATION'
+  | 'NEGLIGENCE'
+  | 'PRIVILEGE_ABUSE'
+  | 'UNAUTHORIZED_ACCESS'
+  | 'COLLUSION'
+  | 'SOCIAL_ENGINEERING';
+
+export type InsiderType =
+  | 'MALICIOUS_INSIDER'
+  | 'NEGLIGENT_INSIDER'
+  | 'COMPROMISED_INSIDER'
+  | 'THIRD_PARTY'
+  | 'PRIVILEGED_USER'
+  | 'DEPARTING_EMPLOYEE'
+  | 'DISGRUNTLED_EMPLOYEE';
+
+export type RiskLevel =
+  | 'CRITICAL'
+  | 'HIGH'
+  | 'MEDIUM'
+  | 'LOW'
+  | 'MINIMAL';
+
+export type BehaviorCategory =
+  | 'ACCESS_PATTERNS'
+  | 'DATA_HANDLING'
+  | 'COMMUNICATION'
+  | 'WORK_PATTERNS'
+  | 'SYSTEM_USAGE'
+  | 'NETWORK_ACTIVITY'
+  | 'PHYSICAL_ACCESS'
+  | 'FINANCIAL'
+  | 'SOCIAL';
+
+export type AnomalyType =
+  | 'STATISTICAL'
+  | 'BEHAVIORAL'
+  | 'TEMPORAL'
+  | 'CONTEXTUAL'
+  | 'COLLECTIVE'
+  | 'SEQUENTIAL';
+
+export type IndicatorType =
+  | 'TECHNICAL'
+  | 'BEHAVIORAL'
+  | 'PSYCHOLOGICAL'
+  | 'ORGANIZATIONAL'
+  | 'PERSONAL'
+  | 'FINANCIAL';
+
+export type AlertSeverity =
+  | 'CRITICAL'
+  | 'HIGH'
+  | 'MEDIUM'
+  | 'LOW'
+  | 'INFORMATIONAL';
+
+export type MonitoringMode =
+  | 'REAL_TIME'
+  | 'NEAR_REAL_TIME'
+  | 'BATCH'
+  | 'CONTINUOUS';
+
+export type AnalysisMode =
+  | 'DETECTION'
+  | 'INVESTIGATION'
+  | 'PREDICTION'
+  | 'FORENSIC';
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// INSIDER THREAT ANALYTICS CONFIGURATION
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface InsiderThreatAnalyticsConfig {
+  readonly platformId: string;
+  readonly name: string;
+  readonly version: string;
+  readonly mode: MonitoringMode;
+  readonly dataCollection: DataCollectionConfig;
+  readonly userBehavior: UserBehaviorConfig;
+  readonly entityBehavior: EntityBehaviorConfig;
+  readonly privilegedUser: PrivilegedUserConfig;
+  readonly psychologicalProfiling: PsychologicalProfilingConfig;
+  readonly anomalyDetection: AnomalyDetectionConfig;
+  readonly riskScoring: RiskScoringConfig;
+  readonly prediction: PredictionConfig;
+  readonly investigation: InvestigationConfig;
+  readonly caseManagement: CaseManagementConfig;
+  readonly alerting: AlertingConfig;
+  readonly reporting: ReportingConfig;
+  readonly privacy: PrivacyConfig;
+  readonly storage: StorageConfig;
+  readonly security: SecurityConfig;
+  readonly metadata: PlatformMetadata;
+}
+
+export interface DataCollectionConfig {
+  readonly enabled: boolean;
+  readonly sources: DataSourcesConfig;
+  readonly enrichment: DataEnrichmentConfig;
+  readonly normalization: DataNormalizationConfig;
+  readonly retention: DataRetentionConfig;
+}
+
+export interface DataSourcesConfig {
+  readonly authentication: AuthenticationDataConfig;
+  readonly network: NetworkDataConfig;
+  readonly endpoint: EndpointDataConfig;
+  readonly email: EmailDataConfig;
+  readonly fileAccess: FileAccessDataConfig;
+  readonly database: DatabaseDataConfig;
+  readonly cloud: CloudDataConfig;
+  readonly physical: PhysicalAccessDataConfig;
+  readonly hr: HRDataConfig;
+  readonly financial: FinancialDataConfig;
+}
+
+export interface AuthenticationDataConfig {
+  readonly enabled: boolean;
+  readonly sources: readonly string[];
+  readonly collectFailures: boolean;
+  readonly collectSuccesses: boolean;
+  readonly collectMFA: boolean;
+  readonly collectPasswordChanges: boolean;
+}
+
+export interface NetworkDataConfig {
+  readonly enabled: boolean;
+  readonly collectFlows: boolean;
+  readonly collectDNS: boolean;
+  readonly collectProxy: boolean;
+  readonly collectVPN: boolean;
+  readonly collectFirewall: boolean;
+  readonly collectDLP: boolean;
+}
+
+export interface EndpointDataConfig {
+  readonly enabled: boolean;
+  readonly collectProcesses: boolean;
+  readonly collectFileOperations: boolean;
+  readonly collectUSB: boolean;
+  readonly collectPrinting: boolean;
+  readonly collectScreenshots: boolean;
+  readonly collectKeystrokes: boolean;
+  readonly collectApplicationUsage: boolean;
+}
+
+export interface EmailDataConfig {
+  readonly enabled: boolean;
+  readonly collectMetadata: boolean;
+  readonly collectAttachments: boolean;
+  readonly collectRecipients: boolean;
+  readonly collectExternalEmails: boolean;
+  readonly collectPersonalEmails: boolean;
+}
+
+export interface FileAccessDataConfig {
+  readonly enabled: boolean;
+  readonly collectReads: boolean;
+  readonly collectWrites: boolean;
+  readonly collectDeletes: boolean;
+  readonly collectCopies: boolean;
+  readonly collectMoves: boolean;
+  readonly collectPermissionChanges: boolean;
+  readonly sensitiveLocations: readonly string[];
+}
+
+export interface DatabaseDataConfig {
+  readonly enabled: boolean;
+  readonly collectQueries: boolean;
+  readonly collectExports: boolean;
+  readonly collectSchemaChanges: boolean;
+  readonly collectPrivilegeChanges: boolean;
+}
+
+export interface CloudDataConfig {
+  readonly enabled: boolean;
+  readonly collectSaaS: boolean;
+  readonly collectIaaS: boolean;
+  readonly collectPaaS: boolean;
+  readonly collectShadowIT: boolean;
+  readonly collectFileSharing: boolean;
+}
+
+export interface PhysicalAccessDataConfig {
+  readonly enabled: boolean;
+  readonly collectBadgeEvents: boolean;
+  readonly collectAfterHoursAccess: boolean;
+  readonly collectSensitiveAreas: boolean;
+  readonly collectTailgating: boolean;
+}
+
+export interface HRDataConfig {
+  readonly enabled: boolean;
+  readonly collectPerformanceReviews: boolean;
+  readonly collectDisciplinaryActions: boolean;
+  readonly collectResignations: boolean;
+  readonly collectTerminations: boolean;
+  readonly collectPromotions: boolean;
+  readonly collectTransfers: boolean;
+  readonly collectPIP: boolean;
+}
+
+export interface FinancialDataConfig {
+  readonly enabled: boolean;
+  readonly collectExpenseReports: boolean;
+  readonly collectPurchaseOrders: boolean;
+  readonly collectVendorPayments: boolean;
+  readonly collectTimeReporting: boolean;
+}
+
+export interface DataEnrichmentConfig {
+  readonly enabled: boolean;
+  readonly userContext: boolean;
+  readonly assetContext: boolean;
+  readonly threatIntelligence: boolean;
+  readonly geoLocation: boolean;
+  readonly organizationalContext: boolean;
+}
+
+export interface DataNormalizationConfig {
+  readonly enabled: boolean;
+  readonly timestampNormalization: boolean;
+  readonly userIdentityResolution: boolean;
+  readonly assetIdentityResolution: boolean;
+  readonly eventCategorization: boolean;
+}
+
+export interface DataRetentionConfig {
+  readonly enabled: boolean;
+  readonly rawDataRetention: number;
+  readonly aggregatedDataRetention: number;
+  readonly alertRetention: number;
+  readonly caseRetention: number;
+}
+
+export interface UserBehaviorConfig {
+  readonly enabled: boolean;
+  readonly profiling: UserProfilingConfig;
+  readonly baseline: BaselineConfig;
+  readonly patterns: PatternAnalysisConfig;
+  readonly peerGroup: PeerGroupConfig;
+}
+
+export interface UserProfilingConfig {
+  readonly enabled: boolean;
+  readonly dimensions: readonly ProfileDimension[];
+  readonly updateFrequency: number;
+  readonly minDataPoints: number;
+  readonly decayFactor: number;
+}
+
+export interface ProfileDimension {
+  readonly dimensionId: string;
+  readonly name: string;
+  readonly category: BehaviorCategory;
+  readonly features: readonly string[];
+  readonly weight: number;
+}
+
+export interface BaselineConfig {
+  readonly enabled: boolean;
+  readonly learningPeriod: number;
+  readonly updateFrequency: number;
+  readonly adaptiveBaseline: boolean;
+  readonly seasonalAdjustment: boolean;
+  readonly excludeAnomalies: boolean;
+}
+
+export interface PatternAnalysisConfig {
+  readonly enabled: boolean;
+  readonly accessPatterns: AccessPatternConfig;
+  readonly workPatterns: WorkPatternConfig;
+  readonly communicationPatterns: CommunicationPatternConfig;
+  readonly dataPatterns: DataPatternConfig;
+}
+
+export interface AccessPatternConfig {
+  readonly enabled: boolean;
+  readonly loginTimes: boolean;
+  readonly loginLocations: boolean;
+  readonly loginDevices: boolean;
+  readonly resourceAccess: boolean;
+  readonly privilegeUsage: boolean;
+}
+
+export interface WorkPatternConfig {
+  readonly enabled: boolean;
+  readonly workHours: boolean;
+  readonly productivity: boolean;
+  readonly applicationUsage: boolean;
+  readonly meetingPatterns: boolean;
+  readonly travelPatterns: boolean;
+}
+
+export interface CommunicationPatternConfig {
+  readonly enabled: boolean;
+  readonly emailPatterns: boolean;
+  readonly messagingPatterns: boolean;
+  readonly collaborationPatterns: boolean;
+  readonly externalCommunication: boolean;
+}
+
+export interface DataPatternConfig {
+  readonly enabled: boolean;
+  readonly accessVolume: boolean;
+  readonly accessTypes: boolean;
+  readonly sensitiveDataAccess: boolean;
+  readonly dataMovement: boolean;
+  readonly downloadPatterns: boolean;
+}
+
+export interface PeerGroupConfig {
+  readonly enabled: boolean;
+  readonly groupingMethod: 'ROLE' | 'DEPARTMENT' | 'BEHAVIOR' | 'HYBRID';
+  readonly minGroupSize: number;
+  readonly deviationThreshold: number;
+  readonly dynamicGrouping: boolean;
+}
+
+export interface EntityBehaviorConfig {
+  readonly enabled: boolean;
+  readonly entities: EntityTypesConfig;
+  readonly relationships: RelationshipAnalysisConfig;
+  readonly graphAnalysis: GraphAnalysisConfig;
+}
+
+export interface EntityTypesConfig {
+  readonly users: boolean;
+  readonly devices: boolean;
+  readonly applications: boolean;
+  readonly files: boolean;
+  readonly databases: boolean;
+  readonly networks: boolean;
+  readonly cloudResources: boolean;
+}
+
+export interface RelationshipAnalysisConfig {
+  readonly enabled: boolean;
+  readonly userToUser: boolean;
+  readonly userToDevice: boolean;
+  readonly userToData: boolean;
+  readonly userToApplication: boolean;
+  readonly deviceToDevice: boolean;
+}
+
+export interface GraphAnalysisConfig {
+  readonly enabled: boolean;
+  readonly centralityAnalysis: boolean;
+  readonly communityDetection: boolean;
+  readonly pathAnalysis: boolean;
+  readonly anomalousConnections: boolean;
+}
+
+export interface PrivilegedUserConfig {
+  readonly enabled: boolean;
+  readonly identification: PrivilegedUserIdentificationConfig;
+  readonly monitoring: PrivilegedUserMonitoringConfig;
+  readonly sessionRecording: SessionRecordingConfig;
+  readonly justInTime: JustInTimeConfig;
+}
+
+export interface PrivilegedUserIdentificationConfig {
+  readonly enabled: boolean;
+  readonly adminAccounts: boolean;
+  readonly serviceAccounts: boolean;
+  readonly sharedAccounts: boolean;
+  readonly emergencyAccounts: boolean;
+  readonly vendorAccounts: boolean;
+}
+
+export interface PrivilegedUserMonitoringConfig {
+  readonly enabled: boolean;
+  readonly commandMonitoring: boolean;
+  readonly fileAccessMonitoring: boolean;
+  readonly configurationChanges: boolean;
+  readonly privilegeEscalation: boolean;
+  readonly lateralMovement: boolean;
+}
+
+export interface SessionRecordingConfig {
+  readonly enabled: boolean;
+  readonly recordCommands: boolean;
+  readonly recordScreens: boolean;
+  readonly recordKeystrokes: boolean;
+  readonly retentionPeriod: number;
+}
+
+export interface JustInTimeConfig {
+  readonly enabled: boolean;
+  readonly approvalRequired: boolean;
+  readonly maxDuration: number;
+  readonly autoRevocation: boolean;
+}
+
+export interface PsychologicalProfilingConfig {
+  readonly enabled: boolean;
+  readonly indicators: PsychologicalIndicatorsConfig;
+  readonly stressors: StressorAnalysisConfig;
+  readonly sentiment: SentimentAnalysisConfig;
+  readonly riskFactors: PsychologicalRiskFactorsConfig;
+}
+
+export interface PsychologicalIndicatorsConfig {
+  readonly enabled: boolean;
+  readonly disgruntlement: boolean;
+  readonly financialStress: boolean;
+  readonly personalIssues: boolean;
+  readonly workplaceConflict: boolean;
+  readonly careerDissatisfaction: boolean;
+  readonly ideologicalMotivation: boolean;
+}
+
+export interface StressorAnalysisConfig {
+  readonly enabled: boolean;
+  readonly performanceIssues: boolean;
+  readonly disciplinaryActions: boolean;
+  readonly passedOverPromotion: boolean;
+  readonly workloadChanges: boolean;
+  readonly organizationalChanges: boolean;
+  readonly personalLifeEvents: boolean;
+}
+
+export interface SentimentAnalysisConfig {
+  readonly enabled: boolean;
+  readonly emailSentiment: boolean;
+  readonly chatSentiment: boolean;
+  readonly documentSentiment: boolean;
+  readonly socialMediaSentiment: boolean;
+}
+
+export interface PsychologicalRiskFactorsConfig {
+  readonly enabled: boolean;
+  readonly factors: readonly PsychologicalRiskFactor[];
+  readonly weights: Readonly<Record<string, number>>;
+}
+
+export interface PsychologicalRiskFactor {
+  readonly factorId: string;
+  readonly name: string;
+  readonly category: string;
+  readonly indicators: readonly string[];
+  readonly weight: number;
+}
+
+export interface AnomalyDetectionConfig {
+  readonly enabled: boolean;
+  readonly methods: AnomalyMethodsConfig;
+  readonly thresholds: AnomalyThresholdsConfig;
+  readonly correlation: AnomalyCorrelationConfig;
+  readonly sequenceAnalysis: SequenceAnalysisConfig;
+}
+
+export interface AnomalyMethodsConfig {
+  readonly statistical: StatisticalAnomalyConfig;
+  readonly machineLearning: MLAnomalyConfig;
+  readonly ruleBased: RuleBasedAnomalyConfig;
+}
+
+export interface StatisticalAnomalyConfig {
+  readonly enabled: boolean;
+  readonly zScore: boolean;
+  readonly iqr: boolean;
+  readonly mad: boolean;
+  readonly percentile: boolean;
+}
+
+export interface MLAnomalyConfig {
+  readonly enabled: boolean;
+  readonly isolationForest: boolean;
+  readonly oneClassSVM: boolean;
+  readonly autoencoder: boolean;
+  readonly lstm: boolean;
+}
+
+export interface RuleBasedAnomalyConfig {
+  readonly enabled: boolean;
+  readonly rules: readonly AnomalyRule[];
+  readonly customRules: boolean;
+}
+
+export interface AnomalyRule {
+  readonly ruleId: string;
+  readonly name: string;
+  readonly condition: string;
+  readonly severity: AlertSeverity;
+  readonly enabled: boolean;
+}
+
+export interface AnomalyThresholdsConfig {
+  readonly globalThreshold: number;
+  readonly perBehaviorThresholds: Readonly<Record<BehaviorCategory, number>>;
+  readonly adaptiveThresholds: boolean;
+}
+
+export interface AnomalyCorrelationConfig {
+  readonly enabled: boolean;
+  readonly temporalCorrelation: boolean;
+  readonly crossEntityCorrelation: boolean;
+  readonly crossBehaviorCorrelation: boolean;
+  readonly correlationWindow: number;
+}
+
+export interface SequenceAnalysisConfig {
+  readonly enabled: boolean;
+  readonly sequenceLength: number;
+  readonly patternMining: boolean;
+  readonly killChainDetection: boolean;
+}
+
+export interface RiskScoringConfig {
+  readonly enabled: boolean;
+  readonly model: RiskModelConfig;
+  readonly factors: RiskFactorsConfig;
+  readonly aggregation: RiskAggregationConfig;
+  readonly calibration: RiskCalibrationConfig;
+}
+
+export interface RiskModelConfig {
+  readonly type: 'WEIGHTED_SUM' | 'BAYESIAN' | 'MACHINE_LEARNING' | 'HYBRID';
+  readonly updateFrequency: number;
+  readonly historyWeight: number;
+}
+
+export interface RiskFactorsConfig {
+  readonly technical: TechnicalRiskFactorsConfig;
+  readonly behavioral: BehavioralRiskFactorsConfig;
+  readonly contextual: ContextualRiskFactorsConfig;
+  readonly organizational: OrganizationalRiskFactorsConfig;
+}
+
+export interface TechnicalRiskFactorsConfig {
+  readonly enabled: boolean;
+  readonly factors: readonly TechnicalRiskFactor[];
+}
+
+export interface TechnicalRiskFactor {
+  readonly factorId: string;
+  readonly name: string;
+  readonly weight: number;
+  readonly threshold: number;
+}
+
+export interface BehavioralRiskFactorsConfig {
+  readonly enabled: boolean;
+  readonly factors: readonly BehavioralRiskFactor[];
+}
+
+export interface BehavioralRiskFactor {
+  readonly factorId: string;
+  readonly name: string;
+  readonly weight: number;
+  readonly baseline: boolean;
+}
+
+export interface ContextualRiskFactorsConfig {
+  readonly enabled: boolean;
+  readonly factors: readonly ContextualRiskFactor[];
+}
+
+export interface ContextualRiskFactor {
+  readonly factorId: string;
+  readonly name: string;
+  readonly weight: number;
+  readonly context: string;
+}
+
+export interface OrganizationalRiskFactorsConfig {
+  readonly enabled: boolean;
+  readonly factors: readonly OrganizationalRiskFactor[];
+}
+
+export interface OrganizationalRiskFactor {
+  readonly factorId: string;
+  readonly name: string;
+  readonly weight: number;
+  readonly source: string;
+}
+
+export interface RiskAggregationConfig {
+  readonly method: 'MAX' | 'AVERAGE' | 'WEIGHTED_AVERAGE' | 'CUSTOM';
+  readonly normalization: boolean;
+  readonly smoothing: boolean;
+}
+
+export interface RiskCalibrationConfig {
+  readonly enabled: boolean;
+  readonly calibrationPeriod: number;
+  readonly feedbackLoop: boolean;
+}
+
+export interface PredictionConfig {
+  readonly enabled: boolean;
+  readonly models: PredictionModelsConfig;
+  readonly horizons: readonly PredictionHorizon[];
+  readonly validation: PredictionValidationConfig;
+}
+
+export interface PredictionModelsConfig {
+  readonly dataExfiltration: DataExfiltrationPredictionConfig;
+  readonly accountCompromise: AccountCompromisePredictionConfig;
+  readonly policyViolation: PolicyViolationPredictionConfig;
+  readonly resignation: ResignationPredictionConfig;
+}
+
+export interface DataExfiltrationPredictionConfig {
+  readonly enabled: boolean;
+  readonly features: readonly string[];
+  readonly threshold: number;
+}
+
+export interface AccountCompromisePredictionConfig {
+  readonly enabled: boolean;
+  readonly features: readonly string[];
+  readonly threshold: number;
+}
+
+export interface PolicyViolationPredictionConfig {
+  readonly enabled: boolean;
+  readonly features: readonly string[];
+  readonly threshold: number;
+}
+
+export interface ResignationPredictionConfig {
+  readonly enabled: boolean;
+  readonly features: readonly string[];
+  readonly threshold: number;
+}
+
+export interface PredictionHorizon {
+  readonly horizonId: string;
+  readonly name: string;
+  readonly days: number;
+}
+
+export interface PredictionValidationConfig {
+  readonly enabled: boolean;
+  readonly method: 'HOLDOUT' | 'CROSS_VALIDATION' | 'TIME_SERIES';
+  readonly metrics: readonly string[];
+}
+
+export interface InvestigationConfig {
+  readonly enabled: boolean;
+  readonly workflow: InvestigationWorkflowConfig;
+  readonly tools: InvestigationToolsConfig;
+  readonly evidence: EvidenceConfig;
+}
+
+export interface InvestigationWorkflowConfig {
+  readonly stages: readonly InvestigationStage[];
+  readonly approvals: ApprovalConfig;
+  readonly escalation: EscalationConfig;
+}
+
+export interface InvestigationStage {
+  readonly stageId: string;
+  readonly name: string;
+  readonly requiredActions: readonly string[];
+  readonly nextStages: readonly string[];
+}
+
+export interface ApprovalConfig {
+  readonly enabled: boolean;
+  readonly levels: readonly ApprovalLevel[];
+}
+
+export interface ApprovalLevel {
+  readonly level: number;
+  readonly approvers: readonly string[];
+  readonly timeout: number;
+}
+
+export interface EscalationConfig {
+  readonly enabled: boolean;
+  readonly rules: readonly EscalationRule[];
+}
+
+export interface EscalationRule {
+  readonly ruleId: string;
+  readonly condition: string;
+  readonly escalateTo: string;
+  readonly delay: number;
+}
+
+export interface InvestigationToolsConfig {
+  readonly timeline: boolean;
+  readonly entityGraph: boolean;
+  readonly activitySearch: boolean;
+  readonly comparison: boolean;
+  readonly simulation: boolean;
+}
+
+export interface EvidenceConfig {
+  readonly collection: EvidenceCollectionConfig;
+  readonly preservation: EvidencePreservationConfig;
+  readonly chainOfCustody: ChainOfCustodyConfig;
+}
+
+export interface EvidenceCollectionConfig {
+  readonly enabled: boolean;
+  readonly automaticCollection: boolean;
+  readonly manualCollection: boolean;
+  readonly screenshotCapture: boolean;
+}
+
+export interface EvidencePreservationConfig {
+  readonly enabled: boolean;
+  readonly hashVerification: boolean;
+  readonly encryption: boolean;
+  readonly immutableStorage: boolean;
+}
+
+export interface ChainOfCustodyConfig {
+  readonly enabled: boolean;
+  readonly tracking: boolean;
+  readonly signatures: boolean;
+  readonly auditTrail: boolean;
+}
+
+export interface CaseManagementConfig {
+  readonly enabled: boolean;
+  readonly workflow: CaseWorkflowConfig;
+  readonly assignment: CaseAssignmentConfig;
+  readonly collaboration: CollaborationConfig;
+  readonly documentation: DocumentationConfig;
+}
+
+export interface CaseWorkflowConfig {
+  readonly statuses: readonly CaseStatus[];
+  readonly transitions: readonly CaseTransition[];
+  readonly sla: SLAConfig;
+}
+
+export interface CaseStatus {
+  readonly statusId: string;
+  readonly name: string;
+  readonly category: 'OPEN' | 'IN_PROGRESS' | 'PENDING' | 'CLOSED';
+}
+
+export interface CaseTransition {
+  readonly from: string;
+  readonly to: string;
+  readonly requiredFields: readonly string[];
+  readonly approvalRequired: boolean;
+}
+
+export interface SLAConfig {
+  readonly enabled: boolean;
+  readonly targets: Readonly<Record<AlertSeverity, number>>;
+  readonly escalationOnBreach: boolean;
+}
+
+export interface CaseAssignmentConfig {
+  readonly method: 'MANUAL' | 'ROUND_ROBIN' | 'SKILL_BASED' | 'LOAD_BALANCED';
+  readonly autoAssignment: boolean;
+  readonly reassignmentAllowed: boolean;
+}
+
+export interface CollaborationConfig {
+  readonly enabled: boolean;
+  readonly comments: boolean;
+  readonly attachments: boolean;
+  readonly mentions: boolean;
+  readonly notifications: boolean;
+}
+
+export interface DocumentationConfig {
+  readonly enabled: boolean;
+  readonly templates: readonly DocumentTemplate[];
+  readonly requiredFields: readonly string[];
+}
+
+export interface DocumentTemplate {
+  readonly templateId: string;
+  readonly name: string;
+  readonly type: string;
+  readonly fields: readonly string[];
+}
+
+export interface AlertingConfig {
+  readonly enabled: boolean;
+  readonly channels: readonly AlertChannel[];
+  readonly rules: readonly AlertRule[];
+  readonly suppression: AlertSuppressionConfig;
+  readonly enrichment: AlertEnrichmentConfig;
+}
+
+export interface AlertChannel {
+  readonly channelId: string;
+  readonly name: string;
+  readonly type: 'EMAIL' | 'SMS' | 'WEBHOOK' | 'SIEM' | 'SOAR' | 'TICKET';
+  readonly config: Readonly<Record<string, unknown>>;
+  readonly enabled: boolean;
+}
+
+export interface AlertRule {
+  readonly ruleId: string;
+  readonly name: string;
+  readonly condition: string;
+  readonly severity: AlertSeverity;
+  readonly channels: readonly string[];
+  readonly cooldown: number;
+  readonly enabled: boolean;
+}
+
+export interface AlertSuppressionConfig {
+  readonly enabled: boolean;
+  readonly deduplication: boolean;
+  readonly deduplicationWindow: number;
+  readonly whitelisting: boolean;
+  readonly businessHours: boolean;
+}
+
+export interface AlertEnrichmentConfig {
+  readonly enabled: boolean;
+  readonly userContext: boolean;
+  readonly assetContext: boolean;
+  readonly threatContext: boolean;
+  readonly historicalContext: boolean;
+}
+
+export interface ReportingConfig {
+  readonly enabled: boolean;
+  readonly scheduled: ScheduledReportsConfig;
+  readonly adhoc: AdhocReportsConfig;
+  readonly dashboards: DashboardsConfig;
+}
+
+export interface ScheduledReportsConfig {
+  readonly enabled: boolean;
+  readonly reports: readonly ScheduledReport[];
+}
+
+export interface ScheduledReport {
+  readonly reportId: string;
+  readonly name: string;
+  readonly type: string;
+  readonly schedule: string;
+  readonly recipients: readonly string[];
+  readonly format: 'PDF' | 'HTML' | 'CSV' | 'JSON';
+}
+
+export interface AdhocReportsConfig {
+  readonly enabled: boolean;
+  readonly templates: readonly ReportTemplate[];
+}
+
+export interface ReportTemplate {
+  readonly templateId: string;
+  readonly name: string;
+  readonly type: string;
+  readonly parameters: readonly string[];
+}
+
+export interface DashboardsConfig {
+  readonly enabled: boolean;
+  readonly dashboards: readonly DashboardConfig[];
+}
+
+export interface DashboardConfig {
+  readonly dashboardId: string;
+  readonly name: string;
+  readonly widgets: readonly WidgetConfig[];
+  readonly refreshInterval: number;
+}
+
+export interface WidgetConfig {
+  readonly widgetId: string;
+  readonly type: string;
+  readonly dataSource: string;
+  readonly config: Readonly<Record<string, unknown>>;
+}
+
+export interface PrivacyConfig {
+  readonly enabled: boolean;
+  readonly dataMinimization: DataMinimizationConfig;
+  readonly anonymization: AnonymizationConfig;
+  readonly consent: ConsentConfig;
+  readonly accessControl: PrivacyAccessControlConfig;
+}
+
+export interface DataMinimizationConfig {
+  readonly enabled: boolean;
+  readonly collectOnlyNecessary: boolean;
+  readonly aggregateWhenPossible: boolean;
+  readonly deleteWhenNotNeeded: boolean;
+}
+
+export interface AnonymizationConfig {
+  readonly enabled: boolean;
+  readonly method: 'PSEUDONYMIZATION' | 'TOKENIZATION' | 'GENERALIZATION';
+  readonly reversible: boolean;
+}
+
+export interface ConsentConfig {
+  readonly required: boolean;
+  readonly explicitConsent: boolean;
+  readonly withdrawalSupported: boolean;
+}
+
+export interface PrivacyAccessControlConfig {
+  readonly enabled: boolean;
+  readonly needToKnow: boolean;
+  readonly auditAccess: boolean;
+  readonly dataClassification: boolean;
+}
+
+export interface StorageConfig {
+  readonly type: 'DATABASE' | 'DATA_LAKE' | 'HYBRID';
+  readonly encryption: EncryptionConfig;
+  readonly retention: RetentionConfig;
+  readonly backup: BackupConfig;
+}
+
+export interface EncryptionConfig {
+  readonly enabled: boolean;
+  readonly algorithm: 'AES_256_GCM' | 'CHACHA20_POLY1305';
+  readonly keyManagement: 'LOCAL' | 'HSM' | 'KMS';
+}
+
+export interface RetentionConfig {
+  readonly enabled: boolean;
+  readonly maxAge: number;
+  readonly archiveOld: boolean;
+}
+
+export interface BackupConfig {
+  readonly enabled: boolean;
+  readonly frequency: number;
+  readonly encryption: boolean;
+}
+
+export interface SecurityConfig {
+  readonly authentication: AuthenticationConfig;
+  readonly authorization: AuthorizationConfig;
+  readonly audit: AuditConfig;
+}
+
+export interface AuthenticationConfig {
+  readonly enabled: boolean;
+  readonly methods: readonly ('API_KEY' | 'BEARER' | 'MTLS' | 'SAML' | 'OIDC')[];
+  readonly mfaRequired: boolean;
+  readonly sessionTimeout: number;
+}
+
+export interface AuthorizationConfig {
+  readonly enabled: boolean;
+  readonly model: 'RBAC' | 'ABAC';
+  readonly defaultRole: string;
+  readonly privilegedAccess: boolean;
+}
+
+export interface AuditConfig {
+  readonly enabled: boolean;
+  readonly logAllOperations: boolean;
+  readonly logDataAccess: boolean;
+  readonly logConfigChanges: boolean;
+  readonly retention: number;
+}
+
+export interface PlatformMetadata {
+  readonly createdAt: number;
+  readonly updatedAt: number;
+  readonly createdBy: string;
+  readonly version: string;
+  readonly tags: readonly string[];
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// USER PROFILE TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface UserProfile {
+  readonly profileId: string;
+  readonly userId: string;
+  readonly identity: UserIdentity;
+  readonly organizational: OrganizationalInfo;
+  readonly behavioral: BehavioralProfile;
+  readonly risk: RiskProfile;
+  readonly history: ProfileHistory;
+  readonly metadata: ProfileMetadata;
+}
+
+export interface UserIdentity {
+  readonly userId: string;
+  readonly username: string;
+  readonly email: string;
+  readonly displayName: string;
+  readonly employeeId: string | null;
+  readonly accounts: readonly AccountInfo[];
+}
+
+export interface AccountInfo {
+  readonly accountId: string;
+  readonly type: 'DOMAIN' | 'LOCAL' | 'SERVICE' | 'CLOUD' | 'PRIVILEGED';
+  readonly username: string;
+  readonly domain: string | null;
+  readonly privileges: readonly string[];
+  readonly lastUsed: number | null;
+}
+
+export interface OrganizationalInfo {
+  readonly department: string;
+  readonly title: string;
+  readonly manager: string | null;
+  readonly location: string;
+  readonly employmentType: 'FULL_TIME' | 'PART_TIME' | 'CONTRACTOR' | 'VENDOR';
+  readonly startDate: number;
+  readonly terminationDate: number | null;
+  readonly clearanceLevel: string | null;
+  readonly accessGroups: readonly string[];
+}
+
+export interface BehavioralProfile {
+  readonly baseline: BehavioralBaseline;
+  readonly patterns: BehavioralPatterns;
+  readonly peerComparison: PeerComparison;
+  readonly trends: BehavioralTrends;
+}
+
+export interface BehavioralBaseline {
+  readonly accessBaseline: AccessBaseline;
+  readonly workBaseline: WorkBaseline;
+  readonly dataBaseline: DataBaseline;
+  readonly communicationBaseline: CommunicationBaseline;
+  readonly lastUpdated: number;
+}
+
+export interface AccessBaseline {
+  readonly typicalLoginTimes: TimeDistribution;
+  readonly typicalLoginLocations: readonly string[];
+  readonly typicalDevices: readonly string[];
+  readonly typicalApplications: readonly string[];
+  readonly typicalResources: readonly string[];
+}
+
+export interface TimeDistribution {
+  readonly hourlyDistribution: readonly number[];
+  readonly dailyDistribution: readonly number[];
+  readonly weeklyDistribution: readonly number[];
+}
+
+export interface WorkBaseline {
+  readonly typicalWorkHours: WorkHours;
+  readonly typicalProductivity: number;
+  readonly typicalMeetings: number;
+  readonly typicalTravel: number;
+}
+
+export interface WorkHours {
+  readonly startTime: number;
+  readonly endTime: number;
+  readonly totalHours: number;
+  readonly afterHoursFrequency: number;
+}
+
+export interface DataBaseline {
+  readonly typicalAccessVolume: number;
+  readonly typicalDownloadVolume: number;
+  readonly typicalUploadVolume: number;
+  readonly typicalSensitiveAccess: number;
+  readonly typicalDataTypes: readonly string[];
+}
+
+export interface CommunicationBaseline {
+  readonly typicalEmailVolume: number;
+  readonly typicalExternalEmails: number;
+  readonly typicalAttachments: number;
+  readonly typicalRecipients: readonly string[];
+}
+
+export interface BehavioralPatterns {
+  readonly accessPatterns: readonly AccessPattern[];
+  readonly workPatterns: readonly WorkPattern[];
+  readonly dataPatterns: readonly DataPattern[];
+  readonly communicationPatterns: readonly CommunicationPattern[];
+}
+
+export interface AccessPattern {
+  readonly patternId: string;
+  readonly type: string;
+  readonly frequency: number;
+  readonly lastOccurrence: number;
+  readonly confidence: number;
+}
+
+export interface WorkPattern {
+  readonly patternId: string;
+  readonly type: string;
+  readonly frequency: number;
+  readonly lastOccurrence: number;
+  readonly confidence: number;
+}
+
+export interface DataPattern {
+  readonly patternId: string;
+  readonly type: string;
+  readonly frequency: number;
+  readonly lastOccurrence: number;
+  readonly confidence: number;
+}
+
+export interface CommunicationPattern {
+  readonly patternId: string;
+  readonly type: string;
+  readonly frequency: number;
+  readonly lastOccurrence: number;
+  readonly confidence: number;
+}
+
+export interface PeerComparison {
+  readonly peerGroupId: string;
+  readonly peerGroupName: string;
+  readonly peerGroupSize: number;
+  readonly deviations: readonly PeerDeviation[];
+}
+
+export interface PeerDeviation {
+  readonly metric: string;
+  readonly userValue: number;
+  readonly peerAverage: number;
+  readonly peerStdDev: number;
+  readonly zScore: number;
+}
+
+export interface BehavioralTrends {
+  readonly riskTrend: TrendInfo;
+  readonly activityTrend: TrendInfo;
+  readonly anomalyTrend: TrendInfo;
+}
+
+export interface TrendInfo {
+  readonly direction: 'INCREASING' | 'DECREASING' | 'STABLE';
+  readonly magnitude: number;
+  readonly period: number;
+}
+
+export interface RiskProfile {
+  readonly currentRiskScore: number;
+  readonly riskLevel: RiskLevel;
+  readonly riskFactors: readonly RiskFactorScore[];
+  readonly riskHistory: readonly RiskHistoryEntry[];
+  readonly predictions: RiskPredictions;
+}
+
+export interface RiskFactorScore {
+  readonly factorId: string;
+  readonly name: string;
+  readonly category: string;
+  readonly score: number;
+  readonly weight: number;
+  readonly contribution: number;
+  readonly indicators: readonly string[];
+}
+
+export interface RiskHistoryEntry {
+  readonly timestamp: number;
+  readonly riskScore: number;
+  readonly riskLevel: RiskLevel;
+  readonly triggeringEvents: readonly string[];
+}
+
+export interface RiskPredictions {
+  readonly dataExfiltrationRisk: PredictionResult;
+  readonly accountCompromiseRisk: PredictionResult;
+  readonly policyViolationRisk: PredictionResult;
+  readonly resignationRisk: PredictionResult;
+}
+
+export interface PredictionResult {
+  readonly probability: number;
+  readonly confidence: number;
+  readonly horizon: number;
+  readonly factors: readonly string[];
+}
+
+export interface ProfileHistory {
+  readonly alerts: readonly AlertHistoryEntry[];
+  readonly investigations: readonly InvestigationHistoryEntry[];
+  readonly incidents: readonly IncidentHistoryEntry[];
+}
+
+export interface AlertHistoryEntry {
+  readonly alertId: string;
+  readonly timestamp: number;
+  readonly type: string;
+  readonly severity: AlertSeverity;
+  readonly status: string;
+}
+
+export interface InvestigationHistoryEntry {
+  readonly investigationId: string;
+  readonly timestamp: number;
+  readonly type: string;
+  readonly outcome: string;
+}
+
+export interface IncidentHistoryEntry {
+  readonly incidentId: string;
+  readonly timestamp: number;
+  readonly type: string;
+  readonly severity: string;
+  readonly outcome: string;
+}
+
+export interface ProfileMetadata {
+  readonly createdAt: number;
+  readonly updatedAt: number;
+  readonly lastActivityAt: number;
+  readonly dataQuality: number;
+  readonly tags: readonly string[];
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ALERT AND DETECTION TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface InsiderThreatAlert {
+  readonly alertId: string;
+  readonly timestamp: number;
+  readonly type: ThreatCategory;
+  readonly severity: AlertSeverity;
+  readonly confidence: number;
+  readonly user: AlertUserInfo;
+  readonly indicators: readonly ThreatIndicator[];
+  readonly context: AlertContext;
+  readonly analysis: AlertAnalysis;
+  readonly recommendations: readonly Recommendation[];
+  readonly status: AlertStatus;
+  readonly metadata: AlertMetadata;
+}
+
+export interface AlertUserInfo {
+  readonly userId: string;
+  readonly username: string;
+  readonly displayName: string;
+  readonly department: string;
+  readonly riskScore: number;
+  readonly riskLevel: RiskLevel;
+}
+
+export interface ThreatIndicator {
+  readonly indicatorId: string;
+  readonly type: IndicatorType;
+  readonly name: string;
+  readonly description: string;
+  readonly value: string;
+  readonly confidence: number;
+  readonly source: string;
+  readonly timestamp: number;
+}
+
+export interface AlertContext {
+  readonly temporalContext: TemporalContext;
+  readonly organizationalContext: OrganizationalContext;
+  readonly behavioralContext: BehavioralContext;
+  readonly relatedAlerts: readonly string[];
+}
+
+export interface TemporalContext {
+  readonly timeOfDay: string;
+  readonly dayOfWeek: number;
+  readonly isBusinessHours: boolean;
+  readonly isHoliday: boolean;
+  readonly recentActivity: readonly ActivitySummary[];
+}
+
+export interface ActivitySummary {
+  readonly type: string;
+  readonly count: number;
+  readonly period: string;
+}
+
+export interface OrganizationalContext {
+  readonly department: string;
+  readonly manager: string | null;
+  readonly peerGroup: string;
+  readonly recentChanges: readonly OrganizationalChange[];
+}
+
+export interface OrganizationalChange {
+  readonly type: string;
+  readonly date: number;
+  readonly description: string;
+}
+
+export interface BehavioralContext {
+  readonly baselineDeviation: number;
+  readonly peerDeviation: number;
+  readonly recentAnomalies: readonly AnomalySummary[];
+  readonly riskTrend: TrendInfo;
+}
+
+export interface AnomalySummary {
+  readonly type: string;
+  readonly count: number;
+  readonly severity: AlertSeverity;
+}
+
+export interface AlertAnalysis {
+  readonly description: string;
+  readonly timeline: readonly TimelineEvent[];
+  readonly entities: readonly EntityInvolved[];
+  readonly killChainStage: string | null;
+  readonly mitreMapping: readonly string[];
+}
+
+export interface TimelineEvent {
+  readonly eventId: string;
+  readonly timestamp: number;
+  readonly type: string;
+  readonly description: string;
+  readonly severity: AlertSeverity;
+  readonly data: Readonly<Record<string, unknown>>;
+}
+
+export interface EntityInvolved {
+  readonly entityId: string;
+  readonly type: string;
+  readonly name: string;
+  readonly role: string;
+}
+
+export interface Recommendation {
+  readonly recommendationId: string;
+  readonly priority: 'IMMEDIATE' | 'HIGH' | 'MEDIUM' | 'LOW';
+  readonly category: string;
+  readonly title: string;
+  readonly description: string;
+  readonly actions: readonly string[];
+}
+
+export interface AlertStatus {
+  readonly state: 'NEW' | 'ACKNOWLEDGED' | 'INVESTIGATING' | 'RESOLVED' | 'CLOSED' | 'FALSE_POSITIVE';
+  readonly assignee: string | null;
+  readonly updatedAt: number;
+  readonly resolution: string | null;
+}
+
+export interface AlertMetadata {
+  readonly source: string;
+  readonly detectionMethod: string;
+  readonly processingTime: number;
+  readonly version: string;
+  readonly tags: readonly string[];
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// CASE AND INVESTIGATION TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface InsiderThreatCase {
+  readonly caseId: string;
+  readonly title: string;
+  readonly description: string;
+  readonly type: ThreatCategory;
+  readonly severity: AlertSeverity;
+  readonly status: CaseStatusInfo;
+  readonly subjects: readonly CaseSubject[];
+  readonly alerts: readonly string[];
+  readonly evidence: readonly CaseEvidence[];
+  readonly timeline: readonly CaseTimelineEntry[];
+  readonly investigation: InvestigationInfo;
+  readonly outcome: CaseOutcome | null;
+  readonly metadata: CaseMetadata;
+}
+
+export interface CaseStatusInfo {
+  readonly status: string;
+  readonly assignee: string | null;
+  readonly priority: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
+  readonly dueDate: number | null;
+  readonly slaStatus: 'ON_TRACK' | 'AT_RISK' | 'BREACHED';
+}
+
+export interface CaseSubject {
+  readonly subjectId: string;
+  readonly userId: string;
+  readonly role: 'PRIMARY' | 'SECONDARY' | 'WITNESS' | 'VICTIM';
+  readonly riskScore: number;
+  readonly notes: string | null;
+}
+
+export interface CaseEvidence {
+  readonly evidenceId: string;
+  readonly type: string;
+  readonly description: string;
+  readonly source: string;
+  readonly collectedAt: number;
+  readonly collectedBy: string;
+  readonly hash: string;
+  readonly location: string;
+  readonly chainOfCustody: readonly CustodyEntry[];
+}
+
+export interface CustodyEntry {
+  readonly timestamp: number;
+  readonly action: string;
+  readonly actor: string;
+  readonly notes: string | null;
+}
+
+export interface CaseTimelineEntry {
+  readonly entryId: string;
+  readonly timestamp: number;
+  readonly type: string;
+  readonly description: string;
+  readonly actor: string;
+  readonly data: Readonly<Record<string, unknown>>;
+}
+
+export interface InvestigationInfo {
+  readonly stage: string;
+  readonly findings: readonly InvestigationFinding[];
+  readonly interviews: readonly InterviewRecord[];
+  readonly forensicAnalysis: readonly ForensicAnalysis[];
+}
+
+export interface InvestigationFinding {
+  readonly findingId: string;
+  readonly type: string;
+  readonly description: string;
+  readonly severity: AlertSeverity;
+  readonly evidence: readonly string[];
+  readonly timestamp: number;
+}
+
+export interface InterviewRecord {
+  readonly interviewId: string;
+  readonly subject: string;
+  readonly interviewer: string;
+  readonly date: number;
+  readonly summary: string;
+  readonly attachments: readonly string[];
+}
+
+export interface ForensicAnalysis {
+  readonly analysisId: string;
+  readonly type: string;
+  readonly scope: string;
+  readonly findings: string;
+  readonly analyst: string;
+  readonly date: number;
+}
+
+export interface CaseOutcome {
+  readonly resolution: 'CONFIRMED' | 'FALSE_POSITIVE' | 'INCONCLUSIVE' | 'POLICY_VIOLATION' | 'CRIMINAL';
+  readonly actions: readonly string[];
+  readonly lessons: readonly string[];
+  readonly closedAt: number;
+  readonly closedBy: string;
+}
+
+export interface CaseMetadata {
+  readonly createdAt: number;
+  readonly updatedAt: number;
+  readonly createdBy: string;
+  readonly version: string;
+  readonly tags: readonly string[];
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SESSION TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface AnalyticsSession {
+  readonly sessionId: string;
+  readonly platformId: string;
+  readonly state: SessionState;
+  readonly config: SessionConfig;
+  readonly progress: SessionProgress;
+  readonly statistics: SessionStatistics;
+  readonly alerts: readonly InsiderThreatAlert[];
+  readonly anomalies: readonly AnomalyDetection[];
+  readonly errors: readonly SessionError[];
+  readonly startTime: number;
+  readonly endTime: number | null;
+  readonly metadata: SessionMetadata;
+}
+
+export type SessionState =
+  | 'PENDING'
+  | 'INITIALIZING'
+  | 'RUNNING'
+  | 'PAUSED'
+  | 'COMPLETED'
+  | 'FAILED';
+
+export interface SessionConfig {
+  readonly mode: AnalysisMode;
+  readonly scope: AnalysisScope;
+  readonly options: Readonly<Record<string, unknown>>;
+}
+
+export interface AnalysisScope {
+  readonly users: readonly string[] | 'ALL';
+  readonly departments: readonly string[] | 'ALL';
+  readonly timeRange: TimeRange;
+}
+
+export interface TimeRange {
+  readonly start: number;
+  readonly end: number;
+}
+
+export interface SessionProgress {
+  readonly phase: SessionPhase;
+  readonly percentage: number;
+  readonly usersProcessed: number;
+  readonly usersTotal: number;
+  readonly currentUser: string | null;
+  readonly estimatedTimeRemaining: number | null;
+}
+
+export type SessionPhase =
+  | 'INITIALIZING'
+  | 'COLLECTING_DATA'
+  | 'BUILDING_PROFILES'
+  | 'DETECTING_ANOMALIES'
+  | 'SCORING_RISK'
+  | 'GENERATING_ALERTS'
+  | 'FINALIZING';
+
+export interface SessionStatistics {
+  readonly usersAnalyzed: number;
+  readonly eventsProcessed: number;
+  readonly anomaliesDetected: number;
+  readonly alertsGenerated: number;
+  readonly highRiskUsers: number;
+  readonly processingTime: number;
+}
+
+export interface AnomalyDetection {
+  readonly anomalyId: string;
+  readonly timestamp: number;
+  readonly type: AnomalyType;
+  readonly userId: string;
+  readonly behavior: BehaviorCategory;
+  readonly score: number;
+  readonly threshold: number;
+  readonly description: string;
+  readonly details: Readonly<Record<string, unknown>>;
+}
+
+export interface SessionError {
+  readonly errorId: string;
+  readonly timestamp: number;
+  readonly type: SessionErrorType;
+  readonly message: string;
+  readonly details: string | null;
+  readonly recoverable: boolean;
+}
+
+export type SessionErrorType =
+  | 'DATA_ERROR'
+  | 'PROCESSING_ERROR'
+  | 'MODEL_ERROR'
+  | 'TIMEOUT'
+  | 'RESOURCE_ERROR'
+  | 'INTERNAL_ERROR';
+
+export interface SessionMetadata {
+  readonly platformVersion: string;
+  readonly startedBy: string;
+  readonly environment: string;
+  readonly tags: readonly string[];
+}

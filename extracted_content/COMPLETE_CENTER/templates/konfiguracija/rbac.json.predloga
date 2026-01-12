@@ -1,0 +1,329 @@
+{
+  "$schema": "https://{{ORGANIZACIJA_DOMENA}}/schemas/rbac-config.json",
+  "metadata": {
+    "projectName": "{{IME_PROJEKTA}}",
+    "version": "{{VERZIJA}}",
+    "domain": "{{DOMENA_SL}}",
+    "generatedAt": "{{DATUM}}"
+  },
+  "rbac": {
+    "enabled": true,
+    "defaultRole": "user",
+    "superAdminRole": "super_admin",
+    "cacheEnabled": true,
+    "cacheTTL": 300
+  },
+  "roles": {
+    "super_admin": {
+      "name": "Super Administrator",
+      "description": "Full system access with all permissions",
+      "level": 100,
+      "inherits": ["admin"],
+      "permissions": ["*"],
+      "restrictions": {
+        "mfaRequired": true,
+        "ipWhitelist": ["10.0.0.0/8"],
+        "sessionTimeout": 1800
+      }
+    },
+    "admin": {
+      "name": "Administrator",
+      "description": "System administrator with broad access",
+      "level": 90,
+      "inherits": ["security_officer", "operator"],
+      "permissions": [
+        "users:*",
+        "roles:*",
+        "config:*",
+        "audit:read",
+        "audit:export",
+        "keys:read",
+        "keys:rotate",
+        "threats:*",
+        "reports:*"
+      ],
+      "restrictions": {
+        "mfaRequired": true,
+        "sessionTimeout": 3600
+      }
+    },
+    "security_officer": {
+      "name": "Security Officer",
+      "description": "Security management and monitoring",
+      "level": 80,
+      "inherits": ["auditor"],
+      "permissions": [
+        "security:*",
+        "threats:read",
+        "threats:mitigate",
+        "audit:read",
+        "audit:export",
+        "keys:read",
+        "users:read",
+        "users:lock",
+        "users:unlock",
+        "sessions:read",
+        "sessions:revoke",
+        "reports:security"
+      ],
+      "restrictions": {
+        "mfaRequired": true,
+        "sessionTimeout": 3600
+      }
+    },
+    "operator": {
+      "name": "Operator",
+      "description": "Day-to-day operational tasks",
+      "level": 60,
+      "inherits": ["user"],
+      "permissions": [
+        "users:read",
+        "users:create",
+        "users:update",
+        "sessions:read",
+        "health:read",
+        "metrics:read",
+        "logs:read",
+        "reports:operational"
+      ],
+      "restrictions": {
+        "mfaRequired": false,
+        "sessionTimeout": 7200
+      }
+    },
+    "auditor": {
+      "name": "Auditor",
+      "description": "Read-only access for compliance and audit",
+      "level": 50,
+      "inherits": ["user"],
+      "permissions": [
+        "audit:read",
+        "audit:export",
+        "users:read",
+        "roles:read",
+        "config:read",
+        "keys:read",
+        "threats:read",
+        "reports:*",
+        "compliance:read"
+      ],
+      "restrictions": {
+        "mfaRequired": true,
+        "sessionTimeout": 7200,
+        "readOnly": true
+      }
+    },
+    "user": {
+      "name": "User",
+      "description": "Standard user with basic access",
+      "level": 10,
+      "inherits": [],
+      "permissions": [
+        "profile:read",
+        "profile:update",
+        "password:change",
+        "mfa:setup",
+        "sessions:own:read",
+        "sessions:own:revoke"
+      ],
+      "restrictions": {
+        "mfaRequired": false,
+        "sessionTimeout": 28800
+      }
+    },
+    "service_account": {
+      "name": "Service Account",
+      "description": "Machine-to-machine authentication",
+      "level": 20,
+      "inherits": [],
+      "permissions": [
+        "api:access"
+      ],
+      "restrictions": {
+        "mfaRequired": false,
+        "sessionTimeout": 3600,
+        "ipWhitelist": ["10.0.0.0/8", "172.16.0.0/12"]
+      }
+    }
+  },
+  "permissions": {
+    "users": {
+      "read": "View user information",
+      "create": "Create new users",
+      "update": "Update user information",
+      "delete": "Delete users",
+      "lock": "Lock user accounts",
+      "unlock": "Unlock user accounts"
+    },
+    "roles": {
+      "read": "View roles and permissions",
+      "create": "Create new roles",
+      "update": "Update roles",
+      "delete": "Delete roles",
+      "assign": "Assign roles to users"
+    },
+    "sessions": {
+      "read": "View all sessions",
+      "revoke": "Revoke any session",
+      "own:read": "View own sessions",
+      "own:revoke": "Revoke own sessions"
+    },
+    "audit": {
+      "read": "View audit logs",
+      "export": "Export audit logs"
+    },
+    "keys": {
+      "read": "View key information",
+      "create": "Create new keys",
+      "rotate": "Rotate keys",
+      "revoke": "Revoke keys"
+    },
+    "threats": {
+      "read": "View detected threats",
+      "mitigate": "Apply threat mitigations",
+      "dismiss": "Dismiss threats"
+    },
+    "config": {
+      "read": "View configuration",
+      "update": "Update configuration"
+    },
+    "security": {
+      "manage": "Manage security settings"
+    },
+    "profile": {
+      "read": "View own profile",
+      "update": "Update own profile"
+    },
+    "password": {
+      "change": "Change own password",
+      "reset": "Reset other users' passwords"
+    },
+    "mfa": {
+      "setup": "Setup MFA for self",
+      "reset": "Reset MFA for others"
+    },
+    "reports": {
+      "security": "View security reports",
+      "operational": "View operational reports",
+      "compliance": "View compliance reports"
+    },
+    "compliance": {
+      "read": "View compliance status"
+    },
+    "health": {
+      "read": "View health status"
+    },
+    "metrics": {
+      "read": "View metrics"
+    },
+    "logs": {
+      "read": "View application logs"
+    },
+    "api": {
+      "access": "Access API endpoints"
+    }
+  },
+  "resourcePolicies": [
+    {
+      "resource": "users",
+      "rules": [
+        {
+          "action": "delete",
+          "conditions": {
+            "notSelf": true,
+            "notSuperAdmin": true
+          }
+        },
+        {
+          "action": "update",
+          "conditions": {
+            "notSuperAdmin": true,
+            "sameOrLowerLevel": true
+          }
+        }
+      ]
+    },
+    {
+      "resource": "roles",
+      "rules": [
+        {
+          "action": "assign",
+          "conditions": {
+            "notHigherLevel": true
+          }
+        },
+        {
+          "action": "delete",
+          "conditions": {
+            "notBuiltIn": true
+          }
+        }
+      ]
+    },
+    {
+      "resource": "keys",
+      "rules": [
+        {
+          "action": "revoke",
+          "conditions": {
+            "requireApproval": true,
+            "approvers": ["security_officer", "admin"]
+          }
+        }
+      ]
+    }
+  ],
+  "abacExtensions": {
+    "enabled": true,
+    "attributes": {
+      "user": ["department", "location", "clearanceLevel"],
+      "resource": ["classification", "owner", "sensitivity"],
+      "environment": ["time", "ipAddress", "deviceType"]
+    },
+    "policies": [
+      {
+        "name": "TimeBasedAccess",
+        "description": "Restrict access to business hours",
+        "condition": {
+          "environment.time": {
+            "between": ["08:00", "18:00"]
+          },
+          "environment.dayOfWeek": {
+            "in": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
+          }
+        },
+        "effect": "allow",
+        "priority": 10
+      },
+      {
+        "name": "ClassifiedDataAccess",
+        "description": "Require clearance for classified data",
+        "condition": {
+          "resource.classification": "classified",
+          "user.clearanceLevel": {
+            "gte": "secret"
+          }
+        },
+        "effect": "allow",
+        "priority": 20
+      },
+      {
+        "name": "LocationBasedAccess",
+        "description": "Restrict access from certain locations",
+        "condition": {
+          "environment.ipAddress": {
+            "notIn": ["blocked_ips"]
+          }
+        },
+        "effect": "allow",
+        "priority": 5
+      }
+    ]
+  },
+  "audit": {
+    "logAllDecisions": true,
+    "logDenials": true,
+    "logPermissionChanges": true,
+    "logRoleChanges": true
+  }
+}

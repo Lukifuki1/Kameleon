@@ -1,0 +1,1150 @@
+/**
+ * @file Covert Operations - Self-Contained Covert Operations Platform
+ * @author {{AVTOR}}
+ * @version {{VERZIJA}}
+ * @date {{DATUM}}
+ * @project {{IME_PROJEKTA}}
+ * @domain VARNOSTNI_SISTEMI
+ * 
+ * @requirement REQ-SEC-COP-001
+ * @design DSN-SEC-COP-001
+ * @test TST-SEC-COP-001
+ * 
+ * @description
+ * Enterprise-grade self-contained covert operations platform implementing
+ * comprehensive infiltration, exfiltration, undercover operations, clandestine
+ * activities, and operational security. All covert operation algorithms are
+ * natively implemented without external dependencies.
+ * 
+ * @classification TOP SECRET - Covert Operations
+ * @authorization Required: Level 5 Security Clearance
+ * @dependencies NONE - Fully self-contained implementation
+ */
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// COVERT OPERATIONS TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export type OperationType =
+  | 'INFILTRATION'
+  | 'EXFILTRATION'
+  | 'RECONNAISSANCE'
+  | 'SURVEILLANCE'
+  | 'COLLECTION'
+  | 'INFLUENCE'
+  | 'SABOTAGE'
+  | 'EXTRACTION';
+
+export type InfiltrationMethod =
+  | 'SOCIAL_ENGINEERING'
+  | 'PHYSICAL_ACCESS'
+  | 'DIGITAL_ACCESS'
+  | 'INSIDER_RECRUITMENT'
+  | 'SUPPLY_CHAIN'
+  | 'THIRD_PARTY'
+  | 'CREDENTIAL_THEFT'
+  | 'IMPERSONATION';
+
+export type ExfiltrationMethod =
+  | 'NETWORK_EXFIL'
+  | 'PHYSICAL_EXFIL'
+  | 'STEGANOGRAPHY'
+  | 'COVERT_CHANNEL'
+  | 'DEAD_DROP'
+  | 'HUMAN_COURIER'
+  | 'ENCRYPTED_TRANSMISSION'
+  | 'OUT_OF_BAND';
+
+export type CoverType =
+  | 'OFFICIAL'
+  | 'NON_OFFICIAL'
+  | 'DEEP'
+  | 'LIGHT'
+  | 'COMMERCIAL'
+  | 'ACADEMIC'
+  | 'JOURNALISTIC'
+  | 'DIPLOMATIC';
+
+export type OperationalPhase =
+  | 'PLANNING'
+  | 'PREPARATION'
+  | 'INSERTION'
+  | 'EXECUTION'
+  | 'EXTRACTION'
+  | 'DEBRIEFING';
+
+export type RiskLevel =
+  | 'CRITICAL'
+  | 'HIGH'
+  | 'MEDIUM'
+  | 'LOW'
+  | 'MINIMAL';
+
+export type SecurityLevel =
+  | 'TOP_SECRET_SCI'
+  | 'TOP_SECRET'
+  | 'SECRET'
+  | 'CONFIDENTIAL'
+  | 'UNCLASSIFIED';
+
+export type OperationalMode =
+  | 'CLANDESTINE'
+  | 'COVERT'
+  | 'OVERT'
+  | 'HYBRID';
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// COVERT OPERATIONS CONFIGURATION
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface CovertOperationsConfig {
+  readonly platformId: string;
+  readonly name: string;
+  readonly version: string;
+  readonly mode: OperationalMode;
+  readonly planning: PlanningConfig;
+  readonly infiltration: InfiltrationConfig;
+  readonly exfiltration: ExfiltrationConfig;
+  readonly cover: CoverConfig;
+  readonly communications: CommunicationsConfig;
+  readonly tradecraft: TradecraftConfig;
+  readonly counterSurveillance: CounterSurveillanceConfig;
+  readonly extraction: ExtractionConfig;
+  readonly security: OperationalSecurityConfig;
+  readonly reporting: ReportingConfig;
+  readonly storage: StorageConfig;
+  readonly metadata: PlatformMetadata;
+}
+
+export interface PlanningConfig {
+  readonly enabled: boolean;
+  readonly intelligence: IntelligencePlanningConfig;
+  readonly targeting: TargetingPlanningConfig;
+  readonly risk: RiskPlanningConfig;
+  readonly contingency: ContingencyPlanningConfig;
+}
+
+export interface IntelligencePlanningConfig {
+  readonly enabled: boolean;
+  readonly requirements: boolean;
+  readonly collection: boolean;
+  readonly analysis: boolean;
+  readonly dissemination: boolean;
+}
+
+export interface TargetingPlanningConfig {
+  readonly enabled: boolean;
+  readonly identification: boolean;
+  readonly assessment: boolean;
+  readonly prioritization: boolean;
+  readonly validation: boolean;
+}
+
+export interface RiskPlanningConfig {
+  readonly enabled: boolean;
+  readonly threatAssessment: boolean;
+  readonly vulnerabilityAssessment: boolean;
+  readonly impactAssessment: boolean;
+  readonly mitigation: boolean;
+}
+
+export interface ContingencyPlanningConfig {
+  readonly enabled: boolean;
+  readonly alternativePlans: boolean;
+  readonly emergencyProcedures: boolean;
+  readonly extractionPlans: boolean;
+  readonly communicationPlans: boolean;
+}
+
+export interface InfiltrationConfig {
+  readonly enabled: boolean;
+  readonly physical: PhysicalInfiltrationConfig;
+  readonly digital: DigitalInfiltrationConfig;
+  readonly social: SocialInfiltrationConfig;
+  readonly supply: SupplyChainInfiltrationConfig;
+}
+
+export interface PhysicalInfiltrationConfig {
+  readonly enabled: boolean;
+  readonly accessMethods: readonly PhysicalAccessMethod[];
+  readonly surveillance: boolean;
+  readonly timing: boolean;
+  readonly equipment: boolean;
+}
+
+export type PhysicalAccessMethod =
+  | 'TAILGATING'
+  | 'BADGE_CLONING'
+  | 'LOCK_PICKING'
+  | 'SOCIAL_ENGINEERING'
+  | 'MAINTENANCE_COVER'
+  | 'DELIVERY_COVER'
+  | 'VISITOR_COVER';
+
+export interface DigitalInfiltrationConfig {
+  readonly enabled: boolean;
+  readonly accessMethods: readonly DigitalAccessMethod[];
+  readonly persistence: boolean;
+  readonly evasion: boolean;
+  readonly collection: boolean;
+}
+
+export type DigitalAccessMethod =
+  | 'PHISHING'
+  | 'CREDENTIAL_THEFT'
+  | 'EXPLOITATION'
+  | 'SUPPLY_CHAIN'
+  | 'INSIDER_ACCESS'
+  | 'PHYSICAL_ACCESS'
+  | 'WIRELESS_ACCESS';
+
+export interface SocialInfiltrationConfig {
+  readonly enabled: boolean;
+  readonly methods: readonly SocialMethod[];
+  readonly personas: boolean;
+  readonly relationships: boolean;
+  readonly trust: boolean;
+}
+
+export type SocialMethod =
+  | 'BEFRIENDING'
+  | 'RECRUITMENT'
+  | 'ELICITATION'
+  | 'IMPERSONATION'
+  | 'PRETEXTING'
+  | 'MANIPULATION';
+
+export interface SupplyChainInfiltrationConfig {
+  readonly enabled: boolean;
+  readonly vendors: boolean;
+  readonly contractors: boolean;
+  readonly partners: boolean;
+  readonly products: boolean;
+}
+
+export interface ExfiltrationConfig {
+  readonly enabled: boolean;
+  readonly network: NetworkExfiltrationConfig;
+  readonly physical: PhysicalExfiltrationConfig;
+  readonly covert: CovertExfiltrationConfig;
+  readonly timing: ExfiltrationTimingConfig;
+}
+
+export interface NetworkExfiltrationConfig {
+  readonly enabled: boolean;
+  readonly protocols: readonly string[];
+  readonly encryption: boolean;
+  readonly steganography: boolean;
+  readonly covertChannels: boolean;
+}
+
+export interface PhysicalExfiltrationConfig {
+  readonly enabled: boolean;
+  readonly methods: readonly PhysicalExfilMethod[];
+  readonly concealment: boolean;
+  readonly timing: boolean;
+}
+
+export type PhysicalExfilMethod =
+  | 'DOCUMENT_REMOVAL'
+  | 'DEVICE_REMOVAL'
+  | 'PHOTOGRAPHY'
+  | 'MEMORIZATION'
+  | 'COURIER'
+  | 'DEAD_DROP';
+
+export interface CovertExfiltrationConfig {
+  readonly enabled: boolean;
+  readonly steganography: SteganographyConfig;
+  readonly covertChannels: CovertChannelConfig;
+  readonly deadDrops: DeadDropConfig;
+}
+
+export interface SteganographyConfig {
+  readonly enabled: boolean;
+  readonly imageStego: boolean;
+  readonly audioStego: boolean;
+  readonly videoStego: boolean;
+  readonly documentStego: boolean;
+  readonly networkStego: boolean;
+}
+
+export interface CovertChannelConfig {
+  readonly enabled: boolean;
+  readonly timingChannels: boolean;
+  readonly storageChannels: boolean;
+  readonly protocolChannels: boolean;
+  readonly acousticChannels: boolean;
+}
+
+export interface DeadDropConfig {
+  readonly enabled: boolean;
+  readonly digital: boolean;
+  readonly physical: boolean;
+  readonly scheduling: boolean;
+  readonly verification: boolean;
+}
+
+export interface ExfiltrationTimingConfig {
+  readonly enabled: boolean;
+  readonly scheduling: boolean;
+  readonly triggering: boolean;
+  readonly throttling: boolean;
+  readonly blending: boolean;
+}
+
+export interface CoverConfig {
+  readonly enabled: boolean;
+  readonly identity: IdentityCoverConfig;
+  readonly legend: LegendConfig;
+  readonly documentation: DocumentationConfig;
+  readonly backstopping: BackstoppingConfig;
+}
+
+export interface IdentityCoverConfig {
+  readonly enabled: boolean;
+  readonly types: readonly CoverType[];
+  readonly depth: 'DEEP' | 'MEDIUM' | 'LIGHT';
+  readonly duration: number;
+  readonly maintenance: boolean;
+}
+
+export interface LegendConfig {
+  readonly enabled: boolean;
+  readonly biography: boolean;
+  readonly history: boolean;
+  readonly relationships: boolean;
+  readonly documentation: boolean;
+}
+
+export interface DocumentationConfig {
+  readonly enabled: boolean;
+  readonly identification: boolean;
+  readonly credentials: boolean;
+  readonly financial: boolean;
+  readonly travel: boolean;
+}
+
+export interface BackstoppingConfig {
+  readonly enabled: boolean;
+  readonly references: boolean;
+  readonly employment: boolean;
+  readonly education: boolean;
+  readonly onlinePresence: boolean;
+}
+
+export interface CommunicationsConfig {
+  readonly enabled: boolean;
+  readonly secure: SecureCommunicationsConfig;
+  readonly covert: CovertCommunicationsConfig;
+  readonly emergency: EmergencyCommunicationsConfig;
+  readonly protocols: CommunicationProtocolsConfig;
+}
+
+export interface SecureCommunicationsConfig {
+  readonly enabled: boolean;
+  readonly encryption: EncryptionConfig;
+  readonly authentication: AuthenticationConfig;
+  readonly anonymization: AnonymizationConfig;
+}
+
+export interface EncryptionConfig {
+  readonly enabled: boolean;
+  readonly algorithms: readonly string[];
+  readonly keyManagement: boolean;
+  readonly forwardSecrecy: boolean;
+}
+
+export interface AuthenticationConfig {
+  readonly enabled: boolean;
+  readonly methods: readonly string[];
+  readonly multiFactorAuth: boolean;
+  readonly biometrics: boolean;
+}
+
+export interface AnonymizationConfig {
+  readonly enabled: boolean;
+  readonly networkAnonymization: boolean;
+  readonly identityAnonymization: boolean;
+  readonly locationAnonymization: boolean;
+}
+
+export interface CovertCommunicationsConfig {
+  readonly enabled: boolean;
+  readonly methods: readonly CovertCommMethod[];
+  readonly scheduling: boolean;
+  readonly verification: boolean;
+}
+
+export type CovertCommMethod =
+  | 'STEGANOGRAPHY'
+  | 'COVERT_CHANNEL'
+  | 'DEAD_DROP'
+  | 'BRUSH_PASS'
+  | 'SIGNAL'
+  | 'CODE_WORD';
+
+export interface EmergencyCommunicationsConfig {
+  readonly enabled: boolean;
+  readonly duressSignals: boolean;
+  readonly emergencyContacts: boolean;
+  readonly fallbackChannels: boolean;
+  readonly extractionSignals: boolean;
+}
+
+export interface CommunicationProtocolsConfig {
+  readonly enabled: boolean;
+  readonly scheduledContact: boolean;
+  readonly emergencyContact: boolean;
+  readonly reportingProtocol: boolean;
+  readonly verificationProtocol: boolean;
+}
+
+export interface TradecraftConfig {
+  readonly enabled: boolean;
+  readonly surveillance: SurveillanceTradecraftConfig;
+  readonly counterSurveillance: CounterSurveillanceTradecraftConfig;
+  readonly meetings: MeetingsTradecraftConfig;
+  readonly documentation: DocumentationTradecraftConfig;
+}
+
+export interface SurveillanceTradecraftConfig {
+  readonly enabled: boolean;
+  readonly static: boolean;
+  readonly mobile: boolean;
+  readonly technical: boolean;
+  readonly electronic: boolean;
+}
+
+export interface CounterSurveillanceTradecraftConfig {
+  readonly enabled: boolean;
+  readonly detection: boolean;
+  readonly evasion: boolean;
+  readonly deception: boolean;
+  readonly routes: boolean;
+}
+
+export interface MeetingsTradecraftConfig {
+  readonly enabled: boolean;
+  readonly siteSelection: boolean;
+  readonly timing: boolean;
+  readonly security: boolean;
+  readonly contingencies: boolean;
+}
+
+export interface DocumentationTradecraftConfig {
+  readonly enabled: boolean;
+  readonly handling: boolean;
+  readonly concealment: boolean;
+  readonly destruction: boolean;
+  readonly transmission: boolean;
+}
+
+export interface CounterSurveillanceConfig {
+  readonly enabled: boolean;
+  readonly detection: DetectionConfig;
+  readonly evasion: EvasionConfig;
+  readonly deception: DeceptionConfig;
+  readonly routes: RoutesConfig;
+}
+
+export interface DetectionConfig {
+  readonly enabled: boolean;
+  readonly physical: boolean;
+  readonly technical: boolean;
+  readonly behavioral: boolean;
+  readonly environmental: boolean;
+}
+
+export interface EvasionConfig {
+  readonly enabled: boolean;
+  readonly techniques: readonly EvasionTechnique[];
+  readonly timing: boolean;
+  readonly routes: boolean;
+}
+
+export type EvasionTechnique =
+  | 'ROUTE_VARIATION'
+  | 'TIMING_VARIATION'
+  | 'APPEARANCE_CHANGE'
+  | 'VEHICLE_CHANGE'
+  | 'CROWD_BLENDING'
+  | 'COUNTER_SURVEILLANCE_RUN';
+
+export interface DeceptionConfig {
+  readonly enabled: boolean;
+  readonly misdirection: boolean;
+  readonly decoys: boolean;
+  readonly falseTrails: boolean;
+  readonly disinformation: boolean;
+}
+
+export interface RoutesConfig {
+  readonly enabled: boolean;
+  readonly primary: boolean;
+  readonly alternate: boolean;
+  readonly emergency: boolean;
+  readonly surveillance: boolean;
+}
+
+export interface ExtractionConfig {
+  readonly enabled: boolean;
+  readonly planned: PlannedExtractionConfig;
+  readonly emergency: EmergencyExtractionConfig;
+  readonly assets: AssetExtractionConfig;
+  readonly verification: ExtractionVerificationConfig;
+}
+
+export interface PlannedExtractionConfig {
+  readonly enabled: boolean;
+  readonly methods: readonly ExtractionMethod[];
+  readonly timing: boolean;
+  readonly coordination: boolean;
+  readonly documentation: boolean;
+}
+
+export type ExtractionMethod =
+  | 'GROUND'
+  | 'AIR'
+  | 'SEA'
+  | 'COMMERCIAL'
+  | 'DIPLOMATIC'
+  | 'COVERT';
+
+export interface EmergencyExtractionConfig {
+  readonly enabled: boolean;
+  readonly triggers: readonly string[];
+  readonly procedures: boolean;
+  readonly contacts: boolean;
+  readonly safeHouses: boolean;
+}
+
+export interface AssetExtractionConfig {
+  readonly enabled: boolean;
+  readonly personnel: boolean;
+  readonly materials: boolean;
+  readonly intelligence: boolean;
+  readonly equipment: boolean;
+}
+
+export interface ExtractionVerificationConfig {
+  readonly enabled: boolean;
+  readonly identityVerification: boolean;
+  readonly securityVerification: boolean;
+  readonly debriefing: boolean;
+  readonly documentation: boolean;
+}
+
+export interface OperationalSecurityConfig {
+  readonly enabled: boolean;
+  readonly compartmentalization: CompartmentalizationConfig;
+  readonly communications: CommSecurityConfig;
+  readonly personnel: PersonnelSecurityConfig;
+  readonly physical: PhysicalSecurityConfig;
+}
+
+export interface CompartmentalizationConfig {
+  readonly enabled: boolean;
+  readonly needToKnow: boolean;
+  readonly cellStructure: boolean;
+  readonly cutouts: boolean;
+  readonly firewalls: boolean;
+}
+
+export interface CommSecurityConfig {
+  readonly enabled: boolean;
+  readonly encryption: boolean;
+  readonly authentication: boolean;
+  readonly anonymization: boolean;
+  readonly covertChannels: boolean;
+}
+
+export interface PersonnelSecurityConfig {
+  readonly enabled: boolean;
+  readonly vetting: boolean;
+  readonly training: boolean;
+  readonly monitoring: boolean;
+  readonly counterIntelligence: boolean;
+}
+
+export interface PhysicalSecurityConfig {
+  readonly enabled: boolean;
+  readonly facilities: boolean;
+  readonly equipment: boolean;
+  readonly documents: boolean;
+  readonly travel: boolean;
+}
+
+export interface ReportingConfig {
+  readonly enabled: boolean;
+  readonly formats: readonly ReportFormat[];
+  readonly sections: readonly ReportSection[];
+  readonly automation: ReportAutomationConfig;
+}
+
+export type ReportFormat =
+  | 'PDF'
+  | 'HTML'
+  | 'JSON'
+  | 'ENCRYPTED';
+
+export type ReportSection =
+  | 'EXECUTIVE_SUMMARY'
+  | 'OPERATION_DETAILS'
+  | 'INTELLIGENCE_COLLECTED'
+  | 'SECURITY_ASSESSMENT'
+  | 'LESSONS_LEARNED'
+  | 'RECOMMENDATIONS';
+
+export interface ReportAutomationConfig {
+  readonly enabled: boolean;
+  readonly scheduling: boolean;
+  readonly triggers: readonly string[];
+}
+
+export interface StorageConfig {
+  readonly type: 'DATABASE' | 'FILE_SYSTEM' | 'HYBRID';
+  readonly encryption: StorageEncryptionConfig;
+  readonly retention: RetentionConfig;
+  readonly backup: BackupConfig;
+}
+
+export interface StorageEncryptionConfig {
+  readonly enabled: boolean;
+  readonly algorithm: 'AES_256_GCM' | 'CHACHA20_POLY1305';
+  readonly keyManagement: 'LOCAL' | 'HSM' | 'KMS';
+}
+
+export interface RetentionConfig {
+  readonly enabled: boolean;
+  readonly operations: number;
+  readonly intelligence: number;
+  readonly logs: number;
+}
+
+export interface BackupConfig {
+  readonly enabled: boolean;
+  readonly frequency: number;
+  readonly encryption: boolean;
+  readonly offsite: boolean;
+}
+
+export interface PlatformMetadata {
+  readonly createdAt: number;
+  readonly updatedAt: number;
+  readonly createdBy: string;
+  readonly version: string;
+  readonly tags: readonly string[];
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// OPERATION TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface CovertOperation {
+  readonly operationId: string;
+  readonly name: string;
+  readonly codeName: string;
+  readonly type: OperationType;
+  readonly phase: OperationalPhase;
+  readonly status: OperationStatus;
+  readonly objectives: readonly OperationObjective[];
+  readonly targets: readonly OperationTarget[];
+  readonly personnel: readonly OperationPersonnel[];
+  readonly assets: readonly OperationAsset[];
+  readonly timeline: readonly OperationEvent[];
+  readonly intelligence: CollectedIntelligence;
+  readonly security: OperationSecurityInfo;
+  readonly metadata: OperationMetadata;
+}
+
+export type OperationStatus =
+  | 'PLANNING'
+  | 'APPROVED'
+  | 'ACTIVE'
+  | 'PAUSED'
+  | 'EXTRACTING'
+  | 'COMPLETED'
+  | 'COMPROMISED'
+  | 'TERMINATED';
+
+export interface OperationObjective {
+  readonly objectiveId: string;
+  readonly description: string;
+  readonly priority: 'PRIMARY' | 'SECONDARY' | 'TERTIARY';
+  readonly status: ObjectiveStatus;
+  readonly metrics: readonly ObjectiveMetric[];
+}
+
+export type ObjectiveStatus =
+  | 'PENDING'
+  | 'IN_PROGRESS'
+  | 'ACHIEVED'
+  | 'PARTIALLY_ACHIEVED'
+  | 'FAILED'
+  | 'ABANDONED';
+
+export interface ObjectiveMetric {
+  readonly metricId: string;
+  readonly name: string;
+  readonly target: number;
+  readonly current: number;
+  readonly unit: string;
+}
+
+export interface OperationTarget {
+  readonly targetId: string;
+  readonly type: TargetType;
+  readonly identifier: string;
+  readonly priority: 'HIGH' | 'MEDIUM' | 'LOW';
+  readonly status: TargetStatus;
+  readonly intelligence: TargetIntelligence;
+}
+
+export type TargetType =
+  | 'ORGANIZATION'
+  | 'FACILITY'
+  | 'INDIVIDUAL'
+  | 'SYSTEM'
+  | 'NETWORK'
+  | 'INFORMATION';
+
+export type TargetStatus =
+  | 'IDENTIFIED'
+  | 'ASSESSED'
+  | 'ACCESSED'
+  | 'EXPLOITED'
+  | 'MAINTAINED'
+  | 'EXTRACTED';
+
+export interface TargetIntelligence {
+  readonly profile: TargetProfile;
+  readonly vulnerabilities: readonly Vulnerability[];
+  readonly accessPoints: readonly AccessPoint[];
+  readonly security: TargetSecurityInfo;
+}
+
+export interface TargetProfile {
+  readonly description: string;
+  readonly location: LocationInfo;
+  readonly personnel: readonly string[];
+  readonly operations: readonly string[];
+}
+
+export interface LocationInfo {
+  readonly address: string | null;
+  readonly coordinates: Coordinates | null;
+  readonly country: string;
+  readonly region: string | null;
+}
+
+export interface Coordinates {
+  readonly latitude: number;
+  readonly longitude: number;
+}
+
+export interface Vulnerability {
+  readonly vulnerabilityId: string;
+  readonly type: VulnerabilityType;
+  readonly description: string;
+  readonly exploitability: 'HIGH' | 'MEDIUM' | 'LOW';
+}
+
+export type VulnerabilityType =
+  | 'PHYSICAL'
+  | 'TECHNICAL'
+  | 'HUMAN'
+  | 'PROCEDURAL'
+  | 'ORGANIZATIONAL';
+
+export interface AccessPoint {
+  readonly accessPointId: string;
+  readonly type: AccessPointType;
+  readonly description: string;
+  readonly risk: RiskLevel;
+  readonly status: 'IDENTIFIED' | 'TESTED' | 'EXPLOITED' | 'CLOSED';
+}
+
+export type AccessPointType =
+  | 'PHYSICAL_ENTRY'
+  | 'NETWORK_ACCESS'
+  | 'SOCIAL_ACCESS'
+  | 'SUPPLY_CHAIN'
+  | 'INSIDER';
+
+export interface TargetSecurityInfo {
+  readonly physicalSecurity: SecurityLevel;
+  readonly technicalSecurity: SecurityLevel;
+  readonly personnelSecurity: SecurityLevel;
+  readonly counterIntelligence: SecurityLevel;
+}
+
+export interface OperationPersonnel {
+  readonly personnelId: string;
+  readonly role: PersonnelRole;
+  readonly cover: CoverIdentity;
+  readonly status: PersonnelStatus;
+  readonly communications: PersonnelCommunications;
+}
+
+export type PersonnelRole =
+  | 'CASE_OFFICER'
+  | 'OPERATIVE'
+  | 'ASSET'
+  | 'SUPPORT'
+  | 'ANALYST'
+  | 'TECHNICAL';
+
+export interface CoverIdentity {
+  readonly identityId: string;
+  readonly type: CoverType;
+  readonly legend: LegendInfo;
+  readonly documentation: readonly DocumentInfo[];
+  readonly backstopping: BackstoppingInfo;
+}
+
+export interface LegendInfo {
+  readonly name: string;
+  readonly biography: string;
+  readonly history: string;
+  readonly relationships: readonly string[];
+}
+
+export interface DocumentInfo {
+  readonly documentId: string;
+  readonly type: DocumentType;
+  readonly number: string;
+  readonly issuer: string;
+  readonly validity: ValidityPeriod;
+}
+
+export type DocumentType =
+  | 'PASSPORT'
+  | 'ID_CARD'
+  | 'DRIVERS_LICENSE'
+  | 'CREDENTIAL'
+  | 'VISA'
+  | 'PERMIT';
+
+export interface ValidityPeriod {
+  readonly from: number;
+  readonly to: number;
+}
+
+export interface BackstoppingInfo {
+  readonly references: readonly ReferenceInfo[];
+  readonly employment: readonly EmploymentInfo[];
+  readonly education: readonly EducationInfo[];
+  readonly onlinePresence: readonly OnlinePresenceInfo[];
+}
+
+export interface ReferenceInfo {
+  readonly referenceId: string;
+  readonly name: string;
+  readonly relationship: string;
+  readonly contact: string;
+}
+
+export interface EmploymentInfo {
+  readonly employmentId: string;
+  readonly employer: string;
+  readonly position: string;
+  readonly period: ValidityPeriod;
+}
+
+export interface EducationInfo {
+  readonly educationId: string;
+  readonly institution: string;
+  readonly degree: string;
+  readonly period: ValidityPeriod;
+}
+
+export interface OnlinePresenceInfo {
+  readonly presenceId: string;
+  readonly platform: string;
+  readonly username: string;
+  readonly url: string;
+}
+
+export type PersonnelStatus =
+  | 'ACTIVE'
+  | 'STANDBY'
+  | 'DEPLOYED'
+  | 'EXTRACTED'
+  | 'COMPROMISED'
+  | 'TERMINATED';
+
+export interface PersonnelCommunications {
+  readonly primary: CommunicationChannel;
+  readonly secondary: CommunicationChannel | null;
+  readonly emergency: CommunicationChannel;
+  readonly schedule: CommunicationSchedule;
+}
+
+export interface CommunicationChannel {
+  readonly channelId: string;
+  readonly type: ChannelType;
+  readonly identifier: string;
+  readonly encryption: string;
+}
+
+export type ChannelType =
+  | 'SECURE_VOICE'
+  | 'SECURE_MESSAGE'
+  | 'DEAD_DROP'
+  | 'SIGNAL'
+  | 'COVERT_CHANNEL';
+
+export interface CommunicationSchedule {
+  readonly regular: readonly ScheduleEntry[];
+  readonly emergency: EmergencyProtocol;
+}
+
+export interface ScheduleEntry {
+  readonly entryId: string;
+  readonly day: number;
+  readonly time: string;
+  readonly channel: string;
+}
+
+export interface EmergencyProtocol {
+  readonly signal: string;
+  readonly channel: string;
+  readonly procedure: string;
+}
+
+export interface OperationAsset {
+  readonly assetId: string;
+  readonly type: AssetType;
+  readonly description: string;
+  readonly location: string;
+  readonly status: AssetStatus;
+}
+
+export type AssetType =
+  | 'SAFE_HOUSE'
+  | 'VEHICLE'
+  | 'EQUIPMENT'
+  | 'FUNDS'
+  | 'DOCUMENTATION'
+  | 'COMMUNICATION';
+
+export type AssetStatus =
+  | 'AVAILABLE'
+  | 'DEPLOYED'
+  | 'COMPROMISED'
+  | 'DESTROYED'
+  | 'RECOVERED';
+
+export interface OperationEvent {
+  readonly eventId: string;
+  readonly timestamp: number;
+  readonly type: EventType;
+  readonly description: string;
+  readonly actor: string;
+  readonly details: Readonly<Record<string, unknown>>;
+}
+
+export type EventType =
+  | 'PLANNING'
+  | 'DEPLOYMENT'
+  | 'CONTACT'
+  | 'COLLECTION'
+  | 'EXFILTRATION'
+  | 'SECURITY_INCIDENT'
+  | 'EXTRACTION'
+  | 'DEBRIEFING';
+
+export interface CollectedIntelligence {
+  readonly intelligenceId: string;
+  readonly items: readonly IntelligenceItem[];
+  readonly sources: readonly IntelligenceSource[];
+  readonly assessments: readonly IntelligenceAssessment[];
+}
+
+export interface IntelligenceItem {
+  readonly itemId: string;
+  readonly type: IntelligenceType;
+  readonly classification: SecurityLevel;
+  readonly content: string;
+  readonly source: string;
+  readonly timestamp: number;
+  readonly reliability: 'HIGH' | 'MEDIUM' | 'LOW';
+}
+
+export type IntelligenceType =
+  | 'HUMINT'
+  | 'SIGINT'
+  | 'IMINT'
+  | 'OSINT'
+  | 'TECHINT'
+  | 'DOCUMENT';
+
+export interface IntelligenceSource {
+  readonly sourceId: string;
+  readonly type: SourceType;
+  readonly reliability: 'A' | 'B' | 'C' | 'D' | 'E' | 'F';
+  readonly access: string;
+  readonly protection: string;
+}
+
+export type SourceType =
+  | 'AGENT'
+  | 'ASSET'
+  | 'TECHNICAL'
+  | 'OPEN_SOURCE'
+  | 'LIAISON';
+
+export interface IntelligenceAssessment {
+  readonly assessmentId: string;
+  readonly timestamp: number;
+  readonly analyst: string;
+  readonly confidence: 'HIGH' | 'MEDIUM' | 'LOW';
+  readonly findings: readonly string[];
+  readonly recommendations: readonly string[];
+}
+
+export interface OperationSecurityInfo {
+  readonly classification: SecurityLevel;
+  readonly compartments: readonly string[];
+  readonly accessList: readonly string[];
+  readonly incidents: readonly SecurityIncident[];
+  readonly status: SecurityStatus;
+}
+
+export interface SecurityIncident {
+  readonly incidentId: string;
+  readonly timestamp: number;
+  readonly type: IncidentType;
+  readonly severity: RiskLevel;
+  readonly description: string;
+  readonly response: string;
+  readonly status: 'OPEN' | 'CONTAINED' | 'RESOLVED';
+}
+
+export type IncidentType =
+  | 'SURVEILLANCE_DETECTED'
+  | 'COVER_COMPROMISED'
+  | 'COMMUNICATION_INTERCEPTED'
+  | 'ASSET_COMPROMISED'
+  | 'SECURITY_BREACH';
+
+export type SecurityStatus =
+  | 'GREEN'
+  | 'YELLOW'
+  | 'ORANGE'
+  | 'RED'
+  | 'BLACK';
+
+export interface OperationMetadata {
+  readonly createdAt: number;
+  readonly updatedAt: number;
+  readonly createdBy: string;
+  readonly classification: SecurityLevel;
+  readonly authorization: string;
+  readonly oversight: readonly string[];
+  readonly tags: readonly string[];
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SESSION TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface CovertOperationsSession {
+  readonly sessionId: string;
+  readonly platformId: string;
+  readonly state: SessionState;
+  readonly config: SessionConfig;
+  readonly progress: SessionProgress;
+  readonly operations: readonly CovertOperation[];
+  readonly alerts: readonly SessionAlert[];
+  readonly errors: readonly SessionError[];
+  readonly startTime: number;
+  readonly endTime: number | null;
+  readonly metadata: SessionMetadata;
+}
+
+export type SessionState =
+  | 'PENDING'
+  | 'INITIALIZING'
+  | 'PLANNING'
+  | 'EXECUTING'
+  | 'EXTRACTING'
+  | 'DEBRIEFING'
+  | 'COMPLETED'
+  | 'COMPROMISED';
+
+export interface SessionConfig {
+  readonly mode: OperationalMode;
+  readonly operations: readonly string[];
+  readonly options: Readonly<Record<string, unknown>>;
+}
+
+export interface SessionProgress {
+  readonly phase: SessionPhase;
+  readonly percentage: number;
+  readonly currentTask: string | null;
+  readonly estimatedTimeRemaining: number | null;
+}
+
+export type SessionPhase =
+  | 'INITIALIZING'
+  | 'PLANNING'
+  | 'PREPARATION'
+  | 'INSERTION'
+  | 'EXECUTION'
+  | 'COLLECTION'
+  | 'EXTRACTION'
+  | 'DEBRIEFING'
+  | 'FINALIZING';
+
+export interface SessionAlert {
+  readonly alertId: string;
+  readonly timestamp: number;
+  readonly type: AlertType;
+  readonly severity: RiskLevel;
+  readonly source: string;
+  readonly description: string;
+  readonly status: AlertStatus;
+}
+
+export type AlertType =
+  | 'SECURITY_THREAT'
+  | 'COVER_RISK'
+  | 'COMMUNICATION_ISSUE'
+  | 'EXTRACTION_REQUIRED'
+  | 'ASSET_COMPROMISED'
+  | 'MISSION_CRITICAL';
+
+export type AlertStatus =
+  | 'NEW'
+  | 'ACKNOWLEDGED'
+  | 'INVESTIGATING'
+  | 'RESOLVED'
+  | 'ESCALATED';
+
+export interface SessionError {
+  readonly errorId: string;
+  readonly timestamp: number;
+  readonly type: SessionErrorType;
+  readonly message: string;
+  readonly details: string | null;
+  readonly recoverable: boolean;
+}
+
+export type SessionErrorType =
+  | 'PLANNING_ERROR'
+  | 'EXECUTION_ERROR'
+  | 'COMMUNICATION_ERROR'
+  | 'SECURITY_ERROR'
+  | 'EXTRACTION_ERROR'
+  | 'INTERNAL_ERROR';
+
+export interface SessionMetadata {
+  readonly platformVersion: string;
+  readonly startedBy: string;
+  readonly classification: SecurityLevel;
+  readonly authorization: string;
+  readonly oversight: readonly string[];
+  readonly tags: readonly string[];
+}

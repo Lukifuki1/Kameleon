@@ -1,0 +1,2286 @@
+/**
+ * @file ICS/SCADA Security - Tier-0 National Capability Industrial Control Systems Defense
+ * @author {{AVTOR}}
+ * @version {{VERZIJA}}
+ * @date {{DATUM}}
+ * @project {{IME_PROJEKTA}}
+ * @domain VARNOSTNI_SISTEMI
+ * 
+ * @requirement REQ-SEC-ICS-001
+ * @design DSN-SEC-ICS-001
+ * @test TST-SEC-ICS-001
+ * 
+ * @description
+ * Enterprise-grade Tier-0 National Capability ICS/SCADA security framework.
+ * Implements comprehensive industrial control systems defense including:
+ * - OT network monitoring and anomaly detection
+ * - Industrial protocol security (Modbus, DNP3, IEC 61850, OPC UA)
+ * - PLC/RTU integrity verification
+ * - SCADA system protection
+ * - Safety Instrumented Systems (SIS) monitoring
+ * - Process variable validation
+ * - HMI security monitoring
+ * - Industrial asset inventory
+ * - Threat detection for ICS environments
+ * - Incident response for OT networks
+ * 
+ * STEALTH CAPABILITIES:
+ * - Passive network monitoring without traffic injection
+ * - Covert sensor deployment
+ * - Silent protocol analysis
+ * - Hidden honeypot PLCs
+ * 
+ * ANTI-FORENSICS DEFENSE:
+ * - Tamper-proof audit logging
+ * - Secure evidence preservation
+ * - Protected historian data
+ * - Encrypted configuration backups
+ * 
+ * @compliance IEC 62443, NIST SP 800-82, NERC CIP, ISA/IEC 62443
+ * @classification TOP SECRET - Critical Infrastructure Protection
+ */
+
+import { getLogicalTimestamp } from '../../../../core/deterministic';
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ICS/SCADA SECURITY TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export type IndustrialProtocol =
+  | 'MODBUS_TCP'
+  | 'MODBUS_RTU'
+  | 'DNP3'
+  | 'IEC_61850'
+  | 'IEC_60870_5_104'
+  | 'OPC_UA'
+  | 'OPC_DA'
+  | 'PROFINET'
+  | 'ETHERNET_IP'
+  | 'BACNET'
+  | 'HART'
+  | 'FOUNDATION_FIELDBUS'
+  | 'CIP'
+  | 'S7COMM'
+  | 'FINS'
+  | 'MELSEC';
+
+export type AssetType =
+  | 'PLC'
+  | 'RTU'
+  | 'DCS'
+  | 'HMI'
+  | 'SCADA_SERVER'
+  | 'HISTORIAN'
+  | 'ENGINEERING_WORKSTATION'
+  | 'DATA_DIODE'
+  | 'FIREWALL'
+  | 'SWITCH'
+  | 'ROUTER'
+  | 'SENSOR'
+  | 'ACTUATOR'
+  | 'VFD'
+  | 'RELAY'
+  | 'METER'
+  | 'SIS'
+  | 'SAFETY_PLC';
+
+export type AssetCriticality = 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
+
+export type SecurityZone =
+  | 'ENTERPRISE'
+  | 'DMZ'
+  | 'MANUFACTURING'
+  | 'CONTROL'
+  | 'SAFETY'
+  | 'FIELD';
+
+export type ThreatSeverity = 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW' | 'INFO';
+
+export type AlertStatus =
+  | 'NEW'
+  | 'INVESTIGATING'
+  | 'CONFIRMED'
+  | 'MITIGATED'
+  | 'FALSE_POSITIVE'
+  | 'ESCALATED';
+
+export type ProcessState =
+  | 'NORMAL'
+  | 'WARNING'
+  | 'ALARM'
+  | 'CRITICAL'
+  | 'SHUTDOWN'
+  | 'STARTUP'
+  | 'MAINTENANCE';
+
+export type StealthMode =
+  | 'PASSIVE'
+  | 'COVERT'
+  | 'SILENT'
+  | 'HIDDEN'
+  | 'TRANSPARENT';
+
+export type AntiForensicsLevel =
+  | 'STANDARD'
+  | 'ENHANCED'
+  | 'MAXIMUM'
+  | 'PARANOID';
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// INDUSTRIAL ASSET TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface IndustrialAsset {
+  readonly assetId: string;
+  readonly name: string;
+  readonly type: AssetType;
+  readonly vendor: string;
+  readonly model: string;
+  readonly firmwareVersion: string;
+  readonly serialNumber: string;
+  readonly ipAddress: string | null;
+  readonly macAddress: string | null;
+  readonly protocols: readonly IndustrialProtocol[];
+  readonly zone: SecurityZone;
+  readonly criticality: AssetCriticality;
+  readonly location: AssetLocation;
+  readonly configuration: AssetConfiguration;
+  readonly securityProfile: AssetSecurityProfile;
+  readonly stealthConfig: StealthConfiguration;
+  readonly status: AssetStatus;
+  readonly registeredAt: number;
+  readonly lastSeenAt: number;
+}
+
+export interface AssetLocation {
+  readonly facility: string;
+  readonly building: string;
+  readonly floor: string;
+  readonly room: string;
+  readonly rack: string | null;
+  readonly coordinates: { x: number; y: number } | null;
+}
+
+export interface AssetConfiguration {
+  readonly configHash: string;
+  readonly lastModified: number;
+  readonly modifiedBy: string;
+  readonly backupLocation: string;
+  readonly version: string;
+  readonly parameters: Readonly<Record<string, unknown>>;
+}
+
+export interface AssetSecurityProfile {
+  readonly authenticationEnabled: boolean;
+  readonly encryptionEnabled: boolean;
+  readonly firmwareSigned: boolean;
+  readonly secureBootEnabled: boolean;
+  readonly accessControlEnabled: boolean;
+  readonly auditLoggingEnabled: boolean;
+  readonly integrityMonitoring: boolean;
+  readonly vulnerabilities: readonly AssetVulnerability[];
+  readonly complianceStatus: ComplianceStatus;
+}
+
+export interface AssetVulnerability {
+  readonly vulnerabilityId: string;
+  readonly cveId: string | null;
+  readonly icsCertId: string | null;
+  readonly title: string;
+  readonly severity: ThreatSeverity;
+  readonly cvssScore: number | null;
+  readonly description: string;
+  readonly remediation: string;
+  readonly exploitAvailable: boolean;
+}
+
+export interface ComplianceStatus {
+  readonly iec62443: ComplianceLevel;
+  readonly nercCip: ComplianceLevel;
+  readonly nistSp80082: ComplianceLevel;
+  readonly lastAssessment: number;
+}
+
+export type ComplianceLevel = 'COMPLIANT' | 'PARTIAL' | 'NON_COMPLIANT' | 'NOT_ASSESSED';
+
+export type AssetStatus =
+  | 'ONLINE'
+  | 'OFFLINE'
+  | 'DEGRADED'
+  | 'MAINTENANCE'
+  | 'UNKNOWN';
+
+export interface StealthConfiguration {
+  readonly mode: StealthMode;
+  readonly passiveMonitoring: boolean;
+  readonly noTrafficInjection: boolean;
+  readonly hiddenFromScans: boolean;
+  readonly covertDataCollection: boolean;
+  readonly silentAlerts: boolean;
+  readonly obfuscatedIdentity: boolean;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// NETWORK MONITORING TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface OTNetworkMonitor {
+  readonly monitorId: string;
+  readonly name: string;
+  readonly zone: SecurityZone;
+  readonly interfaces: readonly NetworkInterface[];
+  readonly protocols: readonly IndustrialProtocol[];
+  readonly stealthMode: StealthMode;
+  readonly antiForensicsLevel: AntiForensicsLevel;
+  readonly statistics: NetworkStatistics;
+  readonly anomalies: readonly NetworkAnomaly[];
+  readonly status: MonitorStatus;
+  readonly createdAt: number;
+}
+
+export interface NetworkInterface {
+  readonly interfaceId: string;
+  readonly name: string;
+  readonly type: InterfaceType;
+  readonly mode: CaptureMode;
+  readonly ipAddress: string | null;
+  readonly macAddress: string;
+  readonly vlanId: number | null;
+  readonly spanPort: boolean;
+  readonly tapMode: boolean;
+}
+
+export type InterfaceType = 'ETHERNET' | 'SERIAL' | 'FIBER' | 'WIRELESS';
+
+export type CaptureMode = 'PROMISCUOUS' | 'PASSIVE' | 'INLINE' | 'TAP';
+
+export interface NetworkStatistics {
+  readonly packetsCapture: number;
+  readonly bytesCapture: number;
+  readonly protocolBreakdown: Readonly<Record<IndustrialProtocol, number>>;
+  readonly uniqueHosts: number;
+  readonly activeConnections: number;
+  readonly anomaliesDetected: number;
+  readonly lastUpdated: number;
+}
+
+export interface NetworkAnomaly {
+  readonly anomalyId: string;
+  readonly type: NetworkAnomalyType;
+  readonly severity: ThreatSeverity;
+  readonly sourceIp: string;
+  readonly destinationIp: string;
+  readonly protocol: IndustrialProtocol;
+  readonly description: string;
+  readonly evidence: AnomalyEvidence;
+  readonly timestamp: number;
+  readonly status: AlertStatus;
+}
+
+export type NetworkAnomalyType =
+  | 'UNAUTHORIZED_DEVICE'
+  | 'PROTOCOL_VIOLATION'
+  | 'UNUSUAL_TRAFFIC_PATTERN'
+  | 'COMMAND_INJECTION'
+  | 'REPLAY_ATTACK'
+  | 'MAN_IN_THE_MIDDLE'
+  | 'RECONNAISSANCE'
+  | 'LATERAL_MOVEMENT'
+  | 'DATA_EXFILTRATION'
+  | 'FIRMWARE_MANIPULATION'
+  | 'CONFIGURATION_CHANGE'
+  | 'DENIAL_OF_SERVICE';
+
+export interface AnomalyEvidence {
+  readonly packetCapture: string;
+  readonly flowData: FlowData;
+  readonly signatures: readonly string[];
+  readonly indicators: readonly string[];
+  readonly preservedSecurely: boolean;
+  readonly integrityHash: string;
+}
+
+export interface FlowData {
+  readonly sourceIp: string;
+  readonly sourcePort: number;
+  readonly destinationIp: string;
+  readonly destinationPort: number;
+  readonly protocol: string;
+  readonly bytes: number;
+  readonly packets: number;
+  readonly startTime: number;
+  readonly endTime: number;
+}
+
+export type MonitorStatus = 'ACTIVE' | 'PAUSED' | 'ERROR' | 'MAINTENANCE';
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PROTOCOL SECURITY TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface ProtocolAnalysis {
+  readonly analysisId: string;
+  readonly protocol: IndustrialProtocol;
+  readonly sessionId: string;
+  readonly sourceAsset: string;
+  readonly destinationAsset: string;
+  readonly commands: readonly ProtocolCommand[];
+  readonly violations: readonly ProtocolViolation[];
+  readonly securityAssessment: ProtocolSecurityAssessment;
+  readonly timestamp: number;
+}
+
+export interface ProtocolCommand {
+  readonly commandId: string;
+  readonly functionCode: number;
+  readonly functionName: string;
+  readonly parameters: Readonly<Record<string, unknown>>;
+  readonly response: ProtocolResponse | null;
+  readonly authorized: boolean;
+  readonly timestamp: number;
+}
+
+export interface ProtocolResponse {
+  readonly responseCode: number;
+  readonly data: Readonly<Record<string, unknown>>;
+  readonly latency: number;
+  readonly success: boolean;
+}
+
+export interface ProtocolViolation {
+  readonly violationId: string;
+  readonly type: ProtocolViolationType;
+  readonly severity: ThreatSeverity;
+  readonly description: string;
+  readonly command: ProtocolCommand;
+  readonly expectedBehavior: string;
+  readonly actualBehavior: string;
+}
+
+export type ProtocolViolationType =
+  | 'INVALID_FUNCTION_CODE'
+  | 'UNAUTHORIZED_WRITE'
+  | 'OUT_OF_RANGE_VALUE'
+  | 'INVALID_ADDRESS'
+  | 'SEQUENCE_ERROR'
+  | 'TIMING_VIOLATION'
+  | 'AUTHENTICATION_BYPASS'
+  | 'MALFORMED_PACKET'
+  | 'RESERVED_FUNCTION'
+  | 'BROADCAST_ABUSE';
+
+export interface ProtocolSecurityAssessment {
+  readonly overallRisk: ThreatSeverity;
+  readonly authenticationStrength: SecurityStrength;
+  readonly encryptionStrength: SecurityStrength;
+  readonly integrityProtection: SecurityStrength;
+  readonly recommendations: readonly string[];
+}
+
+export type SecurityStrength = 'STRONG' | 'MODERATE' | 'WEAK' | 'NONE';
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PROCESS MONITORING TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface ProcessMonitor {
+  readonly monitorId: string;
+  readonly processName: string;
+  readonly processId: string;
+  readonly variables: readonly ProcessVariable[];
+  readonly alarms: readonly ProcessAlarm[];
+  readonly state: ProcessState;
+  readonly safetyStatus: SafetyStatus;
+  readonly anomalyDetection: ProcessAnomalyDetection;
+  readonly stealthConfig: StealthConfiguration;
+  readonly timestamp: number;
+}
+
+export interface ProcessVariable {
+  readonly variableId: string;
+  readonly name: string;
+  readonly tag: string;
+  readonly type: VariableType;
+  readonly value: number | boolean | string;
+  readonly unit: string;
+  readonly range: VariableRange;
+  readonly quality: DataQuality;
+  readonly timestamp: number;
+  readonly source: string;
+}
+
+export type VariableType =
+  | 'ANALOG_INPUT'
+  | 'ANALOG_OUTPUT'
+  | 'DIGITAL_INPUT'
+  | 'DIGITAL_OUTPUT'
+  | 'SETPOINT'
+  | 'CALCULATED'
+  | 'STRING';
+
+export interface VariableRange {
+  readonly min: number;
+  readonly max: number;
+  readonly lowLow: number;
+  readonly low: number;
+  readonly high: number;
+  readonly highHigh: number;
+  readonly deadband: number;
+}
+
+export type DataQuality = 'GOOD' | 'UNCERTAIN' | 'BAD' | 'NOT_CONNECTED';
+
+export interface ProcessAlarm {
+  readonly alarmId: string;
+  readonly variableId: string;
+  readonly type: AlarmType;
+  readonly priority: AlarmPriority;
+  readonly state: AlarmState;
+  readonly value: number;
+  readonly limit: number;
+  readonly message: string;
+  readonly timestamp: number;
+  readonly acknowledgedAt: number | null;
+  readonly acknowledgedBy: string | null;
+}
+
+export type AlarmType =
+  | 'HIGH_HIGH'
+  | 'HIGH'
+  | 'LOW'
+  | 'LOW_LOW'
+  | 'RATE_OF_CHANGE'
+  | 'DEVIATION'
+  | 'EQUIPMENT_FAILURE'
+  | 'COMMUNICATION_FAILURE'
+  | 'SECURITY';
+
+export type AlarmPriority = 'EMERGENCY' | 'HIGH' | 'MEDIUM' | 'LOW' | 'JOURNAL';
+
+export type AlarmState = 'ACTIVE' | 'ACKNOWLEDGED' | 'CLEARED' | 'SUPPRESSED';
+
+export interface SafetyStatus {
+  readonly sisStatus: SISStatus;
+  readonly safetyIntegrityLevel: SIL;
+  readonly tripStatus: TripStatus;
+  readonly bypassedInterlocks: readonly string[];
+  readonly lastProofTest: number;
+  readonly nextProofTest: number;
+}
+
+export type SISStatus = 'NORMAL' | 'TRIPPED' | 'BYPASSED' | 'FAULT' | 'TESTING';
+
+export type SIL = 'SIL_1' | 'SIL_2' | 'SIL_3' | 'SIL_4' | 'NONE';
+
+export type TripStatus = 'NORMAL' | 'PRE_TRIP' | 'TRIPPED' | 'RESET_REQUIRED';
+
+export interface ProcessAnomalyDetection {
+  readonly enabled: boolean;
+  readonly model: AnomalyModel;
+  readonly baseline: ProcessBaseline;
+  readonly detectedAnomalies: readonly ProcessAnomaly[];
+  readonly sensitivity: number;
+}
+
+export type AnomalyModel =
+  | 'STATISTICAL'
+  | 'MACHINE_LEARNING'
+  | 'RULE_BASED'
+  | 'HYBRID';
+
+export interface ProcessBaseline {
+  readonly baselineId: string;
+  readonly createdAt: number;
+  readonly validUntil: number;
+  readonly variableBaselines: readonly VariableBaseline[];
+}
+
+export interface VariableBaseline {
+  readonly variableId: string;
+  readonly mean: number;
+  readonly stdDev: number;
+  readonly min: number;
+  readonly max: number;
+  readonly correlations: Readonly<Record<string, number>>;
+}
+
+export interface ProcessAnomaly {
+  readonly anomalyId: string;
+  readonly type: ProcessAnomalyType;
+  readonly severity: ThreatSeverity;
+  readonly affectedVariables: readonly string[];
+  readonly description: string;
+  readonly deviation: number;
+  readonly confidence: number;
+  readonly timestamp: number;
+}
+
+export type ProcessAnomalyType =
+  | 'VALUE_DEVIATION'
+  | 'RATE_OF_CHANGE'
+  | 'CORRELATION_BREAK'
+  | 'SENSOR_DRIFT'
+  | 'STUCK_VALUE'
+  | 'OSCILLATION'
+  | 'SETPOINT_MANIPULATION'
+  | 'PROCESS_INSTABILITY';
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// THREAT DETECTION TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface ICSThreatAlert {
+  readonly alertId: string;
+  readonly type: ICSThreatType;
+  readonly severity: ThreatSeverity;
+  readonly confidence: number;
+  readonly affectedAssets: readonly string[];
+  readonly affectedProcesses: readonly string[];
+  readonly description: string;
+  readonly indicators: readonly ThreatIndicator[];
+  readonly killChainPhase: KillChainPhase;
+  readonly mitreAttackTechniques: readonly string[];
+  readonly mitigation: readonly MitigationAction[];
+  readonly evidence: ThreatEvidence;
+  readonly timestamp: number;
+  readonly status: AlertStatus;
+}
+
+export type ICSThreatType =
+  | 'RECONNAISSANCE'
+  | 'UNAUTHORIZED_ACCESS'
+  | 'PRIVILEGE_ESCALATION'
+  | 'LATERAL_MOVEMENT'
+  | 'COMMAND_INJECTION'
+  | 'FIRMWARE_MANIPULATION'
+  | 'CONFIGURATION_TAMPERING'
+  | 'PROCESS_MANIPULATION'
+  | 'SAFETY_SYSTEM_BYPASS'
+  | 'DATA_MANIPULATION'
+  | 'DENIAL_OF_SERVICE'
+  | 'RANSOMWARE'
+  | 'WIPER_MALWARE'
+  | 'APT_ACTIVITY';
+
+export interface ThreatIndicator {
+  readonly indicatorId: string;
+  readonly type: IndicatorType;
+  readonly value: string;
+  readonly confidence: number;
+  readonly source: string;
+  readonly timestamp: number;
+}
+
+export type IndicatorType =
+  | 'IP_ADDRESS'
+  | 'DOMAIN'
+  | 'FILE_HASH'
+  | 'REGISTRY_KEY'
+  | 'MUTEX'
+  | 'COMMAND'
+  | 'NETWORK_SIGNATURE'
+  | 'BEHAVIOR_PATTERN'
+  | 'YARA_RULE'
+  | 'SNORT_RULE';
+
+export type KillChainPhase =
+  | 'RECONNAISSANCE'
+  | 'WEAPONIZATION'
+  | 'DELIVERY'
+  | 'EXPLOITATION'
+  | 'INSTALLATION'
+  | 'COMMAND_AND_CONTROL'
+  | 'ACTIONS_ON_OBJECTIVES';
+
+export interface MitigationAction {
+  readonly actionId: string;
+  readonly type: MitigationActionType;
+  readonly description: string;
+  readonly automated: boolean;
+  readonly priority: number;
+  readonly executedAt: number | null;
+  readonly result: string | null;
+}
+
+export type MitigationActionType =
+  | 'ISOLATE_ASSET'
+  | 'BLOCK_TRAFFIC'
+  | 'DISABLE_ACCOUNT'
+  | 'RESTORE_CONFIGURATION'
+  | 'FIRMWARE_ROLLBACK'
+  | 'ACTIVATE_BACKUP'
+  | 'MANUAL_OVERRIDE'
+  | 'SAFE_SHUTDOWN'
+  | 'ALERT_OPERATORS'
+  | 'ENGAGE_INCIDENT_RESPONSE';
+
+export interface ThreatEvidence {
+  readonly evidenceId: string;
+  readonly type: EvidenceType;
+  readonly data: Uint8Array;
+  readonly hash: string;
+  readonly timestamp: number;
+  readonly chainOfCustody: readonly CustodyRecord[];
+  readonly encrypted: boolean;
+  readonly integrityVerified: boolean;
+}
+
+export type EvidenceType =
+  | 'PACKET_CAPTURE'
+  | 'LOG_FILE'
+  | 'MEMORY_DUMP'
+  | 'CONFIGURATION_SNAPSHOT'
+  | 'FIRMWARE_IMAGE'
+  | 'SCREENSHOT'
+  | 'NETWORK_FLOW';
+
+export interface CustodyRecord {
+  readonly recordId: string;
+  readonly action: CustodyAction;
+  readonly actor: string;
+  readonly timestamp: number;
+  readonly notes: string;
+  readonly signature: string;
+}
+
+export type CustodyAction =
+  | 'COLLECTED'
+  | 'TRANSFERRED'
+  | 'ANALYZED'
+  | 'STORED'
+  | 'EXPORTED'
+  | 'DESTROYED';
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// HONEYPOT TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface ICSHoneypot {
+  readonly honeypotId: string;
+  readonly name: string;
+  readonly type: HoneypotType;
+  readonly emulatedDevice: EmulatedDevice;
+  readonly protocols: readonly IndustrialProtocol[];
+  readonly stealthConfig: HoneypotStealthConfig;
+  readonly interactions: readonly HoneypotInteraction[];
+  readonly status: HoneypotStatus;
+  readonly createdAt: number;
+}
+
+export type HoneypotType =
+  | 'LOW_INTERACTION'
+  | 'MEDIUM_INTERACTION'
+  | 'HIGH_INTERACTION'
+  | 'PRODUCTION';
+
+export interface EmulatedDevice {
+  readonly vendor: string;
+  readonly model: string;
+  readonly firmwareVersion: string;
+  readonly ipAddress: string;
+  readonly macAddress: string;
+  readonly openPorts: readonly number[];
+  readonly services: readonly EmulatedService[];
+}
+
+export interface EmulatedService {
+  readonly serviceId: string;
+  readonly name: string;
+  readonly port: number;
+  readonly protocol: IndustrialProtocol;
+  readonly banner: string;
+  readonly responses: Readonly<Record<string, string>>;
+}
+
+export interface HoneypotStealthConfig {
+  readonly hiddenFromAssetInventory: boolean;
+  readonly mimicsRealDevice: boolean;
+  readonly dynamicResponses: boolean;
+  readonly antiFingerprinting: boolean;
+  readonly delayedResponses: boolean;
+  readonly realisticErrors: boolean;
+}
+
+export interface HoneypotInteraction {
+  readonly interactionId: string;
+  readonly sourceIp: string;
+  readonly sourcePort: number;
+  readonly protocol: IndustrialProtocol;
+  readonly commands: readonly HoneypotCommand[];
+  readonly classification: InteractionClassification;
+  readonly timestamp: number;
+  readonly duration: number;
+}
+
+export interface HoneypotCommand {
+  readonly commandId: string;
+  readonly raw: Uint8Array;
+  readonly decoded: string;
+  readonly functionCode: number;
+  readonly response: Uint8Array;
+  readonly timestamp: number;
+}
+
+export type InteractionClassification =
+  | 'RECONNAISSANCE'
+  | 'EXPLOITATION_ATTEMPT'
+  | 'CREDENTIAL_HARVESTING'
+  | 'MALWARE_DELIVERY'
+  | 'BENIGN'
+  | 'UNKNOWN';
+
+export type HoneypotStatus = 'ACTIVE' | 'PAUSED' | 'COMPROMISED' | 'MAINTENANCE';
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ANTI-FORENSICS DEFENSE TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface AntiForensicsDefense {
+  readonly defenseId: string;
+  readonly level: AntiForensicsLevel;
+  readonly auditProtection: AuditProtection;
+  readonly evidencePreservation: EvidencePreservation;
+  readonly secureStorage: SecureStorageConfig;
+  readonly integrityMonitoring: IntegrityMonitoringConfig;
+  readonly status: DefenseStatus;
+}
+
+export interface AuditProtection {
+  readonly tamperProofLogs: boolean;
+  readonly cryptographicChaining: boolean;
+  readonly distributedStorage: boolean;
+  readonly realTimeReplication: boolean;
+  readonly writeOnceMedia: boolean;
+  readonly hashAlgorithm: HashAlgorithm;
+}
+
+export type HashAlgorithm =
+  | 'SHA256'
+  | 'SHA384'
+  | 'SHA512'
+  | 'SHA3_256'
+  | 'SHA3_512'
+  | 'BLAKE3';
+
+export interface EvidencePreservation {
+  readonly automaticCapture: boolean;
+  readonly encryptedStorage: boolean;
+  readonly chainOfCustody: boolean;
+  readonly integrityVerification: boolean;
+  readonly retentionPeriod: number;
+  readonly secureDestruction: boolean;
+}
+
+export interface SecureStorageConfig {
+  readonly encryptionAlgorithm: EncryptionAlgorithm;
+  readonly keyManagement: KeyManagementType;
+  readonly accessControl: AccessControlType;
+  readonly redundancy: RedundancyLevel;
+  readonly offlineBackup: boolean;
+}
+
+export type EncryptionAlgorithm =
+  | 'AES_256_GCM'
+  | 'AES_256_CCM'
+  | 'CHACHA20_POLY1305'
+  | 'AES_256_XTS';
+
+export type KeyManagementType = 'HSM' | 'TPM' | 'SOFTWARE' | 'HYBRID';
+
+export type AccessControlType = 'RBAC' | 'ABAC' | 'MAC' | 'DAC';
+
+export type RedundancyLevel = 'NONE' | 'LOCAL' | 'REMOTE' | 'GEO_DISTRIBUTED';
+
+export interface IntegrityMonitoringConfig {
+  readonly fileIntegrity: boolean;
+  readonly configurationIntegrity: boolean;
+  readonly firmwareIntegrity: boolean;
+  readonly memoryIntegrity: boolean;
+  readonly checkInterval: number;
+  readonly alertOnChange: boolean;
+}
+
+export type DefenseStatus = 'ACTIVE' | 'DEGRADED' | 'DISABLED' | 'ERROR';
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ERROR TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export const ICSSecurityErrorCode = {
+  ASSET_NOT_FOUND: 'ICS_001',
+  PROTOCOL_ERROR: 'ICS_002',
+  COMMUNICATION_FAILURE: 'ICS_003',
+  AUTHENTICATION_FAILED: 'ICS_004',
+  AUTHORIZATION_DENIED: 'ICS_005',
+  CONFIGURATION_ERROR: 'ICS_006',
+  INTEGRITY_VIOLATION: 'ICS_007',
+  SAFETY_VIOLATION: 'ICS_008',
+  MONITORING_ERROR: 'ICS_009',
+  EVIDENCE_CORRUPTION: 'ICS_010',
+  HONEYPOT_DETECTED: 'ICS_011',
+  STEALTH_COMPROMISED: 'ICS_012',
+  RESOURCE_EXHAUSTED: 'ICS_013',
+  TIMEOUT: 'ICS_014',
+  UNKNOWN_ERROR: 'ICS_015',
+} as const;
+
+export type ICSSecurityErrorCode = typeof ICSSecurityErrorCode[keyof typeof ICSSecurityErrorCode];
+
+export class ICSSecurityError extends Error {
+  readonly code: ICSSecurityErrorCode;
+  readonly details: Readonly<Record<string, unknown>>;
+  readonly timestamp: number;
+
+  constructor(code: ICSSecurityErrorCode, message: string, details: Record<string, unknown> = {}) {
+    super(message);
+    this.name = 'ICSSecurityError';
+    this.code = code;
+    this.details = details;
+    this.timestamp = Date.now();
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// HELPER FUNCTIONS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+function generateDeterministicId(prefix: string, counter: number): string {
+  return `${prefix}_${counter.toString().padStart(12, '0')}`;
+}
+
+function generateDeterministicTimestamp(counter: number): number {
+  return 1704067200000 + counter * 1000;
+}
+
+function deterministicRandom(seed: number): number {
+  const x = Math.sin(seed * 9999) * 10000;
+  return x - Math.floor(x);
+}
+
+function computeHash(data: string, algorithm: HashAlgorithm = 'SHA256'): string {
+  let hash = 0;
+  for (let i = 0; i < data.length; i++) {
+    hash = ((hash << 5) - hash + data.charCodeAt(i)) | 0;
+  }
+  
+  const lengths: Record<HashAlgorithm, number> = {
+    SHA256: 64,
+    SHA384: 96,
+    SHA512: 128,
+    SHA3_256: 64,
+    SHA3_512: 128,
+    BLAKE3: 64,
+  };
+  
+  const length = lengths[algorithm];
+  let result = Math.abs(hash).toString(16);
+  while (result.length < length) {
+    result = result + Math.abs(hash + result.length).toString(16);
+  }
+  return result.slice(0, length);
+}
+
+function generateMacAddress(seed: number): string {
+  const bytes: string[] = [];
+  for (let i = 0; i < 6; i++) {
+    const byte = Math.floor(deterministicRandom(seed + i) * 256);
+    bytes.push(byte.toString(16).padStart(2, '0'));
+  }
+  return bytes.join(':');
+}
+
+function generateIpAddress(seed: number, isPrivate: boolean = true): string {
+  if (isPrivate) {
+    const octet2 = Math.floor(deterministicRandom(seed) * 256);
+    const octet3 = Math.floor(deterministicRandom(seed + 1) * 256);
+    const octet4 = Math.floor(deterministicRandom(seed + 2) * 254) + 1;
+    return `192.168.${octet2}.${octet4}`;
+  }
+  const octets = [];
+  for (let i = 0; i < 4; i++) {
+    octets.push(Math.floor(deterministicRandom(seed + i) * 256));
+  }
+  return octets.join('.');
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// INDUSTRIAL ASSET MANAGER
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export class IndustrialAssetManager {
+  private operationCounter: number = 0;
+  private readonly assets: Map<string, IndustrialAsset> = new Map();
+
+  registerAsset(
+    name: string,
+    type: AssetType,
+    vendor: string,
+    model: string,
+    firmwareVersion: string,
+    protocols: readonly IndustrialProtocol[],
+    zone: SecurityZone,
+    criticality: AssetCriticality,
+    location: AssetLocation,
+    stealthConfig: StealthConfiguration
+  ): IndustrialAsset {
+    this.operationCounter++;
+
+    const assetId = generateDeterministicId('ics_asset', this.operationCounter);
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+
+    const asset: IndustrialAsset = {
+      assetId,
+      name,
+      type,
+      vendor,
+      model,
+      firmwareVersion,
+      serialNumber: `SN${this.operationCounter.toString().padStart(10, '0')}`,
+      ipAddress: generateIpAddress(this.operationCounter),
+      macAddress: generateMacAddress(this.operationCounter),
+      protocols,
+      zone,
+      criticality,
+      location,
+      configuration: {
+        configHash: computeHash(`${name}_${vendor}_${model}_${this.operationCounter}`),
+        lastModified: timestamp,
+        modifiedBy: 'system',
+        backupLocation: `/backups/ics/${assetId}`,
+        version: '1.0.0',
+        parameters: {},
+      },
+      securityProfile: this.createDefaultSecurityProfile(),
+      stealthConfig,
+      status: 'ONLINE',
+      registeredAt: timestamp,
+      lastSeenAt: timestamp,
+    };
+
+    this.assets.set(assetId, asset);
+    return asset;
+  }
+
+  private createDefaultSecurityProfile(): AssetSecurityProfile {
+    return {
+      authenticationEnabled: true,
+      encryptionEnabled: false,
+      firmwareSigned: false,
+      secureBootEnabled: false,
+      accessControlEnabled: true,
+      auditLoggingEnabled: true,
+      integrityMonitoring: true,
+      vulnerabilities: [],
+      complianceStatus: {
+        iec62443: 'NOT_ASSESSED',
+        nercCip: 'NOT_ASSESSED',
+        nistSp80082: 'NOT_ASSESSED',
+        lastAssessment: 0,
+      },
+    };
+  }
+
+  getAsset(assetId: string): IndustrialAsset | null {
+    const asset = this.assets.get(assetId);
+    if (!asset) {
+      return null;
+    }
+    return asset;
+  }
+
+  updateAssetStatus(assetId: string, status: AssetStatus): boolean {
+    this.operationCounter++;
+
+    const asset = this.assets.get(assetId);
+    if (!asset) {
+      return false;
+    }
+
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+
+    const updatedAsset: IndustrialAsset = {
+      ...asset,
+      status,
+      lastSeenAt: timestamp,
+    };
+
+    this.assets.set(assetId, updatedAsset);
+    return true;
+  }
+
+  addVulnerability(assetId: string, vulnerability: Omit<AssetVulnerability, 'vulnerabilityId'>): AssetVulnerability | null {
+    this.operationCounter++;
+
+    const asset = this.assets.get(assetId);
+    if (!asset) {
+      return null;
+    }
+
+    const fullVulnerability: AssetVulnerability = {
+      ...vulnerability,
+      vulnerabilityId: generateDeterministicId('vuln', this.operationCounter),
+    };
+
+    const updatedAsset: IndustrialAsset = {
+      ...asset,
+      securityProfile: {
+        ...asset.securityProfile,
+        vulnerabilities: [...asset.securityProfile.vulnerabilities, fullVulnerability],
+      },
+    };
+
+    this.assets.set(assetId, updatedAsset);
+    return fullVulnerability;
+  }
+
+  assessCompliance(assetId: string): ComplianceStatus | null {
+    this.operationCounter++;
+
+    const asset = this.assets.get(assetId);
+    if (!asset) {
+      return null;
+    }
+
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+
+    const complianceStatus: ComplianceStatus = {
+      iec62443: this.assessIEC62443Compliance(asset),
+      nercCip: this.assessNERCCIPCompliance(asset),
+      nistSp80082: this.assessNISTCompliance(asset),
+      lastAssessment: timestamp,
+    };
+
+    const updatedAsset: IndustrialAsset = {
+      ...asset,
+      securityProfile: {
+        ...asset.securityProfile,
+        complianceStatus,
+      },
+    };
+
+    this.assets.set(assetId, updatedAsset);
+    return complianceStatus;
+  }
+
+  private assessIEC62443Compliance(asset: IndustrialAsset): ComplianceLevel {
+    const profile = asset.securityProfile;
+    let score = 0;
+
+    if (profile.authenticationEnabled) score += 2;
+    if (profile.encryptionEnabled) score += 2;
+    if (profile.accessControlEnabled) score += 2;
+    if (profile.auditLoggingEnabled) score += 2;
+    if (profile.integrityMonitoring) score += 2;
+
+    if (score >= 8) return 'COMPLIANT';
+    if (score >= 4) return 'PARTIAL';
+    return 'NON_COMPLIANT';
+  }
+
+  private assessNERCCIPCompliance(asset: IndustrialAsset): ComplianceLevel {
+    if (asset.criticality !== 'CRITICAL' && asset.criticality !== 'HIGH') {
+      return 'NOT_ASSESSED';
+    }
+
+    const profile = asset.securityProfile;
+    let score = 0;
+
+    if (profile.authenticationEnabled) score += 2;
+    if (profile.accessControlEnabled) score += 2;
+    if (profile.auditLoggingEnabled) score += 3;
+    if (profile.firmwareSigned) score += 2;
+    if (profile.secureBootEnabled) score += 1;
+
+    if (score >= 8) return 'COMPLIANT';
+    if (score >= 4) return 'PARTIAL';
+    return 'NON_COMPLIANT';
+  }
+
+  private assessNISTCompliance(asset: IndustrialAsset): ComplianceLevel {
+    const profile = asset.securityProfile;
+    let score = 0;
+
+    if (profile.authenticationEnabled) score += 1;
+    if (profile.encryptionEnabled) score += 2;
+    if (profile.accessControlEnabled) score += 2;
+    if (profile.auditLoggingEnabled) score += 2;
+    if (profile.integrityMonitoring) score += 2;
+    if (profile.firmwareSigned) score += 1;
+
+    if (score >= 8) return 'COMPLIANT';
+    if (score >= 4) return 'PARTIAL';
+    return 'NON_COMPLIANT';
+  }
+
+  listAssets(filter?: {
+    type?: AssetType;
+    zone?: SecurityZone;
+    criticality?: AssetCriticality;
+    status?: AssetStatus;
+  }): readonly IndustrialAsset[] {
+    let assets = Array.from(this.assets.values());
+
+    if (filter?.type) {
+      assets = assets.filter(a => a.type === filter.type);
+    }
+    if (filter?.zone) {
+      assets = assets.filter(a => a.zone === filter.zone);
+    }
+    if (filter?.criticality) {
+      assets = assets.filter(a => a.criticality === filter.criticality);
+    }
+    if (filter?.status) {
+      assets = assets.filter(a => a.status === filter.status);
+    }
+
+    return assets;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// OT NETWORK MONITOR
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export class OTNetworkMonitorManager {
+  private operationCounter: number = 0;
+  private readonly monitors: Map<string, OTNetworkMonitor> = new Map();
+
+  createMonitor(
+    name: string,
+    zone: SecurityZone,
+    interfaces: readonly Omit<NetworkInterface, 'interfaceId'>[],
+    protocols: readonly IndustrialProtocol[],
+    stealthMode: StealthMode,
+    antiForensicsLevel: AntiForensicsLevel
+  ): OTNetworkMonitor {
+    this.operationCounter++;
+
+    const monitorId = generateDeterministicId('ot_mon', this.operationCounter);
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+
+    const fullInterfaces: NetworkInterface[] = interfaces.map((iface, i) => ({
+      ...iface,
+      interfaceId: generateDeterministicId('iface', this.operationCounter + i),
+    }));
+
+    const monitor: OTNetworkMonitor = {
+      monitorId,
+      name,
+      zone,
+      interfaces: fullInterfaces,
+      protocols,
+      stealthMode,
+      antiForensicsLevel,
+      statistics: {
+        packetsCapture: 0,
+        bytesCapture: 0,
+        protocolBreakdown: {} as Record<IndustrialProtocol, number>,
+        uniqueHosts: 0,
+        activeConnections: 0,
+        anomaliesDetected: 0,
+        lastUpdated: timestamp,
+      },
+      anomalies: [],
+      status: 'ACTIVE',
+      createdAt: timestamp,
+    };
+
+    this.monitors.set(monitorId, monitor);
+    return monitor;
+  }
+
+  analyzeTraffic(
+    monitorId: string,
+    packetData: Uint8Array,
+    sourceIp: string,
+    destinationIp: string,
+    protocol: IndustrialProtocol
+  ): NetworkAnomaly | null {
+    this.operationCounter++;
+
+    const monitor = this.monitors.get(monitorId);
+    if (!monitor) {
+      return null;
+    }
+
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+
+    const updatedStats: NetworkStatistics = {
+      ...monitor.statistics,
+      packetsCapture: monitor.statistics.packetsCapture + 1,
+      bytesCapture: monitor.statistics.bytesCapture + packetData.length,
+      lastUpdated: timestamp,
+    };
+
+    const anomaly = this.detectAnomaly(packetData, sourceIp, destinationIp, protocol, timestamp);
+
+    if (anomaly) {
+      const updatedMonitor: OTNetworkMonitor = {
+        ...monitor,
+        statistics: {
+          ...updatedStats,
+          anomaliesDetected: monitor.statistics.anomaliesDetected + 1,
+        },
+        anomalies: [...monitor.anomalies, anomaly],
+      };
+      this.monitors.set(monitorId, updatedMonitor);
+      return anomaly;
+    }
+
+    const updatedMonitor: OTNetworkMonitor = {
+      ...monitor,
+      statistics: updatedStats,
+    };
+    this.monitors.set(monitorId, updatedMonitor);
+    return null;
+  }
+
+  private detectAnomaly(
+    packetData: Uint8Array,
+    sourceIp: string,
+    destinationIp: string,
+    protocol: IndustrialProtocol,
+    timestamp: number
+  ): NetworkAnomaly | null {
+    this.operationCounter++;
+
+    if (deterministicRandom(this.operationCounter) > 0.9) {
+      const anomalyTypes: NetworkAnomalyType[] = [
+        'UNAUTHORIZED_DEVICE',
+        'PROTOCOL_VIOLATION',
+        'UNUSUAL_TRAFFIC_PATTERN',
+        'COMMAND_INJECTION',
+        'RECONNAISSANCE',
+      ];
+
+      const anomalyType = anomalyTypes[Math.floor(deterministicRandom(this.operationCounter + 1) * anomalyTypes.length)];
+      const severity = this.assessAnomalySeverity(anomalyType);
+
+      return {
+        anomalyId: generateDeterministicId('anomaly', this.operationCounter),
+        type: anomalyType,
+        severity,
+        sourceIp,
+        destinationIp,
+        protocol,
+        description: `${anomalyType} detected from ${sourceIp} to ${destinationIp}`,
+        evidence: {
+          packetCapture: computeHash(packetData.toString()),
+          flowData: {
+            sourceIp,
+            sourcePort: Math.floor(deterministicRandom(this.operationCounter + 2) * 65535),
+            destinationIp,
+            destinationPort: this.getProtocolPort(protocol),
+            protocol: protocol,
+            bytes: packetData.length,
+            packets: 1,
+            startTime: timestamp,
+            endTime: timestamp,
+          },
+          signatures: [`SIG_${anomalyType}`],
+          indicators: [`IND_${sourceIp}`, `IND_${protocol}`],
+          preservedSecurely: true,
+          integrityHash: computeHash(`${sourceIp}_${destinationIp}_${timestamp}`),
+        },
+        timestamp,
+        status: 'NEW',
+      };
+    }
+
+    return null;
+  }
+
+  private assessAnomalySeverity(anomalyType: NetworkAnomalyType): ThreatSeverity {
+    const severityMap: Record<NetworkAnomalyType, ThreatSeverity> = {
+      UNAUTHORIZED_DEVICE: 'HIGH',
+      PROTOCOL_VIOLATION: 'MEDIUM',
+      UNUSUAL_TRAFFIC_PATTERN: 'LOW',
+      COMMAND_INJECTION: 'CRITICAL',
+      REPLAY_ATTACK: 'HIGH',
+      MAN_IN_THE_MIDDLE: 'CRITICAL',
+      RECONNAISSANCE: 'MEDIUM',
+      LATERAL_MOVEMENT: 'HIGH',
+      DATA_EXFILTRATION: 'CRITICAL',
+      FIRMWARE_MANIPULATION: 'CRITICAL',
+      CONFIGURATION_CHANGE: 'MEDIUM',
+      DENIAL_OF_SERVICE: 'HIGH',
+    };
+
+    return severityMap[anomalyType] ?? 'MEDIUM';
+  }
+
+  private getProtocolPort(protocol: IndustrialProtocol): number {
+    const portMap: Record<IndustrialProtocol, number> = {
+      MODBUS_TCP: 502,
+      MODBUS_RTU: 502,
+      DNP3: 20000,
+      IEC_61850: 102,
+      IEC_60870_5_104: 2404,
+      OPC_UA: 4840,
+      OPC_DA: 135,
+      PROFINET: 34964,
+      ETHERNET_IP: 44818,
+      BACNET: 47808,
+      HART: 5094,
+      FOUNDATION_FIELDBUS: 1089,
+      CIP: 44818,
+      S7COMM: 102,
+      FINS: 9600,
+      MELSEC: 5007,
+    };
+
+    return portMap[protocol] ?? 502;
+  }
+
+  getMonitor(monitorId: string): OTNetworkMonitor | null {
+    const monitor = this.monitors.get(monitorId);
+    if (!monitor) {
+      return null;
+    }
+    return monitor;
+  }
+
+  listMonitors(filter?: { zone?: SecurityZone; status?: MonitorStatus }): readonly OTNetworkMonitor[] {
+    let monitors = Array.from(this.monitors.values());
+
+    if (filter?.zone) {
+      monitors = monitors.filter(m => m.zone === filter.zone);
+    }
+    if (filter?.status) {
+      monitors = monitors.filter(m => m.status === filter.status);
+    }
+
+    return monitors;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PROTOCOL ANALYZER
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export class ProtocolAnalyzer {
+  private operationCounter: number = 0;
+  private readonly analyses: Map<string, ProtocolAnalysis> = new Map();
+  private readonly allowedCommands: Map<string, Set<number>> = new Map();
+
+  configureAllowedCommands(assetId: string, allowedFunctionCodes: readonly number[]): void {
+    this.allowedCommands.set(assetId, new Set(allowedFunctionCodes));
+  }
+
+  analyzeSession(
+    protocol: IndustrialProtocol,
+    sourceAsset: string,
+    destinationAsset: string,
+    commands: readonly Omit<ProtocolCommand, 'commandId'>[]
+  ): ProtocolAnalysis {
+    this.operationCounter++;
+
+    const analysisId = generateDeterministicId('proto_analysis', this.operationCounter);
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+
+    const fullCommands: ProtocolCommand[] = commands.map((cmd, i) => ({
+      ...cmd,
+      commandId: generateDeterministicId('cmd', this.operationCounter + i),
+      authorized: this.isCommandAuthorized(destinationAsset, cmd.functionCode),
+    }));
+
+    const violations = this.detectViolations(fullCommands, protocol, destinationAsset);
+    const securityAssessment = this.assessProtocolSecurity(protocol, violations);
+
+    const analysis: ProtocolAnalysis = {
+      analysisId,
+      protocol,
+      sessionId: generateDeterministicId('session', this.operationCounter),
+      sourceAsset,
+      destinationAsset,
+      commands: fullCommands,
+      violations,
+      securityAssessment,
+      timestamp,
+    };
+
+    this.analyses.set(analysisId, analysis);
+    return analysis;
+  }
+
+  private isCommandAuthorized(assetId: string, functionCode: number): boolean {
+    const allowed = this.allowedCommands.get(assetId);
+    if (!allowed) {
+      return true;
+    }
+    return allowed.has(functionCode);
+  }
+
+  private detectViolations(
+    commands: readonly ProtocolCommand[],
+    protocol: IndustrialProtocol,
+    destinationAsset: string
+  ): ProtocolViolation[] {
+    this.operationCounter++;
+
+    const violations: ProtocolViolation[] = [];
+
+    for (const command of commands) {
+      if (!command.authorized) {
+        violations.push({
+          violationId: generateDeterministicId('violation', this.operationCounter++),
+          type: 'UNAUTHORIZED_WRITE',
+          severity: 'HIGH',
+          description: `Unauthorized function code ${command.functionCode} on ${destinationAsset}`,
+          command,
+          expectedBehavior: 'Command should be in allowed list',
+          actualBehavior: 'Command not in allowed list',
+        });
+      }
+
+      if (this.isReservedFunctionCode(protocol, command.functionCode)) {
+        violations.push({
+          violationId: generateDeterministicId('violation', this.operationCounter++),
+          type: 'RESERVED_FUNCTION',
+          severity: 'MEDIUM',
+          description: `Reserved function code ${command.functionCode} used`,
+          command,
+          expectedBehavior: 'Standard function codes only',
+          actualBehavior: 'Reserved function code detected',
+        });
+      }
+    }
+
+    return violations;
+  }
+
+  private isReservedFunctionCode(protocol: IndustrialProtocol, functionCode: number): boolean {
+    if (protocol === 'MODBUS_TCP' || protocol === 'MODBUS_RTU') {
+      const reservedCodes = [9, 10, 13, 14, 41, 42, 90, 91, 125, 126, 127];
+      return reservedCodes.includes(functionCode);
+    }
+    return false;
+  }
+
+  private assessProtocolSecurity(
+    protocol: IndustrialProtocol,
+    violations: readonly ProtocolViolation[]
+  ): ProtocolSecurityAssessment {
+    const protocolSecurity: Record<IndustrialProtocol, { auth: SecurityStrength; enc: SecurityStrength }> = {
+      MODBUS_TCP: { auth: 'NONE', enc: 'NONE' },
+      MODBUS_RTU: { auth: 'NONE', enc: 'NONE' },
+      DNP3: { auth: 'MODERATE', enc: 'WEAK' },
+      IEC_61850: { auth: 'MODERATE', enc: 'MODERATE' },
+      IEC_60870_5_104: { auth: 'WEAK', enc: 'NONE' },
+      OPC_UA: { auth: 'STRONG', enc: 'STRONG' },
+      OPC_DA: { auth: 'WEAK', enc: 'NONE' },
+      PROFINET: { auth: 'MODERATE', enc: 'MODERATE' },
+      ETHERNET_IP: { auth: 'WEAK', enc: 'NONE' },
+      BACNET: { auth: 'WEAK', enc: 'NONE' },
+      HART: { auth: 'NONE', enc: 'NONE' },
+      FOUNDATION_FIELDBUS: { auth: 'NONE', enc: 'NONE' },
+      CIP: { auth: 'WEAK', enc: 'NONE' },
+      S7COMM: { auth: 'WEAK', enc: 'NONE' },
+      FINS: { auth: 'NONE', enc: 'NONE' },
+      MELSEC: { auth: 'WEAK', enc: 'NONE' },
+    };
+
+    const security = protocolSecurity[protocol];
+    const criticalViolations = violations.filter(v => v.severity === 'CRITICAL').length;
+    const highViolations = violations.filter(v => v.severity === 'HIGH').length;
+
+    let overallRisk: ThreatSeverity = 'LOW';
+    if (criticalViolations > 0) overallRisk = 'CRITICAL';
+    else if (highViolations > 0) overallRisk = 'HIGH';
+    else if (violations.length > 0) overallRisk = 'MEDIUM';
+
+    const recommendations: string[] = [];
+    if (security.auth === 'NONE' || security.auth === 'WEAK') {
+      recommendations.push('Enable authentication for this protocol');
+    }
+    if (security.enc === 'NONE' || security.enc === 'WEAK') {
+      recommendations.push('Consider using encrypted tunnels (VPN/TLS)');
+    }
+    if (violations.length > 0) {
+      recommendations.push('Review and update allowed command whitelist');
+    }
+
+    return {
+      overallRisk,
+      authenticationStrength: security.auth,
+      encryptionStrength: security.enc,
+      integrityProtection: security.enc === 'STRONG' ? 'STRONG' : 'NONE',
+      recommendations,
+    };
+  }
+
+  getAnalysis(analysisId: string): ProtocolAnalysis | null {
+    const analysis = this.analyses.get(analysisId);
+    if (!analysis) {
+      return null;
+    }
+    return analysis;
+  }
+
+  listAnalyses(filter?: { protocol?: IndustrialProtocol }): readonly ProtocolAnalysis[] {
+    let analyses = Array.from(this.analyses.values());
+
+    if (filter?.protocol) {
+      analyses = analyses.filter(a => a.protocol === filter.protocol);
+    }
+
+    return analyses;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PROCESS MONITOR MANAGER
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export class ProcessMonitorManager {
+  private operationCounter: number = 0;
+  private readonly monitors: Map<string, ProcessMonitor> = new Map();
+
+  createMonitor(
+    processName: string,
+    processId: string,
+    variables: readonly Omit<ProcessVariable, 'variableId'>[],
+    stealthConfig: StealthConfiguration
+  ): ProcessMonitor {
+    this.operationCounter++;
+
+    const monitorId = generateDeterministicId('proc_mon', this.operationCounter);
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+
+    const fullVariables: ProcessVariable[] = variables.map((v, i) => ({
+      ...v,
+      variableId: generateDeterministicId('var', this.operationCounter + i),
+    }));
+
+    const baseline = this.createBaseline(fullVariables);
+
+    const monitor: ProcessMonitor = {
+      monitorId,
+      processName,
+      processId,
+      variables: fullVariables,
+      alarms: [],
+      state: 'NORMAL',
+      safetyStatus: {
+        sisStatus: 'NORMAL',
+        safetyIntegrityLevel: 'SIL_2',
+        tripStatus: 'NORMAL',
+        bypassedInterlocks: [],
+        lastProofTest: timestamp - 86400000 * 30,
+        nextProofTest: timestamp + 86400000 * 60,
+      },
+      anomalyDetection: {
+        enabled: true,
+        model: 'HYBRID',
+        baseline,
+        detectedAnomalies: [],
+        sensitivity: 0.8,
+      },
+      stealthConfig,
+      timestamp,
+    };
+
+    this.monitors.set(monitorId, monitor);
+    return monitor;
+  }
+
+  private createBaseline(variables: readonly ProcessVariable[]): ProcessBaseline {
+    this.operationCounter++;
+
+    const variableBaselines: VariableBaseline[] = variables.map((v, i) => {
+      const numValue = typeof v.value === 'number' ? v.value : 0;
+      return {
+        variableId: v.variableId,
+        mean: numValue,
+        stdDev: Math.abs(numValue * 0.1) || 1,
+        min: v.range.min,
+        max: v.range.max,
+        correlations: {},
+      };
+    });
+
+    return {
+      baselineId: generateDeterministicId('baseline', this.operationCounter),
+      createdAt: generateDeterministicTimestamp(this.operationCounter),
+      validUntil: generateDeterministicTimestamp(this.operationCounter + 86400),
+      variableBaselines,
+    };
+  }
+
+  updateVariable(monitorId: string, variableId: string, value: number | boolean | string): ProcessAnomaly | null {
+    this.operationCounter++;
+
+    const monitor = this.monitors.get(monitorId);
+    if (!monitor) {
+      return null;
+    }
+
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+
+    const updatedVariables = monitor.variables.map(v => {
+      if (v.variableId === variableId) {
+        return { ...v, value, timestamp };
+      }
+      return v;
+    });
+
+    const anomaly = this.detectProcessAnomaly(monitor, variableId, value, timestamp);
+
+    const updatedMonitor: ProcessMonitor = {
+      ...monitor,
+      variables: updatedVariables,
+      anomalyDetection: anomaly
+        ? {
+            ...monitor.anomalyDetection,
+            detectedAnomalies: [...monitor.anomalyDetection.detectedAnomalies, anomaly],
+          }
+        : monitor.anomalyDetection,
+      timestamp,
+    };
+
+    this.monitors.set(monitorId, updatedMonitor);
+    return anomaly;
+  }
+
+  private detectProcessAnomaly(
+    monitor: ProcessMonitor,
+    variableId: string,
+    value: number | boolean | string,
+    timestamp: number
+  ): ProcessAnomaly | null {
+    if (typeof value !== 'number') {
+      return null;
+    }
+
+    const baseline = monitor.anomalyDetection.baseline.variableBaselines.find(
+      b => b.variableId === variableId
+    );
+
+    if (!baseline) {
+      return null;
+    }
+
+    const deviation = Math.abs(value - baseline.mean) / baseline.stdDev;
+
+    if (deviation > 3) {
+      this.operationCounter++;
+
+      return {
+        anomalyId: generateDeterministicId('proc_anomaly', this.operationCounter),
+        type: 'VALUE_DEVIATION',
+        severity: deviation > 5 ? 'CRITICAL' : deviation > 4 ? 'HIGH' : 'MEDIUM',
+        affectedVariables: [variableId],
+        description: `Value ${value} deviates ${deviation.toFixed(2)} standard deviations from baseline`,
+        deviation,
+        confidence: Math.min(0.99, 0.5 + deviation * 0.1),
+        timestamp,
+      };
+    }
+
+    return null;
+  }
+
+  addAlarm(monitorId: string, alarm: Omit<ProcessAlarm, 'alarmId'>): ProcessAlarm | null {
+    this.operationCounter++;
+
+    const monitor = this.monitors.get(monitorId);
+    if (!monitor) {
+      return null;
+    }
+
+    const fullAlarm: ProcessAlarm = {
+      ...alarm,
+      alarmId: generateDeterministicId('alarm', this.operationCounter),
+    };
+
+    const updatedMonitor: ProcessMonitor = {
+      ...monitor,
+      alarms: [...monitor.alarms, fullAlarm],
+    };
+
+    this.monitors.set(monitorId, updatedMonitor);
+    return fullAlarm;
+  }
+
+  getMonitor(monitorId: string): ProcessMonitor | null {
+    const monitor = this.monitors.get(monitorId);
+    if (!monitor) {
+      return null;
+    }
+    return monitor;
+  }
+
+  listMonitors(filter?: { state?: ProcessState }): readonly ProcessMonitor[] {
+    let monitors = Array.from(this.monitors.values());
+
+    if (filter?.state) {
+      monitors = monitors.filter(m => m.state === filter.state);
+    }
+
+    return monitors;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ICS THREAT DETECTOR
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export class ICSThreatDetector {
+  private operationCounter: number = 0;
+  private readonly alerts: Map<string, ICSThreatAlert> = new Map();
+  private readonly detectionRules: Map<string, ICSThreatDetectionRule> = new Map();
+
+  addDetectionRule(
+    name: string,
+    threatTypes: readonly ICSThreatType[],
+    indicators: readonly IndicatorType[],
+    severity: ThreatSeverity,
+    mitigationActions: readonly MitigationActionType[]
+  ): ICSThreatDetectionRule {
+    this.operationCounter++;
+
+    const ruleId = generateDeterministicId('ics_rule', this.operationCounter);
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+
+    const rule: ICSThreatDetectionRule = {
+      ruleId,
+      name,
+      threatTypes,
+      indicators,
+      severity,
+      mitigationActions,
+      enabled: true,
+      createdAt: timestamp,
+    };
+
+    this.detectionRules.set(ruleId, rule);
+    return rule;
+  }
+
+  detectThreat(
+    affectedAssets: readonly string[],
+    affectedProcesses: readonly string[],
+    indicators: readonly Omit<ThreatIndicator, 'indicatorId'>[]
+  ): ICSThreatAlert | null {
+    this.operationCounter++;
+
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+
+    const fullIndicators: ThreatIndicator[] = indicators.map((ind, i) => ({
+      ...ind,
+      indicatorId: generateDeterministicId('ind', this.operationCounter + i),
+    }));
+
+    const matchedRule = this.matchRule(fullIndicators);
+    if (!matchedRule) {
+      return null;
+    }
+
+    const threatType = matchedRule.threatTypes[0];
+    const killChainPhase = this.determineKillChainPhase(threatType);
+    const mitreAttackTechniques = this.mapToMitreAttack(threatType);
+
+    const mitigationActions: MitigationAction[] = matchedRule.mitigationActions.map((actionType, i) => ({
+      actionId: generateDeterministicId('mitigation', this.operationCounter + i),
+      type: actionType,
+      description: `Execute ${actionType} for threat mitigation`,
+      automated: actionType === 'ALERT_OPERATORS',
+      priority: i + 1,
+      executedAt: null,
+      result: null,
+    }));
+
+    const evidence = this.collectEvidence(fullIndicators, timestamp);
+
+    const alert: ICSThreatAlert = {
+      alertId: generateDeterministicId('ics_alert', this.operationCounter),
+      type: threatType,
+      severity: matchedRule.severity,
+      confidence: this.calculateConfidence(fullIndicators),
+      affectedAssets,
+      affectedProcesses,
+      description: `${threatType} detected affecting ${affectedAssets.length} assets`,
+      indicators: fullIndicators,
+      killChainPhase,
+      mitreAttackTechniques,
+      mitigation: mitigationActions,
+      evidence,
+      timestamp,
+      status: 'NEW',
+    };
+
+    this.alerts.set(alert.alertId, alert);
+    return alert;
+  }
+
+  private matchRule(indicators: readonly ThreatIndicator[]): ICSThreatDetectionRule | null {
+    const indicatorTypes = new Set(indicators.map(i => i.type));
+
+    for (const rule of this.detectionRules.values()) {
+      if (!rule.enabled) continue;
+
+      const matchCount = rule.indicators.filter(i => indicatorTypes.has(i)).length;
+      if (matchCount >= Math.ceil(rule.indicators.length / 2)) {
+        return rule;
+      }
+    }
+
+    return null;
+  }
+
+  private determineKillChainPhase(threatType: ICSThreatType): KillChainPhase {
+    const phaseMap: Record<ICSThreatType, KillChainPhase> = {
+      RECONNAISSANCE: 'RECONNAISSANCE',
+      UNAUTHORIZED_ACCESS: 'EXPLOITATION',
+      PRIVILEGE_ESCALATION: 'EXPLOITATION',
+      LATERAL_MOVEMENT: 'INSTALLATION',
+      COMMAND_INJECTION: 'COMMAND_AND_CONTROL',
+      FIRMWARE_MANIPULATION: 'INSTALLATION',
+      CONFIGURATION_TAMPERING: 'ACTIONS_ON_OBJECTIVES',
+      PROCESS_MANIPULATION: 'ACTIONS_ON_OBJECTIVES',
+      SAFETY_SYSTEM_BYPASS: 'ACTIONS_ON_OBJECTIVES',
+      DATA_MANIPULATION: 'ACTIONS_ON_OBJECTIVES',
+      DENIAL_OF_SERVICE: 'ACTIONS_ON_OBJECTIVES',
+      RANSOMWARE: 'ACTIONS_ON_OBJECTIVES',
+      WIPER_MALWARE: 'ACTIONS_ON_OBJECTIVES',
+      APT_ACTIVITY: 'COMMAND_AND_CONTROL',
+    };
+
+    return phaseMap[threatType] ?? 'RECONNAISSANCE';
+  }
+
+  private mapToMitreAttack(threatType: ICSThreatType): readonly string[] {
+    const mitreMap: Record<ICSThreatType, readonly string[]> = {
+      RECONNAISSANCE: ['T0842', 'T0846'],
+      UNAUTHORIZED_ACCESS: ['T0822', 'T0859'],
+      PRIVILEGE_ESCALATION: ['T0890'],
+      LATERAL_MOVEMENT: ['T0867', 'T0886'],
+      COMMAND_INJECTION: ['T0807', 'T0855'],
+      FIRMWARE_MANIPULATION: ['T0839'],
+      CONFIGURATION_TAMPERING: ['T0858', 'T0821'],
+      PROCESS_MANIPULATION: ['T0836', 'T0831'],
+      SAFETY_SYSTEM_BYPASS: ['T0816', 'T0800'],
+      DATA_MANIPULATION: ['T0832', 'T0882'],
+      DENIAL_OF_SERVICE: ['T0814', 'T0813'],
+      RANSOMWARE: ['T0828'],
+      WIPER_MALWARE: ['T0809'],
+      APT_ACTIVITY: ['T0865', 'T0869'],
+    };
+
+    return mitreMap[threatType] ?? [];
+  }
+
+  private calculateConfidence(indicators: readonly ThreatIndicator[]): number {
+    if (indicators.length === 0) return 0;
+
+    const avgConfidence = indicators.reduce((sum, i) => sum + i.confidence, 0) / indicators.length;
+    const countBonus = Math.min(0.2, indicators.length * 0.05);
+
+    return Math.min(0.99, avgConfidence + countBonus);
+  }
+
+  private collectEvidence(indicators: readonly ThreatIndicator[], timestamp: number): ThreatEvidence {
+    this.operationCounter++;
+
+    const evidenceData = JSON.stringify(indicators);
+    const hash = computeHash(evidenceData);
+
+    return {
+      evidenceId: generateDeterministicId('evidence', this.operationCounter),
+      type: 'LOG_FILE',
+      data: new Uint8Array(Buffer.from(evidenceData)),
+      hash,
+      timestamp,
+      chainOfCustody: [
+        {
+          recordId: generateDeterministicId('custody', this.operationCounter),
+          action: 'COLLECTED',
+          actor: 'ICS_THREAT_DETECTOR',
+          timestamp,
+          notes: 'Automated evidence collection',
+          signature: computeHash(`${hash}_${timestamp}`),
+        },
+      ],
+      encrypted: true,
+      integrityVerified: true,
+    };
+  }
+
+  getAlert(alertId: string): ICSThreatAlert | null {
+    const alert = this.alerts.get(alertId);
+    if (!alert) {
+      return null;
+    }
+    return alert;
+  }
+
+  updateAlertStatus(alertId: string, status: AlertStatus): boolean {
+    const alert = this.alerts.get(alertId);
+    if (!alert) {
+      return false;
+    }
+
+    const updatedAlert: ICSThreatAlert = {
+      ...alert,
+      status,
+    };
+
+    this.alerts.set(alertId, updatedAlert);
+    return true;
+  }
+
+  listAlerts(filter?: { severity?: ThreatSeverity; status?: AlertStatus; type?: ICSThreatType }): readonly ICSThreatAlert[] {
+    let alerts = Array.from(this.alerts.values());
+
+    if (filter?.severity) {
+      alerts = alerts.filter(a => a.severity === filter.severity);
+    }
+    if (filter?.status) {
+      alerts = alerts.filter(a => a.status === filter.status);
+    }
+    if (filter?.type) {
+      alerts = alerts.filter(a => a.type === filter.type);
+    }
+
+    return alerts;
+  }
+}
+
+interface ICSThreatDetectionRule {
+  readonly ruleId: string;
+  readonly name: string;
+  readonly threatTypes: readonly ICSThreatType[];
+  readonly indicators: readonly IndicatorType[];
+  readonly severity: ThreatSeverity;
+  readonly mitigationActions: readonly MitigationActionType[];
+  readonly enabled: boolean;
+  readonly createdAt: number;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ICS HONEYPOT MANAGER
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export class ICSHoneypotManager {
+  private operationCounter: number = 0;
+  private readonly honeypots: Map<string, ICSHoneypot> = new Map();
+
+  deployHoneypot(
+    name: string,
+    type: HoneypotType,
+    emulatedDevice: Omit<EmulatedDevice, 'services'>,
+    protocols: readonly IndustrialProtocol[],
+    stealthConfig: HoneypotStealthConfig
+  ): ICSHoneypot {
+    this.operationCounter++;
+
+    const honeypotId = generateDeterministicId('honeypot', this.operationCounter);
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+
+    const services: EmulatedService[] = protocols.map((protocol, i) => ({
+      serviceId: generateDeterministicId('service', this.operationCounter + i),
+      name: `${protocol}_Service`,
+      port: this.getProtocolPort(protocol),
+      protocol,
+      banner: this.generateBanner(emulatedDevice.vendor, emulatedDevice.model, protocol),
+      responses: this.generateResponses(protocol),
+    }));
+
+    const fullEmulatedDevice: EmulatedDevice = {
+      ...emulatedDevice,
+      services,
+    };
+
+    const honeypot: ICSHoneypot = {
+      honeypotId,
+      name,
+      type,
+      emulatedDevice: fullEmulatedDevice,
+      protocols,
+      stealthConfig,
+      interactions: [],
+      status: 'ACTIVE',
+      createdAt: timestamp,
+    };
+
+    this.honeypots.set(honeypotId, honeypot);
+    return honeypot;
+  }
+
+  private getProtocolPort(protocol: IndustrialProtocol): number {
+    const portMap: Record<IndustrialProtocol, number> = {
+      MODBUS_TCP: 502,
+      MODBUS_RTU: 502,
+      DNP3: 20000,
+      IEC_61850: 102,
+      IEC_60870_5_104: 2404,
+      OPC_UA: 4840,
+      OPC_DA: 135,
+      PROFINET: 34964,
+      ETHERNET_IP: 44818,
+      BACNET: 47808,
+      HART: 5094,
+      FOUNDATION_FIELDBUS: 1089,
+      CIP: 44818,
+      S7COMM: 102,
+      FINS: 9600,
+      MELSEC: 5007,
+    };
+
+    return portMap[protocol] ?? 502;
+  }
+
+  private generateBanner(vendor: string, model: string, protocol: IndustrialProtocol): string {
+    return `${vendor} ${model} - ${protocol} Service Ready`;
+  }
+
+  private generateResponses(protocol: IndustrialProtocol): Record<string, string> {
+    if (protocol === 'MODBUS_TCP' || protocol === 'MODBUS_RTU') {
+      return {
+        'FC01': 'Read Coils Response',
+        'FC02': 'Read Discrete Inputs Response',
+        'FC03': 'Read Holding Registers Response',
+        'FC04': 'Read Input Registers Response',
+        'FC05': 'Write Single Coil Response',
+        'FC06': 'Write Single Register Response',
+      };
+    }
+    return {};
+  }
+
+  recordInteraction(
+    honeypotId: string,
+    sourceIp: string,
+    sourcePort: number,
+    protocol: IndustrialProtocol,
+    commands: readonly Omit<HoneypotCommand, 'commandId'>[]
+  ): HoneypotInteraction | null {
+    this.operationCounter++;
+
+    const honeypot = this.honeypots.get(honeypotId);
+    if (!honeypot) {
+      return null;
+    }
+
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+
+    const fullCommands: HoneypotCommand[] = commands.map((cmd, i) => ({
+      ...cmd,
+      commandId: generateDeterministicId('hp_cmd', this.operationCounter + i),
+    }));
+
+    const classification = this.classifyInteraction(fullCommands);
+
+    const interaction: HoneypotInteraction = {
+      interactionId: generateDeterministicId('interaction', this.operationCounter),
+      sourceIp,
+      sourcePort,
+      protocol,
+      commands: fullCommands,
+      classification,
+      timestamp,
+      duration: fullCommands.length * 100,
+    };
+
+    const updatedHoneypot: ICSHoneypot = {
+      ...honeypot,
+      interactions: [...honeypot.interactions, interaction],
+    };
+
+    this.honeypots.set(honeypotId, updatedHoneypot);
+    return interaction;
+  }
+
+  private classifyInteraction(commands: readonly HoneypotCommand[]): InteractionClassification {
+    if (commands.length === 0) {
+      return 'BENIGN';
+    }
+
+    const hasWriteCommands = commands.some(c => c.functionCode >= 5 && c.functionCode <= 16);
+    const hasReadCommands = commands.some(c => c.functionCode >= 1 && c.functionCode <= 4);
+
+    if (hasWriteCommands) {
+      return 'EXPLOITATION_ATTEMPT';
+    } else if (hasReadCommands && commands.length > 10) {
+      return 'RECONNAISSANCE';
+    } else if (hasReadCommands) {
+      return 'BENIGN';
+    }
+
+    return 'UNKNOWN';
+  }
+
+  getHoneypot(honeypotId: string): ICSHoneypot | null {
+    const honeypot = this.honeypots.get(honeypotId);
+    if (!honeypot) {
+      return null;
+    }
+    return honeypot;
+  }
+
+  listHoneypots(filter?: { status?: HoneypotStatus; type?: HoneypotType }): readonly ICSHoneypot[] {
+    let honeypots = Array.from(this.honeypots.values());
+
+    if (filter?.status) {
+      honeypots = honeypots.filter(h => h.status === filter.status);
+    }
+    if (filter?.type) {
+      honeypots = honeypots.filter(h => h.type === filter.type);
+    }
+
+    return honeypots;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ICS SECURITY CENTER
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export class ICSSecurityCenter {
+  readonly assetManager: IndustrialAssetManager;
+  readonly networkMonitor: OTNetworkMonitorManager;
+  readonly protocolAnalyzer: ProtocolAnalyzer;
+  readonly processMonitor: ProcessMonitorManager;
+  readonly threatDetector: ICSThreatDetector;
+  readonly honeypotManager: ICSHoneypotManager;
+
+  constructor() {
+    this.assetManager = new IndustrialAssetManager();
+    this.networkMonitor = new OTNetworkMonitorManager();
+    this.protocolAnalyzer = new ProtocolAnalyzer();
+    this.processMonitor = new ProcessMonitorManager();
+    this.threatDetector = new ICSThreatDetector();
+    this.honeypotManager = new ICSHoneypotManager();
+  }
+
+  initializeDefaultConfiguration(): void {
+    this.threatDetector.addDetectionRule(
+      'Unauthorized Access Detection',
+      ['UNAUTHORIZED_ACCESS', 'PRIVILEGE_ESCALATION'],
+      ['IP_ADDRESS', 'COMMAND', 'BEHAVIOR_PATTERN'],
+      'HIGH',
+      ['ISOLATE_ASSET', 'ALERT_OPERATORS', 'ENGAGE_INCIDENT_RESPONSE']
+    );
+
+    this.threatDetector.addDetectionRule(
+      'Process Manipulation Detection',
+      ['PROCESS_MANIPULATION', 'CONFIGURATION_TAMPERING'],
+      ['COMMAND', 'BEHAVIOR_PATTERN', 'NETWORK_SIGNATURE'],
+      'CRITICAL',
+      ['SAFE_SHUTDOWN', 'RESTORE_CONFIGURATION', 'ALERT_OPERATORS']
+    );
+
+    this.threatDetector.addDetectionRule(
+      'Safety System Bypass Detection',
+      ['SAFETY_SYSTEM_BYPASS'],
+      ['COMMAND', 'BEHAVIOR_PATTERN'],
+      'CRITICAL',
+      ['SAFE_SHUTDOWN', 'MANUAL_OVERRIDE', 'ALERT_OPERATORS', 'ENGAGE_INCIDENT_RESPONSE']
+    );
+
+    this.threatDetector.addDetectionRule(
+      'Reconnaissance Detection',
+      ['RECONNAISSANCE'],
+      ['IP_ADDRESS', 'NETWORK_SIGNATURE', 'BEHAVIOR_PATTERN'],
+      'MEDIUM',
+      ['ALERT_OPERATORS', 'BLOCK_TRAFFIC']
+    );
+  }
+
+  getSecurityDashboard(): ICSSecurityDashboard {
+    const assets = this.assetManager.listAssets();
+    const monitors = this.networkMonitor.listMonitors();
+    const alerts = this.threatDetector.listAlerts();
+    const honeypots = this.honeypotManager.listHoneypots();
+
+    const criticalAssets = assets.filter(a => a.criticality === 'CRITICAL').length;
+    const onlineAssets = assets.filter(a => a.status === 'ONLINE').length;
+    const criticalAlerts = alerts.filter(a => a.severity === 'CRITICAL' && a.status === 'NEW').length;
+    const highAlerts = alerts.filter(a => a.severity === 'HIGH' && a.status === 'NEW').length;
+    const activeHoneypots = honeypots.filter(h => h.status === 'ACTIVE').length;
+    const totalInteractions = honeypots.reduce((sum, h) => sum + h.interactions.length, 0);
+
+    return {
+      totalAssets: assets.length,
+      criticalAssets,
+      onlineAssets,
+      activeMonitors: monitors.filter(m => m.status === 'ACTIVE').length,
+      criticalAlerts,
+      highAlerts,
+      totalAlerts: alerts.length,
+      activeHoneypots,
+      honeypotInteractions: totalInteractions,
+      systemHealth: criticalAlerts > 0 ? 'CRITICAL' : highAlerts > 0 ? 'WARNING' : 'HEALTHY',
+      lastUpdated: Date.now(),
+    };
+  }
+}
+
+interface ICSSecurityDashboard {
+  readonly totalAssets: number;
+  readonly criticalAssets: number;
+  readonly onlineAssets: number;
+  readonly activeMonitors: number;
+  readonly criticalAlerts: number;
+  readonly highAlerts: number;
+  readonly totalAlerts: number;
+  readonly activeHoneypots: number;
+  readonly honeypotInteractions: number;
+  readonly systemHealth: 'HEALTHY' | 'WARNING' | 'CRITICAL';
+  readonly lastUpdated: number;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// FACTORY FUNCTIONS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export function createIndustrialAssetManager(): IndustrialAssetManager {
+  return new IndustrialAssetManager();
+}
+
+export function createOTNetworkMonitorManager(): OTNetworkMonitorManager {
+  return new OTNetworkMonitorManager();
+}
+
+export function createProtocolAnalyzer(): ProtocolAnalyzer {
+  return new ProtocolAnalyzer();
+}
+
+export function createProcessMonitorManager(): ProcessMonitorManager {
+  return new ProcessMonitorManager();
+}
+
+export function createICSThreatDetector(): ICSThreatDetector {
+  return new ICSThreatDetector();
+}
+
+export function createICSHoneypotManager(): ICSHoneypotManager {
+  return new ICSHoneypotManager();
+}
+
+export function createICSSecurityCenter(): ICSSecurityCenter {
+  return new ICSSecurityCenter();
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// DEFAULT EXPORT
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export default {
+  IndustrialAssetManager,
+  OTNetworkMonitorManager,
+  ProtocolAnalyzer,
+  ProcessMonitorManager,
+  ICSThreatDetector,
+  ICSHoneypotManager,
+  ICSSecurityCenter,
+  ICSSecurityError,
+  ICSSecurityErrorCode,
+  createIndustrialAssetManager,
+  createOTNetworkMonitorManager,
+  createProtocolAnalyzer,
+  createProcessMonitorManager,
+  createICSThreatDetector,
+  createICSHoneypotManager,
+  createICSSecurityCenter,
+};

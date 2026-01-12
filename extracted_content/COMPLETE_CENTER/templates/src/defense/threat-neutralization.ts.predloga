@@ -1,0 +1,1114 @@
+/**
+ * @file Threat Neutralization - Self-Contained Threat Neutralization Platform
+ * @author {{AVTOR}}
+ * @version {{VERZIJA}}
+ * @date {{DATUM}}
+ * @project {{IME_PROJEKTA}}
+ * @domain VARNOSTNI_SISTEMI
+ * 
+ * @requirement REQ-SEC-TNP-001
+ * @design DSN-SEC-TNP-001
+ * @test TST-SEC-TNP-001
+ * 
+ * @description
+ * Enterprise-grade self-contained threat neutralization platform implementing
+ * comprehensive threat elimination, takedown operations, infrastructure disruption,
+ * malware neutralization, and coordinated response capabilities. All neutralization
+ * algorithms are natively implemented without external dependencies.
+ * 
+ * @classification TOP SECRET - Threat Neutralization Operations
+ * @authorization Required: Level 5 Security Clearance
+ * @dependencies NONE - Fully self-contained implementation
+ */
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// THREAT NEUTRALIZATION TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export type NeutralizationType =
+  | 'CONTAINMENT'
+  | 'ERADICATION'
+  | 'DISRUPTION'
+  | 'TAKEDOWN'
+  | 'SINKHOLING'
+  | 'BLOCKING'
+  | 'QUARANTINE'
+  | 'REMEDIATION';
+
+export type ThreatCategory =
+  | 'MALWARE'
+  | 'BOTNET'
+  | 'C2_INFRASTRUCTURE'
+  | 'PHISHING'
+  | 'RANSOMWARE'
+  | 'APT'
+  | 'INSIDER_THREAT'
+  | 'DATA_EXFILTRATION'
+  | 'DDOS'
+  | 'CRYPTOMINING';
+
+export type TakedownType =
+  | 'DOMAIN'
+  | 'IP_ADDRESS'
+  | 'URL'
+  | 'EMAIL'
+  | 'SOCIAL_MEDIA'
+  | 'HOSTING'
+  | 'CERTIFICATE'
+  | 'APPLICATION';
+
+export type ResponseLevel =
+  | 'IMMEDIATE'
+  | 'URGENT'
+  | 'HIGH'
+  | 'MEDIUM'
+  | 'LOW';
+
+export type ThreatSeverity =
+  | 'CRITICAL'
+  | 'HIGH'
+  | 'MEDIUM'
+  | 'LOW'
+  | 'INFORMATIONAL';
+
+export type NeutralizationStatus =
+  | 'PENDING'
+  | 'IN_PROGRESS'
+  | 'PARTIAL'
+  | 'COMPLETE'
+  | 'FAILED'
+  | 'VERIFIED';
+
+export type SecurityLevel =
+  | 'TOP_SECRET'
+  | 'SECRET'
+  | 'CONFIDENTIAL'
+  | 'UNCLASSIFIED';
+
+export type OperationalMode =
+  | 'DEFENSIVE'
+  | 'ACTIVE'
+  | 'COORDINATED'
+  | 'FULL_SPECTRUM';
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// THREAT NEUTRALIZATION CONFIGURATION
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface ThreatNeutralizationConfig {
+  readonly platformId: string;
+  readonly name: string;
+  readonly version: string;
+  readonly mode: OperationalMode;
+  readonly containment: ContainmentConfig;
+  readonly eradication: EradicationConfig;
+  readonly takedown: TakedownConfig;
+  readonly sinkholing: SinkholingConfig;
+  readonly blocking: BlockingConfig;
+  readonly quarantine: QuarantineConfig;
+  readonly remediation: RemediationConfig;
+  readonly coordination: CoordinationConfig;
+  readonly verification: VerificationConfig;
+  readonly automation: AutomationConfig;
+  readonly reporting: ReportingConfig;
+  readonly storage: StorageConfig;
+  readonly security: SecurityConfig;
+  readonly metadata: PlatformMetadata;
+}
+
+export interface ContainmentConfig {
+  readonly enabled: boolean;
+  readonly network: NetworkContainmentConfig;
+  readonly host: HostContainmentConfig;
+  readonly application: ApplicationContainmentConfig;
+  readonly data: DataContainmentConfig;
+}
+
+export interface NetworkContainmentConfig {
+  readonly enabled: boolean;
+  readonly isolation: NetworkIsolationConfig;
+  readonly segmentation: NetworkSegmentationConfig;
+  readonly filtering: NetworkFilteringConfig;
+}
+
+export interface NetworkIsolationConfig {
+  readonly enabled: boolean;
+  readonly vlanIsolation: boolean;
+  readonly aclIsolation: boolean;
+  readonly firewallIsolation: boolean;
+  readonly sdnIsolation: boolean;
+}
+
+export interface NetworkSegmentationConfig {
+  readonly enabled: boolean;
+  readonly microSegmentation: boolean;
+  readonly zoneIsolation: boolean;
+  readonly dynamicSegmentation: boolean;
+}
+
+export interface NetworkFilteringConfig {
+  readonly enabled: boolean;
+  readonly ipFiltering: boolean;
+  readonly portFiltering: boolean;
+  readonly protocolFiltering: boolean;
+  readonly contentFiltering: boolean;
+}
+
+export interface HostContainmentConfig {
+  readonly enabled: boolean;
+  readonly processIsolation: ProcessIsolationConfig;
+  readonly fileSystemIsolation: FileSystemIsolationConfig;
+  readonly networkIsolation: boolean;
+  readonly userIsolation: boolean;
+}
+
+export interface ProcessIsolationConfig {
+  readonly enabled: boolean;
+  readonly suspension: boolean;
+  readonly termination: boolean;
+  readonly sandboxing: boolean;
+  readonly resourceLimiting: boolean;
+}
+
+export interface FileSystemIsolationConfig {
+  readonly enabled: boolean;
+  readonly readOnlyMode: boolean;
+  readonly accessRestriction: boolean;
+  readonly quarantineMove: boolean;
+}
+
+export interface ApplicationContainmentConfig {
+  readonly enabled: boolean;
+  readonly serviceDisabling: boolean;
+  readonly connectionTermination: boolean;
+  readonly featureDisabling: boolean;
+  readonly rollback: boolean;
+}
+
+export interface DataContainmentConfig {
+  readonly enabled: boolean;
+  readonly accessRevocation: boolean;
+  readonly encryptionEnforcement: boolean;
+  readonly exfiltrationPrevention: boolean;
+  readonly backupIsolation: boolean;
+}
+
+export interface EradicationConfig {
+  readonly enabled: boolean;
+  readonly malware: MalwareEradicationConfig;
+  readonly persistence: PersistenceEradicationConfig;
+  readonly artifacts: ArtifactEradicationConfig;
+  readonly credentials: CredentialEradicationConfig;
+}
+
+export interface MalwareEradicationConfig {
+  readonly enabled: boolean;
+  readonly fileRemoval: boolean;
+  readonly processTermination: boolean;
+  readonly memoryClearing: boolean;
+  readonly registryCleanup: boolean;
+  readonly bootSectorRepair: boolean;
+}
+
+export interface PersistenceEradicationConfig {
+  readonly enabled: boolean;
+  readonly startupItems: boolean;
+  readonly scheduledTasks: boolean;
+  readonly services: boolean;
+  readonly drivers: boolean;
+  readonly bootloaderRepair: boolean;
+}
+
+export interface ArtifactEradicationConfig {
+  readonly enabled: boolean;
+  readonly temporaryFiles: boolean;
+  readonly logEntries: boolean;
+  readonly cacheFiles: boolean;
+  readonly configurationFiles: boolean;
+}
+
+export interface CredentialEradicationConfig {
+  readonly enabled: boolean;
+  readonly passwordReset: boolean;
+  readonly tokenRevocation: boolean;
+  readonly certificateRevocation: boolean;
+  readonly keyRotation: boolean;
+}
+
+export interface TakedownConfig {
+  readonly enabled: boolean;
+  readonly domain: DomainTakedownConfig;
+  readonly hosting: HostingTakedownConfig;
+  readonly social: SocialTakedownConfig;
+  readonly certificate: CertificateTakedownConfig;
+  readonly coordination: TakedownCoordinationConfig;
+}
+
+export interface DomainTakedownConfig {
+  readonly enabled: boolean;
+  readonly registrarNotification: boolean;
+  readonly legalProcess: boolean;
+  readonly sinkholing: boolean;
+  readonly seizure: boolean;
+}
+
+export interface HostingTakedownConfig {
+  readonly enabled: boolean;
+  readonly providerNotification: boolean;
+  readonly abuseReporting: boolean;
+  readonly legalProcess: boolean;
+  readonly contentRemoval: boolean;
+}
+
+export interface SocialTakedownConfig {
+  readonly enabled: boolean;
+  readonly platformReporting: boolean;
+  readonly accountSuspension: boolean;
+  readonly contentRemoval: boolean;
+  readonly impersonationReporting: boolean;
+}
+
+export interface CertificateTakedownConfig {
+  readonly enabled: boolean;
+  readonly revocationRequest: boolean;
+  readonly caNotification: boolean;
+  readonly ctLogMonitoring: boolean;
+}
+
+export interface TakedownCoordinationConfig {
+  readonly enabled: boolean;
+  readonly lawEnforcement: boolean;
+  readonly industryPartners: boolean;
+  readonly governmentAgencies: boolean;
+  readonly internationalCoordination: boolean;
+}
+
+export interface SinkholingConfig {
+  readonly enabled: boolean;
+  readonly dns: DNSSinkholingConfig;
+  readonly network: NetworkSinkholingConfig;
+  readonly analysis: SinkholingAnalysisConfig;
+}
+
+export interface DNSSinkholingConfig {
+  readonly enabled: boolean;
+  readonly domains: readonly string[];
+  readonly responseType: 'NXDOMAIN' | 'REDIRECT' | 'CUSTOM';
+  readonly customResponse: string | null;
+  readonly logging: boolean;
+}
+
+export interface NetworkSinkholingConfig {
+  readonly enabled: boolean;
+  readonly ipRanges: readonly string[];
+  readonly protocols: readonly string[];
+  readonly trafficCapture: boolean;
+  readonly analysis: boolean;
+}
+
+export interface SinkholingAnalysisConfig {
+  readonly enabled: boolean;
+  readonly victimIdentification: boolean;
+  readonly botnetMapping: boolean;
+  readonly c2Analysis: boolean;
+  readonly malwareCollection: boolean;
+}
+
+export interface BlockingConfig {
+  readonly enabled: boolean;
+  readonly network: NetworkBlockingConfig;
+  readonly application: ApplicationBlockingConfig;
+  readonly content: ContentBlockingConfig;
+  readonly reputation: ReputationBlockingConfig;
+}
+
+export interface NetworkBlockingConfig {
+  readonly enabled: boolean;
+  readonly ipBlocking: IPBlockingConfig;
+  readonly domainBlocking: DomainBlockingConfig;
+  readonly portBlocking: PortBlockingConfig;
+  readonly protocolBlocking: ProtocolBlockingConfig;
+}
+
+export interface IPBlockingConfig {
+  readonly enabled: boolean;
+  readonly individual: boolean;
+  readonly ranges: boolean;
+  readonly geolocation: boolean;
+  readonly asn: boolean;
+}
+
+export interface DomainBlockingConfig {
+  readonly enabled: boolean;
+  readonly exact: boolean;
+  readonly wildcard: boolean;
+  readonly regex: boolean;
+  readonly categories: readonly string[];
+}
+
+export interface PortBlockingConfig {
+  readonly enabled: boolean;
+  readonly tcp: boolean;
+  readonly udp: boolean;
+  readonly ranges: boolean;
+}
+
+export interface ProtocolBlockingConfig {
+  readonly enabled: boolean;
+  readonly protocols: readonly string[];
+  readonly deepInspection: boolean;
+}
+
+export interface ApplicationBlockingConfig {
+  readonly enabled: boolean;
+  readonly executables: boolean;
+  readonly scripts: boolean;
+  readonly macros: boolean;
+  readonly plugins: boolean;
+}
+
+export interface ContentBlockingConfig {
+  readonly enabled: boolean;
+  readonly fileTypes: readonly string[];
+  readonly mimeTypes: readonly string[];
+  readonly signatures: boolean;
+  readonly heuristics: boolean;
+}
+
+export interface ReputationBlockingConfig {
+  readonly enabled: boolean;
+  readonly ipReputation: boolean;
+  readonly domainReputation: boolean;
+  readonly fileReputation: boolean;
+  readonly urlReputation: boolean;
+}
+
+export interface QuarantineConfig {
+  readonly enabled: boolean;
+  readonly file: FileQuarantineConfig;
+  readonly email: EmailQuarantineConfig;
+  readonly network: NetworkQuarantineConfig;
+  readonly management: QuarantineManagementConfig;
+}
+
+export interface FileQuarantineConfig {
+  readonly enabled: boolean;
+  readonly location: string;
+  readonly encryption: boolean;
+  readonly retention: number;
+  readonly analysis: boolean;
+}
+
+export interface EmailQuarantineConfig {
+  readonly enabled: boolean;
+  readonly location: string;
+  readonly retention: number;
+  readonly userNotification: boolean;
+  readonly adminReview: boolean;
+}
+
+export interface NetworkQuarantineConfig {
+  readonly enabled: boolean;
+  readonly vlan: string;
+  readonly accessRestrictions: readonly string[];
+  readonly monitoring: boolean;
+}
+
+export interface QuarantineManagementConfig {
+  readonly enabled: boolean;
+  readonly autoRelease: boolean;
+  readonly releaseApproval: boolean;
+  readonly permanentDeletion: boolean;
+  readonly reporting: boolean;
+}
+
+export interface RemediationConfig {
+  readonly enabled: boolean;
+  readonly system: SystemRemediationConfig;
+  readonly application: ApplicationRemediationConfig;
+  readonly data: DataRemediationConfig;
+  readonly identity: IdentityRemediationConfig;
+}
+
+export interface SystemRemediationConfig {
+  readonly enabled: boolean;
+  readonly patching: boolean;
+  readonly configurationHardening: boolean;
+  readonly reimaging: boolean;
+  readonly restoration: boolean;
+}
+
+export interface ApplicationRemediationConfig {
+  readonly enabled: boolean;
+  readonly updating: boolean;
+  readonly reconfiguration: boolean;
+  readonly reinstallation: boolean;
+  readonly replacement: boolean;
+}
+
+export interface DataRemediationConfig {
+  readonly enabled: boolean;
+  readonly restoration: boolean;
+  readonly validation: boolean;
+  readonly reencryption: boolean;
+  readonly reclassification: boolean;
+}
+
+export interface IdentityRemediationConfig {
+  readonly enabled: boolean;
+  readonly passwordReset: boolean;
+  readonly mfaReset: boolean;
+  readonly accessReview: boolean;
+  readonly privilegeReduction: boolean;
+}
+
+export interface CoordinationConfig {
+  readonly enabled: boolean;
+  readonly internal: InternalCoordinationConfig;
+  readonly external: ExternalCoordinationConfig;
+  readonly communication: CoordinationCommunicationConfig;
+}
+
+export interface InternalCoordinationConfig {
+  readonly enabled: boolean;
+  readonly securityTeam: boolean;
+  readonly itOperations: boolean;
+  readonly management: boolean;
+  readonly legal: boolean;
+}
+
+export interface ExternalCoordinationConfig {
+  readonly enabled: boolean;
+  readonly lawEnforcement: boolean;
+  readonly industryGroups: boolean;
+  readonly governmentAgencies: boolean;
+  readonly vendors: boolean;
+}
+
+export interface CoordinationCommunicationConfig {
+  readonly enabled: boolean;
+  readonly secureChannels: boolean;
+  readonly statusUpdates: boolean;
+  readonly escalation: boolean;
+  readonly documentation: boolean;
+}
+
+export interface VerificationConfig {
+  readonly enabled: boolean;
+  readonly containment: ContainmentVerificationConfig;
+  readonly eradication: EradicationVerificationConfig;
+  readonly recovery: RecoveryVerificationConfig;
+}
+
+export interface ContainmentVerificationConfig {
+  readonly enabled: boolean;
+  readonly networkConnectivity: boolean;
+  readonly processActivity: boolean;
+  readonly dataAccess: boolean;
+  readonly lateralMovement: boolean;
+}
+
+export interface EradicationVerificationConfig {
+  readonly enabled: boolean;
+  readonly malwareScanning: boolean;
+  readonly persistenceChecking: boolean;
+  readonly artifactSearching: boolean;
+  readonly integrityVerification: boolean;
+}
+
+export interface RecoveryVerificationConfig {
+  readonly enabled: boolean;
+  readonly systemFunctionality: boolean;
+  readonly dataIntegrity: boolean;
+  readonly securityPosture: boolean;
+  readonly monitoringCapability: boolean;
+}
+
+export interface AutomationConfig {
+  readonly enabled: boolean;
+  readonly playbooks: PlaybookConfig;
+  readonly orchestration: OrchestrationConfig;
+  readonly triggers: TriggerConfig;
+}
+
+export interface PlaybookConfig {
+  readonly enabled: boolean;
+  readonly predefined: readonly string[];
+  readonly custom: readonly string[];
+  readonly adaptive: boolean;
+}
+
+export interface OrchestrationConfig {
+  readonly enabled: boolean;
+  readonly multiTool: boolean;
+  readonly crossPlatform: boolean;
+  readonly parallelExecution: boolean;
+}
+
+export interface TriggerConfig {
+  readonly enabled: boolean;
+  readonly automatic: readonly TriggerRule[];
+  readonly semiAutomatic: readonly TriggerRule[];
+  readonly manual: readonly TriggerRule[];
+}
+
+export interface TriggerRule {
+  readonly ruleId: string;
+  readonly condition: string;
+  readonly action: string;
+  readonly severity: ThreatSeverity;
+}
+
+export interface ReportingConfig {
+  readonly enabled: boolean;
+  readonly formats: readonly ReportFormat[];
+  readonly sections: readonly ReportSection[];
+  readonly automation: ReportAutomationConfig;
+}
+
+export type ReportFormat =
+  | 'PDF'
+  | 'HTML'
+  | 'JSON'
+  | 'XML'
+  | 'STIX';
+
+export type ReportSection =
+  | 'EXECUTIVE_SUMMARY'
+  | 'THREAT_DETAILS'
+  | 'NEUTRALIZATION_ACTIONS'
+  | 'VERIFICATION_RESULTS'
+  | 'LESSONS_LEARNED'
+  | 'RECOMMENDATIONS';
+
+export interface ReportAutomationConfig {
+  readonly enabled: boolean;
+  readonly scheduling: boolean;
+  readonly triggers: readonly string[];
+}
+
+export interface StorageConfig {
+  readonly type: 'DATABASE' | 'FILE_SYSTEM' | 'HYBRID';
+  readonly encryption: StorageEncryptionConfig;
+  readonly retention: RetentionConfig;
+  readonly backup: BackupConfig;
+}
+
+export interface StorageEncryptionConfig {
+  readonly enabled: boolean;
+  readonly algorithm: 'AES_256_GCM' | 'CHACHA20_POLY1305';
+  readonly keyManagement: 'LOCAL' | 'HSM' | 'KMS';
+}
+
+export interface RetentionConfig {
+  readonly enabled: boolean;
+  readonly operations: number;
+  readonly evidence: number;
+  readonly logs: number;
+}
+
+export interface BackupConfig {
+  readonly enabled: boolean;
+  readonly frequency: number;
+  readonly encryption: boolean;
+  readonly offsite: boolean;
+}
+
+export interface SecurityConfig {
+  readonly authentication: AuthenticationConfig;
+  readonly authorization: AuthorizationConfig;
+  readonly audit: AuditConfig;
+  readonly classification: ClassificationConfig;
+}
+
+export interface AuthenticationConfig {
+  readonly enabled: boolean;
+  readonly methods: readonly ('PKI' | 'CAC' | 'BIOMETRIC' | 'MFA')[];
+  readonly sessionTimeout: number;
+}
+
+export interface AuthorizationConfig {
+  readonly enabled: boolean;
+  readonly model: 'RBAC' | 'ABAC' | 'MAC';
+  readonly clearanceRequired: boolean;
+}
+
+export interface AuditConfig {
+  readonly enabled: boolean;
+  readonly logAllAccess: boolean;
+  readonly logAllOperations: boolean;
+  readonly retention: number;
+}
+
+export interface ClassificationConfig {
+  readonly enabled: boolean;
+  readonly defaultLevel: SecurityLevel;
+  readonly autoClassification: boolean;
+}
+
+export interface PlatformMetadata {
+  readonly createdAt: number;
+  readonly updatedAt: number;
+  readonly createdBy: string;
+  readonly version: string;
+  readonly tags: readonly string[];
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// THREAT TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface Threat {
+  readonly threatId: string;
+  readonly category: ThreatCategory;
+  readonly name: string;
+  readonly description: string;
+  readonly severity: ThreatSeverity;
+  readonly status: ThreatStatus;
+  readonly indicators: readonly ThreatIndicator[];
+  readonly affectedAssets: readonly AffectedAsset[];
+  readonly timeline: readonly ThreatEvent[];
+  readonly attribution: ThreatAttribution | null;
+  readonly metadata: ThreatMetadata;
+}
+
+export type ThreatStatus =
+  | 'DETECTED'
+  | 'CONFIRMED'
+  | 'CONTAINED'
+  | 'ERADICATED'
+  | 'RECOVERED'
+  | 'CLOSED';
+
+export interface ThreatIndicator {
+  readonly indicatorId: string;
+  readonly type: IndicatorType;
+  readonly value: string;
+  readonly confidence: 'HIGH' | 'MEDIUM' | 'LOW';
+  readonly source: string;
+  readonly firstSeen: number;
+  readonly lastSeen: number;
+}
+
+export type IndicatorType =
+  | 'IP'
+  | 'DOMAIN'
+  | 'URL'
+  | 'HASH'
+  | 'EMAIL'
+  | 'FILE_NAME'
+  | 'REGISTRY'
+  | 'MUTEX'
+  | 'USER_AGENT'
+  | 'CERTIFICATE';
+
+export interface AffectedAsset {
+  readonly assetId: string;
+  readonly type: AssetType;
+  readonly name: string;
+  readonly criticality: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
+  readonly impact: ImpactAssessment;
+  readonly status: AssetStatus;
+}
+
+export type AssetType =
+  | 'SERVER'
+  | 'WORKSTATION'
+  | 'NETWORK_DEVICE'
+  | 'APPLICATION'
+  | 'DATABASE'
+  | 'USER_ACCOUNT'
+  | 'DATA';
+
+export interface ImpactAssessment {
+  readonly confidentiality: 'HIGH' | 'MEDIUM' | 'LOW' | 'NONE';
+  readonly integrity: 'HIGH' | 'MEDIUM' | 'LOW' | 'NONE';
+  readonly availability: 'HIGH' | 'MEDIUM' | 'LOW' | 'NONE';
+}
+
+export type AssetStatus =
+  | 'COMPROMISED'
+  | 'CONTAINED'
+  | 'CLEANED'
+  | 'RESTORED'
+  | 'VERIFIED';
+
+export interface ThreatEvent {
+  readonly eventId: string;
+  readonly timestamp: number;
+  readonly type: ThreatEventType;
+  readonly description: string;
+  readonly actor: string;
+  readonly details: Readonly<Record<string, unknown>>;
+}
+
+export type ThreatEventType =
+  | 'DETECTION'
+  | 'ANALYSIS'
+  | 'CONTAINMENT'
+  | 'ERADICATION'
+  | 'RECOVERY'
+  | 'VERIFICATION'
+  | 'CLOSURE';
+
+export interface ThreatAttribution {
+  readonly confidence: 'HIGH' | 'MEDIUM' | 'LOW';
+  readonly actor: string | null;
+  readonly campaign: string | null;
+  readonly motivation: string | null;
+  readonly techniques: readonly string[];
+}
+
+export interface ThreatMetadata {
+  readonly detectedAt: number;
+  readonly detectedBy: string;
+  readonly classification: SecurityLevel;
+  readonly caseId: string | null;
+  readonly tags: readonly string[];
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// NEUTRALIZATION OPERATION TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface NeutralizationOperation {
+  readonly operationId: string;
+  readonly threatId: string;
+  readonly type: NeutralizationType;
+  readonly status: NeutralizationStatus;
+  readonly priority: ResponseLevel;
+  readonly actions: readonly NeutralizationAction[];
+  readonly verification: VerificationResult | null;
+  readonly coordination: CoordinationInfo;
+  readonly timeline: readonly OperationEvent[];
+  readonly metrics: OperationMetrics;
+  readonly metadata: OperationMetadata;
+}
+
+export interface NeutralizationAction {
+  readonly actionId: string;
+  readonly type: ActionType;
+  readonly target: ActionTarget;
+  readonly status: ActionStatus;
+  readonly startTime: number;
+  readonly endTime: number | null;
+  readonly result: ActionResult | null;
+  readonly executor: string;
+}
+
+export type ActionType =
+  | 'ISOLATE'
+  | 'BLOCK'
+  | 'TERMINATE'
+  | 'REMOVE'
+  | 'QUARANTINE'
+  | 'PATCH'
+  | 'RESTORE'
+  | 'RESET'
+  | 'REVOKE'
+  | 'TAKEDOWN';
+
+export interface ActionTarget {
+  readonly targetId: string;
+  readonly type: TargetType;
+  readonly identifier: string;
+  readonly location: string | null;
+}
+
+export type TargetType =
+  | 'HOST'
+  | 'PROCESS'
+  | 'FILE'
+  | 'NETWORK'
+  | 'USER'
+  | 'APPLICATION'
+  | 'DOMAIN'
+  | 'IP';
+
+export type ActionStatus =
+  | 'PENDING'
+  | 'IN_PROGRESS'
+  | 'COMPLETED'
+  | 'FAILED'
+  | 'ROLLED_BACK';
+
+export interface ActionResult {
+  readonly success: boolean;
+  readonly message: string;
+  readonly details: Readonly<Record<string, unknown>>;
+  readonly evidence: readonly EvidenceItem[];
+}
+
+export interface EvidenceItem {
+  readonly evidenceId: string;
+  readonly type: EvidenceType;
+  readonly path: string;
+  readonly hash: string;
+  readonly timestamp: number;
+}
+
+export type EvidenceType =
+  | 'LOG'
+  | 'SCREENSHOT'
+  | 'MEMORY_DUMP'
+  | 'NETWORK_CAPTURE'
+  | 'FILE'
+  | 'CONFIGURATION';
+
+export interface VerificationResult {
+  readonly verificationId: string;
+  readonly timestamp: number;
+  readonly checks: readonly VerificationCheck[];
+  readonly overallStatus: 'PASSED' | 'FAILED' | 'PARTIAL';
+  readonly findings: readonly string[];
+}
+
+export interface VerificationCheck {
+  readonly checkId: string;
+  readonly type: VerificationCheckType;
+  readonly target: string;
+  readonly status: 'PASSED' | 'FAILED' | 'SKIPPED';
+  readonly details: string;
+}
+
+export type VerificationCheckType =
+  | 'MALWARE_SCAN'
+  | 'PERSISTENCE_CHECK'
+  | 'NETWORK_CHECK'
+  | 'INTEGRITY_CHECK'
+  | 'ACCESS_CHECK'
+  | 'FUNCTIONALITY_CHECK';
+
+export interface CoordinationInfo {
+  readonly internal: readonly CoordinationEntry[];
+  readonly external: readonly CoordinationEntry[];
+  readonly communications: readonly CommunicationEntry[];
+}
+
+export interface CoordinationEntry {
+  readonly entryId: string;
+  readonly timestamp: number;
+  readonly party: string;
+  readonly type: 'NOTIFICATION' | 'REQUEST' | 'UPDATE' | 'APPROVAL';
+  readonly status: 'PENDING' | 'ACKNOWLEDGED' | 'COMPLETED';
+  readonly details: string;
+}
+
+export interface CommunicationEntry {
+  readonly entryId: string;
+  readonly timestamp: number;
+  readonly channel: string;
+  readonly participants: readonly string[];
+  readonly summary: string;
+}
+
+export interface OperationEvent {
+  readonly eventId: string;
+  readonly timestamp: number;
+  readonly type: OperationEventType;
+  readonly description: string;
+  readonly actor: string;
+  readonly details: Readonly<Record<string, unknown>>;
+}
+
+export type OperationEventType =
+  | 'INITIATED'
+  | 'ACTION_STARTED'
+  | 'ACTION_COMPLETED'
+  | 'VERIFICATION_STARTED'
+  | 'VERIFICATION_COMPLETED'
+  | 'ESCALATED'
+  | 'COMPLETED'
+  | 'FAILED';
+
+export interface OperationMetrics {
+  readonly actionsExecuted: number;
+  readonly actionsSuccessful: number;
+  readonly actionsFailed: number;
+  readonly timeToContain: number | null;
+  readonly timeToEradicate: number | null;
+  readonly timeToRecover: number | null;
+}
+
+export interface OperationMetadata {
+  readonly createdAt: number;
+  readonly updatedAt: number;
+  readonly createdBy: string;
+  readonly classification: SecurityLevel;
+  readonly authorization: string;
+  readonly tags: readonly string[];
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TAKEDOWN TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface TakedownRequest {
+  readonly requestId: string;
+  readonly type: TakedownType;
+  readonly target: TakedownTarget;
+  readonly justification: string;
+  readonly evidence: readonly EvidenceItem[];
+  readonly status: TakedownStatus;
+  readonly submissions: readonly TakedownSubmission[];
+  readonly timeline: readonly TakedownEvent[];
+  readonly metadata: TakedownMetadata;
+}
+
+export interface TakedownTarget {
+  readonly targetId: string;
+  readonly type: TakedownType;
+  readonly identifier: string;
+  readonly registrar: string | null;
+  readonly hosting: string | null;
+  readonly country: string | null;
+}
+
+export type TakedownStatus =
+  | 'DRAFT'
+  | 'SUBMITTED'
+  | 'ACKNOWLEDGED'
+  | 'IN_PROGRESS'
+  | 'COMPLETED'
+  | 'REJECTED'
+  | 'APPEALED';
+
+export interface TakedownSubmission {
+  readonly submissionId: string;
+  readonly recipient: string;
+  readonly channel: string;
+  readonly timestamp: number;
+  readonly status: 'SENT' | 'RECEIVED' | 'ACKNOWLEDGED' | 'ACTIONED';
+  readonly reference: string | null;
+}
+
+export interface TakedownEvent {
+  readonly eventId: string;
+  readonly timestamp: number;
+  readonly type: TakedownEventType;
+  readonly description: string;
+  readonly actor: string;
+}
+
+export type TakedownEventType =
+  | 'CREATED'
+  | 'SUBMITTED'
+  | 'ACKNOWLEDGED'
+  | 'ACTIONED'
+  | 'COMPLETED'
+  | 'REJECTED'
+  | 'APPEALED'
+  | 'ESCALATED';
+
+export interface TakedownMetadata {
+  readonly createdAt: number;
+  readonly updatedAt: number;
+  readonly createdBy: string;
+  readonly classification: SecurityLevel;
+  readonly legalReview: boolean;
+  readonly tags: readonly string[];
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SESSION TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface ThreatNeutralizationSession {
+  readonly sessionId: string;
+  readonly platformId: string;
+  readonly state: SessionState;
+  readonly config: SessionConfig;
+  readonly progress: SessionProgress;
+  readonly threats: readonly Threat[];
+  readonly operations: readonly NeutralizationOperation[];
+  readonly takedowns: readonly TakedownRequest[];
+  readonly alerts: readonly SessionAlert[];
+  readonly errors: readonly SessionError[];
+  readonly startTime: number;
+  readonly endTime: number | null;
+  readonly metadata: SessionMetadata;
+}
+
+export type SessionState =
+  | 'PENDING'
+  | 'INITIALIZING'
+  | 'CONTAINING'
+  | 'ERADICATING'
+  | 'RECOVERING'
+  | 'VERIFYING'
+  | 'COMPLETED'
+  | 'FAILED';
+
+export interface SessionConfig {
+  readonly mode: OperationalMode;
+  readonly threats: readonly string[];
+  readonly options: Readonly<Record<string, unknown>>;
+}
+
+export interface SessionProgress {
+  readonly phase: SessionPhase;
+  readonly percentage: number;
+  readonly currentTask: string | null;
+  readonly estimatedTimeRemaining: number | null;
+}
+
+export type SessionPhase =
+  | 'INITIALIZING'
+  | 'THREAT_ANALYSIS'
+  | 'CONTAINMENT'
+  | 'ERADICATION'
+  | 'RECOVERY'
+  | 'VERIFICATION'
+  | 'REPORTING'
+  | 'FINALIZING';
+
+export interface SessionAlert {
+  readonly alertId: string;
+  readonly timestamp: number;
+  readonly type: AlertType;
+  readonly severity: ThreatSeverity;
+  readonly source: string;
+  readonly description: string;
+  readonly status: AlertStatus;
+}
+
+export type AlertType =
+  | 'CONTAINMENT_BREACH'
+  | 'ERADICATION_FAILURE'
+  | 'REINFECTION'
+  | 'LATERAL_MOVEMENT'
+  | 'DATA_EXFILTRATION'
+  | 'ESCALATION_REQUIRED';
+
+export type AlertStatus =
+  | 'NEW'
+  | 'ACKNOWLEDGED'
+  | 'INVESTIGATING'
+  | 'RESOLVED'
+  | 'ESCALATED';
+
+export interface SessionError {
+  readonly errorId: string;
+  readonly timestamp: number;
+  readonly type: SessionErrorType;
+  readonly message: string;
+  readonly details: string | null;
+  readonly recoverable: boolean;
+}
+
+export type SessionErrorType =
+  | 'CONTAINMENT_ERROR'
+  | 'ERADICATION_ERROR'
+  | 'RECOVERY_ERROR'
+  | 'VERIFICATION_ERROR'
+  | 'COORDINATION_ERROR'
+  | 'TIMEOUT'
+  | 'INTERNAL_ERROR';
+
+export interface SessionMetadata {
+  readonly platformVersion: string;
+  readonly startedBy: string;
+  readonly classification: SecurityLevel;
+  readonly authorization: string;
+  readonly tags: readonly string[];
+}

@@ -1,0 +1,1508 @@
+/**
+ * @file FININT Operations - Self-Contained Financial Intelligence Platform
+ * @author {{AVTOR}}
+ * @version {{VERZIJA}}
+ * @date {{DATUM}}
+ * @project {{IME_PROJEKTA}}
+ * @domain VARNOSTNI_SISTEMI
+ * 
+ * @requirement REQ-SEC-FIN-001
+ * @design DSN-SEC-FIN-001
+ * @test TST-SEC-FIN-001
+ * 
+ * @description
+ * Enterprise-grade self-contained financial intelligence platform implementing
+ * money laundering detection, fraud detection, transaction monitoring, sanctions
+ * screening, beneficial ownership tracking, and shell company detection. All
+ * algorithms are natively implemented without external dependencies.
+ * 
+ * @classification TOP SECRET - Financial Intelligence Operations
+ * @authorization Required: Level 5 Security Clearance
+ * @dependencies NONE - Fully self-contained implementation
+ */
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// FININT OPERATIONS TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export type FinancialCrimeType =
+  | 'MONEY_LAUNDERING'
+  | 'TERRORIST_FINANCING'
+  | 'FRAUD'
+  | 'TAX_EVASION'
+  | 'SANCTIONS_VIOLATION'
+  | 'BRIBERY'
+  | 'CORRUPTION'
+  | 'EMBEZZLEMENT'
+  | 'INSIDER_TRADING'
+  | 'MARKET_MANIPULATION'
+  | 'TRADE_BASED_LAUNDERING'
+  | 'PROLIFERATION_FINANCING';
+
+export type TransactionType =
+  | 'WIRE_TRANSFER'
+  | 'ACH'
+  | 'CHECK'
+  | 'CASH'
+  | 'CARD_PAYMENT'
+  | 'CRYPTOCURRENCY'
+  | 'TRADE_FINANCE'
+  | 'SECURITIES'
+  | 'REAL_ESTATE'
+  | 'INSURANCE'
+  | 'LOAN'
+  | 'CORRESPONDENT_BANKING';
+
+export type EntityType =
+  | 'INDIVIDUAL'
+  | 'CORPORATION'
+  | 'PARTNERSHIP'
+  | 'TRUST'
+  | 'FOUNDATION'
+  | 'GOVERNMENT'
+  | 'FINANCIAL_INSTITUTION'
+  | 'SHELL_COMPANY'
+  | 'NOMINEE';
+
+export type RiskLevel =
+  | 'CRITICAL'
+  | 'HIGH'
+  | 'MEDIUM'
+  | 'LOW'
+  | 'MINIMAL';
+
+export type AlertSeverity =
+  | 'CRITICAL'
+  | 'HIGH'
+  | 'MEDIUM'
+  | 'LOW'
+  | 'INFORMATIONAL';
+
+export type LaunderingStage =
+  | 'PLACEMENT'
+  | 'LAYERING'
+  | 'INTEGRATION';
+
+export type LaunderingMethod =
+  | 'STRUCTURING'
+  | 'SMURFING'
+  | 'SHELL_COMPANIES'
+  | 'TRADE_BASED'
+  | 'REAL_ESTATE'
+  | 'CASH_INTENSIVE'
+  | 'CRYPTOCURRENCY'
+  | 'CORRESPONDENT_BANKING'
+  | 'NOMINEE_ACCOUNTS'
+  | 'LOAN_BACK'
+  | 'INSURANCE'
+  | 'GAMBLING';
+
+export type FraudType =
+  | 'IDENTITY_THEFT'
+  | 'ACCOUNT_TAKEOVER'
+  | 'APPLICATION_FRAUD'
+  | 'PAYMENT_FRAUD'
+  | 'INVOICE_FRAUD'
+  | 'INSURANCE_FRAUD'
+  | 'MORTGAGE_FRAUD'
+  | 'SECURITIES_FRAUD'
+  | 'PONZI_SCHEME'
+  | 'ADVANCE_FEE'
+  | 'BUSINESS_EMAIL_COMPROMISE';
+
+export type SanctionsType =
+  | 'SDN'
+  | 'SECTORAL'
+  | 'COUNTRY'
+  | 'SECONDARY'
+  | 'EMBARGO';
+
+export type ScreeningType =
+  | 'SANCTIONS'
+  | 'PEP'
+  | 'ADVERSE_MEDIA'
+  | 'WATCHLIST'
+  | 'LAW_ENFORCEMENT';
+
+export type MonitoringMode =
+  | 'REAL_TIME'
+  | 'NEAR_REAL_TIME'
+  | 'BATCH'
+  | 'CONTINUOUS';
+
+export type AnalysisMode =
+  | 'DETECTION'
+  | 'INVESTIGATION'
+  | 'PREDICTION'
+  | 'FORENSIC';
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// FININT OPERATIONS CONFIGURATION
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface FININTOperationsConfig {
+  readonly platformId: string;
+  readonly name: string;
+  readonly version: string;
+  readonly mode: MonitoringMode;
+  readonly transactionMonitoring: TransactionMonitoringConfig;
+  readonly amlDetection: AMLDetectionConfig;
+  readonly fraudDetection: FraudDetectionConfig;
+  readonly sanctionsScreening: SanctionsScreeningConfig;
+  readonly kycAnalysis: KYCAnalysisConfig;
+  readonly beneficialOwnership: BeneficialOwnershipConfig;
+  readonly networkAnalysis: NetworkAnalysisConfig;
+  readonly riskScoring: RiskScoringConfig;
+  readonly caseManagement: CaseManagementConfig;
+  readonly reporting: ReportingConfig;
+  readonly alerting: AlertingConfig;
+  readonly storage: StorageConfig;
+  readonly security: SecurityConfig;
+  readonly compliance: ComplianceConfig;
+  readonly metadata: PlatformMetadata;
+}
+
+export interface TransactionMonitoringConfig {
+  readonly enabled: boolean;
+  readonly channels: TransactionChannelsConfig;
+  readonly rules: TransactionRulesConfig;
+  readonly thresholds: TransactionThresholdsConfig;
+  readonly patterns: TransactionPatternsConfig;
+  readonly velocity: VelocityConfig;
+}
+
+export interface TransactionChannelsConfig {
+  readonly wireTransfers: boolean;
+  readonly ach: boolean;
+  readonly checks: boolean;
+  readonly cash: boolean;
+  readonly cards: boolean;
+  readonly cryptocurrency: boolean;
+  readonly tradeFinance: boolean;
+  readonly securities: boolean;
+}
+
+export interface TransactionRulesConfig {
+  readonly enabled: boolean;
+  readonly rules: readonly TransactionRule[];
+  readonly customRules: boolean;
+  readonly ruleEngine: 'NATIVE' | 'DROOLS' | 'CUSTOM';
+}
+
+export interface TransactionRule {
+  readonly ruleId: string;
+  readonly name: string;
+  readonly description: string;
+  readonly category: FinancialCrimeType;
+  readonly condition: string;
+  readonly severity: AlertSeverity;
+  readonly enabled: boolean;
+}
+
+export interface TransactionThresholdsConfig {
+  readonly ctr: number;
+  readonly sar: number;
+  readonly largeTransaction: number;
+  readonly structuringThreshold: number;
+  readonly customThresholds: Readonly<Record<string, number>>;
+}
+
+export interface TransactionPatternsConfig {
+  readonly enabled: boolean;
+  readonly structuring: boolean;
+  readonly roundTripping: boolean;
+  readonly rapidMovement: boolean;
+  readonly unusualVolume: boolean;
+  readonly unusualCounterparties: boolean;
+  readonly geographicPatterns: boolean;
+}
+
+export interface VelocityConfig {
+  readonly enabled: boolean;
+  readonly windows: readonly VelocityWindow[];
+  readonly metrics: readonly VelocityMetric[];
+}
+
+export interface VelocityWindow {
+  readonly windowId: string;
+  readonly name: string;
+  readonly duration: number;
+  readonly unit: 'MINUTES' | 'HOURS' | 'DAYS';
+}
+
+export interface VelocityMetric {
+  readonly metricId: string;
+  readonly name: string;
+  readonly aggregation: 'COUNT' | 'SUM' | 'AVERAGE' | 'MAX';
+  readonly field: string;
+  readonly threshold: number;
+}
+
+export interface AMLDetectionConfig {
+  readonly enabled: boolean;
+  readonly stages: LaunderingStagesConfig;
+  readonly methods: LaunderingMethodsConfig;
+  readonly typologies: TypologiesConfig;
+  readonly scenarios: ScenariosConfig;
+}
+
+export interface LaunderingStagesConfig {
+  readonly placement: PlacementDetectionConfig;
+  readonly layering: LayeringDetectionConfig;
+  readonly integration: IntegrationDetectionConfig;
+}
+
+export interface PlacementDetectionConfig {
+  readonly enabled: boolean;
+  readonly cashDeposits: boolean;
+  readonly structuring: boolean;
+  readonly smurfing: boolean;
+  readonly currencyExchange: boolean;
+  readonly gambling: boolean;
+}
+
+export interface LayeringDetectionConfig {
+  readonly enabled: boolean;
+  readonly shellCompanies: boolean;
+  readonly multipleTransfers: boolean;
+  readonly crossBorder: boolean;
+  readonly complexStructures: boolean;
+  readonly tradeBasedLaundering: boolean;
+}
+
+export interface IntegrationDetectionConfig {
+  readonly enabled: boolean;
+  readonly realEstate: boolean;
+  readonly luxuryGoods: boolean;
+  readonly businessInvestment: boolean;
+  readonly loanRepayment: boolean;
+}
+
+export interface LaunderingMethodsConfig {
+  readonly structuring: StructuringDetectionConfig;
+  readonly shellCompanies: ShellCompanyDetectionConfig;
+  readonly tradeBased: TradeBasedDetectionConfig;
+  readonly cryptocurrency: CryptoLaunderingDetectionConfig;
+}
+
+export interface StructuringDetectionConfig {
+  readonly enabled: boolean;
+  readonly threshold: number;
+  readonly window: number;
+  readonly minTransactions: number;
+  readonly patterns: readonly string[];
+}
+
+export interface ShellCompanyDetectionConfig {
+  readonly enabled: boolean;
+  readonly indicators: readonly ShellCompanyIndicator[];
+  readonly scoring: boolean;
+}
+
+export interface ShellCompanyIndicator {
+  readonly indicatorId: string;
+  readonly name: string;
+  readonly weight: number;
+  readonly threshold: number;
+}
+
+export interface TradeBasedDetectionConfig {
+  readonly enabled: boolean;
+  readonly overInvoicing: boolean;
+  readonly underInvoicing: boolean;
+  readonly multipleInvoicing: boolean;
+  readonly phantomShipments: boolean;
+  readonly priceAnomalies: boolean;
+}
+
+export interface CryptoLaunderingDetectionConfig {
+  readonly enabled: boolean;
+  readonly mixerDetection: boolean;
+  readonly peelingChains: boolean;
+  readonly chainHopping: boolean;
+  readonly privacyCoins: boolean;
+}
+
+export interface TypologiesConfig {
+  readonly enabled: boolean;
+  readonly typologies: readonly Typology[];
+  readonly autoUpdate: boolean;
+}
+
+export interface Typology {
+  readonly typologyId: string;
+  readonly name: string;
+  readonly description: string;
+  readonly crimeType: FinancialCrimeType;
+  readonly indicators: readonly string[];
+  readonly redFlags: readonly string[];
+}
+
+export interface ScenariosConfig {
+  readonly enabled: boolean;
+  readonly scenarios: readonly DetectionScenario[];
+  readonly customScenarios: boolean;
+}
+
+export interface DetectionScenario {
+  readonly scenarioId: string;
+  readonly name: string;
+  readonly description: string;
+  readonly crimeType: FinancialCrimeType;
+  readonly rules: readonly string[];
+  readonly threshold: number;
+  readonly enabled: boolean;
+}
+
+export interface FraudDetectionConfig {
+  readonly enabled: boolean;
+  readonly types: FraudTypesConfig;
+  readonly models: FraudModelsConfig;
+  readonly rules: FraudRulesConfig;
+  readonly deviceIntelligence: DeviceIntelligenceConfig;
+}
+
+export interface FraudTypesConfig {
+  readonly identityTheft: boolean;
+  readonly accountTakeover: boolean;
+  readonly applicationFraud: boolean;
+  readonly paymentFraud: boolean;
+  readonly invoiceFraud: boolean;
+  readonly insuranceFraud: boolean;
+}
+
+export interface FraudModelsConfig {
+  readonly enabled: boolean;
+  readonly anomalyDetection: boolean;
+  readonly behavioralAnalysis: boolean;
+  readonly networkAnalysis: boolean;
+  readonly sequenceAnalysis: boolean;
+}
+
+export interface FraudRulesConfig {
+  readonly enabled: boolean;
+  readonly rules: readonly FraudRule[];
+  readonly customRules: boolean;
+}
+
+export interface FraudRule {
+  readonly ruleId: string;
+  readonly name: string;
+  readonly fraudType: FraudType;
+  readonly condition: string;
+  readonly severity: AlertSeverity;
+  readonly enabled: boolean;
+}
+
+export interface DeviceIntelligenceConfig {
+  readonly enabled: boolean;
+  readonly deviceFingerprinting: boolean;
+  readonly ipIntelligence: boolean;
+  readonly geolocation: boolean;
+  readonly velocityChecks: boolean;
+}
+
+export interface SanctionsScreeningConfig {
+  readonly enabled: boolean;
+  readonly lists: SanctionsListsConfig;
+  readonly matching: MatchingConfig;
+  readonly realTimeScreening: boolean;
+  readonly batchScreening: boolean;
+  readonly rescreening: RescreeningConfig;
+}
+
+export interface SanctionsListsConfig {
+  readonly ofac: boolean;
+  readonly un: boolean;
+  readonly eu: boolean;
+  readonly uk: boolean;
+  readonly fatf: boolean;
+  readonly customLists: readonly string[];
+}
+
+export interface MatchingConfig {
+  readonly algorithm: 'EXACT' | 'FUZZY' | 'PHONETIC' | 'HYBRID';
+  readonly threshold: number;
+  readonly nameVariations: boolean;
+  readonly aliasMatching: boolean;
+  readonly transliteration: boolean;
+}
+
+export interface RescreeningConfig {
+  readonly enabled: boolean;
+  readonly frequency: number;
+  readonly onListUpdate: boolean;
+  readonly onProfileChange: boolean;
+}
+
+export interface KYCAnalysisConfig {
+  readonly enabled: boolean;
+  readonly customerDueDiligence: CDDConfig;
+  readonly enhancedDueDiligence: EDDConfig;
+  readonly ongoingMonitoring: OngoingMonitoringConfig;
+  readonly riskAssessment: CustomerRiskAssessmentConfig;
+}
+
+export interface CDDConfig {
+  readonly enabled: boolean;
+  readonly identityVerification: boolean;
+  readonly addressVerification: boolean;
+  readonly documentVerification: boolean;
+  readonly pepScreening: boolean;
+  readonly adverseMediaScreening: boolean;
+}
+
+export interface EDDConfig {
+  readonly enabled: boolean;
+  readonly triggers: readonly EDDTrigger[];
+  readonly additionalChecks: readonly string[];
+  readonly seniorApproval: boolean;
+}
+
+export interface EDDTrigger {
+  readonly triggerId: string;
+  readonly name: string;
+  readonly condition: string;
+  readonly enabled: boolean;
+}
+
+export interface OngoingMonitoringConfig {
+  readonly enabled: boolean;
+  readonly transactionMonitoring: boolean;
+  readonly profileUpdates: boolean;
+  readonly periodicReview: boolean;
+  readonly reviewFrequency: Readonly<Record<RiskLevel, number>>;
+}
+
+export interface CustomerRiskAssessmentConfig {
+  readonly enabled: boolean;
+  readonly factors: readonly RiskFactor[];
+  readonly scoring: RiskScoringMethodConfig;
+  readonly categories: readonly RiskCategory[];
+}
+
+export interface RiskFactor {
+  readonly factorId: string;
+  readonly name: string;
+  readonly category: string;
+  readonly weight: number;
+  readonly values: readonly RiskFactorValue[];
+}
+
+export interface RiskFactorValue {
+  readonly value: string;
+  readonly score: number;
+}
+
+export interface RiskScoringMethodConfig {
+  readonly method: 'WEIGHTED_SUM' | 'MATRIX' | 'DECISION_TREE' | 'ML';
+  readonly normalization: boolean;
+}
+
+export interface RiskCategory {
+  readonly categoryId: string;
+  readonly name: string;
+  readonly minScore: number;
+  readonly maxScore: number;
+  readonly level: RiskLevel;
+}
+
+export interface BeneficialOwnershipConfig {
+  readonly enabled: boolean;
+  readonly identification: OwnershipIdentificationConfig;
+  readonly verification: OwnershipVerificationConfig;
+  readonly tracking: OwnershipTrackingConfig;
+  readonly analysis: OwnershipAnalysisConfig;
+}
+
+export interface OwnershipIdentificationConfig {
+  readonly enabled: boolean;
+  readonly threshold: number;
+  readonly directOwnership: boolean;
+  readonly indirectOwnership: boolean;
+  readonly controlCriteria: readonly string[];
+}
+
+export interface OwnershipVerificationConfig {
+  readonly enabled: boolean;
+  readonly documentVerification: boolean;
+  readonly registryChecks: boolean;
+  readonly thirdPartyData: boolean;
+}
+
+export interface OwnershipTrackingConfig {
+  readonly enabled: boolean;
+  readonly changeDetection: boolean;
+  readonly historicalTracking: boolean;
+  readonly alertOnChange: boolean;
+}
+
+export interface OwnershipAnalysisConfig {
+  readonly enabled: boolean;
+  readonly structureAnalysis: boolean;
+  readonly complexityScoring: boolean;
+  readonly redFlagDetection: boolean;
+}
+
+export interface NetworkAnalysisConfig {
+  readonly enabled: boolean;
+  readonly entityResolution: EntityResolutionConfig;
+  readonly linkAnalysis: LinkAnalysisConfig;
+  readonly communityDetection: CommunityDetectionConfig;
+  readonly pathAnalysis: PathAnalysisConfig;
+}
+
+export interface EntityResolutionConfig {
+  readonly enabled: boolean;
+  readonly matching: EntityMatchingConfig;
+  readonly merging: EntityMergingConfig;
+}
+
+export interface EntityMatchingConfig {
+  readonly nameMatching: boolean;
+  readonly addressMatching: boolean;
+  readonly identifierMatching: boolean;
+  readonly threshold: number;
+}
+
+export interface EntityMergingConfig {
+  readonly automatic: boolean;
+  readonly manualReview: boolean;
+  readonly conflictResolution: 'LATEST' | 'MOST_COMPLETE' | 'MANUAL';
+}
+
+export interface LinkAnalysisConfig {
+  readonly enabled: boolean;
+  readonly linkTypes: readonly LinkType[];
+  readonly strengthCalculation: boolean;
+  readonly temporalAnalysis: boolean;
+}
+
+export type LinkType =
+  | 'OWNERSHIP'
+  | 'DIRECTORSHIP'
+  | 'TRANSACTION'
+  | 'ADDRESS'
+  | 'PHONE'
+  | 'EMAIL'
+  | 'FAMILY'
+  | 'BUSINESS';
+
+export interface CommunityDetectionConfig {
+  readonly enabled: boolean;
+  readonly algorithm: 'LOUVAIN' | 'LABEL_PROPAGATION' | 'INFOMAP';
+  readonly resolution: number;
+}
+
+export interface PathAnalysisConfig {
+  readonly enabled: boolean;
+  readonly shortestPath: boolean;
+  readonly allPaths: boolean;
+  readonly maxDepth: number;
+}
+
+export interface RiskScoringConfig {
+  readonly enabled: boolean;
+  readonly entityRisk: EntityRiskConfig;
+  readonly transactionRisk: TransactionRiskConfig;
+  readonly aggregation: RiskAggregationConfig;
+}
+
+export interface EntityRiskConfig {
+  readonly enabled: boolean;
+  readonly factors: readonly EntityRiskFactor[];
+  readonly model: 'RULE_BASED' | 'ML' | 'HYBRID';
+}
+
+export interface EntityRiskFactor {
+  readonly factorId: string;
+  readonly name: string;
+  readonly weight: number;
+  readonly source: string;
+}
+
+export interface TransactionRiskConfig {
+  readonly enabled: boolean;
+  readonly factors: readonly TransactionRiskFactor[];
+  readonly model: 'RULE_BASED' | 'ML' | 'HYBRID';
+}
+
+export interface TransactionRiskFactor {
+  readonly factorId: string;
+  readonly name: string;
+  readonly weight: number;
+  readonly threshold: number;
+}
+
+export interface RiskAggregationConfig {
+  readonly method: 'MAX' | 'AVERAGE' | 'WEIGHTED' | 'CUSTOM';
+  readonly decay: boolean;
+  readonly decayRate: number;
+}
+
+export interface CaseManagementConfig {
+  readonly enabled: boolean;
+  readonly workflow: CaseWorkflowConfig;
+  readonly assignment: CaseAssignmentConfig;
+  readonly investigation: InvestigationConfig;
+  readonly documentation: DocumentationConfig;
+}
+
+export interface CaseWorkflowConfig {
+  readonly statuses: readonly CaseStatus[];
+  readonly transitions: readonly CaseTransition[];
+  readonly sla: SLAConfig;
+}
+
+export interface CaseStatus {
+  readonly statusId: string;
+  readonly name: string;
+  readonly category: 'OPEN' | 'IN_PROGRESS' | 'PENDING' | 'CLOSED';
+}
+
+export interface CaseTransition {
+  readonly from: string;
+  readonly to: string;
+  readonly requiredFields: readonly string[];
+  readonly approvalRequired: boolean;
+}
+
+export interface SLAConfig {
+  readonly enabled: boolean;
+  readonly targets: Readonly<Record<AlertSeverity, number>>;
+  readonly escalationOnBreach: boolean;
+}
+
+export interface CaseAssignmentConfig {
+  readonly method: 'MANUAL' | 'ROUND_ROBIN' | 'SKILL_BASED' | 'LOAD_BALANCED';
+  readonly autoAssignment: boolean;
+  readonly reassignmentAllowed: boolean;
+}
+
+export interface InvestigationConfig {
+  readonly enabled: boolean;
+  readonly tools: InvestigationToolsConfig;
+  readonly evidence: EvidenceConfig;
+  readonly timeline: TimelineConfig;
+}
+
+export interface InvestigationToolsConfig {
+  readonly transactionSearch: boolean;
+  readonly entitySearch: boolean;
+  readonly networkVisualization: boolean;
+  readonly timelineVisualization: boolean;
+  readonly documentViewer: boolean;
+}
+
+export interface EvidenceConfig {
+  readonly collection: boolean;
+  readonly preservation: boolean;
+  readonly chainOfCustody: boolean;
+}
+
+export interface TimelineConfig {
+  readonly enabled: boolean;
+  readonly autoGeneration: boolean;
+  readonly customEvents: boolean;
+}
+
+export interface DocumentationConfig {
+  readonly enabled: boolean;
+  readonly templates: readonly DocumentTemplate[];
+  readonly requiredFields: readonly string[];
+}
+
+export interface DocumentTemplate {
+  readonly templateId: string;
+  readonly name: string;
+  readonly type: string;
+  readonly fields: readonly string[];
+}
+
+export interface ReportingConfig {
+  readonly enabled: boolean;
+  readonly regulatory: RegulatoryReportingConfig;
+  readonly management: ManagementReportingConfig;
+  readonly adhoc: AdhocReportingConfig;
+}
+
+export interface RegulatoryReportingConfig {
+  readonly enabled: boolean;
+  readonly sar: SARReportingConfig;
+  readonly ctr: CTRReportingConfig;
+  readonly str: STRReportingConfig;
+}
+
+export interface SARReportingConfig {
+  readonly enabled: boolean;
+  readonly autoGeneration: boolean;
+  readonly reviewRequired: boolean;
+  readonly filingDeadline: number;
+}
+
+export interface CTRReportingConfig {
+  readonly enabled: boolean;
+  readonly threshold: number;
+  readonly autoGeneration: boolean;
+  readonly filingDeadline: number;
+}
+
+export interface STRReportingConfig {
+  readonly enabled: boolean;
+  readonly autoGeneration: boolean;
+  readonly reviewRequired: boolean;
+  readonly filingDeadline: number;
+}
+
+export interface ManagementReportingConfig {
+  readonly enabled: boolean;
+  readonly reports: readonly ManagementReport[];
+  readonly schedule: string;
+}
+
+export interface ManagementReport {
+  readonly reportId: string;
+  readonly name: string;
+  readonly type: string;
+  readonly frequency: 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'QUARTERLY';
+}
+
+export interface AdhocReportingConfig {
+  readonly enabled: boolean;
+  readonly templates: readonly ReportTemplate[];
+}
+
+export interface ReportTemplate {
+  readonly templateId: string;
+  readonly name: string;
+  readonly parameters: readonly string[];
+  readonly format: 'PDF' | 'EXCEL' | 'CSV' | 'JSON';
+}
+
+export interface AlertingConfig {
+  readonly enabled: boolean;
+  readonly channels: readonly AlertChannel[];
+  readonly rules: readonly AlertRule[];
+  readonly suppression: AlertSuppressionConfig;
+  readonly enrichment: AlertEnrichmentConfig;
+}
+
+export interface AlertChannel {
+  readonly channelId: string;
+  readonly name: string;
+  readonly type: 'EMAIL' | 'SMS' | 'WEBHOOK' | 'CASE_MANAGEMENT';
+  readonly config: Readonly<Record<string, unknown>>;
+  readonly enabled: boolean;
+}
+
+export interface AlertRule {
+  readonly ruleId: string;
+  readonly name: string;
+  readonly condition: string;
+  readonly severity: AlertSeverity;
+  readonly channels: readonly string[];
+  readonly cooldown: number;
+  readonly enabled: boolean;
+}
+
+export interface AlertSuppressionConfig {
+  readonly enabled: boolean;
+  readonly deduplication: boolean;
+  readonly deduplicationWindow: number;
+  readonly whitelisting: boolean;
+}
+
+export interface AlertEnrichmentConfig {
+  readonly enabled: boolean;
+  readonly entityContext: boolean;
+  readonly transactionHistory: boolean;
+  readonly riskContext: boolean;
+  readonly networkContext: boolean;
+}
+
+export interface StorageConfig {
+  readonly type: 'DATABASE' | 'DATA_LAKE' | 'HYBRID';
+  readonly encryption: EncryptionConfig;
+  readonly retention: RetentionConfig;
+  readonly backup: BackupConfig;
+}
+
+export interface EncryptionConfig {
+  readonly enabled: boolean;
+  readonly algorithm: 'AES_256_GCM' | 'CHACHA20_POLY1305';
+  readonly keyManagement: 'LOCAL' | 'HSM' | 'KMS';
+}
+
+export interface RetentionConfig {
+  readonly enabled: boolean;
+  readonly transactions: number;
+  readonly alerts: number;
+  readonly cases: number;
+  readonly reports: number;
+}
+
+export interface BackupConfig {
+  readonly enabled: boolean;
+  readonly frequency: number;
+  readonly encryption: boolean;
+}
+
+export interface SecurityConfig {
+  readonly authentication: AuthenticationConfig;
+  readonly authorization: AuthorizationConfig;
+  readonly audit: AuditConfig;
+}
+
+export interface AuthenticationConfig {
+  readonly enabled: boolean;
+  readonly methods: readonly ('API_KEY' | 'BEARER' | 'MTLS' | 'SAML' | 'OIDC')[];
+  readonly mfaRequired: boolean;
+  readonly sessionTimeout: number;
+}
+
+export interface AuthorizationConfig {
+  readonly enabled: boolean;
+  readonly model: 'RBAC' | 'ABAC';
+  readonly defaultRole: string;
+}
+
+export interface AuditConfig {
+  readonly enabled: boolean;
+  readonly logAllOperations: boolean;
+  readonly logDataAccess: boolean;
+  readonly retention: number;
+}
+
+export interface ComplianceConfig {
+  readonly enabled: boolean;
+  readonly regulations: readonly Regulation[];
+  readonly controls: readonly Control[];
+  readonly assessments: AssessmentConfig;
+}
+
+export interface Regulation {
+  readonly regulationId: string;
+  readonly name: string;
+  readonly jurisdiction: string;
+  readonly requirements: readonly string[];
+}
+
+export interface Control {
+  readonly controlId: string;
+  readonly name: string;
+  readonly description: string;
+  readonly regulations: readonly string[];
+  readonly testing: string;
+}
+
+export interface AssessmentConfig {
+  readonly enabled: boolean;
+  readonly frequency: number;
+  readonly selfAssessment: boolean;
+  readonly externalAudit: boolean;
+}
+
+export interface PlatformMetadata {
+  readonly createdAt: number;
+  readonly updatedAt: number;
+  readonly createdBy: string;
+  readonly version: string;
+  readonly tags: readonly string[];
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TRANSACTION TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface Transaction {
+  readonly transactionId: string;
+  readonly timestamp: number;
+  readonly type: TransactionType;
+  readonly direction: 'INBOUND' | 'OUTBOUND' | 'INTERNAL';
+  readonly amount: MonetaryAmount;
+  readonly originator: TransactionParty;
+  readonly beneficiary: TransactionParty;
+  readonly intermediaries: readonly TransactionParty[];
+  readonly details: TransactionDetails;
+  readonly risk: TransactionRisk;
+  readonly metadata: TransactionMetadata;
+}
+
+export interface MonetaryAmount {
+  readonly value: number;
+  readonly currency: string;
+  readonly originalValue: number | null;
+  readonly originalCurrency: string | null;
+  readonly exchangeRate: number | null;
+}
+
+export interface TransactionParty {
+  readonly partyId: string;
+  readonly type: EntityType;
+  readonly name: string;
+  readonly account: AccountInfo | null;
+  readonly address: AddressInfo | null;
+  readonly identifiers: PartyIdentifiers;
+}
+
+export interface AccountInfo {
+  readonly accountNumber: string;
+  readonly accountType: string;
+  readonly institution: InstitutionInfo;
+}
+
+export interface InstitutionInfo {
+  readonly name: string;
+  readonly bic: string | null;
+  readonly routingNumber: string | null;
+  readonly country: string;
+}
+
+export interface AddressInfo {
+  readonly street: string | null;
+  readonly city: string | null;
+  readonly state: string | null;
+  readonly postalCode: string | null;
+  readonly country: string;
+}
+
+export interface PartyIdentifiers {
+  readonly taxId: string | null;
+  readonly nationalId: string | null;
+  readonly passportNumber: string | null;
+  readonly dateOfBirth: string | null;
+}
+
+export interface TransactionDetails {
+  readonly reference: string | null;
+  readonly purpose: string | null;
+  readonly narrative: string | null;
+  readonly channel: string;
+  readonly product: string | null;
+  readonly relatedTransactions: readonly string[];
+}
+
+export interface TransactionRisk {
+  readonly score: number;
+  readonly level: RiskLevel;
+  readonly factors: readonly TransactionRiskFactorResult[];
+  readonly alerts: readonly string[];
+}
+
+export interface TransactionRiskFactorResult {
+  readonly factorId: string;
+  readonly name: string;
+  readonly score: number;
+  readonly contribution: number;
+}
+
+export interface TransactionMetadata {
+  readonly source: string;
+  readonly receivedAt: number;
+  readonly processedAt: number;
+  readonly version: string;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ENTITY TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface FinancialEntity {
+  readonly entityId: string;
+  readonly type: EntityType;
+  readonly status: 'ACTIVE' | 'INACTIVE' | 'BLOCKED' | 'CLOSED';
+  readonly identity: EntityIdentity;
+  readonly profile: EntityProfile;
+  readonly risk: EntityRisk;
+  readonly relationships: EntityRelationships;
+  readonly history: EntityHistory;
+  readonly metadata: EntityMetadata;
+}
+
+export interface EntityIdentity {
+  readonly name: string;
+  readonly aliases: readonly string[];
+  readonly identifiers: EntityIdentifiers;
+  readonly addresses: readonly AddressInfo[];
+  readonly contacts: EntityContacts;
+}
+
+export interface EntityIdentifiers {
+  readonly taxId: string | null;
+  readonly registrationNumber: string | null;
+  readonly lei: string | null;
+  readonly nationalId: string | null;
+  readonly passportNumber: string | null;
+  readonly dateOfBirth: string | null;
+  readonly dateOfIncorporation: string | null;
+}
+
+export interface EntityContacts {
+  readonly phones: readonly string[];
+  readonly emails: readonly string[];
+  readonly websites: readonly string[];
+}
+
+export interface EntityProfile {
+  readonly customerType: string;
+  readonly segment: string;
+  readonly products: readonly string[];
+  readonly accounts: readonly AccountProfile[];
+  readonly onboardingDate: number;
+  readonly lastReviewDate: number | null;
+  readonly nextReviewDate: number | null;
+}
+
+export interface AccountProfile {
+  readonly accountId: string;
+  readonly accountNumber: string;
+  readonly accountType: string;
+  readonly status: 'ACTIVE' | 'DORMANT' | 'CLOSED' | 'BLOCKED';
+  readonly openDate: number;
+  readonly closeDate: number | null;
+  readonly balance: MonetaryAmount | null;
+}
+
+export interface EntityRisk {
+  readonly score: number;
+  readonly level: RiskLevel;
+  readonly category: string;
+  readonly factors: readonly EntityRiskFactorResult[];
+  readonly assessmentDate: number;
+  readonly nextAssessmentDate: number;
+}
+
+export interface EntityRiskFactorResult {
+  readonly factorId: string;
+  readonly name: string;
+  readonly value: string;
+  readonly score: number;
+  readonly weight: number;
+  readonly contribution: number;
+}
+
+export interface EntityRelationships {
+  readonly beneficialOwners: readonly BeneficialOwner[];
+  readonly directors: readonly Director[];
+  readonly relatedEntities: readonly RelatedEntity[];
+  readonly counterparties: readonly Counterparty[];
+}
+
+export interface BeneficialOwner {
+  readonly ownerId: string;
+  readonly entityId: string;
+  readonly name: string;
+  readonly ownershipPercentage: number;
+  readonly controlType: 'DIRECT' | 'INDIRECT' | 'CONTROL';
+  readonly verificationStatus: 'VERIFIED' | 'UNVERIFIED' | 'PENDING';
+}
+
+export interface Director {
+  readonly directorId: string;
+  readonly entityId: string;
+  readonly name: string;
+  readonly position: string;
+  readonly appointmentDate: number;
+  readonly resignationDate: number | null;
+}
+
+export interface RelatedEntity {
+  readonly relationshipId: string;
+  readonly entityId: string;
+  readonly name: string;
+  readonly relationshipType: string;
+  readonly strength: number;
+}
+
+export interface Counterparty {
+  readonly counterpartyId: string;
+  readonly entityId: string;
+  readonly name: string;
+  readonly transactionCount: number;
+  readonly totalVolume: MonetaryAmount;
+  readonly lastTransaction: number;
+}
+
+export interface EntityHistory {
+  readonly alerts: readonly AlertHistoryEntry[];
+  readonly cases: readonly CaseHistoryEntry[];
+  readonly screeningResults: readonly ScreeningHistoryEntry[];
+  readonly riskChanges: readonly RiskChangeEntry[];
+}
+
+export interface AlertHistoryEntry {
+  readonly alertId: string;
+  readonly timestamp: number;
+  readonly type: string;
+  readonly severity: AlertSeverity;
+  readonly status: string;
+  readonly outcome: string | null;
+}
+
+export interface CaseHistoryEntry {
+  readonly caseId: string;
+  readonly timestamp: number;
+  readonly type: string;
+  readonly status: string;
+  readonly outcome: string | null;
+}
+
+export interface ScreeningHistoryEntry {
+  readonly screeningId: string;
+  readonly timestamp: number;
+  readonly type: ScreeningType;
+  readonly result: 'CLEAR' | 'MATCH' | 'POTENTIAL_MATCH';
+  readonly matchDetails: string | null;
+}
+
+export interface RiskChangeEntry {
+  readonly timestamp: number;
+  readonly previousScore: number;
+  readonly newScore: number;
+  readonly previousLevel: RiskLevel;
+  readonly newLevel: RiskLevel;
+  readonly reason: string;
+}
+
+export interface EntityMetadata {
+  readonly createdAt: number;
+  readonly updatedAt: number;
+  readonly createdBy: string;
+  readonly source: string;
+  readonly version: string;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ALERT AND CASE TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface FinancialAlert {
+  readonly alertId: string;
+  readonly timestamp: number;
+  readonly type: FinancialCrimeType;
+  readonly severity: AlertSeverity;
+  readonly confidence: number;
+  readonly entity: AlertEntityInfo;
+  readonly transactions: readonly AlertTransactionInfo[];
+  readonly indicators: readonly AlertIndicator[];
+  readonly context: AlertContext;
+  readonly analysis: AlertAnalysis;
+  readonly recommendations: readonly Recommendation[];
+  readonly status: AlertStatus;
+  readonly metadata: AlertMetadata;
+}
+
+export interface AlertEntityInfo {
+  readonly entityId: string;
+  readonly name: string;
+  readonly type: EntityType;
+  readonly riskScore: number;
+  readonly riskLevel: RiskLevel;
+}
+
+export interface AlertTransactionInfo {
+  readonly transactionId: string;
+  readonly timestamp: number;
+  readonly type: TransactionType;
+  readonly amount: MonetaryAmount;
+  readonly counterparty: string;
+}
+
+export interface AlertIndicator {
+  readonly indicatorId: string;
+  readonly type: string;
+  readonly name: string;
+  readonly description: string;
+  readonly value: string;
+  readonly confidence: number;
+  readonly source: string;
+}
+
+export interface AlertContext {
+  readonly historicalContext: HistoricalContext;
+  readonly networkContext: NetworkContext;
+  readonly regulatoryContext: RegulatoryContext;
+}
+
+export interface HistoricalContext {
+  readonly previousAlerts: number;
+  readonly previousCases: number;
+  readonly riskTrend: 'INCREASING' | 'DECREASING' | 'STABLE';
+  readonly behaviorChange: boolean;
+}
+
+export interface NetworkContext {
+  readonly connectedEntities: number;
+  readonly suspiciousConnections: number;
+  readonly networkRisk: RiskLevel;
+}
+
+export interface RegulatoryContext {
+  readonly applicableRegulations: readonly string[];
+  readonly reportingRequired: boolean;
+  readonly deadline: number | null;
+}
+
+export interface AlertAnalysis {
+  readonly description: string;
+  readonly timeline: readonly TimelineEvent[];
+  readonly patterns: readonly PatternMatch[];
+  readonly typologyMatch: TypologyMatch | null;
+}
+
+export interface TimelineEvent {
+  readonly eventId: string;
+  readonly timestamp: number;
+  readonly type: string;
+  readonly description: string;
+  readonly data: Readonly<Record<string, unknown>>;
+}
+
+export interface PatternMatch {
+  readonly patternId: string;
+  readonly name: string;
+  readonly confidence: number;
+  readonly matchedElements: readonly string[];
+}
+
+export interface TypologyMatch {
+  readonly typologyId: string;
+  readonly name: string;
+  readonly confidence: number;
+  readonly matchedIndicators: readonly string[];
+}
+
+export interface Recommendation {
+  readonly recommendationId: string;
+  readonly priority: 'IMMEDIATE' | 'HIGH' | 'MEDIUM' | 'LOW';
+  readonly category: string;
+  readonly title: string;
+  readonly description: string;
+  readonly actions: readonly string[];
+}
+
+export interface AlertStatus {
+  readonly state: 'NEW' | 'ACKNOWLEDGED' | 'INVESTIGATING' | 'ESCALATED' | 'RESOLVED' | 'CLOSED' | 'FALSE_POSITIVE';
+  readonly assignee: string | null;
+  readonly updatedAt: number;
+  readonly resolution: string | null;
+  readonly caseId: string | null;
+}
+
+export interface AlertMetadata {
+  readonly source: string;
+  readonly detectionMethod: string;
+  readonly processingTime: number;
+  readonly version: string;
+  readonly tags: readonly string[];
+}
+
+export interface FinancialCase {
+  readonly caseId: string;
+  readonly title: string;
+  readonly description: string;
+  readonly type: FinancialCrimeType;
+  readonly severity: AlertSeverity;
+  readonly status: CaseStatusInfo;
+  readonly subjects: readonly CaseSubject[];
+  readonly alerts: readonly string[];
+  readonly transactions: readonly string[];
+  readonly evidence: readonly CaseEvidence[];
+  readonly investigation: InvestigationInfo;
+  readonly reporting: CaseReporting;
+  readonly outcome: CaseOutcome | null;
+  readonly metadata: CaseMetadata;
+}
+
+export interface CaseStatusInfo {
+  readonly status: string;
+  readonly assignee: string | null;
+  readonly priority: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
+  readonly dueDate: number | null;
+  readonly slaStatus: 'ON_TRACK' | 'AT_RISK' | 'BREACHED';
+}
+
+export interface CaseSubject {
+  readonly subjectId: string;
+  readonly entityId: string;
+  readonly role: 'PRIMARY' | 'SECONDARY' | 'COUNTERPARTY' | 'BENEFICIARY';
+  readonly riskScore: number;
+  readonly notes: string | null;
+}
+
+export interface CaseEvidence {
+  readonly evidenceId: string;
+  readonly type: string;
+  readonly description: string;
+  readonly source: string;
+  readonly collectedAt: number;
+  readonly collectedBy: string;
+}
+
+export interface InvestigationInfo {
+  readonly stage: string;
+  readonly findings: readonly InvestigationFinding[];
+  readonly timeline: readonly CaseTimelineEntry[];
+}
+
+export interface InvestigationFinding {
+  readonly findingId: string;
+  readonly type: string;
+  readonly description: string;
+  readonly severity: AlertSeverity;
+  readonly evidence: readonly string[];
+  readonly timestamp: number;
+}
+
+export interface CaseTimelineEntry {
+  readonly entryId: string;
+  readonly timestamp: number;
+  readonly type: string;
+  readonly description: string;
+  readonly actor: string;
+}
+
+export interface CaseReporting {
+  readonly sarRequired: boolean;
+  readonly sarFiled: boolean;
+  readonly sarFilingDate: number | null;
+  readonly sarReference: string | null;
+  readonly otherReports: readonly RegulatoryReport[];
+}
+
+export interface RegulatoryReport {
+  readonly reportId: string;
+  readonly type: string;
+  readonly filingDate: number;
+  readonly reference: string;
+  readonly status: 'DRAFT' | 'SUBMITTED' | 'ACCEPTED' | 'REJECTED';
+}
+
+export interface CaseOutcome {
+  readonly resolution: 'CONFIRMED' | 'FALSE_POSITIVE' | 'INCONCLUSIVE' | 'REFERRED';
+  readonly actions: readonly string[];
+  readonly lessons: readonly string[];
+  readonly closedAt: number;
+  readonly closedBy: string;
+}
+
+export interface CaseMetadata {
+  readonly createdAt: number;
+  readonly updatedAt: number;
+  readonly createdBy: string;
+  readonly version: string;
+  readonly tags: readonly string[];
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SESSION TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface FININTSession {
+  readonly sessionId: string;
+  readonly platformId: string;
+  readonly state: SessionState;
+  readonly config: SessionConfig;
+  readonly progress: SessionProgress;
+  readonly statistics: SessionStatistics;
+  readonly alerts: readonly FinancialAlert[];
+  readonly screeningResults: readonly ScreeningResult[];
+  readonly errors: readonly SessionError[];
+  readonly startTime: number;
+  readonly endTime: number | null;
+  readonly metadata: SessionMetadata;
+}
+
+export type SessionState =
+  | 'PENDING'
+  | 'INITIALIZING'
+  | 'RUNNING'
+  | 'PAUSED'
+  | 'COMPLETED'
+  | 'FAILED';
+
+export interface SessionConfig {
+  readonly mode: AnalysisMode;
+  readonly scope: AnalysisScope;
+  readonly options: Readonly<Record<string, unknown>>;
+}
+
+export interface AnalysisScope {
+  readonly entities: readonly string[] | 'ALL';
+  readonly transactions: readonly string[] | 'ALL';
+  readonly timeRange: TimeRange;
+}
+
+export interface TimeRange {
+  readonly start: number;
+  readonly end: number;
+}
+
+export interface SessionProgress {
+  readonly phase: SessionPhase;
+  readonly percentage: number;
+  readonly transactionsProcessed: number;
+  readonly transactionsTotal: number;
+  readonly currentTask: string | null;
+  readonly estimatedTimeRemaining: number | null;
+}
+
+export type SessionPhase =
+  | 'INITIALIZING'
+  | 'LOADING_DATA'
+  | 'SCREENING'
+  | 'MONITORING'
+  | 'ANALYZING'
+  | 'ALERTING'
+  | 'FINALIZING';
+
+export interface SessionStatistics {
+  readonly transactionsProcessed: number;
+  readonly entitiesAnalyzed: number;
+  readonly alertsGenerated: number;
+  readonly screeningsPerformed: number;
+  readonly matchesFound: number;
+  readonly processingTime: number;
+}
+
+export interface ScreeningResult {
+  readonly screeningId: string;
+  readonly timestamp: number;
+  readonly type: ScreeningType;
+  readonly entityId: string;
+  readonly result: 'CLEAR' | 'MATCH' | 'POTENTIAL_MATCH';
+  readonly matches: readonly ScreeningMatch[];
+}
+
+export interface ScreeningMatch {
+  readonly matchId: string;
+  readonly listName: string;
+  readonly matchedName: string;
+  readonly matchScore: number;
+  readonly matchType: 'EXACT' | 'FUZZY' | 'ALIAS';
+  readonly details: Readonly<Record<string, unknown>>;
+}
+
+export interface SessionError {
+  readonly errorId: string;
+  readonly timestamp: number;
+  readonly type: SessionErrorType;
+  readonly message: string;
+  readonly details: string | null;
+  readonly recoverable: boolean;
+}
+
+export type SessionErrorType =
+  | 'DATA_ERROR'
+  | 'PROCESSING_ERROR'
+  | 'SCREENING_ERROR'
+  | 'TIMEOUT'
+  | 'RESOURCE_ERROR'
+  | 'INTERNAL_ERROR';
+
+export interface SessionMetadata {
+  readonly platformVersion: string;
+  readonly startedBy: string;
+  readonly environment: string;
+  readonly tags: readonly string[];
+}

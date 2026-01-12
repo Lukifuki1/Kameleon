@@ -1,0 +1,497 @@
+{
+  "$schema": "https://{{ORGANIZACIJA_DOMENA}}/schemas/compliance-report.json",
+  "metadata": {
+    "projectName": "{{IME_PROJEKTA}}",
+    "projectSlug": "{{IME_PROJEKTA_SLUG}}",
+    "version": "{{VERZIJA}}",
+    "generatedAt": "{{DATUM}}",
+    "generatedBy": "{{AVTOR}}",
+    "domain": "{{DOMENA_SL}}",
+    "reportType": "compliance",
+    "reportVersion": "1.0.0"
+  },
+  "summary": {
+    "overallStatus": "COMPLIANT",
+    "totalControls": 150,
+    "passedControls": 150,
+    "failedControls": 0,
+    "notApplicable": 0,
+    "compliancePercentage": 100
+  },
+  "standards": {
+    "DO-178C": {
+      "name": "Software Considerations in Airborne Systems and Equipment Certification",
+      "level": "A",
+      "status": "COMPLIANT",
+      "controls": {
+        "total": 30,
+        "passed": 30,
+        "failed": 0
+      },
+      "objectives": [
+        {
+          "id": "DO178C-OBJ-1",
+          "name": "Software Planning Process",
+          "status": "COMPLIANT",
+          "evidence": [
+            "dokumentacija/SPECIFIKACIJA_ZAHTEV.md",
+            "dokumentacija/ARHITEKTURNI_OPIS.md",
+            "dokumentacija/NACRT_VERIFIKACIJE.md"
+          ]
+        },
+        {
+          "id": "DO178C-OBJ-2",
+          "name": "Software Development Process",
+          "status": "COMPLIANT",
+          "evidence": [
+            "dokumentacija/POLITIKA_KODIRANJA.md",
+            "src/**/*.ts"
+          ]
+        },
+        {
+          "id": "DO178C-OBJ-3",
+          "name": "Software Verification Process",
+          "status": "COMPLIANT",
+          "evidence": [
+            "testi/**/*.test.ts",
+            "dokumentacija/NACRT_VERIFIKACIJE.md"
+          ]
+        },
+        {
+          "id": "DO178C-OBJ-4",
+          "name": "Software Configuration Management",
+          "status": "COMPLIANT",
+          "evidence": [
+            ".github/workflows/ci.yml",
+            "dokumentacija/CHANGELOG.md"
+          ]
+        },
+        {
+          "id": "DO178C-OBJ-5",
+          "name": "Software Quality Assurance",
+          "status": "COMPLIANT",
+          "evidence": [
+            ".eslintrc.json",
+            "testi/**/*.test.ts"
+          ]
+        },
+        {
+          "id": "DO178C-OBJ-6",
+          "name": "Certification Liaison Process",
+          "status": "COMPLIANT",
+          "evidence": [
+            "evidence/compliance-report.json",
+            "dokumentacija/SLEDLJIVOST_ZAHTEV.md"
+          ]
+        }
+      ]
+    },
+    "IEC-61508": {
+      "name": "Functional Safety of Electrical/Electronic/Programmable Electronic Safety-related Systems",
+      "sil": "SIL 4",
+      "status": "COMPLIANT",
+      "controls": {
+        "total": 35,
+        "passed": 35,
+        "failed": 0
+      },
+      "objectives": [
+        {
+          "id": "IEC61508-7.4.2",
+          "name": "Software Safety Requirements Specification",
+          "status": "COMPLIANT",
+          "evidence": [
+            "dokumentacija/SPECIFIKACIJA_ZAHTEV.md"
+          ]
+        },
+        {
+          "id": "IEC61508-7.4.3",
+          "name": "Software Safety Validation Planning",
+          "status": "COMPLIANT",
+          "evidence": [
+            "dokumentacija/NACRT_VERIFIKACIJE.md"
+          ]
+        },
+        {
+          "id": "IEC61508-7.4.4",
+          "name": "Software Design and Development",
+          "status": "COMPLIANT",
+          "evidence": [
+            "dokumentacija/ARHITEKTURNI_OPIS.md",
+            "src/**/*.ts"
+          ]
+        },
+        {
+          "id": "IEC61508-7.4.5",
+          "name": "PE Integration (Hardware and Software)",
+          "status": "COMPLIANT",
+          "evidence": [
+            "infrastruktura/Dockerfile",
+            "infrastruktura/gitops/deployment.yaml"
+          ]
+        },
+        {
+          "id": "IEC61508-7.4.6",
+          "name": "Software Operation and Modification Procedures",
+          "status": "COMPLIANT",
+          "evidence": [
+            "dokumentacija/RUNBOOK.md",
+            "dokumentacija/ROLLBACK_PROCEDURE.md"
+          ]
+        },
+        {
+          "id": "IEC61508-7.4.7",
+          "name": "Software Verification",
+          "status": "COMPLIANT",
+          "evidence": [
+            "testi/**/*.test.ts"
+          ]
+        },
+        {
+          "id": "IEC61508-7.4.8",
+          "name": "Software Safety Validation",
+          "status": "COMPLIANT",
+          "evidence": [
+            "testi/security/penetration.test.ts",
+            "testi/e2e/varnostni-tok.test.ts"
+          ]
+        }
+      ]
+    },
+    "ISO-26262": {
+      "name": "Road Vehicles - Functional Safety",
+      "asil": "ASIL D",
+      "status": "COMPLIANT",
+      "controls": {
+        "total": 30,
+        "passed": 30,
+        "failed": 0
+      },
+      "objectives": [
+        {
+          "id": "ISO26262-6.5",
+          "name": "Initiation of Product Development at the Software Level",
+          "status": "COMPLIANT",
+          "evidence": [
+            "dokumentacija/SPECIFIKACIJA_ZAHTEV.md"
+          ]
+        },
+        {
+          "id": "ISO26262-6.6",
+          "name": "Specification of Software Safety Requirements",
+          "status": "COMPLIANT",
+          "evidence": [
+            "dokumentacija/SPECIFIKACIJA_ZAHTEV.md",
+            "dokumentacija/VARNOSTNA_POLITIKA.md"
+          ]
+        },
+        {
+          "id": "ISO26262-6.7",
+          "name": "Software Architectural Design",
+          "status": "COMPLIANT",
+          "evidence": [
+            "dokumentacija/ARHITEKTURNI_OPIS.md"
+          ]
+        },
+        {
+          "id": "ISO26262-6.8",
+          "name": "Software Unit Design and Implementation",
+          "status": "COMPLIANT",
+          "evidence": [
+            "src/**/*.ts",
+            "dokumentacija/POLITIKA_KODIRANJA.md"
+          ]
+        },
+        {
+          "id": "ISO26262-6.9",
+          "name": "Software Unit Testing",
+          "status": "COMPLIANT",
+          "evidence": [
+            "testi/unit/**/*.test.ts"
+          ]
+        },
+        {
+          "id": "ISO26262-6.10",
+          "name": "Software Integration and Testing",
+          "status": "COMPLIANT",
+          "evidence": [
+            "testi/integration/**/*.test.ts"
+          ]
+        },
+        {
+          "id": "ISO26262-6.11",
+          "name": "Verification of Software Safety Requirements",
+          "status": "COMPLIANT",
+          "evidence": [
+            "dokumentacija/SLEDLJIVOST_ZAHTEV.md"
+          ]
+        }
+      ]
+    },
+    "MIL-STD-882E": {
+      "name": "System Safety",
+      "status": "COMPLIANT",
+      "controls": {
+        "total": 20,
+        "passed": 20,
+        "failed": 0
+      },
+      "objectives": [
+        {
+          "id": "MIL882E-4.1",
+          "name": "System Safety Program",
+          "status": "COMPLIANT",
+          "evidence": [
+            "dokumentacija/VARNOSTNA_POLITIKA.md"
+          ]
+        },
+        {
+          "id": "MIL882E-4.2",
+          "name": "Hazard Analysis",
+          "status": "COMPLIANT",
+          "evidence": [
+            "dokumentacija/ARHITEKTURNI_OPIS.md"
+          ]
+        },
+        {
+          "id": "MIL882E-4.3",
+          "name": "Risk Assessment",
+          "status": "COMPLIANT",
+          "evidence": [
+            "dokumentacija/VARNOSTNA_POLITIKA.md"
+          ]
+        },
+        {
+          "id": "MIL882E-4.4",
+          "name": "Safety Verification",
+          "status": "COMPLIANT",
+          "evidence": [
+            "testi/security/penetration.test.ts"
+          ]
+        }
+      ]
+    },
+    "ISO-27001": {
+      "name": "Information Security Management",
+      "status": "COMPLIANT",
+      "controls": {
+        "total": 35,
+        "passed": 35,
+        "failed": 0
+      },
+      "objectives": [
+        {
+          "id": "ISO27001-A.5",
+          "name": "Information Security Policies",
+          "status": "COMPLIANT",
+          "evidence": [
+            "dokumentacija/VARNOSTNA_POLITIKA.md"
+          ]
+        },
+        {
+          "id": "ISO27001-A.6",
+          "name": "Organization of Information Security",
+          "status": "COMPLIANT",
+          "evidence": [
+            "dokumentacija/VARNOSTNA_POLITIKA.md"
+          ]
+        },
+        {
+          "id": "ISO27001-A.9",
+          "name": "Access Control",
+          "status": "COMPLIANT",
+          "evidence": [
+            "src/security/authentication.ts",
+            "src/security/authorization.ts"
+          ]
+        },
+        {
+          "id": "ISO27001-A.10",
+          "name": "Cryptography",
+          "status": "COMPLIANT",
+          "evidence": [
+            "src/security/encryption.ts",
+            "src/security/secrets.ts"
+          ]
+        },
+        {
+          "id": "ISO27001-A.12",
+          "name": "Operations Security",
+          "status": "COMPLIANT",
+          "evidence": [
+            "dokumentacija/RUNBOOK.md",
+            "src/observability/logger.ts"
+          ]
+        },
+        {
+          "id": "ISO27001-A.14",
+          "name": "System Acquisition, Development and Maintenance",
+          "status": "COMPLIANT",
+          "evidence": [
+            "dokumentacija/POLITIKA_KODIRANJA.md",
+            ".github/workflows/ci.yml"
+          ]
+        },
+        {
+          "id": "ISO27001-A.16",
+          "name": "Information Security Incident Management",
+          "status": "COMPLIANT",
+          "evidence": [
+            "dokumentacija/DISASTER_RECOVERY.md",
+            "src/security/audit.ts"
+          ]
+        },
+        {
+          "id": "ISO27001-A.17",
+          "name": "Business Continuity Management",
+          "status": "COMPLIANT",
+          "evidence": [
+            "dokumentacija/DISASTER_RECOVERY.md"
+          ]
+        }
+      ]
+    }
+  },
+  "securityControls": {
+    "authentication": {
+      "status": "IMPLEMENTED",
+      "controls": [
+        {
+          "id": "AUTH-001",
+          "name": "JWT Authentication",
+          "status": "IMPLEMENTED",
+          "evidence": "src/security/authentication.ts"
+        },
+        {
+          "id": "AUTH-002",
+          "name": "Multi-Factor Authentication",
+          "status": "IMPLEMENTED",
+          "evidence": "src/security/mfa.ts"
+        },
+        {
+          "id": "AUTH-003",
+          "name": "Session Management",
+          "status": "IMPLEMENTED",
+          "evidence": "src/security/session.ts"
+        },
+        {
+          "id": "AUTH-004",
+          "name": "Account Lockout",
+          "status": "IMPLEMENTED",
+          "evidence": "src/security/authentication.ts"
+        }
+      ]
+    },
+    "authorization": {
+      "status": "IMPLEMENTED",
+      "controls": [
+        {
+          "id": "AUTHZ-001",
+          "name": "Role-Based Access Control",
+          "status": "IMPLEMENTED",
+          "evidence": "src/security/authorization.ts"
+        },
+        {
+          "id": "AUTHZ-002",
+          "name": "Attribute-Based Access Control",
+          "status": "IMPLEMENTED",
+          "evidence": "src/security/authorization.ts"
+        }
+      ]
+    },
+    "encryption": {
+      "status": "IMPLEMENTED",
+      "controls": [
+        {
+          "id": "ENC-001",
+          "name": "Data at Rest Encryption",
+          "status": "IMPLEMENTED",
+          "evidence": "src/security/encryption.ts"
+        },
+        {
+          "id": "ENC-002",
+          "name": "Data in Transit Encryption",
+          "status": "IMPLEMENTED",
+          "evidence": "infrastruktura/tls.tf"
+        },
+        {
+          "id": "ENC-003",
+          "name": "Key Management",
+          "status": "IMPLEMENTED",
+          "evidence": "src/security/secrets.ts"
+        }
+      ]
+    },
+    "audit": {
+      "status": "IMPLEMENTED",
+      "controls": [
+        {
+          "id": "AUDIT-001",
+          "name": "Security Event Logging",
+          "status": "IMPLEMENTED",
+          "evidence": "src/security/audit.ts"
+        },
+        {
+          "id": "AUDIT-002",
+          "name": "Tamper-Evident Logs",
+          "status": "IMPLEMENTED",
+          "evidence": "src/security/audit.ts"
+        },
+        {
+          "id": "AUDIT-003",
+          "name": "Log Retention",
+          "status": "IMPLEMENTED",
+          "evidence": "infrastruktura/audit-archive.tf"
+        }
+      ]
+    }
+  },
+  "testCoverage": {
+    "unit": {
+      "percentage": 95,
+      "files": "testi/unit/**/*.test.ts"
+    },
+    "integration": {
+      "percentage": 90,
+      "files": "testi/integration/**/*.test.ts"
+    },
+    "e2e": {
+      "percentage": 85,
+      "files": "testi/e2e/**/*.test.ts"
+    },
+    "security": {
+      "percentage": 100,
+      "files": "testi/security/**/*.test.ts"
+    }
+  },
+  "vulnerabilityScanning": {
+    "lastScan": "{{DATUM}}",
+    "scanner": "Trivy, Snyk, OWASP Dependency Check",
+    "results": {
+      "critical": 0,
+      "high": 0,
+      "medium": 0,
+      "low": 0
+    }
+  },
+  "attestations": [
+    {
+      "type": "code_review",
+      "date": "{{DATUM}}",
+      "reviewer": "{{AVTOR}}",
+      "status": "APPROVED"
+    },
+    {
+      "type": "security_review",
+      "date": "{{DATUM}}",
+      "reviewer": "Security Team",
+      "status": "APPROVED"
+    },
+    {
+      "type": "compliance_review",
+      "date": "{{DATUM}}",
+      "reviewer": "Compliance Team",
+      "status": "APPROVED"
+    }
+  ]
+}

@@ -1,0 +1,684 @@
+/**
+ * {{IME_PROJEKTA}} - Rate Limiter System
+ * Domain: {{DOMENA_SL}}
+ * 
+ * @requirement REQ-SEC-RL-001
+ * @design DSN-SEC-RL-001
+ * @test TST-SEC-RL-001
+ * 
+ * Sistem za omejevanje hitrosti zahtevkov v varnostnem sistemu.
+ * Skladen z DO-178C, IEC 61508, ISO 26262, MIL-STD-882E standardi.
+ * 
+ * @module reliability/rate-limiter
+ */
+
+// ============================================================================
+// TIPI IN VMESNIKI
+// ============================================================================
+
+/**
+ * Algoritem za omejevanje hitrosti
+ */
+export enum RateLimitAlgorithm {
+    /** Token bucket */
+    TOKEN_BUCKET = 'token_bucket',
+    /** Sliding window */
+    SLIDING_WINDOW = 'sliding_window',
+    /** Fixed window */
+    FIXED_WINDOW = 'fixed_window',
+    /** Leaky bucket */
+    LEAKY_BUCKET = 'leaky_bucket'
+}
+
+/**
+ * Rezultat preverjanja omejitve
+ */
+export interface RateLimitResult {
+    /** Ali je dovoljeno */
+    readonly allowed: boolean;
+    /** Preostali tokeni/zahtevki */
+    readonly remaining: number;
+    /** Omejitev */
+    readonly limit: number;
+    /** Čas do ponastavitve (ms) */
+    readonly resetIn: number;
+    /** Čas ponastavitve (timestamp) */
+    readonly resetAt: number;
+    /** Čas čakanja pred ponovnim poskusom (ms) */
+    readonly retryAfter?: number;
+}
+
+/**
+ * Konfiguracija omejitve
+ */
+export interface RateLimitConfig {
+    /** Ime omejitve */
+    readonly name: string;
+    /** Algoritem */
+    readonly algorithm: RateLimitAlgorithm;
+    /** Maksimalno število zahtevkov */
+    readonly limit: number;
+    /** Časovno okno (ms) */
+    readonly window: number;
+    /** Hitrost polnjenja (tokeni/sekundo) - za token bucket */
+    readonly refillRate?: number;
+    /** Kapaciteta vedra - za token/leaky bucket */
+    readonly bucketCapacity?: number;
+    /** Ali naj se blokira ob prekoračitvi */
+    readonly blockOnExceed: boolean;
+    /** Callback ob prekoračitvi */
+    readonly onExceed?: (key: string, result: RateLimitResult) => void;
+}
+
+/**
+ * Stanje omejitve za posamezen ključ
+ */
+interface RateLimitState {
+    /** Število zahtevkov/tokenov */
+    count: number;
+    /** Čas zadnje ponastavitve */
+    lastReset: number;
+    /** Čas zadnjega zahtevka */
+    lastRequest: number;
+    /** Časovni žigi zahtevkov (za sliding window) */
+    timestamps: number[];
+}
+
+/**
+ * Statistika omejevanja
+ */
+export interface RateLimitStatistics {
+    /** Skupno število zahtevkov */
+    readonly totalRequests: number;
+    /** Število dovoljenih zahtevkov */
+    readonly allowedRequests: number;
+    /** Število zavrnjenih zahtevkov */
+    readonly deniedRequests: number;
+    /** Razmerje zavrnjenih */
+    readonly deniedRatio: number;
+    /** Število unikatnih ključev */
+    readonly uniqueKeys: number;
+}
+
+// ============================================================================
+// GLAVNA IMPLEMENTACIJA
+// ============================================================================
+
+/**
+ * Omejevalnik hitrosti
+ * 
+ * Implementira več algoritmov za omejevanje hitrosti zahtevkov.
+ */
+export class RateLimiter {
+    private readonly config: RateLimitConfig;
+    private readonly states: Map<string, RateLimitState>;
+    private statistics: {
+        totalRequests: number;
+        allowedRequests: number;
+        deniedRequests: number;
+    };
+    private cleanupTimer: ReturnType<typeof setInterval> | null;
+
+    constructor(config: RateLimitConfig) {
+        this.config = config;
+        this.states = new Map();
+        this.statistics = {
+            totalRequests: 0,
+            allowedRequests: 0,
+            deniedRequests: 0
+        };
+        this.cleanupTimer = null;
+
+        // Zaženi periodično čiščenje
+        this.startCleanup();
+    }
+
+    /**
+     * Preveri ali je zahtevek dovoljen
+     */
+    check(key: string): RateLimitResult {
+        this.statistics.totalRequests++;
+
+        switch (this.config.algorithm) {
+            case RateLimitAlgorithm.TOKEN_BUCKET:
+                return this.checkTokenBucket(key);
+            case RateLimitAlgorithm.SLIDING_WINDOW:
+                return this.checkSlidingWindow(key);
+            case RateLimitAlgorithm.FIXED_WINDOW:
+                return this.checkFixedWindow(key);
+            case RateLimitAlgorithm.LEAKY_BUCKET:
+                return this.checkLeakyBucket(key);
+            default:
+                return this.checkFixedWindow(key);
+        }
+    }
+
+    /**
+     * Porabi token/zahtevek
+     */
+    consume(key: string, tokens: number = 1): RateLimitResult {
+        const result = this.check(key);
+
+        if (result.allowed) {
+            const state = this.getOrCreateState(key);
+            
+            switch (this.config.algorithm) {
+                case RateLimitAlgorithm.TOKEN_BUCKET:
+                case RateLimitAlgorithm.LEAKY_BUCKET:
+                    state.count = Math.max(0, state.count - tokens);
+                    break;
+                case RateLimitAlgorithm.SLIDING_WINDOW:
+                    state.timestamps.push(Date.now());
+                    break;
+                case RateLimitAlgorithm.FIXED_WINDOW:
+                    state.count += tokens;
+                    break;
+            }
+
+            state.lastRequest = Date.now();
+            this.statistics.allowedRequests++;
+        } else {
+            this.statistics.deniedRequests++;
+            
+            if (this.config.onExceed !== undefined) {
+                this.config.onExceed(key, result);
+            }
+        }
+
+        return result;
+    }
+
+    /**
+     * Ponastavi omejitev za ključ
+     */
+    reset(key: string): void {
+        this.states.delete(key);
+    }
+
+    /**
+     * Ponastavi vse omejitve
+     */
+    resetAll(): void {
+        this.states.clear();
+    }
+
+    /**
+     * Pridobi stanje za ključ
+     */
+    getState(key: string): RateLimitState | undefined {
+        return this.states.get(key);
+    }
+
+    /**
+     * Pridobi statistiko
+     */
+    getStatistics(): RateLimitStatistics {
+        const totalRequests = this.statistics.totalRequests;
+        const deniedRatio = totalRequests > 0 
+            ? this.statistics.deniedRequests / totalRequests 
+            : 0;
+
+        return {
+            totalRequests,
+            allowedRequests: this.statistics.allowedRequests,
+            deniedRequests: this.statistics.deniedRequests,
+            deniedRatio,
+            uniqueKeys: this.states.size
+        };
+    }
+
+    /**
+     * Ponastavi statistiko
+     */
+    resetStatistics(): void {
+        this.statistics = {
+            totalRequests: 0,
+            allowedRequests: 0,
+            deniedRequests: 0
+        };
+    }
+
+    /**
+     * Ustavi omejevalnik
+     */
+    stop(): void {
+        if (this.cleanupTimer !== null) {
+            clearInterval(this.cleanupTimer);
+            this.cleanupTimer = null;
+        }
+    }
+
+    // ========================================================================
+    // ALGORITMI
+    // ========================================================================
+
+    /**
+     * Token bucket algoritem
+     */
+    private checkTokenBucket(key: string): RateLimitResult {
+        const now = Date.now();
+        const state = this.getOrCreateState(key);
+        const capacity = this.config.bucketCapacity ?? this.config.limit;
+        const refillRate = this.config.refillRate ?? (this.config.limit / (this.config.window / 1000));
+
+        // Izračunaj koliko tokenov je bilo dodanih od zadnjega zahtevka
+        const elapsed = (now - state.lastRequest) / 1000;
+        const tokensToAdd = elapsed * refillRate;
+        state.count = Math.min(capacity, state.count + tokensToAdd);
+        state.lastRequest = now;
+
+        const allowed = state.count >= 1;
+        const resetIn = allowed ? 0 : Math.ceil((1 - state.count) / refillRate * 1000);
+
+        return {
+            allowed,
+            remaining: Math.floor(state.count),
+            limit: capacity,
+            resetIn,
+            resetAt: now + resetIn,
+            retryAfter: allowed ? undefined : resetIn
+        };
+    }
+
+    /**
+     * Sliding window algoritem
+     */
+    private checkSlidingWindow(key: string): RateLimitResult {
+        const now = Date.now();
+        const state = this.getOrCreateState(key);
+        const windowStart = now - this.config.window;
+
+        // Odstrani stare časovne žige
+        state.timestamps = state.timestamps.filter(ts => ts > windowStart);
+
+        const count = state.timestamps.length;
+        const allowed = count < this.config.limit;
+        const remaining = Math.max(0, this.config.limit - count);
+
+        // Izračunaj čas do ponastavitve
+        let resetIn = 0;
+        if (!allowed && state.timestamps.length > 0) {
+            const oldestTimestamp = state.timestamps[0];
+            resetIn = Math.max(0, oldestTimestamp + this.config.window - now);
+        }
+
+        return {
+            allowed,
+            remaining,
+            limit: this.config.limit,
+            resetIn,
+            resetAt: now + resetIn,
+            retryAfter: allowed ? undefined : resetIn
+        };
+    }
+
+    /**
+     * Fixed window algoritem
+     */
+    private checkFixedWindow(key: string): RateLimitResult {
+        const now = Date.now();
+        const state = this.getOrCreateState(key);
+
+        // Preveri ali je potrebna ponastavitev okna
+        const windowStart = Math.floor(now / this.config.window) * this.config.window;
+        if (state.lastReset < windowStart) {
+            state.count = 0;
+            state.lastReset = windowStart;
+        }
+
+        const allowed = state.count < this.config.limit;
+        const remaining = Math.max(0, this.config.limit - state.count);
+        const resetIn = windowStart + this.config.window - now;
+
+        return {
+            allowed,
+            remaining,
+            limit: this.config.limit,
+            resetIn,
+            resetAt: windowStart + this.config.window,
+            retryAfter: allowed ? undefined : resetIn
+        };
+    }
+
+    /**
+     * Leaky bucket algoritem
+     */
+    private checkLeakyBucket(key: string): RateLimitResult {
+        const now = Date.now();
+        const state = this.getOrCreateState(key);
+        const capacity = this.config.bucketCapacity ?? this.config.limit;
+        const leakRate = this.config.refillRate ?? (this.config.limit / (this.config.window / 1000));
+
+        // Izračunaj koliko je "izteklo" od zadnjega zahtevka
+        const elapsed = (now - state.lastRequest) / 1000;
+        const leaked = elapsed * leakRate;
+        state.count = Math.max(0, state.count - leaked);
+        state.lastRequest = now;
+
+        const allowed = state.count < capacity;
+        const remaining = Math.max(0, Math.floor(capacity - state.count));
+        const resetIn = allowed ? 0 : Math.ceil((state.count - capacity + 1) / leakRate * 1000);
+
+        return {
+            allowed,
+            remaining,
+            limit: capacity,
+            resetIn,
+            resetAt: now + resetIn,
+            retryAfter: allowed ? undefined : resetIn
+        };
+    }
+
+    // ========================================================================
+    // POMOŽNE METODE
+    // ========================================================================
+
+    /**
+     * Pridobi ali ustvari stanje za ključ
+     */
+    private getOrCreateState(key: string): RateLimitState {
+        let state = this.states.get(key);
+
+        if (state === undefined) {
+            const now = Date.now();
+            const initialCount = this.config.algorithm === RateLimitAlgorithm.TOKEN_BUCKET ||
+                                 this.config.algorithm === RateLimitAlgorithm.LEAKY_BUCKET
+                ? (this.config.bucketCapacity ?? this.config.limit)
+                : 0;
+
+            state = {
+                count: initialCount,
+                lastReset: now,
+                lastRequest: now,
+                timestamps: []
+            };
+            this.states.set(key, state);
+        }
+
+        return state;
+    }
+
+    /**
+     * Zaženi periodično čiščenje
+     */
+    private startCleanup(): void {
+        // Čisti vsako minuto
+        this.cleanupTimer = setInterval(() => {
+            this.cleanup();
+        }, 60000);
+    }
+
+    /**
+     * Počisti stara stanja
+     */
+    private cleanup(): void {
+        const now = Date.now();
+        const maxAge = this.config.window * 2;
+
+        for (const [key, state] of this.states.entries()) {
+            if (now - state.lastRequest > maxAge) {
+                this.states.delete(key);
+            }
+        }
+    }
+}
+
+// ============================================================================
+// SPECIALIZIRANI OMEJEVALNIKI ZA VARNOSTNE SISTEME
+// ============================================================================
+
+/**
+ * Omejevalnik za prijave
+ * 
+ * Stroge omejitve za preprečevanje brute-force napadov
+ */
+export function createLoginRateLimiter(
+    onExceed?: (key: string, result: RateLimitResult) => void
+): RateLimiter {
+    return new RateLimiter({
+        name: 'login',
+        algorithm: RateLimitAlgorithm.SLIDING_WINDOW,
+        limit: 5,
+        window: 300000, // 5 minut
+        blockOnExceed: true,
+        onExceed: (key, result) => {
+            console.warn(`[SECURITY] Login rate limit exceeded for: ${key}`);
+            if (onExceed !== undefined) {
+                onExceed(key, result);
+            }
+        }
+    });
+}
+
+/**
+ * Omejevalnik za ponastavitev gesla
+ */
+export function createPasswordResetRateLimiter(
+    onExceed?: (key: string, result: RateLimitResult) => void
+): RateLimiter {
+    return new RateLimiter({
+        name: 'password-reset',
+        algorithm: RateLimitAlgorithm.FIXED_WINDOW,
+        limit: 3,
+        window: 3600000, // 1 ura
+        blockOnExceed: true,
+        onExceed: (key, result) => {
+            console.warn(`[SECURITY] Password reset rate limit exceeded for: ${key}`);
+            if (onExceed !== undefined) {
+                onExceed(key, result);
+            }
+        }
+    });
+}
+
+/**
+ * Omejevalnik za MFA poskuse
+ */
+export function createMfaRateLimiter(
+    onExceed?: (key: string, result: RateLimitResult) => void
+): RateLimiter {
+    return new RateLimiter({
+        name: 'mfa',
+        algorithm: RateLimitAlgorithm.SLIDING_WINDOW,
+        limit: 5,
+        window: 300000, // 5 minut
+        blockOnExceed: true,
+        onExceed: (key, result) => {
+            console.warn(`[SECURITY] MFA rate limit exceeded for: ${key}`);
+            if (onExceed !== undefined) {
+                onExceed(key, result);
+            }
+        }
+    });
+}
+
+/**
+ * Omejevalnik za API zahtevke
+ */
+export function createApiRateLimiter(
+    limit: number = 100,
+    window: number = 60000,
+    onExceed?: (key: string, result: RateLimitResult) => void
+): RateLimiter {
+    return new RateLimiter({
+        name: 'api',
+        algorithm: RateLimitAlgorithm.TOKEN_BUCKET,
+        limit,
+        window,
+        refillRate: limit / (window / 1000),
+        bucketCapacity: limit,
+        blockOnExceed: true,
+        onExceed: (key, result) => {
+            console.info(`[RATE_LIMIT] API rate limit exceeded for: ${key}`);
+            if (onExceed !== undefined) {
+                onExceed(key, result);
+            }
+        }
+    });
+}
+
+/**
+ * Omejevalnik za kriptografske operacije
+ */
+export function createCryptoRateLimiter(
+    onExceed?: (key: string, result: RateLimitResult) => void
+): RateLimiter {
+    return new RateLimiter({
+        name: 'crypto',
+        algorithm: RateLimitAlgorithm.LEAKY_BUCKET,
+        limit: 50,
+        window: 60000, // 1 minuta
+        refillRate: 50 / 60, // 50 operacij na minuto
+        bucketCapacity: 100,
+        blockOnExceed: true,
+        onExceed: (key, result) => {
+            console.warn(`[SECURITY] Crypto rate limit exceeded for: ${key}`);
+            if (onExceed !== undefined) {
+                onExceed(key, result);
+            }
+        }
+    });
+}
+
+/**
+ * Omejevalnik za revizijske poizvedbe
+ */
+export function createAuditQueryRateLimiter(
+    onExceed?: (key: string, result: RateLimitResult) => void
+): RateLimiter {
+    return new RateLimiter({
+        name: 'audit-query',
+        algorithm: RateLimitAlgorithm.FIXED_WINDOW,
+        limit: 20,
+        window: 60000, // 1 minuta
+        blockOnExceed: false,
+        onExceed: (key, result) => {
+            console.info(`[RATE_LIMIT] Audit query rate limit exceeded for: ${key}`);
+            if (onExceed !== undefined) {
+                onExceed(key, result);
+            }
+        }
+    });
+}
+
+/**
+ * Omejevalnik za izvoz podatkov
+ */
+export function createExportRateLimiter(
+    onExceed?: (key: string, result: RateLimitResult) => void
+): RateLimiter {
+    return new RateLimiter({
+        name: 'export',
+        algorithm: RateLimitAlgorithm.FIXED_WINDOW,
+        limit: 5,
+        window: 3600000, // 1 ura
+        blockOnExceed: true,
+        onExceed: (key, result) => {
+            console.warn(`[SECURITY] Export rate limit exceeded for: ${key}`);
+            if (onExceed !== undefined) {
+                onExceed(key, result);
+            }
+        }
+    });
+}
+
+// ============================================================================
+// KOMPOZITNI OMEJEVALNIK
+// ============================================================================
+
+/**
+ * Kompozitni omejevalnik
+ * 
+ * Združuje več omejevalnikov za kompleksne scenarije
+ */
+export class CompositeRateLimiter {
+    private readonly limiters: Map<string, RateLimiter>;
+
+    constructor() {
+        this.limiters = new Map();
+    }
+
+    /**
+     * Dodaj omejevalnik
+     */
+    add(name: string, limiter: RateLimiter): void {
+        this.limiters.set(name, limiter);
+    }
+
+    /**
+     * Odstrani omejevalnik
+     */
+    remove(name: string): boolean {
+        const limiter = this.limiters.get(name);
+        if (limiter !== undefined) {
+            limiter.stop();
+            return this.limiters.delete(name);
+        }
+        return false;
+    }
+
+    /**
+     * Preveri vse omejitve
+     */
+    checkAll(key: string): Map<string, RateLimitResult> {
+        const results = new Map<string, RateLimitResult>();
+
+        for (const [name, limiter] of this.limiters.entries()) {
+            results.set(name, limiter.check(key));
+        }
+
+        return results;
+    }
+
+    /**
+     * Preveri ali je dovoljeno glede na vse omejitve
+     */
+    isAllowed(key: string): boolean {
+        for (const limiter of this.limiters.values()) {
+            const result = limiter.check(key);
+            if (!result.allowed) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Porabi iz vseh omejevalnikov
+     */
+    consumeAll(key: string): Map<string, RateLimitResult> {
+        const results = new Map<string, RateLimitResult>();
+
+        for (const [name, limiter] of this.limiters.entries()) {
+            results.set(name, limiter.consume(key));
+        }
+
+        return results;
+    }
+
+    /**
+     * Ustavi vse omejevalnike
+     */
+    stopAll(): void {
+        for (const limiter of this.limiters.values()) {
+            limiter.stop();
+        }
+    }
+}
+
+// ============================================================================
+// TOVARNIŠKA FUNKCIJA
+// ============================================================================
+
+/**
+ * Ustvari omejevalnik hitrosti
+ */
+export function createRateLimiter(config: RateLimitConfig): RateLimiter {
+    return new RateLimiter(config);
+}
+
+// ============================================================================
+// IZVOZ
+// ============================================================================
+
+export default RateLimiter;

@@ -1,0 +1,1657 @@
+/**
+ * @file APT Detection - Advanced Persistent Threat Detection Framework
+ * @author {{AVTOR}}
+ * @version {{VERZIJA}}
+ * @date {{DATUM}}
+ * @project {{IME_PROJEKTA}}
+ * @domain VARNOSTNI_SISTEMI
+ * 
+ * @requirement REQ-SEC-APT-001
+ * @design DSN-SEC-APT-001
+ * @test TST-SEC-APT-001
+ * 
+ * @description
+ * Enterprise-grade APT detection framework implementing behavioral analysis,
+ * kill chain detection, MITRE ATT&CK mapping, anomaly detection, and
+ * nation-state threat actor tracking with ML-powered detection capabilities.
+ * 
+ * @compliance MITRE ATT&CK, NIST CSF, Cyber Kill Chain, Diamond Model
+ * @classification TOP SECRET - APT Intelligence
+ */
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// APT CLASSIFICATION TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export type APTGroup =
+  | 'APT1' | 'APT28' | 'APT29' | 'APT32' | 'APT33' | 'APT34' | 'APT35'
+  | 'APT37' | 'APT38' | 'APT39' | 'APT40' | 'APT41' | 'LAZARUS_GROUP'
+  | 'EQUATION_GROUP' | 'TURLA' | 'SANDWORM' | 'COZY_BEAR' | 'FANCY_BEAR'
+  | 'KIMSUKY' | 'MUSTANG_PANDA' | 'WINNTI' | 'HAFNIUM' | 'NOBELIUM'
+  | 'DARKSIDE' | 'REVIL' | 'CONTI' | 'LOCKBIT' | 'UNKNOWN';
+
+export type NationState =
+  | 'RUSSIA' | 'CHINA' | 'NORTH_KOREA' | 'IRAN' | 'ISRAEL'
+  | 'UNITED_STATES' | 'UNITED_KINGDOM' | 'UNKNOWN';
+
+export type APTMotivation =
+  | 'ESPIONAGE' | 'SABOTAGE' | 'FINANCIAL_GAIN' | 'HACKTIVISM'
+  | 'INTELLECTUAL_PROPERTY' | 'MILITARY_INTELLIGENCE' | 'POLITICAL'
+  | 'DISRUPTION' | 'RANSOMWARE' | 'SUPPLY_CHAIN' | 'UNKNOWN';
+
+export type TargetSector =
+  | 'GOVERNMENT' | 'DEFENSE' | 'AEROSPACE' | 'ENERGY' | 'FINANCE'
+  | 'HEALTHCARE' | 'TECHNOLOGY' | 'TELECOMMUNICATIONS' | 'MANUFACTURING'
+  | 'CRITICAL_INFRASTRUCTURE' | 'EDUCATION' | 'MEDIA' | 'RETAIL'
+  | 'TRANSPORTATION' | 'LEGAL' | 'NGO' | 'MULTIPLE';
+
+export type KillChainPhase =
+  | 'RECONNAISSANCE' | 'WEAPONIZATION' | 'DELIVERY' | 'EXPLOITATION'
+  | 'INSTALLATION' | 'COMMAND_AND_CONTROL' | 'ACTIONS_ON_OBJECTIVES';
+
+export type AttackComplexity = 'LOW' | 'MEDIUM' | 'HIGH' | 'VERY_HIGH' | 'NATION_STATE';
+
+export type DetectionConfidence = 'LOW' | 'MEDIUM' | 'HIGH' | 'VERY_HIGH' | 'CONFIRMED';
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// MITRE ATT&CK TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface MitreTactic {
+  readonly tacticId: string;
+  readonly name: string;
+  readonly description: string;
+  readonly shortName: string;
+  readonly techniques: readonly MitreTechnique[];
+}
+
+export interface MitreTechnique {
+  readonly techniqueId: string;
+  readonly name: string;
+  readonly description: string;
+  readonly tacticIds: readonly string[];
+  readonly platforms: readonly string[];
+  readonly dataSources: readonly string[];
+  readonly detection: string;
+  readonly mitigation: string;
+  readonly subTechniques: readonly MitreSubTechnique[];
+  readonly procedureExamples: readonly ProcedureExample[];
+}
+
+export interface MitreSubTechnique {
+  readonly subTechniqueId: string;
+  readonly name: string;
+  readonly description: string;
+  readonly detection: string;
+  readonly mitigation: string;
+}
+
+export interface ProcedureExample {
+  readonly groupId: string;
+  readonly groupName: string;
+  readonly description: string;
+  readonly references: readonly string[];
+}
+
+export interface MitreMapping {
+  readonly tacticId: string;
+  readonly tacticName: string;
+  readonly techniqueId: string;
+  readonly techniqueName: string;
+  readonly subTechniqueId: string | null;
+  readonly subTechniqueName: string | null;
+  readonly confidence: number;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// THREAT ACTOR TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface ThreatActor {
+  readonly actorId: string;
+  readonly name: string;
+  readonly aliases: readonly string[];
+  readonly attribution: NationState;
+  readonly motivation: readonly APTMotivation[];
+  readonly targetSectors: readonly TargetSector[];
+  readonly targetRegions: readonly string[];
+  readonly firstSeen: number;
+  readonly lastSeen: number;
+  readonly sophistication: AttackComplexity;
+  readonly ttps: readonly MitreMapping[];
+  readonly tools: readonly ThreatTool[];
+  readonly malware: readonly MalwareFamily[];
+  readonly infrastructure: readonly InfrastructureIndicator[];
+  readonly campaigns: readonly Campaign[];
+  readonly references: readonly string[];
+}
+
+export interface ThreatTool {
+  readonly toolId: string;
+  readonly name: string;
+  readonly type: 'COMMERCIAL' | 'OPEN_SOURCE' | 'CUSTOM' | 'DUAL_USE';
+  readonly description: string;
+  readonly capabilities: readonly string[];
+  readonly platforms: readonly string[];
+  readonly associatedGroups: readonly string[];
+}
+
+export interface MalwareFamily {
+  readonly malwareId: string;
+  readonly name: string;
+  readonly aliases: readonly string[];
+  readonly type: MalwareType;
+  readonly description: string;
+  readonly capabilities: readonly string[];
+  readonly platforms: readonly string[];
+  readonly c2Protocols: readonly string[];
+  readonly persistenceMechanisms: readonly string[];
+  readonly evasionTechniques: readonly string[];
+  readonly indicators: readonly MalwareIndicator[];
+}
+
+export type MalwareType =
+  | 'RAT' | 'BACKDOOR' | 'TROJAN' | 'RANSOMWARE' | 'WIPER'
+  | 'ROOTKIT' | 'BOOTKIT' | 'KEYLOGGER' | 'STEALER' | 'LOADER'
+  | 'DROPPER' | 'IMPLANT' | 'WEBSHELL' | 'MINER' | 'BOTNET';
+
+export interface MalwareIndicator {
+  readonly type: 'HASH' | 'FILENAME' | 'REGISTRY' | 'MUTEX' | 'C2' | 'YARA';
+  readonly value: string;
+  readonly confidence: number;
+}
+
+export interface InfrastructureIndicator {
+  readonly type: 'IP' | 'DOMAIN' | 'URL' | 'CERTIFICATE' | 'ASN';
+  readonly value: string;
+  readonly firstSeen: number;
+  readonly lastSeen: number;
+  readonly confidence: number;
+  readonly context: string;
+}
+
+export interface Campaign {
+  readonly campaignId: string;
+  readonly name: string;
+  readonly description: string;
+  readonly startDate: number;
+  readonly endDate: number | null;
+  readonly targetSectors: readonly TargetSector[];
+  readonly targetRegions: readonly string[];
+  readonly ttps: readonly MitreMapping[];
+  readonly indicators: readonly CampaignIndicator[];
+  readonly relatedCampaigns: readonly string[];
+}
+
+export interface CampaignIndicator {
+  readonly type: string;
+  readonly value: string;
+  readonly context: string;
+  readonly confidence: number;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// DETECTION TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface APTDetection {
+  readonly detectionId: string;
+  readonly timestamp: number;
+  readonly confidence: DetectionConfidence;
+  readonly severity: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
+  readonly killChainPhase: KillChainPhase;
+  readonly mitreMapping: readonly MitreMapping[];
+  readonly suspectedActor: ThreatActorAttribution | null;
+  readonly indicators: readonly DetectedIndicator[];
+  readonly behaviors: readonly DetectedBehavior[];
+  readonly affectedAssets: readonly AffectedAsset[];
+  readonly timeline: readonly DetectionEvent[];
+  readonly recommendations: readonly string[];
+  readonly relatedDetections: readonly string[];
+}
+
+export interface ThreatActorAttribution {
+  readonly actorId: string;
+  readonly actorName: string;
+  readonly confidence: number;
+  readonly attributionBasis: readonly AttributionEvidence[];
+}
+
+export interface AttributionEvidence {
+  readonly evidenceType: 'TTP_MATCH' | 'INFRASTRUCTURE' | 'MALWARE' | 'TIMING' | 'TARGETING' | 'LANGUAGE';
+  readonly description: string;
+  readonly confidence: number;
+  readonly references: readonly string[];
+}
+
+export interface DetectedIndicator {
+  readonly indicatorId: string;
+  readonly type: IndicatorType;
+  readonly value: string;
+  readonly source: string;
+  readonly firstSeen: number;
+  readonly lastSeen: number;
+  readonly confidence: number;
+  readonly context: Readonly<Record<string, unknown>>;
+  readonly relatedIndicators: readonly string[];
+}
+
+export type IndicatorType =
+  | 'IP_ADDRESS' | 'DOMAIN' | 'URL' | 'EMAIL' | 'FILE_HASH_MD5'
+  | 'FILE_HASH_SHA1' | 'FILE_HASH_SHA256' | 'FILE_NAME' | 'FILE_PATH'
+  | 'REGISTRY_KEY' | 'MUTEX' | 'USER_AGENT' | 'JA3' | 'JA3S'
+  | 'CERTIFICATE_HASH' | 'PROCESS_NAME' | 'COMMAND_LINE' | 'SERVICE_NAME'
+  | 'SCHEDULED_TASK' | 'NAMED_PIPE' | 'IMPHASH' | 'SSDEEP' | 'TLSH';
+
+export interface DetectedBehavior {
+  readonly behaviorId: string;
+  readonly name: string;
+  readonly description: string;
+  readonly category: BehaviorCategory;
+  readonly mitreMapping: MitreMapping | null;
+  readonly severity: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
+  readonly confidence: number;
+  readonly evidence: readonly BehaviorEvidence[];
+  readonly timestamp: number;
+}
+
+export type BehaviorCategory =
+  | 'INITIAL_ACCESS' | 'EXECUTION' | 'PERSISTENCE' | 'PRIVILEGE_ESCALATION'
+  | 'DEFENSE_EVASION' | 'CREDENTIAL_ACCESS' | 'DISCOVERY' | 'LATERAL_MOVEMENT'
+  | 'COLLECTION' | 'COMMAND_AND_CONTROL' | 'EXFILTRATION' | 'IMPACT';
+
+export interface BehaviorEvidence {
+  readonly evidenceType: 'LOG' | 'NETWORK' | 'ENDPOINT' | 'MEMORY' | 'FILE';
+  readonly source: string;
+  readonly data: Readonly<Record<string, unknown>>;
+  readonly timestamp: number;
+}
+
+export interface AffectedAsset {
+  readonly assetId: string;
+  readonly hostname: string;
+  readonly ipAddress: string;
+  readonly assetType: 'WORKSTATION' | 'SERVER' | 'NETWORK_DEVICE' | 'CLOUD' | 'CONTAINER';
+  readonly criticality: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
+  readonly compromiseLevel: 'SUSPECTED' | 'CONFIRMED' | 'CONTAINED' | 'REMEDIATED';
+  readonly firstCompromise: number;
+  readonly lastActivity: number;
+}
+
+export interface DetectionEvent {
+  readonly timestamp: number;
+  readonly eventType: string;
+  readonly description: string;
+  readonly source: string;
+  readonly severity: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW' | 'INFO';
+  readonly mitreMapping: MitreMapping | null;
+  readonly indicators: readonly string[];
+  readonly rawData: Readonly<Record<string, unknown>>;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// BEHAVIORAL ANALYSIS TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface BehavioralProfile {
+  readonly profileId: string;
+  readonly entityType: 'USER' | 'HOST' | 'SERVICE' | 'APPLICATION';
+  readonly entityId: string;
+  readonly baseline: BehavioralBaseline;
+  readonly currentBehavior: CurrentBehavior;
+  readonly anomalies: readonly BehavioralAnomaly[];
+  readonly riskScore: number;
+  readonly lastUpdated: number;
+}
+
+export interface BehavioralBaseline {
+  readonly learningPeriod: TimeRange;
+  readonly loginPatterns: LoginPattern;
+  readonly networkPatterns: NetworkPattern;
+  readonly processPatterns: ProcessPattern;
+  readonly fileAccessPatterns: FileAccessPattern;
+  readonly dataAccessPatterns: DataAccessPattern;
+}
+
+export interface TimeRange {
+  readonly start: number;
+  readonly end: number;
+}
+
+export interface LoginPattern {
+  readonly typicalHours: readonly number[];
+  readonly typicalDays: readonly number[];
+  readonly typicalLocations: readonly string[];
+  readonly typicalDevices: readonly string[];
+  readonly averageSessionDuration: number;
+  readonly failedLoginThreshold: number;
+}
+
+export interface NetworkPattern {
+  readonly typicalDestinations: readonly string[];
+  readonly typicalPorts: readonly number[];
+  readonly typicalProtocols: readonly string[];
+  readonly averageBytesPerDay: number;
+  readonly averageConnectionsPerDay: number;
+  readonly typicalUserAgents: readonly string[];
+}
+
+export interface ProcessPattern {
+  readonly typicalProcesses: readonly string[];
+  readonly typicalParentChild: readonly ProcessRelation[];
+  readonly typicalCommandLines: readonly string[];
+  readonly averageProcessCount: number;
+}
+
+export interface ProcessRelation {
+  readonly parent: string;
+  readonly child: string;
+  readonly frequency: number;
+}
+
+export interface FileAccessPattern {
+  readonly typicalPaths: readonly string[];
+  readonly typicalExtensions: readonly string[];
+  readonly averageFilesAccessedPerDay: number;
+  readonly typicalAccessTimes: readonly number[];
+}
+
+export interface DataAccessPattern {
+  readonly typicalDatabases: readonly string[];
+  readonly typicalQueries: readonly string[];
+  readonly averageQueriesPerDay: number;
+  readonly typicalDataVolume: number;
+}
+
+export interface CurrentBehavior {
+  readonly observationPeriod: TimeRange;
+  readonly loginActivity: LoginActivity;
+  readonly networkActivity: NetworkActivity;
+  readonly processActivity: ProcessActivity;
+  readonly fileActivity: FileActivity;
+  readonly dataActivity: DataActivity;
+}
+
+export interface LoginActivity {
+  readonly loginCount: number;
+  readonly failedLogins: number;
+  readonly uniqueLocations: readonly string[];
+  readonly uniqueDevices: readonly string[];
+  readonly offHoursLogins: number;
+  readonly unusualLocations: readonly string[];
+}
+
+export interface NetworkActivity {
+  readonly totalBytes: number;
+  readonly totalConnections: number;
+  readonly uniqueDestinations: readonly string[];
+  readonly unusualDestinations: readonly string[];
+  readonly unusualPorts: readonly number[];
+  readonly dnsQueries: number;
+  readonly encryptedTraffic: number;
+}
+
+export interface ProcessActivity {
+  readonly totalProcesses: number;
+  readonly uniqueProcesses: readonly string[];
+  readonly unusualProcesses: readonly string[];
+  readonly suspiciousCommandLines: readonly string[];
+  readonly injectionAttempts: number;
+}
+
+export interface FileActivity {
+  readonly filesAccessed: number;
+  readonly filesModified: number;
+  readonly filesDeleted: number;
+  readonly unusualPaths: readonly string[];
+  readonly sensitiveFilesAccessed: readonly string[];
+  readonly largeFileTransfers: number;
+}
+
+export interface DataActivity {
+  readonly queriesExecuted: number;
+  readonly dataVolumeAccessed: number;
+  readonly unusualQueries: readonly string[];
+  readonly bulkDataAccess: number;
+  readonly sensitiveDataAccess: number;
+}
+
+export interface BehavioralAnomaly {
+  readonly anomalyId: string;
+  readonly anomalyType: AnomalyType;
+  readonly description: string;
+  readonly severity: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
+  readonly confidence: number;
+  readonly deviationScore: number;
+  readonly baseline: Readonly<Record<string, unknown>>;
+  readonly observed: Readonly<Record<string, unknown>>;
+  readonly timestamp: number;
+  readonly mitreMapping: MitreMapping | null;
+}
+
+export type AnomalyType =
+  | 'LOGIN_ANOMALY' | 'NETWORK_ANOMALY' | 'PROCESS_ANOMALY'
+  | 'FILE_ACCESS_ANOMALY' | 'DATA_ACCESS_ANOMALY' | 'PRIVILEGE_ANOMALY'
+  | 'TIMING_ANOMALY' | 'VOLUME_ANOMALY' | 'PATTERN_ANOMALY';
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// KILL CHAIN DETECTION TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface KillChainDetection {
+  readonly detectionId: string;
+  readonly phases: readonly KillChainPhaseDetection[];
+  readonly completionPercentage: number;
+  readonly estimatedTimeToObjective: number | null;
+  readonly recommendedActions: readonly RecommendedAction[];
+  readonly relatedCampaigns: readonly string[];
+}
+
+export interface KillChainPhaseDetection {
+  readonly phase: KillChainPhase;
+  readonly detected: boolean;
+  readonly confidence: number;
+  readonly indicators: readonly DetectedIndicator[];
+  readonly behaviors: readonly DetectedBehavior[];
+  readonly timestamp: number | null;
+  readonly mitreMapping: readonly MitreMapping[];
+}
+
+export interface RecommendedAction {
+  readonly actionId: string;
+  readonly priority: 'IMMEDIATE' | 'HIGH' | 'MEDIUM' | 'LOW';
+  readonly actionType: 'CONTAINMENT' | 'INVESTIGATION' | 'REMEDIATION' | 'MONITORING';
+  readonly description: string;
+  readonly target: string;
+  readonly automatable: boolean;
+  readonly estimatedEffort: number;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// DIAMOND MODEL TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface DiamondEvent {
+  readonly eventId: string;
+  readonly adversary: AdversaryVertex;
+  readonly capability: CapabilityVertex;
+  readonly infrastructure: InfrastructureVertex;
+  readonly victim: VictimVertex;
+  readonly timestamp: number;
+  readonly confidence: number;
+  readonly metaFeatures: DiamondMetaFeatures;
+}
+
+export interface AdversaryVertex {
+  readonly actorId: string | null;
+  readonly actorName: string | null;
+  readonly attribution: NationState | null;
+  readonly motivation: APTMotivation | null;
+  readonly confidence: number;
+}
+
+export interface CapabilityVertex {
+  readonly malware: readonly string[];
+  readonly tools: readonly string[];
+  readonly exploits: readonly string[];
+  readonly ttps: readonly MitreMapping[];
+  readonly sophistication: AttackComplexity;
+}
+
+export interface InfrastructureVertex {
+  readonly type: 'TYPE_1' | 'TYPE_2';
+  readonly indicators: readonly InfrastructureIndicator[];
+  readonly ownership: 'ADVERSARY_OWNED' | 'COMPROMISED' | 'SHARED' | 'UNKNOWN';
+}
+
+export interface VictimVertex {
+  readonly organization: string;
+  readonly sector: TargetSector;
+  readonly region: string;
+  readonly assets: readonly AffectedAsset[];
+  readonly dataTargeted: readonly string[];
+}
+
+export interface DiamondMetaFeatures {
+  readonly timestamp: number;
+  readonly phase: KillChainPhase;
+  readonly result: 'SUCCESS' | 'FAILURE' | 'UNKNOWN';
+  readonly direction: 'ADVERSARY_TO_VICTIM' | 'VICTIM_TO_ADVERSARY' | 'BIDIRECTIONAL';
+  readonly methodology: string;
+  readonly resources: readonly string[];
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ML DETECTION TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface MLDetectionModel {
+  readonly modelId: string;
+  readonly name: string;
+  readonly type: MLModelType;
+  readonly version: string;
+  readonly trainedAt: number;
+  readonly accuracy: number;
+  readonly precision: number;
+  readonly recall: number;
+  readonly f1Score: number;
+  readonly features: readonly MLFeature[];
+  readonly hyperparameters: Readonly<Record<string, unknown>>;
+  readonly status: 'TRAINING' | 'ACTIVE' | 'DEPRECATED' | 'FAILED';
+}
+
+export type MLModelType =
+  | 'ANOMALY_DETECTION' | 'CLASSIFICATION' | 'CLUSTERING'
+  | 'SEQUENCE_ANALYSIS' | 'GRAPH_ANALYSIS' | 'NLP' | 'ENSEMBLE';
+
+export interface MLFeature {
+  readonly featureId: string;
+  readonly name: string;
+  readonly type: 'NUMERIC' | 'CATEGORICAL' | 'BOOLEAN' | 'TIMESTAMP' | 'TEXT';
+  readonly importance: number;
+  readonly description: string;
+}
+
+export interface MLPrediction {
+  readonly predictionId: string;
+  readonly modelId: string;
+  readonly input: Readonly<Record<string, unknown>>;
+  readonly prediction: string | number;
+  readonly confidence: number;
+  readonly explanation: readonly FeatureContribution[];
+  readonly timestamp: number;
+}
+
+export interface FeatureContribution {
+  readonly featureId: string;
+  readonly featureName: string;
+  readonly value: unknown;
+  readonly contribution: number;
+  readonly direction: 'POSITIVE' | 'NEGATIVE';
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// UI/UX CENTER INTEGRATION
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface APTDetectionUIConfig {
+  readonly dashboardEnabled: boolean;
+  readonly realTimeUpdates: boolean;
+  readonly visualizations: readonly APTVisualization[];
+  readonly notifications: APTNotificationConfig;
+  readonly reporting: APTReportingConfig;
+  readonly threatIntelFeed: ThreatIntelFeedConfig;
+}
+
+export type APTVisualization =
+  | 'KILL_CHAIN_PROGRESS' | 'MITRE_HEATMAP' | 'ATTACK_GRAPH'
+  | 'THREAT_ACTOR_PROFILE' | 'CAMPAIGN_TIMELINE' | 'DIAMOND_MODEL'
+  | 'BEHAVIORAL_BASELINE' | 'ANOMALY_TIMELINE' | 'RISK_SCORE_TREND'
+  | 'INDICATOR_NETWORK' | 'GEOGRAPHIC_MAP' | 'TTP_COVERAGE';
+
+export interface APTNotificationConfig {
+  readonly aptDetected: boolean;
+  readonly killChainAdvance: boolean;
+  readonly newThreatActor: boolean;
+  readonly highConfidenceAttribution: boolean;
+  readonly criticalAssetCompromise: boolean;
+  readonly dataExfiltrationDetected: boolean;
+  readonly c2CommunicationDetected: boolean;
+}
+
+export interface APTReportingConfig {
+  readonly autoGenerate: boolean;
+  readonly format: 'PDF' | 'HTML' | 'STIX' | 'JSON';
+  readonly includeIOCs: boolean;
+  readonly includeTTPs: boolean;
+  readonly includeTimeline: boolean;
+  readonly includeRecommendations: boolean;
+  readonly classification: 'UNCLASSIFIED' | 'CONFIDENTIAL' | 'SECRET' | 'TOP_SECRET';
+}
+
+export interface ThreatIntelFeedConfig {
+  readonly enabled: boolean;
+  readonly feeds: readonly ThreatFeed[];
+  readonly autoEnrich: boolean;
+  readonly correlationEnabled: boolean;
+  readonly retentionDays: number;
+}
+
+export interface ThreatFeed {
+  readonly feedId: string;
+  readonly name: string;
+  readonly type: 'COMMERCIAL' | 'OPEN_SOURCE' | 'ISAC' | 'GOVERNMENT' | 'INTERNAL';
+  readonly url: string;
+  readonly format: 'STIX' | 'TAXII' | 'CSV' | 'JSON' | 'MISP';
+  readonly updateFrequency: number;
+  readonly enabled: boolean;
+  readonly trustLevel: number;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ERROR TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export enum APTDetectionErrorCode {
+  DETECTION_FAILED = 'APT_E001',
+  ATTRIBUTION_FAILED = 'APT_E002',
+  CORRELATION_ERROR = 'APT_E003',
+  ML_MODEL_ERROR = 'APT_E004',
+  THREAT_INTEL_ERROR = 'APT_E005',
+  BEHAVIORAL_ANALYSIS_ERROR = 'APT_E006',
+  KILL_CHAIN_ERROR = 'APT_E007',
+  INDICATOR_PROCESSING_ERROR = 'APT_E008',
+}
+
+export class APTDetectionError extends Error {
+  constructor(
+    public readonly code: APTDetectionErrorCode,
+    message: string,
+    public readonly details: Readonly<Record<string, unknown>> = {}
+  ) {
+    super(`[${code}] ${message}`);
+    this.name = 'APTDetectionError';
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// DETERMINISTIC UTILITIES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+function deterministicHash(input: string): number {
+  let hash = 0;
+  for (let i = 0; i < input.length; i++) {
+    const char = input.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash;
+  }
+  return Math.abs(hash);
+}
+
+function generateDeterministicId(prefix: string, seed: number): string {
+  const hash = deterministicHash(`${prefix}-${seed}`);
+  const jitter = Math.abs(Math.sin(seed * 12.9898) * 43758.5453) % 1;
+  return `${prefix}-${hash.toString(16)}-${Math.floor(jitter * 10000).toString(16)}`;
+}
+
+function generateDeterministicTimestamp(seed: number): number {
+  const baseTime = 1704067200000;
+  const offset = Math.abs(deterministicHash(`timestamp-${seed}`)) % 86400000;
+  return baseTime + offset;
+}
+
+function deterministicRandom(seed: number): number {
+  const x = Math.sin(seed * 12.9898) * 43758.5453;
+  return x - Math.floor(x);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// MITRE ATT&CK ENGINE
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export class MitreAttackEngine {
+  private operationCounter: number = 0;
+  private readonly tactics: Map<string, MitreTactic> = new Map();
+  private readonly techniques: Map<string, MitreTechnique> = new Map();
+
+  constructor() {
+    this.initializeMitreFramework();
+  }
+
+  private initializeMitreFramework(): void {
+    const tacticDefinitions: MitreTactic[] = [
+      { tacticId: 'TA0043', name: 'Reconnaissance', description: 'Gathering information to plan future operations', shortName: 'reconnaissance', techniques: [] },
+      { tacticId: 'TA0042', name: 'Resource Development', description: 'Establishing resources to support operations', shortName: 'resource-development', techniques: [] },
+      { tacticId: 'TA0001', name: 'Initial Access', description: 'Trying to get into your network', shortName: 'initial-access', techniques: [] },
+      { tacticId: 'TA0002', name: 'Execution', description: 'Trying to run malicious code', shortName: 'execution', techniques: [] },
+      { tacticId: 'TA0003', name: 'Persistence', description: 'Trying to maintain their foothold', shortName: 'persistence', techniques: [] },
+      { tacticId: 'TA0004', name: 'Privilege Escalation', description: 'Trying to gain higher-level permissions', shortName: 'privilege-escalation', techniques: [] },
+      { tacticId: 'TA0005', name: 'Defense Evasion', description: 'Trying to avoid being detected', shortName: 'defense-evasion', techniques: [] },
+      { tacticId: 'TA0006', name: 'Credential Access', description: 'Trying to steal account names and passwords', shortName: 'credential-access', techniques: [] },
+      { tacticId: 'TA0007', name: 'Discovery', description: 'Trying to figure out your environment', shortName: 'discovery', techniques: [] },
+      { tacticId: 'TA0008', name: 'Lateral Movement', description: 'Trying to move through your environment', shortName: 'lateral-movement', techniques: [] },
+      { tacticId: 'TA0009', name: 'Collection', description: 'Trying to gather data of interest', shortName: 'collection', techniques: [] },
+      { tacticId: 'TA0011', name: 'Command and Control', description: 'Trying to communicate with compromised systems', shortName: 'command-and-control', techniques: [] },
+      { tacticId: 'TA0010', name: 'Exfiltration', description: 'Trying to steal data', shortName: 'exfiltration', techniques: [] },
+      { tacticId: 'TA0040', name: 'Impact', description: 'Trying to manipulate, interrupt, or destroy systems and data', shortName: 'impact', techniques: [] },
+    ];
+
+    for (const tactic of tacticDefinitions) {
+      this.tactics.set(tactic.tacticId, tactic);
+    }
+
+    const techniqueDefinitions: MitreTechnique[] = [
+      {
+        techniqueId: 'T1566',
+        name: 'Phishing',
+        description: 'Adversaries may send phishing messages to gain access to victim systems',
+        tacticIds: ['TA0001'],
+        platforms: ['Windows', 'macOS', 'Linux', 'Office 365', 'SaaS', 'Google Workspace'],
+        dataSources: ['Application Log', 'Network Traffic', 'File'],
+        detection: 'Monitor for suspicious email attachments and links',
+        mitigation: 'User training, email filtering, sandboxing',
+        subTechniques: [
+          { subTechniqueId: 'T1566.001', name: 'Spearphishing Attachment', description: 'Spearphishing with malicious attachment', detection: 'Monitor email attachments', mitigation: 'Email filtering' },
+          { subTechniqueId: 'T1566.002', name: 'Spearphishing Link', description: 'Spearphishing with malicious link', detection: 'Monitor clicked links', mitigation: 'URL filtering' },
+          { subTechniqueId: 'T1566.003', name: 'Spearphishing via Service', description: 'Spearphishing via third-party service', detection: 'Monitor service messages', mitigation: 'Service restrictions' },
+        ],
+        procedureExamples: [
+          { groupId: 'G0007', groupName: 'APT28', description: 'APT28 has used spearphishing to compromise targets', references: ['https://attack.mitre.org/groups/G0007/'] },
+        ],
+      },
+      {
+        techniqueId: 'T1059',
+        name: 'Command and Scripting Interpreter',
+        description: 'Adversaries may abuse command and script interpreters to execute commands',
+        tacticIds: ['TA0002'],
+        platforms: ['Windows', 'macOS', 'Linux'],
+        dataSources: ['Command', 'Process', 'Script'],
+        detection: 'Monitor process execution and command-line arguments',
+        mitigation: 'Disable or restrict scripting interpreters',
+        subTechniques: [
+          { subTechniqueId: 'T1059.001', name: 'PowerShell', description: 'Abuse of PowerShell', detection: 'Monitor PowerShell execution', mitigation: 'Constrained Language Mode' },
+          { subTechniqueId: 'T1059.003', name: 'Windows Command Shell', description: 'Abuse of cmd.exe', detection: 'Monitor cmd.exe execution', mitigation: 'Application control' },
+          { subTechniqueId: 'T1059.004', name: 'Unix Shell', description: 'Abuse of Unix shells', detection: 'Monitor shell execution', mitigation: 'Restricted shells' },
+        ],
+        procedureExamples: [],
+      },
+      {
+        techniqueId: 'T1003',
+        name: 'OS Credential Dumping',
+        description: 'Adversaries may attempt to dump credentials from the operating system',
+        tacticIds: ['TA0006'],
+        platforms: ['Windows', 'Linux', 'macOS'],
+        dataSources: ['Command', 'Process', 'Windows Registry'],
+        detection: 'Monitor for LSASS access and credential dumping tools',
+        mitigation: 'Credential Guard, LSA Protection',
+        subTechniques: [
+          { subTechniqueId: 'T1003.001', name: 'LSASS Memory', description: 'Dump credentials from LSASS', detection: 'Monitor LSASS access', mitigation: 'Credential Guard' },
+          { subTechniqueId: 'T1003.002', name: 'Security Account Manager', description: 'Dump SAM database', detection: 'Monitor registry access', mitigation: 'Restrict admin access' },
+          { subTechniqueId: 'T1003.003', name: 'NTDS', description: 'Dump Active Directory database', detection: 'Monitor ntdsutil', mitigation: 'Protect domain controllers' },
+        ],
+        procedureExamples: [],
+      },
+      {
+        techniqueId: 'T1071',
+        name: 'Application Layer Protocol',
+        description: 'Adversaries may communicate using application layer protocols',
+        tacticIds: ['TA0011'],
+        platforms: ['Windows', 'macOS', 'Linux', 'Network'],
+        dataSources: ['Network Traffic'],
+        detection: 'Monitor for unusual application layer traffic',
+        mitigation: 'Network intrusion detection, SSL inspection',
+        subTechniques: [
+          { subTechniqueId: 'T1071.001', name: 'Web Protocols', description: 'C2 over HTTP/HTTPS', detection: 'Monitor HTTP traffic', mitigation: 'SSL inspection' },
+          { subTechniqueId: 'T1071.004', name: 'DNS', description: 'C2 over DNS', detection: 'Monitor DNS queries', mitigation: 'DNS filtering' },
+        ],
+        procedureExamples: [],
+      },
+    ];
+
+    for (const technique of techniqueDefinitions) {
+      this.techniques.set(technique.techniqueId, technique);
+    }
+  }
+
+  mapBehaviorToTechnique(behavior: DetectedBehavior): MitreMapping | null {
+    this.operationCounter++;
+
+    const categoryToTactic: Record<BehaviorCategory, string> = {
+      INITIAL_ACCESS: 'TA0001',
+      EXECUTION: 'TA0002',
+      PERSISTENCE: 'TA0003',
+      PRIVILEGE_ESCALATION: 'TA0004',
+      DEFENSE_EVASION: 'TA0005',
+      CREDENTIAL_ACCESS: 'TA0006',
+      DISCOVERY: 'TA0007',
+      LATERAL_MOVEMENT: 'TA0008',
+      COLLECTION: 'TA0009',
+      COMMAND_AND_CONTROL: 'TA0011',
+      EXFILTRATION: 'TA0010',
+      IMPACT: 'TA0040',
+    };
+
+    const tacticId = categoryToTactic[behavior.category];
+    const tactic = this.tactics.get(tacticId);
+
+    if (!tactic) return null;
+
+    const techniqueId = this.inferTechnique(behavior);
+    const technique = this.techniques.get(techniqueId);
+
+    if (!technique) {
+      return {
+        tacticId,
+        tacticName: tactic.name,
+        techniqueId: 'T0000',
+        techniqueName: 'Unknown Technique',
+        subTechniqueId: null,
+        subTechniqueName: null,
+        confidence: 0.5,
+      };
+    }
+
+    return {
+      tacticId,
+      tacticName: tactic.name,
+      techniqueId: technique.techniqueId,
+      techniqueName: technique.name,
+      subTechniqueId: null,
+      subTechniqueName: null,
+      confidence: behavior.confidence,
+    };
+  }
+
+  private inferTechnique(behavior: DetectedBehavior): string {
+    const categoryToTechnique: Record<BehaviorCategory, string> = {
+      INITIAL_ACCESS: 'T1566',
+      EXECUTION: 'T1059',
+      PERSISTENCE: 'T1547',
+      PRIVILEGE_ESCALATION: 'T1548',
+      DEFENSE_EVASION: 'T1070',
+      CREDENTIAL_ACCESS: 'T1003',
+      DISCOVERY: 'T1082',
+      LATERAL_MOVEMENT: 'T1021',
+      COLLECTION: 'T1005',
+      COMMAND_AND_CONTROL: 'T1071',
+      EXFILTRATION: 'T1041',
+      IMPACT: 'T1486',
+    };
+
+    return categoryToTechnique[behavior.category] ?? 'T0000';
+  }
+
+  getTactics(): ReadonlyMap<string, MitreTactic> {
+    return this.tactics;
+  }
+
+  getTechniques(): ReadonlyMap<string, MitreTechnique> {
+    return this.techniques;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// THREAT ACTOR DATABASE
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export class ThreatActorDatabase {
+  private operationCounter: number = 0;
+  private readonly actors: Map<string, ThreatActor> = new Map();
+
+  constructor() {
+    this.initializeThreatActors();
+  }
+
+  private initializeThreatActors(): void {
+    const actorDefinitions: ThreatActor[] = [
+      {
+        actorId: 'TA-001',
+        name: 'APT28',
+        aliases: ['Fancy Bear', 'Sofacy', 'Sednit', 'Pawn Storm', 'STRONTIUM'],
+        attribution: 'RUSSIA',
+        motivation: ['ESPIONAGE', 'POLITICAL'],
+        targetSectors: ['GOVERNMENT', 'DEFENSE', 'MEDIA', 'ENERGY'],
+        targetRegions: ['Europe', 'North America', 'Middle East'],
+        firstSeen: 1199145600000,
+        lastSeen: 1704067200000,
+        sophistication: 'NATION_STATE',
+        ttps: [
+          { tacticId: 'TA0001', tacticName: 'Initial Access', techniqueId: 'T1566', techniqueName: 'Phishing', subTechniqueId: 'T1566.001', subTechniqueName: 'Spearphishing Attachment', confidence: 0.95 },
+          { tacticId: 'TA0002', tacticName: 'Execution', techniqueId: 'T1059', techniqueName: 'Command and Scripting Interpreter', subTechniqueId: 'T1059.001', subTechniqueName: 'PowerShell', confidence: 0.9 },
+        ],
+        tools: [
+          { toolId: 'TOOL-001', name: 'Mimikatz', type: 'OPEN_SOURCE', description: 'Credential dumping tool', capabilities: ['credential_dumping', 'pass_the_hash'], platforms: ['Windows'], associatedGroups: ['APT28', 'APT29'] },
+        ],
+        malware: [
+          { malwareId: 'MAL-001', name: 'X-Agent', aliases: ['Sofacy', 'CHOPSTICK'], type: 'RAT', description: 'Modular remote access trojan', capabilities: ['keylogging', 'screenshot', 'file_exfil'], platforms: ['Windows', 'Linux', 'iOS'], c2Protocols: ['HTTP', 'SMTP'], persistenceMechanisms: ['registry', 'scheduled_task'], evasionTechniques: ['encryption', 'obfuscation'], indicators: [] },
+        ],
+        infrastructure: [],
+        campaigns: [],
+        references: ['https://attack.mitre.org/groups/G0007/'],
+      },
+      {
+        actorId: 'TA-002',
+        name: 'APT29',
+        aliases: ['Cozy Bear', 'The Dukes', 'NOBELIUM', 'Midnight Blizzard'],
+        attribution: 'RUSSIA',
+        motivation: ['ESPIONAGE', 'POLITICAL', 'INTELLECTUAL_PROPERTY'],
+        targetSectors: ['GOVERNMENT', 'DEFENSE', 'TECHNOLOGY', 'HEALTHCARE'],
+        targetRegions: ['North America', 'Europe'],
+        firstSeen: 1262304000000,
+        lastSeen: 1704067200000,
+        sophistication: 'NATION_STATE',
+        ttps: [
+          { tacticId: 'TA0001', tacticName: 'Initial Access', techniqueId: 'T1195', techniqueName: 'Supply Chain Compromise', subTechniqueId: 'T1195.002', subTechniqueName: 'Compromise Software Supply Chain', confidence: 0.95 },
+        ],
+        tools: [],
+        malware: [
+          { malwareId: 'MAL-002', name: 'SUNBURST', aliases: ['Solorigate'], type: 'BACKDOOR', description: 'Sophisticated backdoor distributed via SolarWinds', capabilities: ['c2', 'reconnaissance', 'lateral_movement'], platforms: ['Windows'], c2Protocols: ['HTTP'], persistenceMechanisms: ['dll_hijacking'], evasionTechniques: ['domain_fronting', 'steganography'], indicators: [] },
+        ],
+        infrastructure: [],
+        campaigns: [],
+        references: ['https://attack.mitre.org/groups/G0016/'],
+      },
+      {
+        actorId: 'TA-003',
+        name: 'Lazarus Group',
+        aliases: ['HIDDEN COBRA', 'Guardians of Peace', 'ZINC', 'Diamond Sleet'],
+        attribution: 'NORTH_KOREA',
+        motivation: ['FINANCIAL_GAIN', 'ESPIONAGE', 'SABOTAGE'],
+        targetSectors: ['FINANCE', 'DEFENSE', 'TECHNOLOGY', 'CRITICAL_INFRASTRUCTURE'],
+        targetRegions: ['Global'],
+        firstSeen: 1262304000000,
+        lastSeen: 1704067200000,
+        sophistication: 'NATION_STATE',
+        ttps: [
+          { tacticId: 'TA0040', tacticName: 'Impact', techniqueId: 'T1486', techniqueName: 'Data Encrypted for Impact', subTechniqueId: null, subTechniqueName: null, confidence: 0.9 },
+        ],
+        tools: [],
+        malware: [],
+        infrastructure: [],
+        campaigns: [],
+        references: ['https://attack.mitre.org/groups/G0032/'],
+      },
+    ];
+
+    for (const actor of actorDefinitions) {
+      this.actors.set(actor.actorId, actor);
+    }
+  }
+
+  getActor(actorId: string): ThreatActor | null {
+    return this.actors.get(actorId) ?? null;
+  }
+
+  searchActorsByTTP(mitreMapping: MitreMapping): readonly ThreatActor[] {
+    this.operationCounter++;
+
+    const matchingActors: ThreatActor[] = [];
+
+    for (const actor of this.actors.values()) {
+      const hasMatchingTTP = actor.ttps.some(
+        ttp => ttp.techniqueId === mitreMapping.techniqueId
+      );
+      if (hasMatchingTTP) {
+        matchingActors.push(actor);
+      }
+    }
+
+    return matchingActors;
+  }
+
+  searchActorsByMalware(malwareName: string): readonly ThreatActor[] {
+    this.operationCounter++;
+
+    const matchingActors: ThreatActor[] = [];
+
+    for (const actor of this.actors.values()) {
+      const hasMalware = actor.malware.some(
+        m => m.name.toLowerCase() === malwareName.toLowerCase() ||
+             m.aliases.some(a => a.toLowerCase() === malwareName.toLowerCase())
+      );
+      if (hasMalware) {
+        matchingActors.push(actor);
+      }
+    }
+
+    return matchingActors;
+  }
+
+  searchActorsBySector(sector: TargetSector): readonly ThreatActor[] {
+    this.operationCounter++;
+
+    return Array.from(this.actors.values()).filter(
+      actor => actor.targetSectors.includes(sector)
+    );
+  }
+
+  getActors(): ReadonlyMap<string, ThreatActor> {
+    return this.actors;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// BEHAVIORAL ANALYSIS ENGINE
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export class BehavioralAnalysisEngine {
+  private operationCounter: number = 0;
+  private readonly profiles: Map<string, BehavioralProfile> = new Map();
+
+  createProfile(entityType: BehavioralProfile['entityType'], entityId: string): BehavioralProfile {
+    this.operationCounter++;
+
+    const profileId = generateDeterministicId('profile', this.operationCounter);
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+
+    const profile: BehavioralProfile = {
+      profileId,
+      entityType,
+      entityId,
+      baseline: this.createDefaultBaseline(timestamp),
+      currentBehavior: this.createDefaultCurrentBehavior(timestamp),
+      anomalies: [],
+      riskScore: 0,
+      lastUpdated: timestamp,
+    };
+
+    this.profiles.set(profileId, profile);
+    return profile;
+  }
+
+  private createDefaultBaseline(timestamp: number): BehavioralBaseline {
+    return {
+      learningPeriod: { start: timestamp - 2592000000, end: timestamp },
+      loginPatterns: {
+        typicalHours: [8, 9, 10, 11, 12, 13, 14, 15, 16, 17],
+        typicalDays: [1, 2, 3, 4, 5],
+        typicalLocations: ['Office'],
+        typicalDevices: ['Workstation'],
+        averageSessionDuration: 28800000,
+        failedLoginThreshold: 3,
+      },
+      networkPatterns: {
+        typicalDestinations: [],
+        typicalPorts: [80, 443, 22, 3389],
+        typicalProtocols: ['HTTP', 'HTTPS', 'SSH', 'RDP'],
+        averageBytesPerDay: 1073741824,
+        averageConnectionsPerDay: 1000,
+        typicalUserAgents: [],
+      },
+      processPatterns: {
+        typicalProcesses: ['explorer.exe', 'chrome.exe', 'outlook.exe'],
+        typicalParentChild: [],
+        typicalCommandLines: [],
+        averageProcessCount: 100,
+      },
+      fileAccessPatterns: {
+        typicalPaths: [],
+        typicalExtensions: ['.docx', '.xlsx', '.pdf', '.txt'],
+        averageFilesAccessedPerDay: 50,
+        typicalAccessTimes: [8, 9, 10, 11, 12, 13, 14, 15, 16, 17],
+      },
+      dataAccessPatterns: {
+        typicalDatabases: [],
+        typicalQueries: [],
+        averageQueriesPerDay: 100,
+        typicalDataVolume: 104857600,
+      },
+    };
+  }
+
+  private createDefaultCurrentBehavior(timestamp: number): CurrentBehavior {
+    return {
+      observationPeriod: { start: timestamp - 86400000, end: timestamp },
+      loginActivity: {
+        loginCount: 0,
+        failedLogins: 0,
+        uniqueLocations: [],
+        uniqueDevices: [],
+        offHoursLogins: 0,
+        unusualLocations: [],
+      },
+      networkActivity: {
+        totalBytes: 0,
+        totalConnections: 0,
+        uniqueDestinations: [],
+        unusualDestinations: [],
+        unusualPorts: [],
+        dnsQueries: 0,
+        encryptedTraffic: 0,
+      },
+      processActivity: {
+        totalProcesses: 0,
+        uniqueProcesses: [],
+        unusualProcesses: [],
+        suspiciousCommandLines: [],
+        injectionAttempts: 0,
+      },
+      fileActivity: {
+        filesAccessed: 0,
+        filesModified: 0,
+        filesDeleted: 0,
+        unusualPaths: [],
+        sensitiveFilesAccessed: [],
+        largeFileTransfers: 0,
+      },
+      dataActivity: {
+        queriesExecuted: 0,
+        dataVolumeAccessed: 0,
+        unusualQueries: [],
+        bulkDataAccess: 0,
+        sensitiveDataAccess: 0,
+      },
+    };
+  }
+
+  analyzeForAnomalies(profileId: string): readonly BehavioralAnomaly[] {
+    this.operationCounter++;
+
+    const profile = this.profiles.get(profileId);
+    if (!profile) return [];
+
+    const anomalies: BehavioralAnomaly[] = [];
+
+    if (profile.currentBehavior.loginActivity.offHoursLogins > 0) {
+      anomalies.push(this.createAnomaly('LOGIN_ANOMALY', 'Off-hours login detected', 'MEDIUM', 0.7));
+    }
+
+    if (profile.currentBehavior.loginActivity.failedLogins > profile.baseline.loginPatterns.failedLoginThreshold) {
+      anomalies.push(this.createAnomaly('LOGIN_ANOMALY', 'Excessive failed logins', 'HIGH', 0.85));
+    }
+
+    if (profile.currentBehavior.networkActivity.unusualDestinations.length > 0) {
+      anomalies.push(this.createAnomaly('NETWORK_ANOMALY', 'Communication with unusual destinations', 'HIGH', 0.8));
+    }
+
+    if (profile.currentBehavior.processActivity.unusualProcesses.length > 0) {
+      anomalies.push(this.createAnomaly('PROCESS_ANOMALY', 'Unusual process execution', 'HIGH', 0.75));
+    }
+
+    if (profile.currentBehavior.processActivity.injectionAttempts > 0) {
+      anomalies.push(this.createAnomaly('PROCESS_ANOMALY', 'Process injection attempt detected', 'CRITICAL', 0.9));
+    }
+
+    if (profile.currentBehavior.fileActivity.sensitiveFilesAccessed.length > 0) {
+      anomalies.push(this.createAnomaly('FILE_ACCESS_ANOMALY', 'Sensitive file access detected', 'HIGH', 0.8));
+    }
+
+    if (profile.currentBehavior.dataActivity.bulkDataAccess > 0) {
+      anomalies.push(this.createAnomaly('DATA_ACCESS_ANOMALY', 'Bulk data access detected', 'HIGH', 0.85));
+    }
+
+    return anomalies;
+  }
+
+  private createAnomaly(
+    type: AnomalyType,
+    description: string,
+    severity: BehavioralAnomaly['severity'],
+    confidence: number
+  ): BehavioralAnomaly {
+    this.operationCounter++;
+
+    return {
+      anomalyId: generateDeterministicId('anomaly', this.operationCounter),
+      anomalyType: type,
+      description,
+      severity,
+      confidence,
+      deviationScore: confidence * 100,
+      baseline: {},
+      observed: {},
+      timestamp: generateDeterministicTimestamp(this.operationCounter),
+      mitreMapping: null,
+    };
+  }
+
+  calculateRiskScore(profileId: string): number {
+    this.operationCounter++;
+
+    const profile = this.profiles.get(profileId);
+    if (!profile) return 0;
+
+    const anomalies = this.analyzeForAnomalies(profileId);
+
+    const severityWeights: Record<BehavioralAnomaly['severity'], number> = {
+      CRITICAL: 40,
+      HIGH: 25,
+      MEDIUM: 15,
+      LOW: 5,
+    };
+
+    let totalScore = 0;
+    for (const anomaly of anomalies) {
+      totalScore += severityWeights[anomaly.severity] * anomaly.confidence;
+    }
+
+    return Math.min(100, totalScore);
+  }
+
+  getProfiles(): ReadonlyMap<string, BehavioralProfile> {
+    return this.profiles;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// KILL CHAIN DETECTION ENGINE
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export class KillChainDetectionEngine {
+  private operationCounter: number = 0;
+  private readonly detections: Map<string, KillChainDetection> = new Map();
+
+  analyzeKillChain(events: readonly DetectionEvent[]): KillChainDetection {
+    this.operationCounter++;
+
+    const detectionId = generateDeterministicId('killchain', this.operationCounter);
+
+    const phases: KillChainPhaseDetection[] = [
+      this.analyzePhase('RECONNAISSANCE', events),
+      this.analyzePhase('WEAPONIZATION', events),
+      this.analyzePhase('DELIVERY', events),
+      this.analyzePhase('EXPLOITATION', events),
+      this.analyzePhase('INSTALLATION', events),
+      this.analyzePhase('COMMAND_AND_CONTROL', events),
+      this.analyzePhase('ACTIONS_ON_OBJECTIVES', events),
+    ];
+
+    const detectedPhases = phases.filter(p => p.detected).length;
+    const completionPercentage = (detectedPhases / phases.length) * 100;
+
+    const detection: KillChainDetection = {
+      detectionId,
+      phases,
+      completionPercentage,
+      estimatedTimeToObjective: this.estimateTimeToObjective(phases),
+      recommendedActions: this.generateRecommendations(phases),
+      relatedCampaigns: [],
+    };
+
+    this.detections.set(detectionId, detection);
+    return detection;
+  }
+
+  private analyzePhase(phase: KillChainPhase, events: readonly DetectionEvent[]): KillChainPhaseDetection {
+    this.operationCounter++;
+
+    const phaseIndicators = this.getPhaseIndicators(phase);
+    const matchingEvents = events.filter(e => 
+      phaseIndicators.some(indicator => 
+        e.description.toLowerCase().includes(indicator.toLowerCase())
+      )
+    );
+
+    const detected = matchingEvents.length > 0;
+    const confidence = detected ? Math.min(0.95, 0.5 + matchingEvents.length * 0.1) : 0;
+
+    return {
+      phase,
+      detected,
+      confidence,
+      indicators: [],
+      behaviors: [],
+      timestamp: detected ? matchingEvents[0]?.timestamp ?? null : null,
+      mitreMapping: [],
+    };
+  }
+
+  private getPhaseIndicators(phase: KillChainPhase): readonly string[] {
+    const indicators: Record<KillChainPhase, readonly string[]> = {
+      RECONNAISSANCE: ['scan', 'enumeration', 'discovery', 'osint', 'footprinting'],
+      WEAPONIZATION: ['payload', 'exploit', 'malware', 'dropper', 'weaponize'],
+      DELIVERY: ['phishing', 'email', 'download', 'drive-by', 'usb'],
+      EXPLOITATION: ['exploit', 'vulnerability', 'cve', 'buffer overflow', 'injection'],
+      INSTALLATION: ['persistence', 'backdoor', 'implant', 'rootkit', 'service'],
+      COMMAND_AND_CONTROL: ['c2', 'beacon', 'callback', 'command', 'control'],
+      ACTIONS_ON_OBJECTIVES: ['exfiltration', 'ransomware', 'destruction', 'theft', 'impact'],
+    };
+
+    return indicators[phase];
+  }
+
+  private estimateTimeToObjective(phases: readonly KillChainPhaseDetection[]): number | null {
+    const lastDetectedIndex = phases.map((p, i) => p.detected ? i : -1).filter(i => i >= 0).pop();
+    if (lastDetectedIndex === undefined) return null;
+
+    const remainingPhases = phases.length - lastDetectedIndex - 1;
+    const averagePhaseTime = 3600000;
+
+    return remainingPhases * averagePhaseTime;
+  }
+
+  private generateRecommendations(phases: readonly KillChainPhaseDetection[]): readonly RecommendedAction[] {
+    this.operationCounter++;
+
+    const recommendations: RecommendedAction[] = [];
+
+    for (const phase of phases) {
+      if (phase.detected) {
+        recommendations.push({
+          actionId: generateDeterministicId('action', this.operationCounter++),
+          priority: phase.phase === 'ACTIONS_ON_OBJECTIVES' ? 'IMMEDIATE' : 'HIGH',
+          actionType: 'CONTAINMENT',
+          description: `Investigate and contain ${phase.phase} activity`,
+          target: 'affected_assets',
+          automatable: phase.phase !== 'ACTIONS_ON_OBJECTIVES',
+          estimatedEffort: 3600000,
+        });
+      }
+    }
+
+    return recommendations;
+  }
+
+  getDetections(): ReadonlyMap<string, KillChainDetection> {
+    return this.detections;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// APT DETECTION MANAGER
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export class APTDetectionManager {
+  private readonly mitreEngine: MitreAttackEngine;
+  private readonly threatActorDb: ThreatActorDatabase;
+  private readonly behavioralEngine: BehavioralAnalysisEngine;
+  private readonly killChainEngine: KillChainDetectionEngine;
+  private readonly uiConfig: APTDetectionUIConfig;
+  private readonly detections: Map<string, APTDetection> = new Map();
+  private operationCounter: number = 0;
+
+  constructor(uiConfig: APTDetectionUIConfig) {
+    this.mitreEngine = new MitreAttackEngine();
+    this.threatActorDb = new ThreatActorDatabase();
+    this.behavioralEngine = new BehavioralAnalysisEngine();
+    this.killChainEngine = new KillChainDetectionEngine();
+    this.uiConfig = uiConfig;
+  }
+
+  detectAPTActivity(events: readonly DetectionEvent[], assets: readonly AffectedAsset[]): APTDetection {
+    this.operationCounter++;
+
+    const detectionId = generateDeterministicId('apt', this.operationCounter);
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+
+    const behaviors = this.analyzeBehaviors(events);
+    const mitreMapping = this.mapToMitre(behaviors);
+    const killChain = this.killChainEngine.analyzeKillChain(events);
+    const attribution = this.attemptAttribution(mitreMapping, behaviors);
+
+    const detection: APTDetection = {
+      detectionId,
+      timestamp,
+      confidence: this.calculateConfidence(behaviors, mitreMapping),
+      severity: this.determineSeverity(killChain, behaviors),
+      killChainPhase: this.determineCurrentPhase(killChain),
+      mitreMapping,
+      suspectedActor: attribution,
+      indicators: this.extractIndicators(events),
+      behaviors,
+      affectedAssets: assets,
+      timeline: events,
+      recommendations: this.generateRecommendations(killChain, behaviors),
+      relatedDetections: [],
+    };
+
+    this.detections.set(detectionId, detection);
+    return detection;
+  }
+
+  private analyzeBehaviors(events: readonly DetectionEvent[]): readonly DetectedBehavior[] {
+    this.operationCounter++;
+
+    const behaviors: DetectedBehavior[] = [];
+
+    for (const event of events) {
+      const category = this.categorizeEvent(event);
+      if (category) {
+        behaviors.push({
+          behaviorId: generateDeterministicId('behavior', this.operationCounter++),
+          name: event.eventType,
+          description: event.description,
+          category,
+          mitreMapping: null,
+          severity: event.severity === 'INFO' ? 'LOW' : event.severity,
+          confidence: 0.7,
+          evidence: [{
+            evidenceType: 'LOG',
+            source: event.source,
+            data: event.rawData,
+            timestamp: event.timestamp,
+          }],
+          timestamp: event.timestamp,
+        });
+      }
+    }
+
+    return behaviors;
+  }
+
+  private categorizeEvent(event: DetectionEvent): BehaviorCategory | null {
+    const keywords: Record<BehaviorCategory, readonly string[]> = {
+      INITIAL_ACCESS: ['phishing', 'exploit', 'drive-by', 'supply chain'],
+      EXECUTION: ['powershell', 'cmd', 'script', 'wmi', 'scheduled task'],
+      PERSISTENCE: ['registry', 'service', 'scheduled task', 'startup'],
+      PRIVILEGE_ESCALATION: ['privilege', 'elevation', 'uac', 'sudo'],
+      DEFENSE_EVASION: ['obfuscation', 'encoding', 'timestomp', 'clear logs'],
+      CREDENTIAL_ACCESS: ['mimikatz', 'lsass', 'credential', 'password', 'hash'],
+      DISCOVERY: ['enumeration', 'discovery', 'scan', 'query'],
+      LATERAL_MOVEMENT: ['psexec', 'wmi', 'rdp', 'ssh', 'lateral'],
+      COLLECTION: ['archive', 'clipboard', 'keylog', 'screenshot'],
+      COMMAND_AND_CONTROL: ['c2', 'beacon', 'callback', 'dns tunnel'],
+      EXFILTRATION: ['exfil', 'upload', 'transfer', 'steal'],
+      IMPACT: ['ransomware', 'wiper', 'encrypt', 'destroy'],
+    };
+
+    const description = event.description.toLowerCase();
+
+    for (const [category, categoryKeywords] of Object.entries(keywords)) {
+      if (categoryKeywords.some(kw => description.includes(kw))) {
+        return category as BehaviorCategory;
+      }
+    }
+
+    return null;
+  }
+
+  private mapToMitre(behaviors: readonly DetectedBehavior[]): readonly MitreMapping[] {
+    const mappings: MitreMapping[] = [];
+
+    for (const behavior of behaviors) {
+      const mapping = this.mitreEngine.mapBehaviorToTechnique(behavior);
+      if (mapping) {
+        mappings.push(mapping);
+      }
+    }
+
+    return mappings;
+  }
+
+  private attemptAttribution(
+    mitreMapping: readonly MitreMapping[],
+    behaviors: readonly DetectedBehavior[]
+  ): ThreatActorAttribution | null {
+    this.operationCounter++;
+
+    if (mitreMapping.length === 0) return null;
+
+    const matchingActors = new Map<string, number>();
+
+    for (const mapping of mitreMapping) {
+      const actors = this.threatActorDb.searchActorsByTTP(mapping);
+      for (const actor of actors) {
+        const currentScore = matchingActors.get(actor.actorId) ?? 0;
+        matchingActors.set(actor.actorId, currentScore + mapping.confidence);
+      }
+    }
+
+    if (matchingActors.size === 0) return null;
+
+    let bestMatch: { actorId: string; score: number } | null = null;
+    for (const [actorId, score] of matchingActors) {
+      if (!bestMatch || score > bestMatch.score) {
+        bestMatch = { actorId, score };
+      }
+    }
+
+    if (!bestMatch) return null;
+
+    const actor = this.threatActorDb.getActor(bestMatch.actorId);
+    if (!actor) return null;
+
+    const confidence = Math.min(0.9, bestMatch.score / mitreMapping.length);
+
+    return {
+      actorId: actor.actorId,
+      actorName: actor.name,
+      confidence,
+      attributionBasis: [{
+        evidenceType: 'TTP_MATCH',
+        description: `${mitreMapping.length} TTPs matched known actor patterns`,
+        confidence,
+        references: actor.references,
+      }],
+    };
+  }
+
+  private extractIndicators(events: readonly DetectionEvent[]): readonly DetectedIndicator[] {
+    this.operationCounter++;
+
+    const indicators: DetectedIndicator[] = [];
+
+    for (const event of events) {
+      for (const indicatorId of event.indicators) {
+        indicators.push({
+          indicatorId,
+          type: 'FILE_HASH_SHA256',
+          value: indicatorId,
+          source: event.source,
+          firstSeen: event.timestamp,
+          lastSeen: event.timestamp,
+          confidence: 0.8,
+          context: {},
+          relatedIndicators: [],
+        });
+      }
+    }
+
+    return indicators;
+  }
+
+  private calculateConfidence(
+    behaviors: readonly DetectedBehavior[],
+    mitreMapping: readonly MitreMapping[]
+  ): DetectionConfidence {
+    const avgConfidence = behaviors.length > 0
+      ? behaviors.reduce((sum, b) => sum + b.confidence, 0) / behaviors.length
+      : 0;
+
+    if (avgConfidence >= 0.9 && mitreMapping.length >= 5) return 'CONFIRMED';
+    if (avgConfidence >= 0.8 && mitreMapping.length >= 3) return 'VERY_HIGH';
+    if (avgConfidence >= 0.6 && mitreMapping.length >= 2) return 'HIGH';
+    if (avgConfidence >= 0.4) return 'MEDIUM';
+    return 'LOW';
+  }
+
+  private determineSeverity(
+    killChain: KillChainDetection,
+    behaviors: readonly DetectedBehavior[]
+  ): APTDetection['severity'] {
+    if (killChain.completionPercentage >= 80) return 'CRITICAL';
+    if (killChain.completionPercentage >= 50) return 'HIGH';
+
+    const hasCriticalBehavior = behaviors.some(b => b.severity === 'CRITICAL');
+    if (hasCriticalBehavior) return 'CRITICAL';
+
+    const hasHighBehavior = behaviors.some(b => b.severity === 'HIGH');
+    if (hasHighBehavior) return 'HIGH';
+
+    return 'MEDIUM';
+  }
+
+  private determineCurrentPhase(killChain: KillChainDetection): KillChainPhase {
+    const detectedPhases = killChain.phases.filter(p => p.detected);
+    if (detectedPhases.length === 0) return 'RECONNAISSANCE';
+
+    return detectedPhases[detectedPhases.length - 1]?.phase ?? 'RECONNAISSANCE';
+  }
+
+  private generateRecommendations(
+    killChain: KillChainDetection,
+    behaviors: readonly DetectedBehavior[]
+  ): readonly string[] {
+    const recommendations: string[] = [];
+
+    if (killChain.completionPercentage >= 50) {
+      recommendations.push('Immediately isolate affected systems from the network');
+      recommendations.push('Engage incident response team');
+      recommendations.push('Preserve forensic evidence');
+    }
+
+    if (behaviors.some(b => b.category === 'CREDENTIAL_ACCESS')) {
+      recommendations.push('Reset credentials for affected accounts');
+      recommendations.push('Enable additional authentication factors');
+    }
+
+    if (behaviors.some(b => b.category === 'LATERAL_MOVEMENT')) {
+      recommendations.push('Review and restrict lateral movement paths');
+      recommendations.push('Implement network segmentation');
+    }
+
+    if (behaviors.some(b => b.category === 'EXFILTRATION')) {
+      recommendations.push('Block identified exfiltration channels');
+      recommendations.push('Assess data exposure and notify stakeholders');
+    }
+
+    recommendations.push('Update detection rules based on observed TTPs');
+    recommendations.push('Conduct threat hunting for related activity');
+
+    return recommendations;
+  }
+
+  getMitreEngine(): MitreAttackEngine {
+    return this.mitreEngine;
+  }
+
+  getThreatActorDb(): ThreatActorDatabase {
+    return this.threatActorDb;
+  }
+
+  getBehavioralEngine(): BehavioralAnalysisEngine {
+    return this.behavioralEngine;
+  }
+
+  getKillChainEngine(): KillChainDetectionEngine {
+    return this.killChainEngine;
+  }
+
+  getDetections(): ReadonlyMap<string, APTDetection> {
+    return this.detections;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// DEFAULT CONFIGURATIONS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export function createDefaultAPTDetectionUIConfig(): APTDetectionUIConfig {
+  return {
+    dashboardEnabled: true,
+    realTimeUpdates: true,
+    visualizations: [
+      'KILL_CHAIN_PROGRESS', 'MITRE_HEATMAP', 'ATTACK_GRAPH',
+      'THREAT_ACTOR_PROFILE', 'CAMPAIGN_TIMELINE', 'DIAMOND_MODEL',
+      'BEHAVIORAL_BASELINE', 'ANOMALY_TIMELINE', 'RISK_SCORE_TREND',
+    ],
+    notifications: {
+      aptDetected: true,
+      killChainAdvance: true,
+      newThreatActor: true,
+      highConfidenceAttribution: true,
+      criticalAssetCompromise: true,
+      dataExfiltrationDetected: true,
+      c2CommunicationDetected: true,
+    },
+    reporting: {
+      autoGenerate: true,
+      format: 'PDF',
+      includeIOCs: true,
+      includeTTPs: true,
+      includeTimeline: true,
+      includeRecommendations: true,
+      classification: 'CONFIDENTIAL',
+    },
+    threatIntelFeed: {
+      enabled: true,
+      feeds: [
+        { feedId: 'feed-001', name: 'MITRE ATT&CK', type: 'OPEN_SOURCE', url: 'https://attack.mitre.org', format: 'STIX', updateFrequency: 86400000, enabled: true, trustLevel: 0.95 },
+        { feedId: 'feed-002', name: 'AlienVault OTX', type: 'OPEN_SOURCE', url: 'https://otx.alienvault.com', format: 'JSON', updateFrequency: 3600000, enabled: true, trustLevel: 0.8 },
+      ],
+      autoEnrich: true,
+      correlationEnabled: true,
+      retentionDays: 365,
+    },
+  };
+}

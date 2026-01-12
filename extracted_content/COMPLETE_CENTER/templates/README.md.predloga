@@ -1,0 +1,211 @@
+# {{IME_PROJEKTA}}
+
+**Verzija:** {{VERZIJA}}
+**Domena:** Varnostni sistemi
+**Avtor:** {{AVTOR}}
+**Datum:** {{DATUM}}
+
+---
+
+## Opis
+
+{{OPIS}}
+
+Ta projekt je del domene **Varnostni sistemi** (VARNOSTNI_SISTEMI).
+
+Kriptografija in zascita podatkov z industrijsko-mocnimi algoritmi in skladnostjo.
+
+---
+
+## Domensko-specificne lastnosti
+
+### Kategorije
+- Kriptografija (simetricna, asimetricna, hash funkcije)
+- Avtentikacija (MFA, biometrika, passwordless)
+- Varnostna skladnost in sledljivost (SOC 2, ISO 27001, GDPR)
+- Omrezna varnost (firewall, IDS/IPS, WAF)
+- Aplikacijska varnost (SAST, DAST, IAST)
+
+### Kljucni koncepti
+- Encryption (AES-256-GCM, ChaCha20-Poly1305)
+- Authentication protocols (OAuth 2.0, OIDC, SAML 2.0)
+- Authorization models (RBAC, ABAC, ReBAC)
+- Firewall rules in network segmentation
+- Vulnerability management (CVE, CVSS scoring)
+- Threat modeling (STRIDE, PASTA, Attack Trees)
+- Zero Trust Architecture
+- Defense in depth
+- Principle of least privilege
+
+### Moduli
+- AES sifriranje (CBC, GCM, CTR modes)
+- RSA kriptografija (OAEP padding, PSS signatures)
+- TOTP/HOTP implementacija (RFC 6238, RFC 4226)
+- Sledljivost varnostnih zahtev (audit trails)
+- Generiranje kriptografskih dokazov (digital signatures)
+- Key management (HSM integration, key rotation)
+- Certificate management (X.509, PKI)
+- Secret management (Vault, AWS Secrets Manager)
+
+### Kriptografski algoritmi
+- Simetricni: AES-256, ChaCha20, Twofish, Serpent
+- Asimetricni: RSA-4096, ECDSA, Ed25519, X25519
+- Hash funkcije: SHA-256, SHA-3, BLAKE2, Argon2
+- Key derivation: PBKDF2, scrypt, Argon2id
+- MAC: HMAC-SHA256, Poly1305
+
+### Avtentikacijski mehanizmi
+- Multi-factor authentication (MFA)
+- WebAuthn/FIDO2 passwordless
+- Biometric authentication
+- Smart card authentication
+- Certificate-based authentication
+- Risk-based authentication
+- Single Sign-On (SSO)
+
+### Omrezna varnost
+- Next-generation firewalls (NGFW)
+- Intrusion Detection Systems (IDS)
+- Intrusion Prevention Systems (IPS)
+- Web Application Firewalls (WAF)
+- DDoS mitigation
+- VPN (IPsec, WireGuard, OpenVPN)
+- Network segmentation in micro-segmentation
+- Zero Trust Network Access (ZTNA)
+
+### Varnostno testiranje
+- Penetration testing
+- Vulnerability scanning (Nessus, Qualys)
+- Static Application Security Testing (SAST)
+- Dynamic Application Security Testing (DAST)
+- Interactive Application Security Testing (IAST)
+- Software Composition Analysis (SCA)
+- Fuzzing
+
+### Skladnost in standardi
+- SOC 2 Type II
+- ISO 27001/27002
+- PCI DSS
+- HIPAA
+- GDPR
+- NIST Cybersecurity Framework
+- CIS Controls
+- OWASP Top 10
+
+### Incident response
+- Security Information and Event Management (SIEM)
+- Security Orchestration, Automation and Response (SOAR)
+- Incident response playbooks
+- Forensic analysis
+- Chain of custody
+- Post-incident review
+
+---
+
+## Skladnost
+
+Ta projekt je skladen z naslednjimi industrijskimi in vojaskimi standardi:
+
+| Standard | Opis | Status |
+|----------|------|--------|
+| DO-178C | Programska oprema za letalstvo | SKLADEN |
+| IEC 61508 | Funkcionalna varnost | SKLADEN |
+| ISO 26262 | Varnost avtomobilske programske opreme | SKLADEN |
+| MIL-STD-882E | Vojaska varnost sistema | SKLADEN |
+
+**Nivo varnostne integritete:** SIL-2
+
+---
+
+## Struktura projekta za VARNOSTNI_SISTEMI
+
+```
+{{IME_PROJEKTA}}/
+├── src/                    # Izvorna koda za Varnostni sistemi
+│   ├── jedro.ts           # Jedro sistema
+│   └── index.ts           # Vstopna tocka
+├── testi/                  # Testi
+│   └── jedro.test.ts      # Testi jedra
+├── dokumentacija/          # Dokumentacija
+│   ├── SPECIFIKACIJA_ZAHTEV.md
+│   ├── NACRT_VERIFIKACIJE.md
+│   ├── ARHITEKTURNI_OPIS.md
+│   └── POLITIKA_KODIRANJA.md
+├── evidence/               # Dokazila
+├── konfiguracija/          # Konfiguracija
+│   └── varnost.json
+├── package.json
+├── tsconfig.json
+└── README.md
+```
+
+---
+
+## Moduli za Varnostni sistemi
+
+{{MODULI}}
+
+---
+
+## Funkcije za Varnostni sistemi
+
+{{FUNKCIJE}}
+
+---
+
+## Namestitev
+
+```bash
+npm install
+npm run typecheck
+npm run build
+```
+
+---
+
+## Varnostni koraki za VARNOSTNI_SISTEMI
+
+```bash
+npm run security:scan
+npm run security:sbom
+npm run security:sign
+```
+
+---
+
+## Verifikacija za Varnostni sistemi
+
+```bash
+npm run verify
+```
+
+To izvede:
+1. Staticno analizo (ESLint)
+2. Preverjanje tipov (TypeScript)
+3. Enotne teste (Jest)
+4. Preverjanje pokritosti (>= 80%)
+
+---
+
+## Deterministicnost
+
+Ta projekt zagotavlja deterministicno gradnjo:
+
+- Brez uporabe Date.now() v produkcijski logiki
+- Brez nakljucnih vrednosti brez seed-a
+- Brez omreznih klicev med gradnjo
+- Fiksne verzije odvisnosti
+
+---
+
+## Licenca
+
+MIT
+
+---
+
+## Kontakt
+
+**Avtor:** {{AVTOR}}
+**Leto:** {{LETO}}
+**Domena:** Varnostni sistemi

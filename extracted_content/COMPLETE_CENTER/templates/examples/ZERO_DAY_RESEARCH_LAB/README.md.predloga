@@ -1,0 +1,86 @@
+# {{IME_PROJEKTA}} - Zero-Day Research Laboratory
+
+## _traceability
+- requirement: ZAH-SEC-010 Zero-Day Research laboratorij
+- design: DSN-SEC-010 Referenčna implementacija raziskovanja ranljivosti
+- test: TST-SEC-010 Verifikacija Zero-Day Research primera
+
+## Opis
+
+Zero-Day Research Laboratory je enterprise-grade platforma za odkrivanje in raziskovanje neznanih ranljivosti (zero-day), vključno z vulnerability research, exploit development in responsible disclosure.
+
+## Vključene komponente
+
+### Vulnerability Research
+- Target analysis
+- Attack surface mapping
+- Code auditing
+- Fuzzing infrastructure
+- Symbolic execution
+- Taint analysis
+
+### Fuzzing Infrastructure
+- Coverage-guided fuzzing
+- Grammar-based fuzzing
+- Protocol fuzzing
+- API fuzzing
+- Kernel fuzzing
+- Browser fuzzing
+
+### Exploit Development
+- Vulnerability analysis
+- Exploit primitives
+- Payload development
+- Bypass techniques
+- Reliability engineering
+- Weaponization
+
+### Proof of Concept
+- PoC development
+- Impact demonstration
+- Reproducibility
+- Documentation
+- Video evidence
+
+### Responsible Disclosure
+- Vendor notification
+- Coordination timeline
+- Patch verification
+- Public disclosure
+- CVE assignment
+
+### Research Tools
+- Debuggers (x64dbg, WinDbg, GDB)
+- Disassemblers (IDA, Ghidra, Binary Ninja)
+- Emulators (QEMU, Unicorn)
+- Instrumentation (Frida, DynamoRIO)
+- Symbolic execution (angr, KLEE)
+
+## Skladnost
+
+- DO-178C DAL-A
+- IEC-61508 SIL-4
+- ISO-26262 ASIL-D
+- MIL-STD-882E
+- ISO 29147 (Vulnerability Disclosure)
+
+## SLA
+
+- Uptime: 99.99%
+- RTO: 30min
+- RPO: 5min
+- Research Isolation: 100%
+- Disclosure Timeline: 90 days
+
+## Zagon
+
+```bash
+npm install
+npm run build
+npm run zeroday:start
+npm run zeroday:fuzz
+```
+
+## Licenca
+
+Enterprise License - {{ORGANIZACIJA}} - TOP SECRET

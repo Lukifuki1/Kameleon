@@ -1,0 +1,820 @@
+/**
+ * {{IME_PROJEKTA}} - Authorization System
+ * Domain: {{DOMENA_SL}}
+ * 
+ * @requirement REQ-SEC-AUT-001
+ * @design DSN-SEC-AUT-001
+ * @test TST-SEC-AUT-001
+ * 
+ * Sistem za avtorizacijo v varnostnem sistemu.
+ * Skladen z DO-178C, IEC 61508, ISO 26262, MIL-STD-882E standardi.
+ * 
+ * @module security/authorization
+ */
+
+// ============================================================================
+// TIPI IN VMESNIKI
+// ============================================================================
+
+/**
+ * Akcija nad virom
+ */
+export enum Action {
+    /** Branje */
+    READ = 'read',
+    /** Pisanje */
+    WRITE = 'write',
+    /** Ustvarjanje */
+    CREATE = 'create',
+    /** Posodabljanje */
+    UPDATE = 'update',
+    /** Brisanje */
+    DELETE = 'delete',
+    /** Izvajanje */
+    EXECUTE = 'execute',
+    /** Upravljanje */
+    MANAGE = 'manage',
+    /** Vse akcije */
+    ALL = '*'
+}
+
+/**
+ * Rezultat avtorizacije
+ */
+export enum AuthorizationResult {
+    /** Dovoljeno */
+    ALLOWED = 'allowed',
+    /** Zavrnjeno */
+    DENIED = 'denied',
+    /** Ni določeno */
+    NOT_APPLICABLE = 'not_applicable'
+}
+
+/**
+ * Efekt politike
+ */
+export enum PolicyEffect {
+    /** Dovoli */
+    ALLOW = 'allow',
+    /** Zavrni */
+    DENY = 'deny'
+}
+
+/**
+ * Vir
+ */
+export interface Resource {
+    /** Tip vira */
+    readonly type: string;
+    /** Identifikator */
+    readonly id?: string;
+    /** Atributi */
+    readonly attributes?: Record<string, unknown>;
+    /** Lastnik */
+    readonly owner?: string;
+}
+
+/**
+ * Subjekt (uporabnik/servis)
+ */
+export interface Subject {
+    /** Identifikator */
+    readonly id: string;
+    /** Tip */
+    readonly type: 'user' | 'service' | 'system';
+    /** Vloge */
+    readonly roles: string[];
+    /** Atributi */
+    readonly attributes?: Record<string, unknown>;
+}
+
+/**
+ * Kontekst avtorizacije
+ */
+export interface AuthorizationContext {
+    /** Subjekt */
+    readonly subject: Subject;
+    /** Vir */
+    readonly resource: Resource;
+    /** Akcija */
+    readonly action: Action;
+    /** Okolje */
+    readonly environment?: EnvironmentContext;
+}
+
+/**
+ * Kontekst okolja
+ */
+export interface EnvironmentContext {
+    /** Čas */
+    readonly time?: Date;
+    /** IP naslov */
+    readonly ipAddress?: string;
+    /** Lokacija */
+    readonly location?: string;
+    /** Naprava */
+    readonly device?: string;
+    /** Dodatni atributi */
+    readonly attributes?: Record<string, unknown>;
+}
+
+/**
+ * Politika
+ */
+export interface Policy {
+    /** Identifikator */
+    readonly id: string;
+    /** Ime */
+    readonly name: string;
+    /** Opis */
+    readonly description?: string;
+    /** Efekt */
+    readonly effect: PolicyEffect;
+    /** Subjekti (vloge ali ID-ji) */
+    readonly subjects: string[];
+    /** Viri (tipi ali vzorci) */
+    readonly resources: string[];
+    /** Akcije */
+    readonly actions: Action[];
+    /** Pogoji */
+    readonly conditions?: PolicyCondition[];
+    /** Prioriteta */
+    readonly priority: number;
+    /** Ali je omogočena */
+    readonly enabled: boolean;
+}
+
+/**
+ * Pogoj politike
+ */
+export interface PolicyCondition {
+    /** Tip pogoja */
+    readonly type: 'time' | 'ip' | 'attribute' | 'custom';
+    /** Operator */
+    readonly operator: 'equals' | 'notEquals' | 'contains' | 'in' | 'between' | 'matches';
+    /** Polje */
+    readonly field: string;
+    /** Vrednost */
+    readonly value: unknown;
+}
+
+/**
+ * Vloga
+ */
+export interface Role {
+    /** Identifikator */
+    readonly id: string;
+    /** Ime */
+    readonly name: string;
+    /** Opis */
+    readonly description?: string;
+    /** Dovoljenja */
+    readonly permissions: Permission[];
+    /** Podedovane vloge */
+    readonly inherits?: string[];
+    /** Prioriteta */
+    readonly priority: number;
+}
+
+/**
+ * Dovoljenje
+ */
+export interface Permission {
+    /** Vir (tip ali vzorec) */
+    readonly resource: string;
+    /** Akcije */
+    readonly actions: Action[];
+    /** Pogoji */
+    readonly conditions?: PolicyCondition[];
+}
+
+/**
+ * Odločitev avtorizacije
+ */
+export interface AuthorizationDecision {
+    /** Rezultat */
+    readonly result: AuthorizationResult;
+    /** Razlog */
+    readonly reason: string;
+    /** Politika ki je odločila */
+    readonly policy?: string;
+    /** Čas odločitve */
+    readonly decidedAt: Date;
+    /** Trajanje (ms) */
+    readonly duration: number;
+}
+
+/**
+ * Konfiguracija avtorizacije
+ */
+export interface AuthorizationConfig {
+    /** Privzeti efekt (če ni politike) */
+    readonly defaultEffect: PolicyEffect;
+    /** Ali naj se uporabi RBAC */
+    readonly useRbac: boolean;
+    /** Ali naj se uporabi ABAC */
+    readonly useAbac: boolean;
+    /** Ali naj se predpomnijo odločitve */
+    readonly cacheDecisions: boolean;
+    /** Čas predpomnjenja (ms) */
+    readonly cacheTtl: number;
+    /** Ali naj se beležijo odločitve */
+    readonly auditDecisions: boolean;
+}
+
+// ============================================================================
+// GLAVNA IMPLEMENTACIJA
+// ============================================================================
+
+/**
+ * Sistem za avtorizacijo
+ * 
+ * Implementira RBAC in ABAC avtorizacijo skladno z industrijskimi standardi.
+ */
+export class AuthorizationSystem {
+    private readonly config: AuthorizationConfig;
+    private readonly policies: Map<string, Policy>;
+    private readonly roles: Map<string, Role>;
+    private readonly cache: Map<string, { decision: AuthorizationDecision; expiresAt: number }>;
+
+    constructor(config: AuthorizationConfig) {
+        this.config = config;
+        this.policies = new Map();
+        this.roles = new Map();
+        this.cache = new Map();
+    }
+
+    /**
+     * Preveri avtorizacijo
+     */
+    authorize(context: AuthorizationContext): AuthorizationDecision {
+        const startTime = Date.now();
+
+        // Preveri predpomnilnik
+        if (this.config.cacheDecisions) {
+            const cached = this.getCachedDecision(context);
+            if (cached !== undefined) {
+                return cached;
+            }
+        }
+
+        let decision: AuthorizationDecision;
+
+        // RBAC preverjanje
+        if (this.config.useRbac) {
+            decision = this.checkRbac(context);
+            if (decision.result !== AuthorizationResult.NOT_APPLICABLE) {
+                this.cacheDecision(context, decision);
+                return decision;
+            }
+        }
+
+        // ABAC preverjanje
+        if (this.config.useAbac) {
+            decision = this.checkAbac(context);
+            if (decision.result !== AuthorizationResult.NOT_APPLICABLE) {
+                this.cacheDecision(context, decision);
+                return decision;
+            }
+        }
+
+        // Privzeta odločitev
+        const duration = Date.now() - startTime;
+        decision = {
+            result: this.config.defaultEffect === PolicyEffect.ALLOW 
+                ? AuthorizationResult.ALLOWED 
+                : AuthorizationResult.DENIED,
+            reason: 'Default policy applied',
+            decidedAt: new Date(),
+            duration
+        };
+
+        this.cacheDecision(context, decision);
+        return decision;
+    }
+
+    /**
+     * Preveri ali ima subjekt dovoljenje
+     */
+    hasPermission(
+        subject: Subject,
+        resource: Resource,
+        action: Action
+    ): boolean {
+        const context: AuthorizationContext = {
+            subject,
+            resource,
+            action
+        };
+
+        const decision = this.authorize(context);
+        return decision.result === AuthorizationResult.ALLOWED;
+    }
+
+    /**
+     * Registriraj politiko
+     */
+    registerPolicy(policy: Policy): void {
+        this.policies.set(policy.id, policy);
+        this.clearCache();
+    }
+
+    /**
+     * Odstrani politiko
+     */
+    removePolicy(policyId: string): boolean {
+        const result = this.policies.delete(policyId);
+        if (result) {
+            this.clearCache();
+        }
+        return result;
+    }
+
+    /**
+     * Pridobi politiko
+     */
+    getPolicy(policyId: string): Policy | undefined {
+        return this.policies.get(policyId);
+    }
+
+    /**
+     * Pridobi vse politike
+     */
+    getPolicies(): Policy[] {
+        return Array.from(this.policies.values());
+    }
+
+    /**
+     * Registriraj vlogo
+     */
+    registerRole(role: Role): void {
+        this.roles.set(role.id, role);
+        this.clearCache();
+    }
+
+    /**
+     * Odstrani vlogo
+     */
+    removeRole(roleId: string): boolean {
+        const result = this.roles.delete(roleId);
+        if (result) {
+            this.clearCache();
+        }
+        return result;
+    }
+
+    /**
+     * Pridobi vlogo
+     */
+    getRole(roleId: string): Role | undefined {
+        return this.roles.get(roleId);
+    }
+
+    /**
+     * Pridobi vse vloge
+     */
+    getRoles(): Role[] {
+        return Array.from(this.roles.values());
+    }
+
+    /**
+     * Pridobi efektivna dovoljenja za subjekt
+     */
+    getEffectivePermissions(subject: Subject): Permission[] {
+        const permissions: Permission[] = [];
+        const processedRoles = new Set<string>();
+
+        const processRole = (roleId: string): void => {
+            if (processedRoles.has(roleId)) {
+                return;
+            }
+            processedRoles.add(roleId);
+
+            const role = this.roles.get(roleId);
+            if (role === undefined) {
+                return;
+            }
+
+            permissions.push(...role.permissions);
+
+            // Procesiraj podedovane vloge
+            if (role.inherits !== undefined) {
+                for (const inheritedRoleId of role.inherits) {
+                    processRole(inheritedRoleId);
+                }
+            }
+        };
+
+        for (const roleId of subject.roles) {
+            processRole(roleId);
+        }
+
+        return permissions;
+    }
+
+    /**
+     * Počisti predpomnilnik
+     */
+    clearCache(): void {
+        this.cache.clear();
+    }
+
+    // ========================================================================
+    // PRIVATNE METODE
+    // ========================================================================
+
+    /**
+     * RBAC preverjanje
+     */
+    private checkRbac(context: AuthorizationContext): AuthorizationDecision {
+        const startTime = Date.now();
+        const permissions = this.getEffectivePermissions(context.subject);
+
+        for (const permission of permissions) {
+            if (this.matchesResource(permission.resource, context.resource) &&
+                this.matchesAction(permission.actions, context.action)) {
+                
+                // Preveri pogoje
+                if (permission.conditions !== undefined) {
+                    if (!this.evaluateConditions(permission.conditions, context)) {
+                        continue;
+                    }
+                }
+
+                return {
+                    result: AuthorizationResult.ALLOWED,
+                    reason: 'RBAC permission granted',
+                    decidedAt: new Date(),
+                    duration: Date.now() - startTime
+                };
+            }
+        }
+
+        return {
+            result: AuthorizationResult.NOT_APPLICABLE,
+            reason: 'No matching RBAC permission',
+            decidedAt: new Date(),
+            duration: Date.now() - startTime
+        };
+    }
+
+    /**
+     * ABAC preverjanje
+     */
+    private checkAbac(context: AuthorizationContext): AuthorizationDecision {
+        const startTime = Date.now();
+        
+        // Sortiraj politike po prioriteti (višja prioriteta najprej)
+        const sortedPolicies = Array.from(this.policies.values())
+            .filter(p => p.enabled)
+            .sort((a, b) => b.priority - a.priority);
+
+        for (const policy of sortedPolicies) {
+            if (!this.matchesPolicy(policy, context)) {
+                continue;
+            }
+
+            // Preveri pogoje
+            if (policy.conditions !== undefined) {
+                if (!this.evaluateConditions(policy.conditions, context)) {
+                    continue;
+                }
+            }
+
+            const result = policy.effect === PolicyEffect.ALLOW
+                ? AuthorizationResult.ALLOWED
+                : AuthorizationResult.DENIED;
+
+            return {
+                result,
+                reason: `Policy '${policy.name}' applied`,
+                policy: policy.id,
+                decidedAt: new Date(),
+                duration: Date.now() - startTime
+            };
+        }
+
+        return {
+            result: AuthorizationResult.NOT_APPLICABLE,
+            reason: 'No matching ABAC policy',
+            decidedAt: new Date(),
+            duration: Date.now() - startTime
+        };
+    }
+
+    /**
+     * Preveri ali politika ustreza kontekstu
+     */
+    private matchesPolicy(policy: Policy, context: AuthorizationContext): boolean {
+        // Preveri subjekte
+        const subjectMatches = policy.subjects.some(s => 
+            s === '*' ||
+            s === context.subject.id ||
+            context.subject.roles.includes(s)
+        );
+        if (!subjectMatches) {
+            return false;
+        }
+
+        // Preveri vire
+        const resourceMatches = policy.resources.some(r =>
+            this.matchesResource(r, context.resource)
+        );
+        if (!resourceMatches) {
+            return false;
+        }
+
+        // Preveri akcije
+        const actionMatches = this.matchesAction(policy.actions, context.action);
+        if (!actionMatches) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Preveri ali vzorec ustreza viru
+     */
+    private matchesResource(pattern: string, resource: Resource): boolean {
+        if (pattern === '*') {
+            return true;
+        }
+
+        // Vzorec tipa:id
+        if (pattern.includes(':')) {
+            const [type, id] = pattern.split(':');
+            if (type !== '*' && type !== resource.type) {
+                return false;
+            }
+            if (id !== '*' && id !== resource.id) {
+                return false;
+            }
+            return true;
+        }
+
+        // Samo tip
+        return pattern === resource.type;
+    }
+
+    /**
+     * Preveri ali akcija ustreza
+     */
+    private matchesAction(allowedActions: Action[], action: Action): boolean {
+        return allowedActions.includes(Action.ALL) || allowedActions.includes(action);
+    }
+
+    /**
+     * Evalviraj pogoje
+     */
+    private evaluateConditions(
+        conditions: PolicyCondition[],
+        context: AuthorizationContext
+    ): boolean {
+        for (const condition of conditions) {
+            if (!this.evaluateCondition(condition, context)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Evalviraj posamezen pogoj
+     */
+    private evaluateCondition(
+        condition: PolicyCondition,
+        context: AuthorizationContext
+    ): boolean {
+        const value = this.getFieldValue(condition.field, context);
+
+        switch (condition.operator) {
+            case 'equals':
+                return value === condition.value;
+            
+            case 'notEquals':
+                return value !== condition.value;
+            
+            case 'contains':
+                if (typeof value === 'string') {
+                    return value.includes(String(condition.value));
+                }
+                if (Array.isArray(value)) {
+                    return value.includes(condition.value);
+                }
+                return false;
+            
+            case 'in':
+                if (Array.isArray(condition.value)) {
+                    return condition.value.includes(value);
+                }
+                return false;
+            
+            case 'between':
+                if (Array.isArray(condition.value) && condition.value.length === 2) {
+                    const [min, max] = condition.value;
+                    return value >= min && value <= max;
+                }
+                return false;
+            
+            case 'matches':
+                if (typeof value === 'string' && typeof condition.value === 'string') {
+                    const regex = new RegExp(condition.value);
+                    return regex.test(value);
+                }
+                return false;
+            
+            default:
+                return false;
+        }
+    }
+
+    /**
+     * Pridobi vrednost polja iz konteksta
+     */
+    private getFieldValue(field: string, context: AuthorizationContext): unknown {
+        const parts = field.split('.');
+        let current: unknown = context;
+
+        for (const part of parts) {
+            if (current === null || current === undefined) {
+                return undefined;
+            }
+            if (typeof current === 'object') {
+                current = (current as Record<string, unknown>)[part];
+            } else {
+                return undefined;
+            }
+        }
+
+        return current;
+    }
+
+    /**
+     * Generiraj ključ za predpomnilnik
+     */
+    private getCacheKey(context: AuthorizationContext): string {
+        return `${context.subject.id}:${context.resource.type}:${context.resource.id ?? '*'}:${context.action}`;
+    }
+
+    /**
+     * Pridobi predpomnjeno odločitev
+     */
+    private getCachedDecision(context: AuthorizationContext): AuthorizationDecision | undefined {
+        const key = this.getCacheKey(context);
+        const cached = this.cache.get(key);
+
+        if (cached === undefined) {
+            return undefined;
+        }
+
+        if (Date.now() > cached.expiresAt) {
+            this.cache.delete(key);
+            return undefined;
+        }
+
+        return cached.decision;
+    }
+
+    /**
+     * Shrani odločitev v predpomnilnik
+     */
+    private cacheDecision(context: AuthorizationContext, decision: AuthorizationDecision): void {
+        if (!this.config.cacheDecisions) {
+            return;
+        }
+
+        const key = this.getCacheKey(context);
+        this.cache.set(key, {
+            decision,
+            expiresAt: Date.now() + this.config.cacheTtl
+        });
+    }
+}
+
+// ============================================================================
+// VGRAJENE POLITIKE ZA VARNOSTNE SISTEME
+// ============================================================================
+
+/**
+ * Politika za super administratorje
+ */
+export const SUPER_ADMIN_POLICY: Policy = {
+    id: 'super-admin',
+    name: 'Super Administrator Policy',
+    description: 'Full access for super administrators',
+    effect: PolicyEffect.ALLOW,
+    subjects: ['super_admin'],
+    resources: ['*'],
+    actions: [Action.ALL],
+    priority: 1000,
+    enabled: true
+};
+
+/**
+ * Politika za administratorje
+ */
+export const ADMIN_POLICY: Policy = {
+    id: 'admin',
+    name: 'Administrator Policy',
+    description: 'Administrative access',
+    effect: PolicyEffect.ALLOW,
+    subjects: ['admin'],
+    resources: ['users', 'roles', 'config', 'audit', 'keys', 'threats'],
+    actions: [Action.READ, Action.CREATE, Action.UPDATE],
+    priority: 900,
+    enabled: true
+};
+
+/**
+ * Politika za varnostne uradnike
+ */
+export const SECURITY_OFFICER_POLICY: Policy = {
+    id: 'security-officer',
+    name: 'Security Officer Policy',
+    description: 'Security management access',
+    effect: PolicyEffect.ALLOW,
+    subjects: ['security_officer'],
+    resources: ['security', 'threats', 'audit', 'keys', 'users'],
+    actions: [Action.READ, Action.UPDATE, Action.EXECUTE],
+    priority: 800,
+    enabled: true
+};
+
+/**
+ * Politika za revizorje
+ */
+export const AUDITOR_POLICY: Policy = {
+    id: 'auditor',
+    name: 'Auditor Policy',
+    description: 'Read-only access for auditors',
+    effect: PolicyEffect.ALLOW,
+    subjects: ['auditor'],
+    resources: ['audit', 'users', 'roles', 'config', 'keys', 'threats', 'reports'],
+    actions: [Action.READ],
+    priority: 500,
+    enabled: true
+};
+
+/**
+ * Politika za uporabnike
+ */
+export const USER_POLICY: Policy = {
+    id: 'user',
+    name: 'User Policy',
+    description: 'Basic user access',
+    effect: PolicyEffect.ALLOW,
+    subjects: ['user'],
+    resources: ['profile'],
+    actions: [Action.READ, Action.UPDATE],
+    conditions: [
+        {
+            type: 'attribute',
+            operator: 'equals',
+            field: 'resource.owner',
+            value: '${subject.id}'
+        }
+    ],
+    priority: 100,
+    enabled: true
+};
+
+// ============================================================================
+// TOVARNIŠKA FUNKCIJA
+// ============================================================================
+
+/**
+ * Ustvari sistem za avtorizacijo
+ */
+export function createAuthorizationSystem(
+    config?: Partial<AuthorizationConfig>
+): AuthorizationSystem {
+    const defaultConfig: AuthorizationConfig = {
+        defaultEffect: PolicyEffect.DENY,
+        useRbac: true,
+        useAbac: true,
+        cacheDecisions: true,
+        cacheTtl: 300000, // 5 minut
+        auditDecisions: true
+    };
+
+    const system = new AuthorizationSystem({
+        ...defaultConfig,
+        ...config
+    });
+
+    // Registriraj privzete politike
+    system.registerPolicy(SUPER_ADMIN_POLICY);
+    system.registerPolicy(ADMIN_POLICY);
+    system.registerPolicy(SECURITY_OFFICER_POLICY);
+    system.registerPolicy(AUDITOR_POLICY);
+    system.registerPolicy(USER_POLICY);
+
+    return system;
+}
+
+// ============================================================================
+// IZVOZ
+// ============================================================================
+
+export default AuthorizationSystem;

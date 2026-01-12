@@ -1,0 +1,1055 @@
+/**
+ * @file Hardware Implant Detection - Self-Contained Hardware Security Platform
+ * @author {{AVTOR}}
+ * @version {{VERZIJA}}
+ * @date {{DATUM}}
+ * @project {{IME_PROJEKTA}}
+ * @domain VARNOSTNI_SISTEMI
+ * 
+ * @requirement REQ-SEC-HID-001
+ * @design DSN-SEC-HID-001
+ * @test TST-SEC-HID-001
+ * 
+ * @description
+ * Enterprise-grade self-contained hardware implant detection platform implementing
+ * comprehensive hardware security analysis, supply chain verification, hardware
+ * trojan detection, side-channel analysis, and physical tampering detection.
+ * All detection algorithms are natively implemented without external dependencies.
+ * 
+ * @classification TOP SECRET - Hardware Security Operations
+ * @authorization Required: Level 5 Security Clearance
+ * @dependencies NONE - Fully self-contained implementation
+ */
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// HARDWARE IMPLANT DETECTION TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export type ImplantType =
+  | 'HARDWARE_TROJAN'
+  | 'BACKDOOR_CHIP'
+  | 'INTERPOSER'
+  | 'MODIFIED_COMPONENT'
+  | 'COUNTERFEIT_COMPONENT'
+  | 'ROGUE_DEVICE'
+  | 'KEYLOGGER'
+  | 'RF_TRANSMITTER'
+  | 'DATA_EXFILTRATION'
+  | 'POWER_ANALYSIS'
+  | 'TIMING_ATTACK'
+  | 'ELECTROMAGNETIC_PROBE';
+
+export type ComponentType =
+  | 'PROCESSOR'
+  | 'MEMORY'
+  | 'STORAGE'
+  | 'NETWORK_INTERFACE'
+  | 'USB_CONTROLLER'
+  | 'POWER_SUPPLY'
+  | 'MOTHERBOARD'
+  | 'PERIPHERAL'
+  | 'FIRMWARE_CHIP'
+  | 'TPM'
+  | 'HSM'
+  | 'SMART_CARD'
+  | 'FPGA'
+  | 'ASIC';
+
+export type DetectionMethod =
+  | 'VISUAL_INSPECTION'
+  | 'XRAY_ANALYSIS'
+  | 'ACOUSTIC_MICROSCOPY'
+  | 'POWER_ANALYSIS'
+  | 'TIMING_ANALYSIS'
+  | 'ELECTROMAGNETIC_ANALYSIS'
+  | 'FUNCTIONAL_TESTING'
+  | 'SIDE_CHANNEL_ANALYSIS'
+  | 'FIRMWARE_ANALYSIS'
+  | 'BEHAVIORAL_ANALYSIS'
+  | 'SUPPLY_CHAIN_VERIFICATION';
+
+export type TamperingType =
+  | 'PHYSICAL_MODIFICATION'
+  | 'COMPONENT_REPLACEMENT'
+  | 'COMPONENT_ADDITION'
+  | 'WIRE_MODIFICATION'
+  | 'SOLDER_MODIFICATION'
+  | 'LABEL_TAMPERING'
+  | 'SEAL_BREACH'
+  | 'ENCLOSURE_MODIFICATION';
+
+export type SupplyChainStage =
+  | 'DESIGN'
+  | 'FABRICATION'
+  | 'ASSEMBLY'
+  | 'TESTING'
+  | 'PACKAGING'
+  | 'DISTRIBUTION'
+  | 'INSTALLATION'
+  | 'MAINTENANCE';
+
+export type RiskLevel =
+  | 'CRITICAL'
+  | 'HIGH'
+  | 'MEDIUM'
+  | 'LOW'
+  | 'INFORMATIONAL';
+
+export type ConfidenceLevel =
+  | 'CONFIRMED'
+  | 'HIGH'
+  | 'MEDIUM'
+  | 'LOW'
+  | 'SUSPECTED';
+
+export type SecurityLevel =
+  | 'TOP_SECRET'
+  | 'SECRET'
+  | 'CONFIDENTIAL'
+  | 'UNCLASSIFIED';
+
+export type AnalysisMode =
+  | 'SCREENING'
+  | 'DETAILED_INSPECTION'
+  | 'FORENSIC_ANALYSIS'
+  | 'SUPPLY_CHAIN_AUDIT'
+  | 'FULL_INVESTIGATION';
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// HARDWARE IMPLANT DETECTION CONFIGURATION
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface HardwareImplantDetectionConfig {
+  readonly platformId: string;
+  readonly name: string;
+  readonly version: string;
+  readonly mode: AnalysisMode;
+  readonly visualInspection: VisualInspectionConfig;
+  readonly xrayAnalysis: XRayAnalysisConfig;
+  readonly acousticMicroscopy: AcousticMicroscopyConfig;
+  readonly powerAnalysis: PowerAnalysisConfig;
+  readonly timingAnalysis: TimingAnalysisConfig;
+  readonly electromagneticAnalysis: ElectromagneticAnalysisConfig;
+  readonly sideChannelAnalysis: SideChannelAnalysisConfig;
+  readonly functionalTesting: FunctionalTestingConfig;
+  readonly supplyChainVerification: SupplyChainVerificationConfig;
+  readonly tamperingDetection: TamperingDetectionConfig;
+  readonly componentAuthentication: ComponentAuthenticationConfig;
+  readonly reporting: ReportingConfig;
+  readonly storage: StorageConfig;
+  readonly security: SecurityConfig;
+  readonly metadata: PlatformMetadata;
+}
+
+export interface VisualInspectionConfig {
+  readonly enabled: boolean;
+  readonly microscopy: MicroscopyConfig;
+  readonly photography: PhotographyConfig;
+  readonly comparison: VisualComparisonConfig;
+  readonly anomalyDetection: VisualAnomalyConfig;
+}
+
+export interface MicroscopyConfig {
+  readonly enabled: boolean;
+  readonly magnificationLevels: readonly number[];
+  readonly lightingModes: readonly LightingMode[];
+  readonly measurementCapability: boolean;
+  readonly imageCapture: boolean;
+}
+
+export type LightingMode =
+  | 'BRIGHTFIELD'
+  | 'DARKFIELD'
+  | 'POLARIZED'
+  | 'FLUORESCENT'
+  | 'UV'
+  | 'IR';
+
+export interface PhotographyConfig {
+  readonly enabled: boolean;
+  readonly resolution: number;
+  readonly macroCapability: boolean;
+  readonly multiAngle: boolean;
+  readonly timestamping: boolean;
+}
+
+export interface VisualComparisonConfig {
+  readonly enabled: boolean;
+  readonly referenceDatabase: boolean;
+  readonly goldenSampleComparison: boolean;
+  readonly differenceHighlighting: boolean;
+}
+
+export interface VisualAnomalyConfig {
+  readonly enabled: boolean;
+  readonly componentPlacement: boolean;
+  readonly solderQuality: boolean;
+  readonly labelVerification: boolean;
+  readonly physicalDamage: boolean;
+}
+
+export interface XRayAnalysisConfig {
+  readonly enabled: boolean;
+  readonly twoDimensional: TwoDXRayConfig;
+  readonly threeDimensional: ThreeDXRayConfig;
+  readonly analysis: XRayAnalysisSettingsConfig;
+}
+
+export interface TwoDXRayConfig {
+  readonly enabled: boolean;
+  readonly resolution: number;
+  readonly voltageRange: VoltageRange;
+  readonly multiAngle: boolean;
+}
+
+export interface VoltageRange {
+  readonly min: number;
+  readonly max: number;
+}
+
+export interface ThreeDXRayConfig {
+  readonly enabled: boolean;
+  readonly ctScanning: boolean;
+  readonly resolution: number;
+  readonly sliceThickness: number;
+}
+
+export interface XRayAnalysisSettingsConfig {
+  readonly enabled: boolean;
+  readonly internalStructure: boolean;
+  readonly wireIntegrity: boolean;
+  readonly componentVerification: boolean;
+  readonly hiddenDevices: boolean;
+}
+
+export interface AcousticMicroscopyConfig {
+  readonly enabled: boolean;
+  readonly frequency: FrequencyRange;
+  readonly scanModes: readonly AcousticScanMode[];
+  readonly defectDetection: AcousticDefectConfig;
+}
+
+export interface FrequencyRange {
+  readonly min: number;
+  readonly max: number;
+}
+
+export type AcousticScanMode =
+  | 'C_SCAN'
+  | 'B_SCAN'
+  | 'A_SCAN'
+  | 'THROUGH_TRANSMISSION';
+
+export interface AcousticDefectConfig {
+  readonly enabled: boolean;
+  readonly delamination: boolean;
+  readonly voids: boolean;
+  readonly cracks: boolean;
+  readonly foreignMaterial: boolean;
+}
+
+export interface PowerAnalysisConfig {
+  readonly enabled: boolean;
+  readonly staticAnalysis: StaticPowerAnalysisConfig;
+  readonly dynamicAnalysis: DynamicPowerAnalysisConfig;
+  readonly differentialAnalysis: DifferentialPowerAnalysisConfig;
+  readonly anomalyDetection: PowerAnomalyConfig;
+}
+
+export interface StaticPowerAnalysisConfig {
+  readonly enabled: boolean;
+  readonly leakageCurrent: boolean;
+  readonly quiescentCurrent: boolean;
+  readonly voltageProfiles: boolean;
+}
+
+export interface DynamicPowerAnalysisConfig {
+  readonly enabled: boolean;
+  readonly transientAnalysis: boolean;
+  readonly loadVariation: boolean;
+  readonly frequencyResponse: boolean;
+}
+
+export interface DifferentialPowerAnalysisConfig {
+  readonly enabled: boolean;
+  readonly sampleCount: number;
+  readonly correlationAnalysis: boolean;
+  readonly keyExtraction: boolean;
+}
+
+export interface PowerAnomalyConfig {
+  readonly enabled: boolean;
+  readonly baselineComparison: boolean;
+  readonly thresholdDetection: boolean;
+  readonly patternRecognition: boolean;
+}
+
+export interface TimingAnalysisConfig {
+  readonly enabled: boolean;
+  readonly propagationDelay: PropagationDelayConfig;
+  readonly clockAnalysis: ClockAnalysisConfig;
+  readonly timingAttackDetection: TimingAttackConfig;
+}
+
+export interface PropagationDelayConfig {
+  readonly enabled: boolean;
+  readonly pathAnalysis: boolean;
+  readonly gateDelay: boolean;
+  readonly interconnectDelay: boolean;
+}
+
+export interface ClockAnalysisConfig {
+  readonly enabled: boolean;
+  readonly jitterAnalysis: boolean;
+  readonly skewAnalysis: boolean;
+  readonly frequencyStability: boolean;
+}
+
+export interface TimingAttackConfig {
+  readonly enabled: boolean;
+  readonly variationDetection: boolean;
+  readonly statisticalAnalysis: boolean;
+  readonly countermeasureVerification: boolean;
+}
+
+export interface ElectromagneticAnalysisConfig {
+  readonly enabled: boolean;
+  readonly emissionAnalysis: EMEmissionConfig;
+  readonly susceptibilityAnalysis: EMSusceptibilityConfig;
+  readonly nearFieldProbing: NearFieldConfig;
+  readonly tempestAnalysis: TEMPESTConfig;
+}
+
+export interface EMEmissionConfig {
+  readonly enabled: boolean;
+  readonly frequencyRange: FrequencyRange;
+  readonly spatialMapping: boolean;
+  readonly signatureAnalysis: boolean;
+}
+
+export interface EMSusceptibilityConfig {
+  readonly enabled: boolean;
+  readonly faultInjection: boolean;
+  readonly glitchDetection: boolean;
+  readonly immunityTesting: boolean;
+}
+
+export interface NearFieldConfig {
+  readonly enabled: boolean;
+  readonly probeTypes: readonly ProbeType[];
+  readonly resolution: number;
+  readonly frequencyRange: FrequencyRange;
+}
+
+export type ProbeType =
+  | 'ELECTRIC_FIELD'
+  | 'MAGNETIC_FIELD'
+  | 'COMBINED';
+
+export interface TEMPESTConfig {
+  readonly enabled: boolean;
+  readonly emanationDetection: boolean;
+  readonly signalReconstruction: boolean;
+  readonly shieldingVerification: boolean;
+}
+
+export interface SideChannelAnalysisConfig {
+  readonly enabled: boolean;
+  readonly powerSideChannel: PowerSideChannelConfig;
+  readonly electromagneticSideChannel: EMSideChannelConfig;
+  readonly timingSideChannel: TimingSideChannelConfig;
+  readonly acousticSideChannel: AcousticSideChannelConfig;
+  readonly thermalSideChannel: ThermalSideChannelConfig;
+}
+
+export interface PowerSideChannelConfig {
+  readonly enabled: boolean;
+  readonly simpleAnalysis: boolean;
+  readonly differentialAnalysis: boolean;
+  readonly correlationAnalysis: boolean;
+  readonly templateAttacks: boolean;
+}
+
+export interface EMSideChannelConfig {
+  readonly enabled: boolean;
+  readonly simpleAnalysis: boolean;
+  readonly differentialAnalysis: boolean;
+  readonly spatialAnalysis: boolean;
+}
+
+export interface TimingSideChannelConfig {
+  readonly enabled: boolean;
+  readonly cacheTimingAnalysis: boolean;
+  readonly branchTimingAnalysis: boolean;
+  readonly memoryTimingAnalysis: boolean;
+}
+
+export interface AcousticSideChannelConfig {
+  readonly enabled: boolean;
+  readonly keystrokeAnalysis: boolean;
+  readonly printerAnalysis: boolean;
+  readonly cpuAnalysis: boolean;
+}
+
+export interface ThermalSideChannelConfig {
+  readonly enabled: boolean;
+  readonly thermalImaging: boolean;
+  readonly hotspotDetection: boolean;
+  readonly thermalPatterns: boolean;
+}
+
+export interface FunctionalTestingConfig {
+  readonly enabled: boolean;
+  readonly boundaryScanning: BoundaryScanConfig;
+  readonly jtagTesting: JTAGTestingConfig;
+  readonly functionalVerification: FunctionalVerificationConfig;
+  readonly stressTesting: StressTestingConfig;
+}
+
+export interface BoundaryScanConfig {
+  readonly enabled: boolean;
+  readonly ieee1149: boolean;
+  readonly interconnectTest: boolean;
+  readonly memoryTest: boolean;
+}
+
+export interface JTAGTestingConfig {
+  readonly enabled: boolean;
+  readonly chainDetection: boolean;
+  readonly deviceIdentification: boolean;
+  readonly memoryAccess: boolean;
+  readonly debugAccess: boolean;
+}
+
+export interface FunctionalVerificationConfig {
+  readonly enabled: boolean;
+  readonly specificationCompliance: boolean;
+  readonly performanceTesting: boolean;
+  readonly interfaceTesting: boolean;
+}
+
+export interface StressTestingConfig {
+  readonly enabled: boolean;
+  readonly temperatureStress: boolean;
+  readonly voltageStress: boolean;
+  readonly frequencyStress: boolean;
+  readonly burnIn: boolean;
+}
+
+export interface SupplyChainVerificationConfig {
+  readonly enabled: boolean;
+  readonly provenance: ProvenanceConfig;
+  readonly authentication: SupplyChainAuthConfig;
+  readonly tracking: SupplyChainTrackingConfig;
+  readonly riskAssessment: SupplyChainRiskConfig;
+}
+
+export interface ProvenanceConfig {
+  readonly enabled: boolean;
+  readonly manufacturerVerification: boolean;
+  readonly lotTracking: boolean;
+  readonly dateCodeVerification: boolean;
+  readonly documentationReview: boolean;
+}
+
+export interface SupplyChainAuthConfig {
+  readonly enabled: boolean;
+  readonly certificateVerification: boolean;
+  readonly hologramVerification: boolean;
+  readonly serialNumberVerification: boolean;
+  readonly cryptographicAuthentication: boolean;
+}
+
+export interface SupplyChainTrackingConfig {
+  readonly enabled: boolean;
+  readonly chainOfCustody: boolean;
+  readonly handlerVerification: boolean;
+  readonly locationTracking: boolean;
+  readonly timestamping: boolean;
+}
+
+export interface SupplyChainRiskConfig {
+  readonly enabled: boolean;
+  readonly vendorAssessment: boolean;
+  readonly countryOfOrigin: boolean;
+  readonly transportationRisk: boolean;
+  readonly storageRisk: boolean;
+}
+
+export interface TamperingDetectionConfig {
+  readonly enabled: boolean;
+  readonly physicalTampering: PhysicalTamperingConfig;
+  readonly sealVerification: SealVerificationConfig;
+  readonly enclosureInspection: EnclosureInspectionConfig;
+  readonly antiTamperMechanisms: AntiTamperConfig;
+}
+
+export interface PhysicalTamperingConfig {
+  readonly enabled: boolean;
+  readonly scratchDetection: boolean;
+  readonly toolMarkDetection: boolean;
+  readonly componentDisplacement: boolean;
+  readonly solderRework: boolean;
+}
+
+export interface SealVerificationConfig {
+  readonly enabled: boolean;
+  readonly tamperEvidentSeals: boolean;
+  readonly holographicSeals: boolean;
+  readonly serializedSeals: boolean;
+  readonly uvSeals: boolean;
+}
+
+export interface EnclosureInspectionConfig {
+  readonly enabled: boolean;
+  readonly screwTampering: boolean;
+  readonly caseModification: boolean;
+  readonly ventModification: boolean;
+  readonly labelTampering: boolean;
+}
+
+export interface AntiTamperConfig {
+  readonly enabled: boolean;
+  readonly meshDetection: boolean;
+  readonly sensorVerification: boolean;
+  readonly zeroizationVerification: boolean;
+  readonly responseVerification: boolean;
+}
+
+export interface ComponentAuthenticationConfig {
+  readonly enabled: boolean;
+  readonly markingVerification: MarkingVerificationConfig;
+  readonly electricalCharacterization: ElectricalCharacterizationConfig;
+  readonly physicalCharacterization: PhysicalCharacterizationConfig;
+  readonly counterfeitDetection: CounterfeitDetectionConfig;
+}
+
+export interface MarkingVerificationConfig {
+  readonly enabled: boolean;
+  readonly laserMarking: boolean;
+  readonly inkMarking: boolean;
+  readonly logoVerification: boolean;
+  readonly dateCodeFormat: boolean;
+}
+
+export interface ElectricalCharacterizationConfig {
+  readonly enabled: boolean;
+  readonly parameterTesting: boolean;
+  readonly curveTracing: boolean;
+  readonly frequencyResponse: boolean;
+  readonly noiseCharacterization: boolean;
+}
+
+export interface PhysicalCharacterizationConfig {
+  readonly enabled: boolean;
+  readonly dimensionalAnalysis: boolean;
+  readonly weightAnalysis: boolean;
+  readonly materialAnalysis: boolean;
+  readonly packageInspection: boolean;
+}
+
+export interface CounterfeitDetectionConfig {
+  readonly enabled: boolean;
+  readonly remarkedComponents: boolean;
+  readonly recycledComponents: boolean;
+  readonly clonedComponents: boolean;
+  readonly defectiveComponents: boolean;
+}
+
+export interface ReportingConfig {
+  readonly enabled: boolean;
+  readonly formats: readonly ReportFormat[];
+  readonly sections: readonly ReportSection[];
+  readonly automation: ReportAutomationConfig;
+}
+
+export type ReportFormat =
+  | 'PDF'
+  | 'HTML'
+  | 'JSON'
+  | 'XML'
+  | 'DOCX';
+
+export type ReportSection =
+  | 'EXECUTIVE_SUMMARY'
+  | 'INSPECTION_DETAILS'
+  | 'FINDINGS'
+  | 'RISK_ASSESSMENT'
+  | 'RECOMMENDATIONS'
+  | 'EVIDENCE';
+
+export interface ReportAutomationConfig {
+  readonly enabled: boolean;
+  readonly scheduling: boolean;
+  readonly triggers: readonly string[];
+}
+
+export interface StorageConfig {
+  readonly type: 'DATABASE' | 'FILE_SYSTEM' | 'HYBRID';
+  readonly encryption: StorageEncryptionConfig;
+  readonly retention: RetentionConfig;
+  readonly backup: BackupConfig;
+}
+
+export interface StorageEncryptionConfig {
+  readonly enabled: boolean;
+  readonly algorithm: 'AES_256_GCM' | 'CHACHA20_POLY1305';
+  readonly keyManagement: 'LOCAL' | 'HSM' | 'KMS';
+}
+
+export interface RetentionConfig {
+  readonly enabled: boolean;
+  readonly inspections: number;
+  readonly evidence: number;
+  readonly reports: number;
+}
+
+export interface BackupConfig {
+  readonly enabled: boolean;
+  readonly frequency: number;
+  readonly encryption: boolean;
+  readonly offsite: boolean;
+}
+
+export interface SecurityConfig {
+  readonly authentication: AuthenticationConfig;
+  readonly authorization: AuthorizationConfig;
+  readonly audit: AuditConfig;
+  readonly classification: ClassificationConfig;
+}
+
+export interface AuthenticationConfig {
+  readonly enabled: boolean;
+  readonly methods: readonly ('PKI' | 'CAC' | 'BIOMETRIC' | 'MFA')[];
+  readonly sessionTimeout: number;
+}
+
+export interface AuthorizationConfig {
+  readonly enabled: boolean;
+  readonly model: 'RBAC' | 'ABAC' | 'MAC';
+  readonly clearanceRequired: boolean;
+}
+
+export interface AuditConfig {
+  readonly enabled: boolean;
+  readonly logAllAccess: boolean;
+  readonly logAllOperations: boolean;
+  readonly retention: number;
+}
+
+export interface ClassificationConfig {
+  readonly enabled: boolean;
+  readonly defaultLevel: SecurityLevel;
+  readonly autoClassification: boolean;
+}
+
+export interface PlatformMetadata {
+  readonly createdAt: number;
+  readonly updatedAt: number;
+  readonly createdBy: string;
+  readonly version: string;
+  readonly tags: readonly string[];
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// HARDWARE COMPONENT TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface HardwareComponent {
+  readonly componentId: string;
+  readonly type: ComponentType;
+  readonly manufacturer: string;
+  readonly partNumber: string;
+  readonly serialNumber: string | null;
+  readonly lotNumber: string | null;
+  readonly dateCode: string | null;
+  readonly location: ComponentLocation;
+  readonly specifications: ComponentSpecifications;
+  readonly provenance: ProvenanceInfo;
+  readonly inspection: InspectionInfo | null;
+  readonly authentication: AuthenticationInfo | null;
+  readonly metadata: ComponentMetadata;
+}
+
+export interface ComponentLocation {
+  readonly board: string;
+  readonly designator: string;
+  readonly coordinates: Coordinates;
+  readonly layer: string;
+}
+
+export interface Coordinates {
+  readonly x: number;
+  readonly y: number;
+  readonly z: number | null;
+}
+
+export interface ComponentSpecifications {
+  readonly package: string;
+  readonly pinCount: number;
+  readonly dimensions: Dimensions;
+  readonly weight: number | null;
+  readonly operatingVoltage: VoltageRange;
+  readonly operatingTemperature: TemperatureRange;
+}
+
+export interface Dimensions {
+  readonly length: number;
+  readonly width: number;
+  readonly height: number;
+}
+
+export interface TemperatureRange {
+  readonly min: number;
+  readonly max: number;
+}
+
+export interface ProvenanceInfo {
+  readonly verified: boolean;
+  readonly manufacturer: ManufacturerInfo;
+  readonly distributor: DistributorInfo | null;
+  readonly chainOfCustody: readonly CustodyEntry[];
+}
+
+export interface ManufacturerInfo {
+  readonly name: string;
+  readonly country: string;
+  readonly facility: string | null;
+  readonly verified: boolean;
+}
+
+export interface DistributorInfo {
+  readonly name: string;
+  readonly authorized: boolean;
+  readonly purchaseDate: number;
+  readonly invoiceNumber: string | null;
+}
+
+export interface CustodyEntry {
+  readonly entryId: string;
+  readonly timestamp: number;
+  readonly handler: string;
+  readonly location: string;
+  readonly action: CustodyAction;
+  readonly notes: string | null;
+}
+
+export type CustodyAction =
+  | 'RECEIVED'
+  | 'INSPECTED'
+  | 'STORED'
+  | 'TRANSFERRED'
+  | 'INSTALLED'
+  | 'REMOVED';
+
+export interface InspectionInfo {
+  readonly inspectionId: string;
+  readonly timestamp: number;
+  readonly inspector: string;
+  readonly methods: readonly DetectionMethod[];
+  readonly findings: readonly InspectionFinding[];
+  readonly status: InspectionStatus;
+}
+
+export type InspectionStatus =
+  | 'PASSED'
+  | 'FAILED'
+  | 'SUSPICIOUS'
+  | 'INCONCLUSIVE';
+
+export interface InspectionFinding {
+  readonly findingId: string;
+  readonly type: FindingType;
+  readonly severity: RiskLevel;
+  readonly description: string;
+  readonly evidence: readonly EvidenceItem[];
+  readonly confidence: ConfidenceLevel;
+}
+
+export type FindingType =
+  | 'IMPLANT_DETECTED'
+  | 'TAMPERING_DETECTED'
+  | 'COUNTERFEIT_SUSPECTED'
+  | 'ANOMALY_DETECTED'
+  | 'SPECIFICATION_DEVIATION'
+  | 'AUTHENTICATION_FAILURE';
+
+export interface EvidenceItem {
+  readonly evidenceId: string;
+  readonly type: EvidenceType;
+  readonly path: string;
+  readonly hash: string;
+  readonly timestamp: number;
+}
+
+export type EvidenceType =
+  | 'IMAGE'
+  | 'XRAY'
+  | 'MEASUREMENT'
+  | 'WAVEFORM'
+  | 'LOG'
+  | 'REPORT';
+
+export interface AuthenticationInfo {
+  readonly authenticated: boolean;
+  readonly methods: readonly AuthenticationMethod[];
+  readonly results: readonly AuthenticationResult[];
+  readonly timestamp: number;
+}
+
+export type AuthenticationMethod =
+  | 'MARKING_VERIFICATION'
+  | 'ELECTRICAL_TEST'
+  | 'PHYSICAL_TEST'
+  | 'CRYPTOGRAPHIC'
+  | 'DATABASE_LOOKUP';
+
+export interface AuthenticationResult {
+  readonly method: AuthenticationMethod;
+  readonly passed: boolean;
+  readonly confidence: ConfidenceLevel;
+  readonly details: string;
+}
+
+export interface ComponentMetadata {
+  readonly createdAt: number;
+  readonly updatedAt: number;
+  readonly createdBy: string;
+  readonly deviceId: string | null;
+  readonly caseId: string | null;
+  readonly classification: SecurityLevel;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// IMPLANT DETECTION TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface ImplantDetection {
+  readonly detectionId: string;
+  readonly componentId: string;
+  readonly type: ImplantType;
+  readonly confidence: ConfidenceLevel;
+  readonly severity: RiskLevel;
+  readonly location: ImplantLocation;
+  readonly characteristics: ImplantCharacteristics;
+  readonly indicators: readonly ImplantIndicator[];
+  readonly evidence: readonly EvidenceItem[];
+  readonly attribution: AttributionInfo | null;
+  readonly metadata: DetectionMetadata;
+}
+
+export interface ImplantLocation {
+  readonly physical: PhysicalLocation;
+  readonly logical: LogicalLocation | null;
+}
+
+export interface PhysicalLocation {
+  readonly coordinates: Coordinates;
+  readonly layer: string;
+  readonly proximity: readonly string[];
+}
+
+export interface LogicalLocation {
+  readonly function: string;
+  readonly dataPath: string;
+  readonly controlPath: string;
+}
+
+export interface ImplantCharacteristics {
+  readonly size: Dimensions | null;
+  readonly functionality: readonly string[];
+  readonly activation: ActivationInfo;
+  readonly communication: CommunicationInfo | null;
+  readonly persistence: PersistenceInfo;
+}
+
+export interface ActivationInfo {
+  readonly trigger: ActivationTrigger;
+  readonly conditions: readonly string[];
+  readonly timing: string | null;
+}
+
+export type ActivationTrigger =
+  | 'ALWAYS_ON'
+  | 'TIME_BASED'
+  | 'EVENT_BASED'
+  | 'COMMAND_BASED'
+  | 'CONDITION_BASED'
+  | 'UNKNOWN';
+
+export interface CommunicationInfo {
+  readonly type: CommunicationType;
+  readonly frequency: number | null;
+  readonly protocol: string | null;
+  readonly range: number | null;
+}
+
+export type CommunicationType =
+  | 'RF'
+  | 'OPTICAL'
+  | 'ACOUSTIC'
+  | 'POWER_LINE'
+  | 'NETWORK'
+  | 'NONE';
+
+export interface PersistenceInfo {
+  readonly mechanism: string;
+  readonly survivesReset: boolean;
+  readonly survivesReflash: boolean;
+  readonly survivesReplacement: boolean;
+}
+
+export interface ImplantIndicator {
+  readonly indicatorId: string;
+  readonly type: IndicatorType;
+  readonly value: string;
+  readonly confidence: ConfidenceLevel;
+  readonly source: string;
+}
+
+export type IndicatorType =
+  | 'VISUAL'
+  | 'ELECTRICAL'
+  | 'ELECTROMAGNETIC'
+  | 'TIMING'
+  | 'BEHAVIORAL'
+  | 'STRUCTURAL';
+
+export interface AttributionInfo {
+  readonly actor: string | null;
+  readonly campaign: string | null;
+  readonly confidence: ConfidenceLevel;
+  readonly indicators: readonly string[];
+}
+
+export interface DetectionMetadata {
+  readonly detectedAt: number;
+  readonly detectedBy: string;
+  readonly methods: readonly DetectionMethod[];
+  readonly classification: SecurityLevel;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SUPPLY CHAIN TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface SupplyChainAssessment {
+  readonly assessmentId: string;
+  readonly componentId: string;
+  readonly stages: readonly StageAssessment[];
+  readonly overallRisk: RiskLevel;
+  readonly findings: readonly SupplyChainFinding[];
+  readonly recommendations: readonly string[];
+  readonly metadata: AssessmentMetadata;
+}
+
+export interface StageAssessment {
+  readonly stage: SupplyChainStage;
+  readonly verified: boolean;
+  readonly risk: RiskLevel;
+  readonly findings: readonly string[];
+  readonly evidence: readonly EvidenceItem[];
+}
+
+export interface SupplyChainFinding {
+  readonly findingId: string;
+  readonly stage: SupplyChainStage;
+  readonly type: SupplyChainFindingType;
+  readonly severity: RiskLevel;
+  readonly description: string;
+  readonly evidence: readonly EvidenceItem[];
+}
+
+export type SupplyChainFindingType =
+  | 'UNAUTHORIZED_VENDOR'
+  | 'DOCUMENTATION_GAP'
+  | 'CUSTODY_BREAK'
+  | 'COUNTERFEIT_RISK'
+  | 'TAMPERING_RISK'
+  | 'COUNTRY_OF_ORIGIN_CONCERN';
+
+export interface AssessmentMetadata {
+  readonly assessedAt: number;
+  readonly assessedBy: string;
+  readonly classification: SecurityLevel;
+  readonly version: string;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SESSION TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface HardwareInspectionSession {
+  readonly sessionId: string;
+  readonly platformId: string;
+  readonly state: SessionState;
+  readonly config: SessionConfig;
+  readonly progress: SessionProgress;
+  readonly components: readonly HardwareComponent[];
+  readonly detections: readonly ImplantDetection[];
+  readonly assessments: readonly SupplyChainAssessment[];
+  readonly errors: readonly SessionError[];
+  readonly startTime: number;
+  readonly endTime: number | null;
+  readonly metadata: SessionMetadata;
+}
+
+export type SessionState =
+  | 'PENDING'
+  | 'INITIALIZING'
+  | 'INSPECTING'
+  | 'ANALYZING'
+  | 'VERIFYING'
+  | 'REPORTING'
+  | 'COMPLETED'
+  | 'FAILED';
+
+export interface SessionConfig {
+  readonly mode: AnalysisMode;
+  readonly targets: readonly string[];
+  readonly methods: readonly DetectionMethod[];
+  readonly options: Readonly<Record<string, unknown>>;
+}
+
+export interface SessionProgress {
+  readonly phase: SessionPhase;
+  readonly percentage: number;
+  readonly currentTask: string | null;
+  readonly estimatedTimeRemaining: number | null;
+}
+
+export type SessionPhase =
+  | 'INITIALIZING'
+  | 'VISUAL_INSPECTION'
+  | 'XRAY_ANALYSIS'
+  | 'ELECTRICAL_TESTING'
+  | 'SIDE_CHANNEL_ANALYSIS'
+  | 'SUPPLY_CHAIN_VERIFICATION'
+  | 'REPORTING'
+  | 'FINALIZING';
+
+export interface SessionError {
+  readonly errorId: string;
+  readonly timestamp: number;
+  readonly type: SessionErrorType;
+  readonly message: string;
+  readonly details: string | null;
+  readonly recoverable: boolean;
+}
+
+export type SessionErrorType =
+  | 'INSPECTION_ERROR'
+  | 'ANALYSIS_ERROR'
+  | 'VERIFICATION_ERROR'
+  | 'EQUIPMENT_ERROR'
+  | 'TIMEOUT'
+  | 'RESOURCE_ERROR'
+  | 'INTERNAL_ERROR';
+
+export interface SessionMetadata {
+  readonly platformVersion: string;
+  readonly startedBy: string;
+  readonly caseId: string | null;
+  readonly classification: SecurityLevel;
+  readonly tags: readonly string[];
+}

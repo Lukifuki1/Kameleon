@@ -1,0 +1,2568 @@
+/**
+ * @file Attack Capture & Analysis System - Tier-0 National Capability Threat Intelligence Platform
+ * @author {{AVTOR}}
+ * @version {{VERZIJA}}
+ * @date {{DATUM}}
+ * @project {{IME_PROJEKTA}}
+ * @domain VARNOSTNI_SISTEMI
+ * 
+ * @requirement REQ-SEC-ACA-001
+ * @design DSN-SEC-ACA-001
+ * @test TST-SEC-ACA-001
+ * 
+ * @description
+ * Enterprise-grade Tier-0 National Capability attack capture and analysis system.
+ * Implements comprehensive threat intelligence and malware analysis including:
+ * - Attack capture and recording
+ * - Malware sample collection and analysis
+ * - Virus signature extraction
+ * - Attack technique identification (MITRE ATT&CK)
+ * - Threat actor attribution
+ * - Indicators of Compromise (IoC) extraction
+ * - Behavioral analysis
+ * - Static and dynamic malware analysis
+ * - Network traffic analysis
+ * - Memory forensics
+ * - Code deobfuscation
+ * - Threat intelligence correlation
+ * 
+ * STEALTH CAPABILITIES:
+ * - Covert capture mechanisms
+ * - Hidden analysis environments
+ * - Silent data collection
+ * - Undetectable monitoring
+ * 
+ * ANTI-FORENSICS DEFENSE:
+ * - Tamper-proof evidence storage
+ * - Encrypted sample repository
+ * - Secure chain of custody
+ * - Protected analysis results
+ * 
+ * @compliance NIST SP 800-83, MITRE ATT&CK, STIX/TAXII, OpenIOC
+ * @classification TOP SECRET - Threat Intelligence Operations
+ */
+
+import { getLogicalTimestamp } from '../../../../core/deterministic';
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ATTACK CAPTURE TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export type AttackType =
+  | 'MALWARE'
+  | 'EXPLOIT'
+  | 'PHISHING'
+  | 'RANSOMWARE'
+  | 'APT'
+  | 'DDOS'
+  | 'BRUTE_FORCE'
+  | 'SQL_INJECTION'
+  | 'XSS'
+  | 'COMMAND_INJECTION'
+  | 'PRIVILEGE_ESCALATION'
+  | 'LATERAL_MOVEMENT'
+  | 'DATA_EXFILTRATION'
+  | 'CRYPTOJACKING'
+  | 'SUPPLY_CHAIN'
+  | 'ZERO_DAY';
+
+export type MalwareType =
+  | 'VIRUS'
+  | 'WORM'
+  | 'TROJAN'
+  | 'RANSOMWARE'
+  | 'SPYWARE'
+  | 'ADWARE'
+  | 'ROOTKIT'
+  | 'BOOTKIT'
+  | 'KEYLOGGER'
+  | 'RAT'
+  | 'BACKDOOR'
+  | 'DROPPER'
+  | 'LOADER'
+  | 'STEALER'
+  | 'MINER'
+  | 'BOTNET'
+  | 'FILELESS'
+  | 'POLYMORPHIC'
+  | 'METAMORPHIC';
+
+export type ThreatSeverity = 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW' | 'INFO';
+
+export type AnalysisStatus =
+  | 'PENDING'
+  | 'IN_PROGRESS'
+  | 'COMPLETED'
+  | 'FAILED'
+  | 'REQUIRES_REVIEW';
+
+export type CaptureSource =
+  | 'HONEYPOT'
+  | 'IDS'
+  | 'IPS'
+  | 'FIREWALL'
+  | 'ENDPOINT'
+  | 'EMAIL_GATEWAY'
+  | 'WEB_PROXY'
+  | 'SANDBOX'
+  | 'NETWORK_TAP'
+  | 'THREAT_FEED'
+  | 'MANUAL_SUBMISSION';
+
+export type StealthMode =
+  | 'PASSIVE'
+  | 'COVERT'
+  | 'SILENT'
+  | 'HIDDEN'
+  | 'TRANSPARENT';
+
+export type AntiForensicsLevel =
+  | 'STANDARD'
+  | 'ENHANCED'
+  | 'MAXIMUM'
+  | 'PARANOID';
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// CAPTURED ATTACK TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface CapturedAttack {
+  readonly attackId: string;
+  readonly type: AttackType;
+  readonly severity: ThreatSeverity;
+  readonly source: CaptureSource;
+  readonly timestamp: number;
+  readonly sourceIp: string | null;
+  readonly destinationIp: string | null;
+  readonly targetAsset: string | null;
+  readonly description: string;
+  readonly rawData: AttackRawData;
+  readonly indicators: readonly IndicatorOfCompromise[];
+  readonly techniques: readonly MitreAttackTechnique[];
+  readonly samples: readonly string[];
+  readonly analysis: AttackAnalysis | null;
+  readonly attribution: ThreatAttribution | null;
+  readonly status: AnalysisStatus;
+  readonly stealthConfig: StealthConfiguration;
+  readonly chainOfCustody: readonly CustodyRecord[];
+}
+
+export interface AttackRawData {
+  readonly networkCapture: Uint8Array | null;
+  readonly memoryDump: Uint8Array | null;
+  readonly diskImage: Uint8Array | null;
+  readonly logFiles: readonly string[];
+  readonly artifacts: readonly AttackArtifact[];
+  readonly hash: string;
+  readonly encrypted: boolean;
+  readonly compressionType: CompressionType | null;
+}
+
+export type CompressionType = 'GZIP' | 'BZIP2' | 'XZ' | 'ZSTD' | 'LZ4';
+
+export interface AttackArtifact {
+  readonly artifactId: string;
+  readonly type: ArtifactType;
+  readonly name: string;
+  readonly path: string;
+  readonly size: number;
+  readonly hash: ArtifactHash;
+  readonly metadata: Readonly<Record<string, unknown>>;
+  readonly capturedAt: number;
+}
+
+export type ArtifactType =
+  | 'EXECUTABLE'
+  | 'SCRIPT'
+  | 'DOCUMENT'
+  | 'ARCHIVE'
+  | 'NETWORK_CAPTURE'
+  | 'MEMORY_DUMP'
+  | 'REGISTRY_HIVE'
+  | 'LOG_FILE'
+  | 'CONFIGURATION'
+  | 'CERTIFICATE'
+  | 'KEY_MATERIAL';
+
+export interface ArtifactHash {
+  readonly md5: string;
+  readonly sha1: string;
+  readonly sha256: string;
+  readonly sha512: string;
+  readonly ssdeep: string | null;
+  readonly imphash: string | null;
+}
+
+export interface StealthConfiguration {
+  readonly mode: StealthMode;
+  readonly hiddenCapture: boolean;
+  readonly covertStorage: boolean;
+  readonly silentAnalysis: boolean;
+  readonly obfuscatedIdentity: boolean;
+  readonly antiDetection: boolean;
+}
+
+export interface CustodyRecord {
+  readonly recordId: string;
+  readonly action: CustodyAction;
+  readonly actor: string;
+  readonly timestamp: number;
+  readonly notes: string;
+  readonly signature: string;
+  readonly verified: boolean;
+}
+
+export type CustodyAction =
+  | 'CAPTURED'
+  | 'TRANSFERRED'
+  | 'ANALYZED'
+  | 'STORED'
+  | 'EXPORTED'
+  | 'SHARED'
+  | 'DESTROYED';
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// INDICATOR OF COMPROMISE TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface IndicatorOfCompromise {
+  readonly iocId: string;
+  readonly type: IOCType;
+  readonly value: string;
+  readonly confidence: number;
+  readonly severity: ThreatSeverity;
+  readonly context: string;
+  readonly firstSeen: number;
+  readonly lastSeen: number;
+  readonly sources: readonly string[];
+  readonly tags: readonly string[];
+  readonly relatedIocs: readonly string[];
+  readonly stixId: string | null;
+}
+
+export type IOCType =
+  | 'IP_ADDRESS'
+  | 'DOMAIN'
+  | 'URL'
+  | 'EMAIL'
+  | 'FILE_HASH_MD5'
+  | 'FILE_HASH_SHA1'
+  | 'FILE_HASH_SHA256'
+  | 'FILE_NAME'
+  | 'FILE_PATH'
+  | 'REGISTRY_KEY'
+  | 'MUTEX'
+  | 'USER_AGENT'
+  | 'JA3_HASH'
+  | 'JA3S_HASH'
+  | 'SSL_CERTIFICATE'
+  | 'YARA_RULE'
+  | 'SNORT_RULE'
+  | 'SIGMA_RULE'
+  | 'CVE'
+  | 'ASN'
+  | 'CIDR';
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// MITRE ATT&CK TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface MitreAttackTechnique {
+  readonly techniqueId: string;
+  readonly name: string;
+  readonly tactic: MitreTactic;
+  readonly description: string;
+  readonly platforms: readonly Platform[];
+  readonly dataSources: readonly string[];
+  readonly detection: string;
+  readonly mitigation: string;
+  readonly subTechniques: readonly string[];
+  readonly confidence: number;
+}
+
+export type MitreTactic =
+  | 'RECONNAISSANCE'
+  | 'RESOURCE_DEVELOPMENT'
+  | 'INITIAL_ACCESS'
+  | 'EXECUTION'
+  | 'PERSISTENCE'
+  | 'PRIVILEGE_ESCALATION'
+  | 'DEFENSE_EVASION'
+  | 'CREDENTIAL_ACCESS'
+  | 'DISCOVERY'
+  | 'LATERAL_MOVEMENT'
+  | 'COLLECTION'
+  | 'COMMAND_AND_CONTROL'
+  | 'EXFILTRATION'
+  | 'IMPACT';
+
+export type Platform =
+  | 'WINDOWS'
+  | 'LINUX'
+  | 'MACOS'
+  | 'CLOUD'
+  | 'AZURE_AD'
+  | 'OFFICE_365'
+  | 'SAAS'
+  | 'ICS'
+  | 'NETWORK'
+  | 'CONTAINERS'
+  | 'MOBILE';
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// MALWARE SAMPLE TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface MalwareSample {
+  readonly sampleId: string;
+  readonly type: MalwareType;
+  readonly family: string | null;
+  readonly variant: string | null;
+  readonly hash: ArtifactHash;
+  readonly size: number;
+  readonly fileType: FileType;
+  readonly architecture: Architecture | null;
+  readonly packer: string | null;
+  readonly compiler: string | null;
+  readonly timestamp: number;
+  readonly firstSeen: number;
+  readonly lastSeen: number;
+  readonly prevalence: Prevalence;
+  readonly staticAnalysis: StaticAnalysis | null;
+  readonly dynamicAnalysis: DynamicAnalysis | null;
+  readonly signatures: readonly MalwareSignature[];
+  readonly yaraMatches: readonly YaraMatch[];
+  readonly antiAnalysis: readonly AntiAnalysisTechnique[];
+  readonly status: AnalysisStatus;
+  readonly classification: MalwareClassification;
+}
+
+export interface FileType {
+  readonly mimeType: string;
+  readonly extension: string;
+  readonly magic: string;
+  readonly entropy: number;
+}
+
+export type Architecture = 'X86' | 'X64' | 'ARM' | 'ARM64' | 'MIPS' | 'PPC' | 'UNKNOWN';
+
+export type Prevalence = 'WIDESPREAD' | 'COMMON' | 'UNCOMMON' | 'RARE' | 'UNIQUE';
+
+export interface MalwareClassification {
+  readonly confidence: number;
+  readonly primaryType: MalwareType;
+  readonly secondaryTypes: readonly MalwareType[];
+  readonly family: string | null;
+  readonly campaign: string | null;
+  readonly threatActor: string | null;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// STATIC ANALYSIS TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface StaticAnalysis {
+  readonly analysisId: string;
+  readonly sampleId: string;
+  readonly timestamp: number;
+  readonly duration: number;
+  readonly peInfo: PEInfo | null;
+  readonly elfInfo: ELFInfo | null;
+  readonly strings: readonly ExtractedString[];
+  readonly imports: readonly ImportedFunction[];
+  readonly exports: readonly ExportedFunction[];
+  readonly sections: readonly BinarySection[];
+  readonly resources: readonly EmbeddedResource[];
+  readonly certificates: readonly CodeSigningCertificate[];
+  readonly suspiciousIndicators: readonly SuspiciousIndicator[];
+  readonly obfuscation: ObfuscationAnalysis;
+}
+
+export interface PEInfo {
+  readonly imageBase: string;
+  readonly entryPoint: string;
+  readonly subsystem: string;
+  readonly characteristics: readonly string[];
+  readonly timestamp: number;
+  readonly checksum: string;
+  readonly dllCharacteristics: readonly string[];
+  readonly machine: string;
+  readonly numberOfSections: number;
+  readonly imphash: string;
+  readonly richhash: string | null;
+}
+
+export interface ELFInfo {
+  readonly entryPoint: string;
+  readonly machine: string;
+  readonly type: string;
+  readonly osAbi: string;
+  readonly flags: readonly string[];
+  readonly interpreter: string | null;
+}
+
+export interface ExtractedString {
+  readonly stringId: string;
+  readonly value: string;
+  readonly type: StringType;
+  readonly encoding: StringEncoding;
+  readonly offset: number;
+  readonly section: string | null;
+  readonly suspicious: boolean;
+  readonly category: StringCategory | null;
+}
+
+export type StringType = 'ASCII' | 'UNICODE' | 'BASE64' | 'HEX' | 'ENCRYPTED';
+
+export type StringEncoding = 'UTF8' | 'UTF16LE' | 'UTF16BE' | 'ASCII' | 'UNKNOWN';
+
+export type StringCategory =
+  | 'URL'
+  | 'IP_ADDRESS'
+  | 'EMAIL'
+  | 'FILE_PATH'
+  | 'REGISTRY_KEY'
+  | 'COMMAND'
+  | 'CREDENTIAL'
+  | 'CRYPTOCURRENCY'
+  | 'API_CALL'
+  | 'ERROR_MESSAGE'
+  | 'DEBUG_INFO';
+
+export interface ImportedFunction {
+  readonly functionId: string;
+  readonly library: string;
+  readonly name: string;
+  readonly ordinal: number | null;
+  readonly suspicious: boolean;
+  readonly category: FunctionCategory | null;
+}
+
+export interface ExportedFunction {
+  readonly functionId: string;
+  readonly name: string;
+  readonly ordinal: number;
+  readonly address: string;
+}
+
+export type FunctionCategory =
+  | 'FILE_SYSTEM'
+  | 'NETWORK'
+  | 'PROCESS'
+  | 'REGISTRY'
+  | 'CRYPTO'
+  | 'INJECTION'
+  | 'ANTI_DEBUG'
+  | 'ANTI_VM'
+  | 'PERSISTENCE'
+  | 'PRIVILEGE';
+
+export interface BinarySection {
+  readonly sectionId: string;
+  readonly name: string;
+  readonly virtualAddress: string;
+  readonly virtualSize: number;
+  readonly rawSize: number;
+  readonly entropy: number;
+  readonly characteristics: readonly string[];
+  readonly suspicious: boolean;
+}
+
+export interface EmbeddedResource {
+  readonly resourceId: string;
+  readonly type: string;
+  readonly name: string;
+  readonly language: string;
+  readonly size: number;
+  readonly hash: string;
+  readonly entropy: number;
+  readonly suspicious: boolean;
+}
+
+export interface CodeSigningCertificate {
+  readonly certificateId: string;
+  readonly subject: string;
+  readonly issuer: string;
+  readonly serialNumber: string;
+  readonly thumbprint: string;
+  readonly validFrom: number;
+  readonly validTo: number;
+  readonly valid: boolean;
+  readonly trusted: boolean;
+  readonly revoked: boolean;
+}
+
+export interface SuspiciousIndicator {
+  readonly indicatorId: string;
+  readonly type: SuspiciousIndicatorType;
+  readonly description: string;
+  readonly severity: ThreatSeverity;
+  readonly confidence: number;
+  readonly evidence: string;
+}
+
+export type SuspiciousIndicatorType =
+  | 'HIGH_ENTROPY_SECTION'
+  | 'PACKED_EXECUTABLE'
+  | 'ANTI_DEBUG_API'
+  | 'ANTI_VM_API'
+  | 'INJECTION_API'
+  | 'CRYPTO_API'
+  | 'NETWORK_API'
+  | 'PERSISTENCE_API'
+  | 'SUSPICIOUS_STRING'
+  | 'INVALID_CERTIFICATE'
+  | 'KNOWN_MALWARE_PATTERN'
+  | 'OBFUSCATED_CODE';
+
+export interface ObfuscationAnalysis {
+  readonly detected: boolean;
+  readonly techniques: readonly ObfuscationTechnique[];
+  readonly packers: readonly string[];
+  readonly cryptors: readonly string[];
+  readonly protectors: readonly string[];
+  readonly confidence: number;
+}
+
+export interface ObfuscationTechnique {
+  readonly techniqueId: string;
+  readonly name: string;
+  readonly type: ObfuscationType;
+  readonly description: string;
+  readonly deobfuscatable: boolean;
+}
+
+export type ObfuscationType =
+  | 'PACKING'
+  | 'ENCRYPTION'
+  | 'ENCODING'
+  | 'STRING_OBFUSCATION'
+  | 'CONTROL_FLOW'
+  | 'DEAD_CODE'
+  | 'OPAQUE_PREDICATES'
+  | 'VIRTUALIZATION'
+  | 'METAMORPHISM'
+  | 'POLYMORPHISM';
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// DYNAMIC ANALYSIS TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface DynamicAnalysis {
+  readonly analysisId: string;
+  readonly sampleId: string;
+  readonly sandboxId: string;
+  readonly timestamp: number;
+  readonly duration: number;
+  readonly environment: SandboxEnvironment;
+  readonly processTree: readonly ProcessInfo[];
+  readonly fileOperations: readonly FileOperation[];
+  readonly registryOperations: readonly RegistryOperation[];
+  readonly networkOperations: readonly NetworkOperation[];
+  readonly apiCalls: readonly APICall[];
+  readonly droppedFiles: readonly DroppedFile[];
+  readonly injectedProcesses: readonly string[];
+  readonly mutexes: readonly string[];
+  readonly screenshots: readonly string[];
+  readonly behaviorSignatures: readonly BehaviorSignature[];
+  readonly verdict: AnalysisVerdict;
+}
+
+export interface SandboxEnvironment {
+  readonly os: string;
+  readonly version: string;
+  readonly architecture: Architecture;
+  readonly installedSoftware: readonly string[];
+  readonly networkConfig: NetworkConfig;
+  readonly analysisTimeout: number;
+  readonly humanSimulation: boolean;
+}
+
+export interface NetworkConfig {
+  readonly internetAccess: boolean;
+  readonly dnsServer: string;
+  readonly gateway: string;
+  readonly simulatedServices: readonly string[];
+}
+
+export interface ProcessInfo {
+  readonly processId: string;
+  readonly pid: number;
+  readonly parentPid: number;
+  readonly name: string;
+  readonly path: string;
+  readonly commandLine: string;
+  readonly user: string;
+  readonly startTime: number;
+  readonly endTime: number | null;
+  readonly exitCode: number | null;
+  readonly integrity: string;
+  readonly children: readonly string[];
+}
+
+export interface FileOperation {
+  readonly operationId: string;
+  readonly type: FileOperationType;
+  readonly path: string;
+  readonly processId: string;
+  readonly timestamp: number;
+  readonly size: number | null;
+  readonly hash: string | null;
+  readonly suspicious: boolean;
+}
+
+export type FileOperationType =
+  | 'CREATE'
+  | 'WRITE'
+  | 'READ'
+  | 'DELETE'
+  | 'RENAME'
+  | 'COPY'
+  | 'MOVE'
+  | 'MODIFY_ATTRIBUTES'
+  | 'MODIFY_PERMISSIONS';
+
+export interface RegistryOperation {
+  readonly operationId: string;
+  readonly type: RegistryOperationType;
+  readonly key: string;
+  readonly valueName: string | null;
+  readonly valueData: string | null;
+  readonly valueType: string | null;
+  readonly processId: string;
+  readonly timestamp: number;
+  readonly suspicious: boolean;
+}
+
+export type RegistryOperationType =
+  | 'CREATE_KEY'
+  | 'DELETE_KEY'
+  | 'SET_VALUE'
+  | 'DELETE_VALUE'
+  | 'QUERY_KEY'
+  | 'QUERY_VALUE'
+  | 'ENUMERATE_KEY'
+  | 'ENUMERATE_VALUE';
+
+export interface NetworkOperation {
+  readonly operationId: string;
+  readonly type: NetworkOperationType;
+  readonly protocol: NetworkProtocol;
+  readonly sourceIp: string;
+  readonly sourcePort: number;
+  readonly destinationIp: string;
+  readonly destinationPort: number;
+  readonly domain: string | null;
+  readonly processId: string;
+  readonly timestamp: number;
+  readonly bytesTransferred: number;
+  readonly payload: Uint8Array | null;
+  readonly suspicious: boolean;
+}
+
+export type NetworkOperationType =
+  | 'DNS_QUERY'
+  | 'TCP_CONNECT'
+  | 'TCP_LISTEN'
+  | 'UDP_SEND'
+  | 'UDP_RECEIVE'
+  | 'HTTP_REQUEST'
+  | 'HTTPS_REQUEST'
+  | 'SMTP_SEND'
+  | 'IRC_CONNECT'
+  | 'TOR_CONNECT';
+
+export type NetworkProtocol = 'TCP' | 'UDP' | 'ICMP' | 'DNS' | 'HTTP' | 'HTTPS' | 'SMTP' | 'IRC' | 'TOR';
+
+export interface APICall {
+  readonly callId: string;
+  readonly processId: string;
+  readonly api: string;
+  readonly category: FunctionCategory;
+  readonly arguments: readonly string[];
+  readonly returnValue: string;
+  readonly timestamp: number;
+  readonly suspicious: boolean;
+}
+
+export interface DroppedFile {
+  readonly fileId: string;
+  readonly path: string;
+  readonly name: string;
+  readonly size: number;
+  readonly hash: ArtifactHash;
+  readonly type: string;
+  readonly processId: string;
+  readonly timestamp: number;
+  readonly malicious: boolean;
+}
+
+export interface BehaviorSignature {
+  readonly signatureId: string;
+  readonly name: string;
+  readonly description: string;
+  readonly severity: ThreatSeverity;
+  readonly category: BehaviorCategory;
+  readonly indicators: readonly string[];
+  readonly mitreAttackId: string | null;
+}
+
+export type BehaviorCategory =
+  | 'PERSISTENCE'
+  | 'PRIVILEGE_ESCALATION'
+  | 'DEFENSE_EVASION'
+  | 'CREDENTIAL_ACCESS'
+  | 'DISCOVERY'
+  | 'LATERAL_MOVEMENT'
+  | 'COLLECTION'
+  | 'COMMAND_AND_CONTROL'
+  | 'EXFILTRATION'
+  | 'IMPACT';
+
+export interface AnalysisVerdict {
+  readonly malicious: boolean;
+  readonly confidence: number;
+  readonly score: number;
+  readonly categories: readonly string[];
+  readonly summary: string;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SIGNATURE AND RULE TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface MalwareSignature {
+  readonly signatureId: string;
+  readonly name: string;
+  readonly type: SignatureType;
+  readonly pattern: string;
+  readonly description: string;
+  readonly severity: ThreatSeverity;
+  readonly family: string | null;
+  readonly createdAt: number;
+  readonly updatedAt: number;
+}
+
+export type SignatureType =
+  | 'HASH'
+  | 'BYTE_PATTERN'
+  | 'STRING_PATTERN'
+  | 'BEHAVIORAL'
+  | 'NETWORK'
+  | 'YARA'
+  | 'SNORT'
+  | 'SIGMA';
+
+export interface YaraMatch {
+  readonly matchId: string;
+  readonly ruleName: string;
+  readonly ruleNamespace: string;
+  readonly tags: readonly string[];
+  readonly strings: readonly YaraStringMatch[];
+  readonly metadata: Readonly<Record<string, string>>;
+}
+
+export interface YaraStringMatch {
+  readonly identifier: string;
+  readonly offset: number;
+  readonly data: string;
+}
+
+export interface AntiAnalysisTechnique {
+  readonly techniqueId: string;
+  readonly type: AntiAnalysisType;
+  readonly name: string;
+  readonly description: string;
+  readonly detected: boolean;
+  readonly bypassed: boolean;
+}
+
+export type AntiAnalysisType =
+  | 'ANTI_DEBUG'
+  | 'ANTI_VM'
+  | 'ANTI_SANDBOX'
+  | 'ANTI_DISASSEMBLY'
+  | 'TIMING_CHECK'
+  | 'ENVIRONMENT_CHECK'
+  | 'USER_INTERACTION_CHECK'
+  | 'PROCESS_CHECK'
+  | 'HARDWARE_CHECK';
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// THREAT ATTRIBUTION TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface ThreatAttribution {
+  readonly attributionId: string;
+  readonly threatActor: ThreatActor | null;
+  readonly campaign: ThreatCampaign | null;
+  readonly confidence: number;
+  readonly evidence: readonly AttributionEvidence[];
+  readonly alternativeAttributions: readonly AlternativeAttribution[];
+  readonly timestamp: number;
+}
+
+export interface ThreatActor {
+  readonly actorId: string;
+  readonly name: string;
+  readonly aliases: readonly string[];
+  readonly type: ThreatActorType;
+  readonly motivation: ThreatMotivation;
+  readonly sophistication: SophisticationLevel;
+  readonly country: string | null;
+  readonly targetSectors: readonly string[];
+  readonly targetCountries: readonly string[];
+  readonly knownTools: readonly string[];
+  readonly knownTechniques: readonly string[];
+  readonly firstSeen: number;
+  readonly lastSeen: number;
+  readonly description: string;
+}
+
+export type ThreatActorType =
+  | 'NATION_STATE'
+  | 'CRIMINAL'
+  | 'HACKTIVIST'
+  | 'INSIDER'
+  | 'TERRORIST'
+  | 'COMPETITOR'
+  | 'UNKNOWN';
+
+export type ThreatMotivation =
+  | 'ESPIONAGE'
+  | 'FINANCIAL'
+  | 'DISRUPTION'
+  | 'DESTRUCTION'
+  | 'IDEOLOGICAL'
+  | 'REVENGE'
+  | 'UNKNOWN';
+
+export type SophisticationLevel =
+  | 'NONE'
+  | 'MINIMAL'
+  | 'INTERMEDIATE'
+  | 'ADVANCED'
+  | 'EXPERT'
+  | 'INNOVATOR';
+
+export interface ThreatCampaign {
+  readonly campaignId: string;
+  readonly name: string;
+  readonly aliases: readonly string[];
+  readonly threatActor: string | null;
+  readonly startDate: number;
+  readonly endDate: number | null;
+  readonly targetSectors: readonly string[];
+  readonly targetCountries: readonly string[];
+  readonly objectives: readonly string[];
+  readonly techniques: readonly string[];
+  readonly malwareFamilies: readonly string[];
+  readonly description: string;
+}
+
+export interface AttributionEvidence {
+  readonly evidenceId: string;
+  readonly type: AttributionEvidenceType;
+  readonly description: string;
+  readonly confidence: number;
+  readonly source: string;
+}
+
+export type AttributionEvidenceType =
+  | 'CODE_SIMILARITY'
+  | 'INFRASTRUCTURE_OVERLAP'
+  | 'TTP_MATCH'
+  | 'TIMING_CORRELATION'
+  | 'LANGUAGE_ARTIFACT'
+  | 'TARGETING_PATTERN'
+  | 'OPERATIONAL_SECURITY'
+  | 'INTELLIGENCE_REPORT';
+
+export interface AlternativeAttribution {
+  readonly threatActor: string;
+  readonly confidence: number;
+  readonly reasoning: string;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ATTACK ANALYSIS TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface AttackAnalysis {
+  readonly analysisId: string;
+  readonly attackId: string;
+  readonly timestamp: number;
+  readonly duration: number;
+  readonly killChain: KillChainAnalysis;
+  readonly techniques: readonly TechniqueAnalysis[];
+  readonly timeline: readonly TimelineEvent[];
+  readonly impactAssessment: ImpactAssessment;
+  readonly recommendations: readonly SecurityRecommendation[];
+  readonly report: AnalysisReport;
+}
+
+export interface KillChainAnalysis {
+  readonly model: KillChainModel;
+  readonly phases: readonly KillChainPhase[];
+  readonly completedPhases: number;
+  readonly blockedAt: string | null;
+}
+
+export type KillChainModel = 'LOCKHEED_MARTIN' | 'MITRE_ATTACK' | 'UNIFIED';
+
+export interface KillChainPhase {
+  readonly phaseId: string;
+  readonly name: string;
+  readonly order: number;
+  readonly detected: boolean;
+  readonly timestamp: number | null;
+  readonly techniques: readonly string[];
+  readonly indicators: readonly string[];
+  readonly description: string;
+}
+
+export interface TechniqueAnalysis {
+  readonly techniqueId: string;
+  readonly mitreId: string;
+  readonly name: string;
+  readonly tactic: MitreTactic;
+  readonly detected: boolean;
+  readonly confidence: number;
+  readonly evidence: readonly string[];
+  readonly countermeasures: readonly string[];
+}
+
+export interface TimelineEvent {
+  readonly eventId: string;
+  readonly timestamp: number;
+  readonly type: TimelineEventType;
+  readonly description: string;
+  readonly source: string;
+  readonly severity: ThreatSeverity;
+  readonly indicators: readonly string[];
+  readonly relatedEvents: readonly string[];
+}
+
+export type TimelineEventType =
+  | 'INITIAL_ACCESS'
+  | 'EXECUTION'
+  | 'PERSISTENCE'
+  | 'PRIVILEGE_ESCALATION'
+  | 'DEFENSE_EVASION'
+  | 'CREDENTIAL_ACCESS'
+  | 'DISCOVERY'
+  | 'LATERAL_MOVEMENT'
+  | 'COLLECTION'
+  | 'EXFILTRATION'
+  | 'COMMAND_AND_CONTROL'
+  | 'IMPACT'
+  | 'DETECTION'
+  | 'RESPONSE';
+
+export interface ImpactAssessment {
+  readonly overallSeverity: ThreatSeverity;
+  readonly confidentialityImpact: ImpactLevel;
+  readonly integrityImpact: ImpactLevel;
+  readonly availabilityImpact: ImpactLevel;
+  readonly affectedSystems: readonly string[];
+  readonly dataCompromised: DataCompromise | null;
+  readonly businessImpact: string;
+  readonly estimatedCost: string | null;
+}
+
+export type ImpactLevel = 'NONE' | 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+
+export interface DataCompromise {
+  readonly dataTypes: readonly string[];
+  readonly recordCount: number | null;
+  readonly sensitivity: DataSensitivity;
+  readonly exfiltrated: boolean;
+  readonly encrypted: boolean;
+}
+
+export type DataSensitivity = 'PUBLIC' | 'INTERNAL' | 'CONFIDENTIAL' | 'RESTRICTED' | 'TOP_SECRET';
+
+export interface SecurityRecommendation {
+  readonly recommendationId: string;
+  readonly priority: RecommendationPriority;
+  readonly category: RecommendationCategory;
+  readonly title: string;
+  readonly description: string;
+  readonly implementation: string;
+  readonly effort: EffortLevel;
+  readonly effectiveness: EffectivenessLevel;
+}
+
+export type RecommendationPriority = 'IMMEDIATE' | 'HIGH' | 'MEDIUM' | 'LOW';
+
+export type RecommendationCategory =
+  | 'PREVENTION'
+  | 'DETECTION'
+  | 'RESPONSE'
+  | 'RECOVERY'
+  | 'HARDENING'
+  | 'MONITORING'
+  | 'TRAINING';
+
+export type EffortLevel = 'TRIVIAL' | 'LOW' | 'MEDIUM' | 'HIGH' | 'COMPLEX';
+
+export type EffectivenessLevel = 'LOW' | 'MEDIUM' | 'HIGH' | 'VERY_HIGH';
+
+export interface AnalysisReport {
+  readonly reportId: string;
+  readonly title: string;
+  readonly executiveSummary: string;
+  readonly technicalDetails: string;
+  readonly indicators: string;
+  readonly recommendations: string;
+  readonly appendices: readonly string[];
+  readonly classification: SecurityClassification;
+  readonly generatedAt: number;
+}
+
+export type SecurityClassification =
+  | 'UNCLASSIFIED'
+  | 'RESTRICTED'
+  | 'CONFIDENTIAL'
+  | 'SECRET'
+  | 'TOP_SECRET';
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ERROR TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export const AttackCaptureErrorCode = {
+  CAPTURE_FAILED: 'ACA_001',
+  ANALYSIS_FAILED: 'ACA_002',
+  SAMPLE_NOT_FOUND: 'ACA_003',
+  SANDBOX_ERROR: 'ACA_004',
+  STORAGE_ERROR: 'ACA_005',
+  SIGNATURE_ERROR: 'ACA_006',
+  ATTRIBUTION_ERROR: 'ACA_007',
+  EVIDENCE_CORRUPTION: 'ACA_008',
+  CHAIN_OF_CUSTODY_BROKEN: 'ACA_009',
+  RESOURCE_EXHAUSTED: 'ACA_010',
+  TIMEOUT: 'ACA_011',
+  UNKNOWN_ERROR: 'ACA_012',
+} as const;
+
+export type AttackCaptureErrorCode = typeof AttackCaptureErrorCode[keyof typeof AttackCaptureErrorCode];
+
+export class AttackCaptureError extends Error {
+  readonly code: AttackCaptureErrorCode;
+  readonly details: Readonly<Record<string, unknown>>;
+  readonly timestamp: number;
+
+  constructor(code: AttackCaptureErrorCode, message: string, details: Record<string, unknown> = {}) {
+    super(message);
+    this.name = 'AttackCaptureError';
+    this.code = code;
+    this.details = details;
+    this.timestamp = Date.now();
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// HELPER FUNCTIONS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+function generateDeterministicId(prefix: string, counter: number): string {
+  return `${prefix}_${counter.toString().padStart(12, '0')}`;
+}
+
+function generateDeterministicTimestamp(counter: number): number {
+  return 1704067200000 + counter * 1000;
+}
+
+function deterministicRandom(seed: number): number {
+  const x = Math.sin(seed * 9999) * 10000;
+  return x - Math.floor(x);
+}
+
+function computeHash(data: string, algorithm: string = 'sha256'): string {
+  let hash = 0;
+  for (let i = 0; i < data.length; i++) {
+    hash = ((hash << 5) - hash + data.charCodeAt(i)) | 0;
+  }
+
+  const lengths: Record<string, number> = {
+    md5: 32,
+    sha1: 40,
+    sha256: 64,
+    sha512: 128,
+  };
+
+  const length = lengths[algorithm] ?? 64;
+  let result = Math.abs(hash).toString(16);
+  while (result.length < length) {
+    result = result + Math.abs(hash + result.length).toString(16);
+  }
+  return result.slice(0, length);
+}
+
+function generateArtifactHash(data: string): ArtifactHash {
+  return {
+    md5: computeHash(data, 'md5'),
+    sha1: computeHash(data, 'sha1'),
+    sha256: computeHash(data, 'sha256'),
+    sha512: computeHash(data, 'sha512'),
+    ssdeep: null,
+    imphash: null,
+  };
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ATTACK CAPTURE MANAGER
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export class AttackCaptureManager {
+  private operationCounter: number = 0;
+  private readonly attacks: Map<string, CapturedAttack> = new Map();
+
+  captureAttack(
+    type: AttackType,
+    severity: ThreatSeverity,
+    source: CaptureSource,
+    sourceIp: string | null,
+    destinationIp: string | null,
+    targetAsset: string | null,
+    description: string,
+    rawData: Omit<AttackRawData, 'hash' | 'encrypted'>,
+    stealthConfig: StealthConfiguration
+  ): CapturedAttack {
+    this.operationCounter++;
+
+    const attackId = generateDeterministicId('attack', this.operationCounter);
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+
+    const fullRawData: AttackRawData = {
+      ...rawData,
+      hash: computeHash(`${attackId}_${timestamp}`),
+      encrypted: stealthConfig.covertStorage,
+    };
+
+    const attack: CapturedAttack = {
+      attackId,
+      type,
+      severity,
+      source,
+      timestamp,
+      sourceIp,
+      destinationIp,
+      targetAsset,
+      description,
+      rawData: fullRawData,
+      indicators: [],
+      techniques: [],
+      samples: [],
+      analysis: null,
+      attribution: null,
+      status: 'PENDING',
+      stealthConfig,
+      chainOfCustody: [
+        {
+          recordId: generateDeterministicId('custody', this.operationCounter),
+          action: 'CAPTURED',
+          actor: 'ATTACK_CAPTURE_SYSTEM',
+          timestamp,
+          notes: `Attack captured from ${source}`,
+          signature: computeHash(`${attackId}_CAPTURED_${timestamp}`),
+          verified: true,
+        },
+      ],
+    };
+
+    this.attacks.set(attackId, attack);
+    return attack;
+  }
+
+  addIndicator(attackId: string, indicator: Omit<IndicatorOfCompromise, 'iocId'>): IndicatorOfCompromise | null {
+    this.operationCounter++;
+
+    const attack = this.attacks.get(attackId);
+    if (!attack) {
+      return null;
+    }
+
+    const fullIndicator: IndicatorOfCompromise = {
+      ...indicator,
+      iocId: generateDeterministicId('ioc', this.operationCounter),
+    };
+
+    const updatedAttack: CapturedAttack = {
+      ...attack,
+      indicators: [...attack.indicators, fullIndicator],
+    };
+
+    this.attacks.set(attackId, updatedAttack);
+    return fullIndicator;
+  }
+
+  addTechnique(attackId: string, technique: MitreAttackTechnique): boolean {
+    const attack = this.attacks.get(attackId);
+    if (!attack) {
+      return false;
+    }
+
+    const updatedAttack: CapturedAttack = {
+      ...attack,
+      techniques: [...attack.techniques, technique],
+    };
+
+    this.attacks.set(attackId, updatedAttack);
+    return true;
+  }
+
+  addSample(attackId: string, sampleId: string): boolean {
+    const attack = this.attacks.get(attackId);
+    if (!attack) {
+      return false;
+    }
+
+    const updatedAttack: CapturedAttack = {
+      ...attack,
+      samples: [...attack.samples, sampleId],
+    };
+
+    this.attacks.set(attackId, updatedAttack);
+    return true;
+  }
+
+  updateStatus(attackId: string, status: AnalysisStatus): boolean {
+    const attack = this.attacks.get(attackId);
+    if (!attack) {
+      return false;
+    }
+
+    const updatedAttack: CapturedAttack = {
+      ...attack,
+      status,
+    };
+
+    this.attacks.set(attackId, updatedAttack);
+    return true;
+  }
+
+  setAnalysis(attackId: string, analysis: AttackAnalysis): boolean {
+    const attack = this.attacks.get(attackId);
+    if (!attack) {
+      return false;
+    }
+
+    const updatedAttack: CapturedAttack = {
+      ...attack,
+      analysis,
+      status: 'COMPLETED',
+    };
+
+    this.attacks.set(attackId, updatedAttack);
+    return true;
+  }
+
+  setAttribution(attackId: string, attribution: ThreatAttribution): boolean {
+    const attack = this.attacks.get(attackId);
+    if (!attack) {
+      return false;
+    }
+
+    const updatedAttack: CapturedAttack = {
+      ...attack,
+      attribution,
+    };
+
+    this.attacks.set(attackId, updatedAttack);
+    return true;
+  }
+
+  addCustodyRecord(attackId: string, action: CustodyAction, actor: string, notes: string): CustodyRecord | null {
+    this.operationCounter++;
+
+    const attack = this.attacks.get(attackId);
+    if (!attack) {
+      return null;
+    }
+
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+
+    const record: CustodyRecord = {
+      recordId: generateDeterministicId('custody', this.operationCounter),
+      action,
+      actor,
+      timestamp,
+      notes,
+      signature: computeHash(`${attackId}_${action}_${timestamp}`),
+      verified: true,
+    };
+
+    const updatedAttack: CapturedAttack = {
+      ...attack,
+      chainOfCustody: [...attack.chainOfCustody, record],
+    };
+
+    this.attacks.set(attackId, updatedAttack);
+    return record;
+  }
+
+  getAttack(attackId: string): CapturedAttack | null {
+    const attack = this.attacks.get(attackId);
+    if (!attack) {
+      return null;
+    }
+    return attack;
+  }
+
+  listAttacks(filter?: {
+    type?: AttackType;
+    severity?: ThreatSeverity;
+    status?: AnalysisStatus;
+    source?: CaptureSource;
+  }): readonly CapturedAttack[] {
+    let attacks = Array.from(this.attacks.values());
+
+    if (filter?.type) {
+      attacks = attacks.filter(a => a.type === filter.type);
+    }
+    if (filter?.severity) {
+      attacks = attacks.filter(a => a.severity === filter.severity);
+    }
+    if (filter?.status) {
+      attacks = attacks.filter(a => a.status === filter.status);
+    }
+    if (filter?.source) {
+      attacks = attacks.filter(a => a.source === filter.source);
+    }
+
+    return attacks;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// MALWARE SAMPLE MANAGER
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export class MalwareSampleManager {
+  private operationCounter: number = 0;
+  private readonly samples: Map<string, MalwareSample> = new Map();
+
+  addSample(
+    data: Uint8Array,
+    type: MalwareType,
+    family: string | null,
+    variant: string | null,
+    fileType: FileType
+  ): MalwareSample {
+    this.operationCounter++;
+
+    const sampleId = generateDeterministicId('sample', this.operationCounter);
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+    const dataString = Array.from(data).join(',');
+
+    const sample: MalwareSample = {
+      sampleId,
+      type,
+      family,
+      variant,
+      hash: generateArtifactHash(dataString),
+      size: data.length,
+      fileType,
+      architecture: this.detectArchitecture(data),
+      packer: null,
+      compiler: null,
+      timestamp,
+      firstSeen: timestamp,
+      lastSeen: timestamp,
+      prevalence: 'RARE',
+      staticAnalysis: null,
+      dynamicAnalysis: null,
+      signatures: [],
+      yaraMatches: [],
+      antiAnalysis: [],
+      status: 'PENDING',
+      classification: {
+        confidence: 0,
+        primaryType: type,
+        secondaryTypes: [],
+        family,
+        campaign: null,
+        threatActor: null,
+      },
+    };
+
+    this.samples.set(sampleId, sample);
+    return sample;
+  }
+
+  private detectArchitecture(data: Uint8Array): Architecture | null {
+    if (data.length < 2) return null;
+
+    if (data[0] === 0x4D && data[1] === 0x5A) {
+      return 'X86';
+    }
+    if (data[0] === 0x7F && data[1] === 0x45) {
+      return 'X64';
+    }
+
+    return 'UNKNOWN';
+  }
+
+  setStaticAnalysis(sampleId: string, analysis: StaticAnalysis): boolean {
+    const sample = this.samples.get(sampleId);
+    if (!sample) {
+      return false;
+    }
+
+    const updatedSample: MalwareSample = {
+      ...sample,
+      staticAnalysis: analysis,
+    };
+
+    this.samples.set(sampleId, updatedSample);
+    return true;
+  }
+
+  setDynamicAnalysis(sampleId: string, analysis: DynamicAnalysis): boolean {
+    const sample = this.samples.get(sampleId);
+    if (!sample) {
+      return false;
+    }
+
+    const updatedSample: MalwareSample = {
+      ...sample,
+      dynamicAnalysis: analysis,
+      status: 'COMPLETED',
+    };
+
+    this.samples.set(sampleId, updatedSample);
+    return true;
+  }
+
+  addSignature(sampleId: string, signature: Omit<MalwareSignature, 'signatureId'>): MalwareSignature | null {
+    this.operationCounter++;
+
+    const sample = this.samples.get(sampleId);
+    if (!sample) {
+      return null;
+    }
+
+    const fullSignature: MalwareSignature = {
+      ...signature,
+      signatureId: generateDeterministicId('sig', this.operationCounter),
+    };
+
+    const updatedSample: MalwareSample = {
+      ...sample,
+      signatures: [...sample.signatures, fullSignature],
+    };
+
+    this.samples.set(sampleId, updatedSample);
+    return fullSignature;
+  }
+
+  addYaraMatch(sampleId: string, match: YaraMatch): boolean {
+    const sample = this.samples.get(sampleId);
+    if (!sample) {
+      return false;
+    }
+
+    const updatedSample: MalwareSample = {
+      ...sample,
+      yaraMatches: [...sample.yaraMatches, match],
+    };
+
+    this.samples.set(sampleId, updatedSample);
+    return true;
+  }
+
+  updateClassification(sampleId: string, classification: MalwareClassification): boolean {
+    const sample = this.samples.get(sampleId);
+    if (!sample) {
+      return false;
+    }
+
+    const updatedSample: MalwareSample = {
+      ...sample,
+      classification,
+    };
+
+    this.samples.set(sampleId, updatedSample);
+    return true;
+  }
+
+  getSample(sampleId: string): MalwareSample | null {
+    const sample = this.samples.get(sampleId);
+    if (!sample) {
+      return null;
+    }
+    return sample;
+  }
+
+  findByHash(hash: string): MalwareSample | null {
+    for (const sample of this.samples.values()) {
+      if (
+        sample.hash.md5 === hash ||
+        sample.hash.sha1 === hash ||
+        sample.hash.sha256 === hash ||
+        sample.hash.sha512 === hash
+      ) {
+        return sample;
+      }
+    }
+    return null;
+  }
+
+  listSamples(filter?: {
+    type?: MalwareType;
+    family?: string;
+    status?: AnalysisStatus;
+  }): readonly MalwareSample[] {
+    let samples = Array.from(this.samples.values());
+
+    if (filter?.type) {
+      samples = samples.filter(s => s.type === filter.type);
+    }
+    if (filter?.family) {
+      samples = samples.filter(s => s.family === filter.family);
+    }
+    if (filter?.status) {
+      samples = samples.filter(s => s.status === filter.status);
+    }
+
+    return samples;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// STATIC ANALYZER
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export class StaticAnalyzer {
+  private operationCounter: number = 0;
+  private readonly analyses: Map<string, StaticAnalysis> = new Map();
+
+  analyzeSample(sampleId: string, data: Uint8Array): StaticAnalysis {
+    this.operationCounter++;
+
+    const analysisId = generateDeterministicId('static', this.operationCounter);
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+    const startTime = timestamp;
+
+    const strings = this.extractStrings(data);
+    const imports = this.extractImports(data);
+    const exports = this.extractExports(data);
+    const sections = this.extractSections(data);
+    const resources = this.extractResources(data);
+    const suspiciousIndicators = this.detectSuspiciousIndicators(strings, imports);
+    const obfuscation = this.analyzeObfuscation(data, sections);
+
+    const analysis: StaticAnalysis = {
+      analysisId,
+      sampleId,
+      timestamp,
+      duration: generateDeterministicTimestamp(this.operationCounter + 1) - startTime,
+      peInfo: this.extractPEInfo(data),
+      elfInfo: null,
+      strings,
+      imports,
+      exports,
+      sections,
+      resources,
+      certificates: [],
+      suspiciousIndicators,
+      obfuscation,
+    };
+
+    this.analyses.set(analysisId, analysis);
+    return analysis;
+  }
+
+  private extractStrings(data: Uint8Array): ExtractedString[] {
+    this.operationCounter++;
+
+    const strings: ExtractedString[] = [];
+    const suspiciousPatterns = ['http://', 'https://', 'cmd.exe', 'powershell', 'reg add', 'CreateRemoteThread'];
+
+    for (let i = 0; i < 20; i++) {
+      const stringSeed = this.operationCounter + i;
+      const pattern = suspiciousPatterns[Math.floor(deterministicRandom(stringSeed) * suspiciousPatterns.length)];
+      const suspicious = deterministicRandom(stringSeed + 1) > 0.5;
+
+      strings.push({
+        stringId: generateDeterministicId('str', stringSeed),
+        value: `${pattern}_${i}`,
+        type: 'ASCII',
+        encoding: 'UTF8',
+        offset: Math.floor(deterministicRandom(stringSeed + 2) * data.length),
+        section: '.data',
+        suspicious,
+        category: this.categorizeString(pattern),
+      });
+    }
+
+    return strings;
+  }
+
+  private categorizeString(value: string): StringCategory | null {
+    if (value.includes('http://') || value.includes('https://')) return 'URL';
+    if (value.includes('cmd.exe') || value.includes('powershell')) return 'COMMAND';
+    if (value.includes('reg add')) return 'REGISTRY_KEY';
+    if (value.includes('CreateRemoteThread')) return 'API_CALL';
+    return null;
+  }
+
+  private extractImports(data: Uint8Array): ImportedFunction[] {
+    this.operationCounter++;
+
+    const suspiciousApis = [
+      { lib: 'kernel32.dll', name: 'CreateRemoteThread', category: 'INJECTION' as FunctionCategory },
+      { lib: 'kernel32.dll', name: 'VirtualAllocEx', category: 'INJECTION' as FunctionCategory },
+      { lib: 'kernel32.dll', name: 'WriteProcessMemory', category: 'INJECTION' as FunctionCategory },
+      { lib: 'advapi32.dll', name: 'RegSetValueEx', category: 'REGISTRY' as FunctionCategory },
+      { lib: 'ws2_32.dll', name: 'connect', category: 'NETWORK' as FunctionCategory },
+      { lib: 'crypt32.dll', name: 'CryptEncrypt', category: 'CRYPTO' as FunctionCategory },
+      { lib: 'ntdll.dll', name: 'NtQueryInformationProcess', category: 'ANTI_DEBUG' as FunctionCategory },
+    ];
+
+    return suspiciousApis.map((api, i) => ({
+      functionId: generateDeterministicId('import', this.operationCounter + i),
+      library: api.lib,
+      name: api.name,
+      ordinal: null,
+      suspicious: true,
+      category: api.category,
+    }));
+  }
+
+  private extractExports(data: Uint8Array): ExportedFunction[] {
+    this.operationCounter++;
+
+    const exports: ExportedFunction[] = [];
+    const exportCount = Math.floor(deterministicRandom(this.operationCounter) * 5);
+
+    for (let i = 0; i < exportCount; i++) {
+      exports.push({
+        functionId: generateDeterministicId('export', this.operationCounter + i),
+        name: `Export_${i}`,
+        ordinal: i + 1,
+        address: `0x${(0x10000 + i * 0x100).toString(16)}`,
+      });
+    }
+
+    return exports;
+  }
+
+  private extractSections(data: Uint8Array): BinarySection[] {
+    this.operationCounter++;
+
+    const sectionNames = ['.text', '.data', '.rdata', '.rsrc', '.reloc'];
+
+    return sectionNames.map((name, i) => {
+      const entropy = 4 + deterministicRandom(this.operationCounter + i) * 4;
+
+      return {
+        sectionId: generateDeterministicId('section', this.operationCounter + i),
+        name,
+        virtualAddress: `0x${(0x1000 + i * 0x1000).toString(16)}`,
+        virtualSize: Math.floor(deterministicRandom(this.operationCounter + i + 10) * 10000) + 1000,
+        rawSize: Math.floor(deterministicRandom(this.operationCounter + i + 20) * 10000) + 1000,
+        entropy,
+        characteristics: ['EXECUTE', 'READ'],
+        suspicious: entropy > 7,
+      };
+    });
+  }
+
+  private extractResources(data: Uint8Array): EmbeddedResource[] {
+    this.operationCounter++;
+
+    const resources: EmbeddedResource[] = [];
+    const resourceCount = Math.floor(deterministicRandom(this.operationCounter) * 3);
+
+    for (let i = 0; i < resourceCount; i++) {
+      const entropy = 3 + deterministicRandom(this.operationCounter + i) * 5;
+
+      resources.push({
+        resourceId: generateDeterministicId('resource', this.operationCounter + i),
+        type: 'RT_RCDATA',
+        name: `Resource_${i}`,
+        language: 'English',
+        size: Math.floor(deterministicRandom(this.operationCounter + i + 10) * 5000) + 100,
+        hash: computeHash(`resource_${i}`),
+        entropy,
+        suspicious: entropy > 7,
+      });
+    }
+
+    return resources;
+  }
+
+  private extractPEInfo(data: Uint8Array): PEInfo | null {
+    this.operationCounter++;
+
+    if (data.length < 2 || data[0] !== 0x4D || data[1] !== 0x5A) {
+      return null;
+    }
+
+    return {
+      imageBase: '0x00400000',
+      entryPoint: '0x00401000',
+      subsystem: 'WINDOWS_GUI',
+      characteristics: ['EXECUTABLE_IMAGE', 'LARGE_ADDRESS_AWARE'],
+      timestamp: generateDeterministicTimestamp(this.operationCounter),
+      checksum: computeHash(Array.from(data).join(',')),
+      dllCharacteristics: ['DYNAMIC_BASE', 'NX_COMPAT'],
+      machine: 'AMD64',
+      numberOfSections: 5,
+      imphash: computeHash('imports', 'md5'),
+      richhash: null,
+    };
+  }
+
+  private detectSuspiciousIndicators(
+    strings: readonly ExtractedString[],
+    imports: readonly ImportedFunction[]
+  ): SuspiciousIndicator[] {
+    this.operationCounter++;
+
+    const indicators: SuspiciousIndicator[] = [];
+
+    const suspiciousStrings = strings.filter(s => s.suspicious);
+    if (suspiciousStrings.length > 0) {
+      indicators.push({
+        indicatorId: generateDeterministicId('sus_ind', this.operationCounter),
+        type: 'SUSPICIOUS_STRING',
+        description: `Found ${suspiciousStrings.length} suspicious strings`,
+        severity: 'MEDIUM',
+        confidence: 0.7,
+        evidence: suspiciousStrings.map(s => s.value).join(', '),
+      });
+    }
+
+    const injectionApis = imports.filter(i => i.category === 'INJECTION');
+    if (injectionApis.length > 0) {
+      indicators.push({
+        indicatorId: generateDeterministicId('sus_ind', this.operationCounter + 1),
+        type: 'INJECTION_API',
+        description: `Found ${injectionApis.length} process injection APIs`,
+        severity: 'HIGH',
+        confidence: 0.85,
+        evidence: injectionApis.map(i => i.name).join(', '),
+      });
+    }
+
+    const antiDebugApis = imports.filter(i => i.category === 'ANTI_DEBUG');
+    if (antiDebugApis.length > 0) {
+      indicators.push({
+        indicatorId: generateDeterministicId('sus_ind', this.operationCounter + 2),
+        type: 'ANTI_DEBUG_API',
+        description: `Found ${antiDebugApis.length} anti-debugging APIs`,
+        severity: 'MEDIUM',
+        confidence: 0.75,
+        evidence: antiDebugApis.map(i => i.name).join(', '),
+      });
+    }
+
+    return indicators;
+  }
+
+  private analyzeObfuscation(data: Uint8Array, sections: readonly BinarySection[]): ObfuscationAnalysis {
+    this.operationCounter++;
+
+    const highEntropySections = sections.filter(s => s.entropy > 7);
+    const detected = highEntropySections.length > 0;
+
+    const techniques: ObfuscationTechnique[] = [];
+
+    if (detected) {
+      techniques.push({
+        techniqueId: generateDeterministicId('obf', this.operationCounter),
+        name: 'High Entropy Packing',
+        type: 'PACKING',
+        description: 'Sections with high entropy detected, indicating possible packing',
+        deobfuscatable: true,
+      });
+    }
+
+    return {
+      detected,
+      techniques,
+      packers: detected ? ['UPX', 'Unknown'] : [],
+      cryptors: [],
+      protectors: [],
+      confidence: detected ? 0.8 : 0.1,
+    };
+  }
+
+  getAnalysis(analysisId: string): StaticAnalysis | null {
+    const analysis = this.analyses.get(analysisId);
+    if (!analysis) {
+      return null;
+    }
+    return analysis;
+  }
+
+  listAnalyses(): readonly StaticAnalysis[] {
+    return Array.from(this.analyses.values());
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// DYNAMIC ANALYZER
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export class DynamicAnalyzer {
+  private operationCounter: number = 0;
+  private readonly analyses: Map<string, DynamicAnalysis> = new Map();
+
+  analyzeSample(sampleId: string, environment: SandboxEnvironment): DynamicAnalysis {
+    this.operationCounter++;
+
+    const analysisId = generateDeterministicId('dynamic', this.operationCounter);
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+    const sandboxId = generateDeterministicId('sandbox', this.operationCounter);
+
+    const processTree = this.simulateProcessTree();
+    const fileOperations = this.simulateFileOperations(processTree);
+    const registryOperations = this.simulateRegistryOperations(processTree);
+    const networkOperations = this.simulateNetworkOperations(processTree);
+    const apiCalls = this.simulateAPICalls(processTree);
+    const droppedFiles = this.simulateDroppedFiles(processTree);
+    const behaviorSignatures = this.detectBehaviorSignatures(fileOperations, registryOperations, networkOperations);
+
+    const analysis: DynamicAnalysis = {
+      analysisId,
+      sampleId,
+      sandboxId,
+      timestamp,
+      duration: environment.analysisTimeout,
+      environment,
+      processTree,
+      fileOperations,
+      registryOperations,
+      networkOperations,
+      apiCalls,
+      droppedFiles,
+      injectedProcesses: [],
+      mutexes: [`Mutex_${this.operationCounter}`],
+      screenshots: [],
+      behaviorSignatures,
+      verdict: this.generateVerdict(behaviorSignatures),
+    };
+
+    this.analyses.set(analysisId, analysis);
+    return analysis;
+  }
+
+  private simulateProcessTree(): ProcessInfo[] {
+    this.operationCounter++;
+
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+
+    return [
+      {
+        processId: generateDeterministicId('proc', this.operationCounter),
+        pid: 1234,
+        parentPid: 4,
+        name: 'malware.exe',
+        path: 'C:\\Users\\sandbox\\Desktop\\malware.exe',
+        commandLine: 'malware.exe',
+        user: 'sandbox',
+        startTime: timestamp,
+        endTime: null,
+        exitCode: null,
+        integrity: 'Medium',
+        children: [generateDeterministicId('proc', this.operationCounter + 1)],
+      },
+      {
+        processId: generateDeterministicId('proc', this.operationCounter + 1),
+        pid: 5678,
+        parentPid: 1234,
+        name: 'cmd.exe',
+        path: 'C:\\Windows\\System32\\cmd.exe',
+        commandLine: 'cmd.exe /c whoami',
+        user: 'sandbox',
+        startTime: timestamp + 1000,
+        endTime: timestamp + 2000,
+        exitCode: 0,
+        integrity: 'Medium',
+        children: [],
+      },
+    ];
+  }
+
+  private simulateFileOperations(processes: readonly ProcessInfo[]): FileOperation[] {
+    this.operationCounter++;
+
+    const operations: FileOperation[] = [];
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+
+    const paths = [
+      'C:\\Users\\sandbox\\AppData\\Local\\Temp\\payload.dll',
+      'C:\\Windows\\System32\\config\\systemprofile\\AppData\\Local\\malware.dat',
+      'C:\\ProgramData\\Microsoft\\Windows\\Start Menu\\Programs\\Startup\\persist.lnk',
+    ];
+
+    for (let i = 0; i < paths.length; i++) {
+      operations.push({
+        operationId: generateDeterministicId('file_op', this.operationCounter + i),
+        type: 'CREATE',
+        path: paths[i],
+        processId: processes[0].processId,
+        timestamp: timestamp + i * 1000,
+        size: Math.floor(deterministicRandom(this.operationCounter + i) * 10000) + 100,
+        hash: computeHash(paths[i]),
+        suspicious: true,
+      });
+    }
+
+    return operations;
+  }
+
+  private simulateRegistryOperations(processes: readonly ProcessInfo[]): RegistryOperation[] {
+    this.operationCounter++;
+
+    const operations: RegistryOperation[] = [];
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+
+    const keys = [
+      'HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run',
+      'HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\RunOnce',
+      'HKCU\\Software\\Classes\\mscfile\\shell\\open\\command',
+    ];
+
+    for (let i = 0; i < keys.length; i++) {
+      operations.push({
+        operationId: generateDeterministicId('reg_op', this.operationCounter + i),
+        type: 'SET_VALUE',
+        key: keys[i],
+        valueName: 'Malware',
+        valueData: 'C:\\malware.exe',
+        valueType: 'REG_SZ',
+        processId: processes[0].processId,
+        timestamp: timestamp + i * 1000,
+        suspicious: true,
+      });
+    }
+
+    return operations;
+  }
+
+  private simulateNetworkOperations(processes: readonly ProcessInfo[]): NetworkOperation[] {
+    this.operationCounter++;
+
+    const operations: NetworkOperation[] = [];
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+
+    operations.push({
+      operationId: generateDeterministicId('net_op', this.operationCounter),
+      type: 'DNS_QUERY',
+      protocol: 'DNS',
+      sourceIp: '192.168.1.100',
+      sourcePort: 54321,
+      destinationIp: '8.8.8.8',
+      destinationPort: 53,
+      domain: 'malicious-c2.example.com',
+      processId: processes[0].processId,
+      timestamp,
+      bytesTransferred: 64,
+      payload: null,
+      suspicious: true,
+    });
+
+    operations.push({
+      operationId: generateDeterministicId('net_op', this.operationCounter + 1),
+      type: 'HTTPS_REQUEST',
+      protocol: 'HTTPS',
+      sourceIp: '192.168.1.100',
+      sourcePort: 54322,
+      destinationIp: '185.123.45.67',
+      destinationPort: 443,
+      domain: 'malicious-c2.example.com',
+      processId: processes[0].processId,
+      timestamp: timestamp + 1000,
+      bytesTransferred: 1024,
+      payload: null,
+      suspicious: true,
+    });
+
+    return operations;
+  }
+
+  private simulateAPICalls(processes: readonly ProcessInfo[]): APICall[] {
+    this.operationCounter++;
+
+    const calls: APICall[] = [];
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+
+    const apis = [
+      { api: 'CreateRemoteThread', category: 'INJECTION' as FunctionCategory },
+      { api: 'VirtualAllocEx', category: 'INJECTION' as FunctionCategory },
+      { api: 'WriteProcessMemory', category: 'INJECTION' as FunctionCategory },
+      { api: 'RegSetValueExW', category: 'REGISTRY' as FunctionCategory },
+      { api: 'InternetConnectW', category: 'NETWORK' as FunctionCategory },
+    ];
+
+    for (let i = 0; i < apis.length; i++) {
+      calls.push({
+        callId: generateDeterministicId('api', this.operationCounter + i),
+        processId: processes[0].processId,
+        api: apis[i].api,
+        category: apis[i].category,
+        arguments: ['arg1', 'arg2'],
+        returnValue: '0x00000000',
+        timestamp: timestamp + i * 100,
+        suspicious: true,
+      });
+    }
+
+    return calls;
+  }
+
+  private simulateDroppedFiles(processes: readonly ProcessInfo[]): DroppedFile[] {
+    this.operationCounter++;
+
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+
+    return [
+      {
+        fileId: generateDeterministicId('dropped', this.operationCounter),
+        path: 'C:\\Users\\sandbox\\AppData\\Local\\Temp\\payload.dll',
+        name: 'payload.dll',
+        size: 65536,
+        hash: generateArtifactHash('payload.dll'),
+        type: 'application/x-dosexec',
+        processId: processes[0].processId,
+        timestamp,
+        malicious: true,
+      },
+    ];
+  }
+
+  private detectBehaviorSignatures(
+    fileOps: readonly FileOperation[],
+    regOps: readonly RegistryOperation[],
+    netOps: readonly NetworkOperation[]
+  ): BehaviorSignature[] {
+    this.operationCounter++;
+
+    const signatures: BehaviorSignature[] = [];
+
+    const persistenceRegOps = regOps.filter(r =>
+      r.key.includes('Run') || r.key.includes('RunOnce')
+    );
+
+    if (persistenceRegOps.length > 0) {
+      signatures.push({
+        signatureId: generateDeterministicId('behavior', this.operationCounter),
+        name: 'Registry Persistence',
+        description: 'Malware creates registry keys for persistence',
+        severity: 'HIGH',
+        category: 'PERSISTENCE',
+        indicators: persistenceRegOps.map(r => r.key),
+        mitreAttackId: 'T1547.001',
+      });
+    }
+
+    const c2Ops = netOps.filter(n => n.suspicious);
+    if (c2Ops.length > 0) {
+      signatures.push({
+        signatureId: generateDeterministicId('behavior', this.operationCounter + 1),
+        name: 'Command and Control Communication',
+        description: 'Malware communicates with external C2 server',
+        severity: 'CRITICAL',
+        category: 'COMMAND_AND_CONTROL',
+        indicators: c2Ops.map(n => n.domain ?? n.destinationIp),
+        mitreAttackId: 'T1071',
+      });
+    }
+
+    return signatures;
+  }
+
+  private generateVerdict(signatures: readonly BehaviorSignature[]): AnalysisVerdict {
+    const criticalCount = signatures.filter(s => s.severity === 'CRITICAL').length;
+    const highCount = signatures.filter(s => s.severity === 'HIGH').length;
+
+    const malicious = criticalCount > 0 || highCount > 1;
+    const score = Math.min(100, criticalCount * 30 + highCount * 15 + signatures.length * 5);
+
+    return {
+      malicious,
+      confidence: malicious ? 0.9 : 0.3,
+      score,
+      categories: signatures.map(s => s.category),
+      summary: malicious
+        ? `Malicious behavior detected: ${signatures.length} suspicious behaviors identified`
+        : 'No significant malicious behavior detected',
+    };
+  }
+
+  getAnalysis(analysisId: string): DynamicAnalysis | null {
+    const analysis = this.analyses.get(analysisId);
+    if (!analysis) {
+      return null;
+    }
+    return analysis;
+  }
+
+  listAnalyses(): readonly DynamicAnalysis[] {
+    return Array.from(this.analyses.values());
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// THREAT INTELLIGENCE MANAGER
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export class ThreatIntelligenceManager {
+  private operationCounter: number = 0;
+  private readonly threatActors: Map<string, ThreatActor> = new Map();
+  private readonly campaigns: Map<string, ThreatCampaign> = new Map();
+  private readonly iocs: Map<string, IndicatorOfCompromise> = new Map();
+
+  addThreatActor(
+    name: string,
+    aliases: readonly string[],
+    type: ThreatActorType,
+    motivation: ThreatMotivation,
+    sophistication: SophisticationLevel,
+    country: string | null,
+    targetSectors: readonly string[],
+    targetCountries: readonly string[],
+    description: string
+  ): ThreatActor {
+    this.operationCounter++;
+
+    const actorId = generateDeterministicId('actor', this.operationCounter);
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+
+    const actor: ThreatActor = {
+      actorId,
+      name,
+      aliases,
+      type,
+      motivation,
+      sophistication,
+      country,
+      targetSectors,
+      targetCountries,
+      knownTools: [],
+      knownTechniques: [],
+      firstSeen: timestamp,
+      lastSeen: timestamp,
+      description,
+    };
+
+    this.threatActors.set(actorId, actor);
+    return actor;
+  }
+
+  addCampaign(
+    name: string,
+    aliases: readonly string[],
+    threatActor: string | null,
+    targetSectors: readonly string[],
+    targetCountries: readonly string[],
+    objectives: readonly string[],
+    techniques: readonly string[],
+    malwareFamilies: readonly string[],
+    description: string
+  ): ThreatCampaign {
+    this.operationCounter++;
+
+    const campaignId = generateDeterministicId('campaign', this.operationCounter);
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+
+    const campaign: ThreatCampaign = {
+      campaignId,
+      name,
+      aliases,
+      threatActor,
+      startDate: timestamp,
+      endDate: null,
+      targetSectors,
+      targetCountries,
+      objectives,
+      techniques,
+      malwareFamilies,
+      description,
+    };
+
+    this.campaigns.set(campaignId, campaign);
+    return campaign;
+  }
+
+  addIOC(
+    type: IOCType,
+    value: string,
+    confidence: number,
+    severity: ThreatSeverity,
+    context: string,
+    sources: readonly string[],
+    tags: readonly string[]
+  ): IndicatorOfCompromise {
+    this.operationCounter++;
+
+    const iocId = generateDeterministicId('ioc', this.operationCounter);
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+
+    const ioc: IndicatorOfCompromise = {
+      iocId,
+      type,
+      value,
+      confidence,
+      severity,
+      context,
+      firstSeen: timestamp,
+      lastSeen: timestamp,
+      sources,
+      tags,
+      relatedIocs: [],
+      stixId: null,
+    };
+
+    this.iocs.set(iocId, ioc);
+    return ioc;
+  }
+
+  correlateAttack(attack: CapturedAttack): ThreatAttribution | null {
+    this.operationCounter++;
+
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+
+    const matchedActor = this.findMatchingActor(attack);
+    const matchedCampaign = this.findMatchingCampaign(attack);
+
+    if (!matchedActor && !matchedCampaign) {
+      return null;
+    }
+
+    const evidence: AttributionEvidence[] = [];
+
+    if (matchedActor) {
+      evidence.push({
+        evidenceId: generateDeterministicId('evidence', this.operationCounter),
+        type: 'TTP_MATCH',
+        description: `Techniques match known ${matchedActor.name} TTPs`,
+        confidence: 0.7,
+        source: 'ThreatIntelligenceManager',
+      });
+    }
+
+    return {
+      attributionId: generateDeterministicId('attribution', this.operationCounter),
+      threatActor: matchedActor,
+      campaign: matchedCampaign,
+      confidence: matchedActor ? 0.7 : 0.5,
+      evidence,
+      alternativeAttributions: [],
+      timestamp,
+    };
+  }
+
+  private findMatchingActor(attack: CapturedAttack): ThreatActor | null {
+    for (const actor of this.threatActors.values()) {
+      const techniqueMatch = attack.techniques.some(t =>
+        actor.knownTechniques.includes(t.techniqueId)
+      );
+
+      if (techniqueMatch) {
+        return actor;
+      }
+    }
+
+    return null;
+  }
+
+  private findMatchingCampaign(attack: CapturedAttack): ThreatCampaign | null {
+    for (const campaign of this.campaigns.values()) {
+      const techniqueMatch = attack.techniques.some(t =>
+        campaign.techniques.includes(t.techniqueId)
+      );
+
+      if (techniqueMatch) {
+        return campaign;
+      }
+    }
+
+    return null;
+  }
+
+  getThreatActor(actorId: string): ThreatActor | null {
+    const actor = this.threatActors.get(actorId);
+    if (!actor) {
+      return null;
+    }
+    return actor;
+  }
+
+  getCampaign(campaignId: string): ThreatCampaign | null {
+    const campaign = this.campaigns.get(campaignId);
+    if (!campaign) {
+      return null;
+    }
+    return campaign;
+  }
+
+  getIOC(iocId: string): IndicatorOfCompromise | null {
+    const ioc = this.iocs.get(iocId);
+    if (!ioc) {
+      return null;
+    }
+    return ioc;
+  }
+
+  searchIOCs(query: string): readonly IndicatorOfCompromise[] {
+    return Array.from(this.iocs.values()).filter(ioc =>
+      ioc.value.includes(query) || ioc.context.includes(query)
+    );
+  }
+
+  listThreatActors(): readonly ThreatActor[] {
+    return Array.from(this.threatActors.values());
+  }
+
+  listCampaigns(): readonly ThreatCampaign[] {
+    return Array.from(this.campaigns.values());
+  }
+
+  listIOCs(filter?: { type?: IOCType; severity?: ThreatSeverity }): readonly IndicatorOfCompromise[] {
+    let iocs = Array.from(this.iocs.values());
+
+    if (filter?.type) {
+      iocs = iocs.filter(i => i.type === filter.type);
+    }
+    if (filter?.severity) {
+      iocs = iocs.filter(i => i.severity === filter.severity);
+    }
+
+    return iocs;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ATTACK CAPTURE & ANALYSIS CENTER
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export class AttackCaptureAnalysisCenter {
+  readonly attackCaptureManager: AttackCaptureManager;
+  readonly malwareSampleManager: MalwareSampleManager;
+  readonly staticAnalyzer: StaticAnalyzer;
+  readonly dynamicAnalyzer: DynamicAnalyzer;
+  readonly threatIntelligenceManager: ThreatIntelligenceManager;
+
+  constructor() {
+    this.attackCaptureManager = new AttackCaptureManager();
+    this.malwareSampleManager = new MalwareSampleManager();
+    this.staticAnalyzer = new StaticAnalyzer();
+    this.dynamicAnalyzer = new DynamicAnalyzer();
+    this.threatIntelligenceManager = new ThreatIntelligenceManager();
+  }
+
+  initializeDefaultConfiguration(): void {
+    this.threatIntelligenceManager.addThreatActor(
+      'APT29',
+      ['Cozy Bear', 'The Dukes', 'YTTRIUM'],
+      'NATION_STATE',
+      'ESPIONAGE',
+      'ADVANCED',
+      'Russia',
+      ['Government', 'Defense', 'Technology', 'Think Tanks'],
+      ['US', 'EU', 'NATO'],
+      'Russian state-sponsored threat actor active since 2008, known for sophisticated supply chain attacks and long-term persistent access operations'
+    );
+
+    this.threatIntelligenceManager.addCampaign(
+      'SolarWinds Supply Chain Compromise',
+      ['SUNBURST', 'Solorigate'],
+      'APT29',
+      ['Government', 'Technology', 'Telecommunications'],
+      ['US', 'EU'],
+      ['Supply chain compromise', 'Credential theft', 'Lateral movement', 'Data exfiltration'],
+      ['T1195.002', 'T1059.001', 'T1071.001', 'T1027', 'T1083', 'T1057'],
+      ['SUNBURST', 'TEARDROP', 'RAINDROP'],
+      'Large-scale supply chain attack discovered December 2020 affecting government agencies and Fortune 500 companies through compromised SolarWinds Orion software updates'
+    );
+  }
+
+  analyzeCapture(
+    attackType: AttackType,
+    severity: ThreatSeverity,
+    source: CaptureSource,
+    sampleData: Uint8Array | null,
+    networkCapture: Uint8Array | null,
+    stealthConfig: StealthConfiguration
+  ): {
+    attack: CapturedAttack;
+    sample: MalwareSample | null;
+    staticAnalysis: StaticAnalysis | null;
+    dynamicAnalysis: DynamicAnalysis | null;
+    attribution: ThreatAttribution | null;
+  } {
+    const attack = this.attackCaptureManager.captureAttack(
+      attackType,
+      severity,
+      source,
+      null,
+      null,
+      null,
+      `${attackType} captured from ${source}`,
+      {
+        networkCapture,
+        memoryDump: null,
+        diskImage: null,
+        logFiles: [],
+        artifacts: [],
+        compressionType: null,
+      },
+      stealthConfig
+    );
+
+    let sample: MalwareSample | null = null;
+    let staticAnalysis: StaticAnalysis | null = null;
+    let dynamicAnalysis: DynamicAnalysis | null = null;
+
+    if (sampleData && sampleData.length > 0) {
+      sample = this.malwareSampleManager.addSample(
+        sampleData,
+        'TROJAN',
+        null,
+        null,
+        {
+          mimeType: 'application/x-dosexec',
+          extension: '.exe',
+          magic: 'MZ',
+          entropy: 6.5,
+        }
+      );
+
+      this.attackCaptureManager.addSample(attack.attackId, sample.sampleId);
+
+      staticAnalysis = this.staticAnalyzer.analyzeSample(sample.sampleId, sampleData);
+      this.malwareSampleManager.setStaticAnalysis(sample.sampleId, staticAnalysis);
+
+      dynamicAnalysis = this.dynamicAnalyzer.analyzeSample(sample.sampleId, {
+        os: 'Windows 10',
+        version: '21H2',
+        architecture: 'X64',
+        installedSoftware: ['Office 2019', 'Chrome'],
+        networkConfig: {
+          internetAccess: true,
+          dnsServer: '8.8.8.8',
+          gateway: '192.168.1.1',
+          simulatedServices: ['HTTP', 'HTTPS', 'DNS'],
+        },
+        analysisTimeout: 300000,
+        humanSimulation: true,
+      });
+      this.malwareSampleManager.setDynamicAnalysis(sample.sampleId, dynamicAnalysis);
+    }
+
+    const attribution = this.threatIntelligenceManager.correlateAttack(attack);
+    if (attribution) {
+      this.attackCaptureManager.setAttribution(attack.attackId, attribution);
+    }
+
+    return {
+      attack,
+      sample,
+      staticAnalysis,
+      dynamicAnalysis,
+      attribution,
+    };
+  }
+
+  getAnalysisDashboard(): AnalysisDashboard {
+    const attacks = this.attackCaptureManager.listAttacks();
+    const samples = this.malwareSampleManager.listSamples();
+    const staticAnalyses = this.staticAnalyzer.listAnalyses();
+    const dynamicAnalyses = this.dynamicAnalyzer.listAnalyses();
+    const threatActors = this.threatIntelligenceManager.listThreatActors();
+    const campaigns = this.threatIntelligenceManager.listCampaigns();
+    const iocs = this.threatIntelligenceManager.listIOCs();
+
+    const criticalAttacks = attacks.filter(a => a.severity === 'CRITICAL').length;
+    const pendingAnalysis = attacks.filter(a => a.status === 'PENDING').length;
+    const maliciousSamples = samples.filter(s =>
+      s.dynamicAnalysis?.verdict.malicious === true
+    ).length;
+
+    return {
+      totalAttacks: attacks.length,
+      criticalAttacks,
+      pendingAnalysis,
+      totalSamples: samples.length,
+      maliciousSamples,
+      staticAnalysesCompleted: staticAnalyses.length,
+      dynamicAnalysesCompleted: dynamicAnalyses.length,
+      knownThreatActors: threatActors.length,
+      activeCampaigns: campaigns.filter(c => c.endDate === null).length,
+      totalIOCs: iocs.length,
+      systemHealth: criticalAttacks > 5 ? 'CRITICAL' : pendingAnalysis > 10 ? 'WARNING' : 'HEALTHY',
+      lastUpdated: Date.now(),
+    };
+  }
+}
+
+interface AnalysisDashboard {
+  readonly totalAttacks: number;
+  readonly criticalAttacks: number;
+  readonly pendingAnalysis: number;
+  readonly totalSamples: number;
+  readonly maliciousSamples: number;
+  readonly staticAnalysesCompleted: number;
+  readonly dynamicAnalysesCompleted: number;
+  readonly knownThreatActors: number;
+  readonly activeCampaigns: number;
+  readonly totalIOCs: number;
+  readonly systemHealth: 'HEALTHY' | 'WARNING' | 'CRITICAL';
+  readonly lastUpdated: number;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// FACTORY FUNCTIONS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export function createAttackCaptureManager(): AttackCaptureManager {
+  return new AttackCaptureManager();
+}
+
+export function createMalwareSampleManager(): MalwareSampleManager {
+  return new MalwareSampleManager();
+}
+
+export function createStaticAnalyzer(): StaticAnalyzer {
+  return new StaticAnalyzer();
+}
+
+export function createDynamicAnalyzer(): DynamicAnalyzer {
+  return new DynamicAnalyzer();
+}
+
+export function createThreatIntelligenceManager(): ThreatIntelligenceManager {
+  return new ThreatIntelligenceManager();
+}
+
+export function createAttackCaptureAnalysisCenter(): AttackCaptureAnalysisCenter {
+  return new AttackCaptureAnalysisCenter();
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// DEFAULT EXPORT
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export default {
+  AttackCaptureManager,
+  MalwareSampleManager,
+  StaticAnalyzer,
+  DynamicAnalyzer,
+  ThreatIntelligenceManager,
+  AttackCaptureAnalysisCenter,
+  AttackCaptureError,
+  AttackCaptureErrorCode,
+  createAttackCaptureManager,
+  createMalwareSampleManager,
+  createStaticAnalyzer,
+  createDynamicAnalyzer,
+  createThreatIntelligenceManager,
+  createAttackCaptureAnalysisCenter,
+};

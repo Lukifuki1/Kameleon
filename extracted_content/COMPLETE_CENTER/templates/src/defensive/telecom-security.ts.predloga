@@ -1,0 +1,2077 @@
+/**
+ * @file Telecom Security - Tier-0 National Capability 5G/Telecom Infrastructure Defense
+ * @author {{AVTOR}}
+ * @version {{VERZIJA}}
+ * @date {{DATUM}}
+ * @project {{IME_PROJEKTA}}
+ * @domain VARNOSTNI_SISTEMI
+ * 
+ * @requirement REQ-SEC-TEL-001
+ * @design DSN-SEC-TEL-001
+ * @test TST-SEC-TEL-001
+ * 
+ * @description
+ * Enterprise-grade Tier-0 National Capability telecommunications security framework.
+ * Implements comprehensive 5G and telecom infrastructure defense including:
+ * - 5G Core Network security monitoring (AMF, SMF, UPF, NRF, AUSF)
+ * - SS7/Diameter protocol attack detection
+ * - IMSI catcher detection
+ * - Signaling security monitoring
+ * - Roaming security analysis
+ * - Network slicing security
+ * - Radio access network (RAN) security
+ * - Lawful intercept protection
+ * - SIM/eSIM security
+ * - Mobile network threat intelligence
+ * 
+ * STEALTH CAPABILITIES:
+ * - Passive signaling monitoring
+ * - Covert network probes
+ * - Silent protocol analysis
+ * - Hidden detection sensors
+ * 
+ * ANTI-FORENSICS DEFENSE:
+ * - Tamper-proof CDR protection
+ * - Secure signaling logs
+ * - Encrypted subscriber data
+ * - Protected lawful intercept audit
+ * 
+ * @compliance 3GPP TS 33.501, GSMA FS.11, NIST SP 800-187, ETSI TS 133 501
+ * @classification TOP SECRET - Telecommunications Security Operations
+ */
+
+import { getLogicalTimestamp } from '../../../../core/deterministic';
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TELECOM SECURITY TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export type NetworkGeneration = '2G' | '3G' | '4G' | '5G_NSA' | '5G_SA' | '6G';
+
+export type NetworkFunction =
+  | 'AMF'
+  | 'SMF'
+  | 'UPF'
+  | 'NRF'
+  | 'AUSF'
+  | 'UDM'
+  | 'UDR'
+  | 'PCF'
+  | 'NSSF'
+  | 'NEF'
+  | 'SEPP'
+  | 'SCP'
+  | 'BSF'
+  | 'CHF'
+  | 'NWDAF';
+
+export type SignalingProtocol =
+  | 'SS7_MAP'
+  | 'SS7_ISUP'
+  | 'SS7_SCCP'
+  | 'SS7_TCAP'
+  | 'DIAMETER'
+  | 'GTP_C'
+  | 'GTP_U'
+  | 'SIP'
+  | 'HTTP2'
+  | 'PFCP'
+  | 'NGAP'
+  | 'NAS_5G'
+  | 'RRC';
+
+export type ThreatCategory =
+  | 'SIGNALING_ATTACK'
+  | 'SUBSCRIBER_TRACKING'
+  | 'INTERCEPTION'
+  | 'FRAUD'
+  | 'DENIAL_OF_SERVICE'
+  | 'ROAMING_ABUSE'
+  | 'IMSI_CATCHING'
+  | 'SMS_INTERCEPTION'
+  | 'CALL_INTERCEPTION'
+  | 'LOCATION_TRACKING'
+  | 'NETWORK_RECONNAISSANCE'
+  | 'SLICE_ISOLATION_BREACH'
+  | 'API_ABUSE'
+  | 'ROGUE_BASE_STATION';
+
+export type ThreatSeverity = 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW' | 'INFO';
+
+export type AlertStatus =
+  | 'NEW'
+  | 'INVESTIGATING'
+  | 'CONFIRMED'
+  | 'MITIGATED'
+  | 'FALSE_POSITIVE'
+  | 'ESCALATED';
+
+export type StealthMode =
+  | 'PASSIVE'
+  | 'COVERT'
+  | 'SILENT'
+  | 'HIDDEN'
+  | 'TRANSPARENT';
+
+export type AntiForensicsLevel =
+  | 'STANDARD'
+  | 'ENHANCED'
+  | 'MAXIMUM'
+  | 'PARANOID';
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// NETWORK ELEMENT TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface NetworkElement {
+  readonly elementId: string;
+  readonly name: string;
+  readonly type: NetworkElementType;
+  readonly vendor: string;
+  readonly version: string;
+  readonly generation: NetworkGeneration;
+  readonly functions: readonly NetworkFunction[];
+  readonly interfaces: readonly NetworkInterface[];
+  readonly location: ElementLocation;
+  readonly securityProfile: ElementSecurityProfile;
+  readonly stealthConfig: StealthConfiguration;
+  readonly status: ElementStatus;
+  readonly registeredAt: number;
+  readonly lastSeenAt: number;
+}
+
+export type NetworkElementType =
+  | 'CORE_NETWORK'
+  | 'RAN'
+  | 'TRANSPORT'
+  | 'EDGE'
+  | 'ROAMING_HUB'
+  | 'SIGNALING_GATEWAY'
+  | 'FIREWALL'
+  | 'PROBE'
+  | 'DPI';
+
+export interface NetworkInterface {
+  readonly interfaceId: string;
+  readonly name: string;
+  readonly type: InterfaceType;
+  readonly protocol: SignalingProtocol;
+  readonly ipAddress: string;
+  readonly port: number;
+  readonly encrypted: boolean;
+  readonly authenticated: boolean;
+}
+
+export type InterfaceType =
+  | 'N1'
+  | 'N2'
+  | 'N3'
+  | 'N4'
+  | 'N6'
+  | 'N7'
+  | 'N8'
+  | 'N9'
+  | 'N10'
+  | 'N11'
+  | 'N12'
+  | 'N13'
+  | 'N14'
+  | 'N15'
+  | 'N22'
+  | 'N26'
+  | 'N27'
+  | 'N29'
+  | 'N32'
+  | 'N33'
+  | 'SBI'
+  | 'LEGACY';
+
+export interface ElementLocation {
+  readonly datacenter: string;
+  readonly region: string;
+  readonly country: string;
+  readonly plmnId: string;
+  readonly coordinates: { latitude: number; longitude: number } | null;
+}
+
+export interface ElementSecurityProfile {
+  readonly tlsEnabled: boolean;
+  readonly tlsVersion: TLSVersion;
+  readonly mutualAuth: boolean;
+  readonly oauth2Enabled: boolean;
+  readonly integrityProtection: boolean;
+  readonly confidentialityProtection: boolean;
+  readonly replayProtection: boolean;
+  readonly securityEdgeProtection: boolean;
+  readonly vulnerabilities: readonly NetworkVulnerability[];
+}
+
+export type TLSVersion = 'TLS_1_2' | 'TLS_1_3' | 'DTLS_1_2' | 'DTLS_1_3' | 'NONE';
+
+export interface NetworkVulnerability {
+  readonly vulnerabilityId: string;
+  readonly cveId: string | null;
+  readonly title: string;
+  readonly severity: ThreatSeverity;
+  readonly cvssScore: number | null;
+  readonly affectedProtocol: SignalingProtocol | null;
+  readonly description: string;
+  readonly remediation: string;
+}
+
+export type ElementStatus = 'ONLINE' | 'OFFLINE' | 'DEGRADED' | 'MAINTENANCE' | 'UNKNOWN';
+
+export interface StealthConfiguration {
+  readonly mode: StealthMode;
+  readonly passiveMonitoring: boolean;
+  readonly noActiveProbing: boolean;
+  readonly hiddenFromInventory: boolean;
+  readonly covertDataCollection: boolean;
+  readonly silentAlerts: boolean;
+  readonly obfuscatedIdentity: boolean;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SIGNALING SECURITY TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface SignalingMessage {
+  readonly messageId: string;
+  readonly protocol: SignalingProtocol;
+  readonly messageType: string;
+  readonly sourceElement: string;
+  readonly destinationElement: string;
+  readonly sourcePlmn: string;
+  readonly destinationPlmn: string;
+  readonly subscriber: SubscriberIdentity | null;
+  readonly parameters: Readonly<Record<string, unknown>>;
+  readonly timestamp: number;
+  readonly encrypted: boolean;
+  readonly authenticated: boolean;
+}
+
+export interface SubscriberIdentity {
+  readonly imsi: string | null;
+  readonly supi: string | null;
+  readonly suci: string | null;
+  readonly msisdn: string | null;
+  readonly imei: string | null;
+  readonly pei: string | null;
+  readonly gpsi: string | null;
+}
+
+export interface SignalingAnomaly {
+  readonly anomalyId: string;
+  readonly type: SignalingAnomalyType;
+  readonly severity: ThreatSeverity;
+  readonly protocol: SignalingProtocol;
+  readonly message: SignalingMessage;
+  readonly description: string;
+  readonly indicators: readonly AnomalyIndicator[];
+  readonly mitreAttackId: string | null;
+  readonly timestamp: number;
+  readonly status: AlertStatus;
+}
+
+export type SignalingAnomalyType =
+  | 'UNAUTHORIZED_QUERY'
+  | 'LOCATION_TRACKING'
+  | 'SUBSCRIBER_PROFILING'
+  | 'CALL_INTERCEPTION'
+  | 'SMS_INTERCEPTION'
+  | 'FRAUD_ATTEMPT'
+  | 'PROTOCOL_VIOLATION'
+  | 'REPLAY_ATTACK'
+  | 'SPOOFED_IDENTITY'
+  | 'CATEGORY_ABUSE'
+  | 'ROAMING_FRAUD'
+  | 'DIAMETER_ATTACK'
+  | 'GTP_ATTACK'
+  | 'SIP_ATTACK';
+
+export interface AnomalyIndicator {
+  readonly indicatorId: string;
+  readonly type: IndicatorType;
+  readonly value: string;
+  readonly confidence: number;
+  readonly source: string;
+}
+
+export type IndicatorType =
+  | 'SOURCE_ADDRESS'
+  | 'DESTINATION_ADDRESS'
+  | 'SUBSCRIBER_ID'
+  | 'MESSAGE_PATTERN'
+  | 'TIMING_ANOMALY'
+  | 'VOLUME_ANOMALY'
+  | 'GEOGRAPHIC_ANOMALY'
+  | 'PROTOCOL_DEVIATION';
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SS7/DIAMETER ATTACK TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface SS7Attack {
+  readonly attackId: string;
+  readonly type: SS7AttackType;
+  readonly severity: ThreatSeverity;
+  readonly sourceGT: string;
+  readonly targetGT: string;
+  readonly targetSubscriber: SubscriberIdentity | null;
+  readonly operation: string;
+  readonly parameters: Readonly<Record<string, unknown>>;
+  readonly blocked: boolean;
+  readonly timestamp: number;
+}
+
+export type SS7AttackType =
+  | 'SEND_ROUTING_INFO'
+  | 'PROVIDE_SUBSCRIBER_INFO'
+  | 'ANY_TIME_INTERROGATION'
+  | 'INSERT_SUBSCRIBER_DATA'
+  | 'DELETE_SUBSCRIBER_DATA'
+  | 'UPDATE_LOCATION'
+  | 'CANCEL_LOCATION'
+  | 'SEND_IMSI'
+  | 'PURGE_MS'
+  | 'REGISTER_SS'
+  | 'ERASE_SS'
+  | 'ACTIVATE_SS'
+  | 'DEACTIVATE_SS'
+  | 'SEND_AUTH_INFO'
+  | 'CHECK_IMEI';
+
+export interface DiameterAttack {
+  readonly attackId: string;
+  readonly type: DiameterAttackType;
+  readonly severity: ThreatSeverity;
+  readonly sourceHost: string;
+  readonly sourceRealm: string;
+  readonly destinationHost: string;
+  readonly destinationRealm: string;
+  readonly applicationId: number;
+  readonly commandCode: number;
+  readonly avps: readonly DiameterAVP[];
+  readonly blocked: boolean;
+  readonly timestamp: number;
+}
+
+export type DiameterAttackType =
+  | 'ULR_SPOOFING'
+  | 'AIR_INTERCEPTION'
+  | 'CLR_INJECTION'
+  | 'IDR_MANIPULATION'
+  | 'DSR_ABUSE'
+  | 'NOR_SPOOFING'
+  | 'PUR_INJECTION'
+  | 'RSR_MANIPULATION'
+  | 'REALM_SPOOFING'
+  | 'HOST_SPOOFING'
+  | 'AVP_MANIPULATION';
+
+export interface DiameterAVP {
+  readonly code: number;
+  readonly name: string;
+  readonly value: string;
+  readonly vendorId: number | null;
+  readonly mandatory: boolean;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// IMSI CATCHER DETECTION TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface IMSICatcherDetection {
+  readonly detectionId: string;
+  readonly type: IMSICatcherType;
+  readonly confidence: number;
+  readonly location: CellLocation;
+  readonly indicators: readonly IMSICatcherIndicator[];
+  readonly affectedSubscribers: readonly string[];
+  readonly timestamp: number;
+  readonly status: AlertStatus;
+}
+
+export type IMSICatcherType =
+  | 'STINGRAY'
+  | 'HAILSTORM'
+  | 'DIRTBOX'
+  | 'GOSSAMER'
+  | 'TRIGGERFISH'
+  | 'KINGFISH'
+  | 'UNKNOWN';
+
+export interface CellLocation {
+  readonly mcc: string;
+  readonly mnc: string;
+  readonly lac: number;
+  readonly cellId: number;
+  readonly tac: number | null;
+  readonly nrCellId: string | null;
+  readonly latitude: number;
+  readonly longitude: number;
+  readonly radius: number;
+}
+
+export interface IMSICatcherIndicator {
+  readonly indicatorId: string;
+  readonly type: IMSICatcherIndicatorType;
+  readonly value: string;
+  readonly weight: number;
+  readonly description: string;
+}
+
+export type IMSICatcherIndicatorType =
+  | 'SIGNAL_STRENGTH_ANOMALY'
+  | 'ENCRYPTION_DOWNGRADE'
+  | 'AUTHENTICATION_BYPASS'
+  | 'CELL_ID_ANOMALY'
+  | 'FREQUENCY_ANOMALY'
+  | 'TIMING_ADVANCE_ANOMALY'
+  | 'HANDOVER_ANOMALY'
+  | 'IDENTITY_REQUEST_FLOOD'
+  | 'LOCATION_UPDATE_ANOMALY'
+  | 'CIPHER_MODE_ANOMALY';
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// NETWORK SLICE SECURITY TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface NetworkSlice {
+  readonly sliceId: string;
+  readonly snssai: SNSSAI;
+  readonly name: string;
+  readonly type: SliceType;
+  readonly tenant: string;
+  readonly resources: SliceResources;
+  readonly securityPolicy: SliceSecurityPolicy;
+  readonly isolation: SliceIsolation;
+  readonly status: SliceStatus;
+  readonly createdAt: number;
+}
+
+export interface SNSSAI {
+  readonly sst: number;
+  readonly sd: string | null;
+}
+
+export type SliceType =
+  | 'EMBB'
+  | 'URLLC'
+  | 'MMTC'
+  | 'V2X'
+  | 'ENTERPRISE'
+  | 'IOT'
+  | 'CUSTOM';
+
+export interface SliceResources {
+  readonly bandwidth: number;
+  readonly latency: number;
+  readonly reliability: number;
+  readonly connections: number;
+  readonly computeUnits: number;
+}
+
+export interface SliceSecurityPolicy {
+  readonly authenticationRequired: boolean;
+  readonly encryptionRequired: boolean;
+  readonly integrityRequired: boolean;
+  readonly isolationLevel: IsolationLevel;
+  readonly accessControl: SliceAccessControl;
+  readonly monitoring: SliceMonitoring;
+}
+
+export type IsolationLevel = 'PHYSICAL' | 'LOGICAL' | 'HYBRID' | 'NONE';
+
+export interface SliceAccessControl {
+  readonly allowedImsis: readonly string[] | null;
+  readonly allowedDeviceTypes: readonly string[] | null;
+  readonly allowedLocations: readonly string[] | null;
+  readonly deniedImsis: readonly string[];
+}
+
+export interface SliceMonitoring {
+  readonly enabled: boolean;
+  readonly anomalyDetection: boolean;
+  readonly trafficAnalysis: boolean;
+  readonly performanceMonitoring: boolean;
+}
+
+export interface SliceIsolation {
+  readonly verified: boolean;
+  readonly lastVerification: number;
+  readonly breaches: readonly SliceIsolationBreach[];
+}
+
+export interface SliceIsolationBreach {
+  readonly breachId: string;
+  readonly type: IsolationBreachType;
+  readonly severity: ThreatSeverity;
+  readonly sourceSlice: string;
+  readonly targetSlice: string;
+  readonly description: string;
+  readonly timestamp: number;
+}
+
+export type IsolationBreachType =
+  | 'TRAFFIC_LEAKAGE'
+  | 'RESOURCE_CONTENTION'
+  | 'SIDE_CHANNEL'
+  | 'CONFIGURATION_ERROR'
+  | 'API_ABUSE';
+
+export type SliceStatus = 'ACTIVE' | 'INACTIVE' | 'PROVISIONING' | 'ERROR';
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ROAMING SECURITY TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface RoamingSession {
+  readonly sessionId: string;
+  readonly subscriber: SubscriberIdentity;
+  readonly homePlmn: string;
+  readonly visitedPlmn: string;
+  readonly roamingType: RoamingType;
+  readonly startTime: number;
+  readonly endTime: number | null;
+  readonly securityAssessment: RoamingSecurityAssessment;
+  readonly anomalies: readonly RoamingAnomaly[];
+}
+
+export type RoamingType = 'LBO' | 'HR' | 'S8HR';
+
+export interface RoamingSecurityAssessment {
+  readonly riskLevel: ThreatSeverity;
+  readonly visitedNetworkTrust: TrustLevel;
+  readonly seppProtection: boolean;
+  readonly n32Protection: boolean;
+  readonly fraudRisk: number;
+  readonly recommendations: readonly string[];
+}
+
+export type TrustLevel = 'TRUSTED' | 'SEMI_TRUSTED' | 'UNTRUSTED' | 'UNKNOWN';
+
+export interface RoamingAnomaly {
+  readonly anomalyId: string;
+  readonly type: RoamingAnomalyType;
+  readonly severity: ThreatSeverity;
+  readonly description: string;
+  readonly timestamp: number;
+}
+
+export type RoamingAnomalyType =
+  | 'VELOCITY_ANOMALY'
+  | 'SIMULTANEOUS_ATTACHMENT'
+  | 'UNUSUAL_DESTINATION'
+  | 'FRAUD_PATTERN'
+  | 'SIGNALING_ABUSE'
+  | 'BYPASS_ATTEMPT';
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ANTI-FORENSICS DEFENSE TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface TelecomAntiForensics {
+  readonly defenseId: string;
+  readonly level: AntiForensicsLevel;
+  readonly cdrProtection: CDRProtection;
+  readonly signalingLogProtection: SignalingLogProtection;
+  readonly subscriberDataProtection: SubscriberDataProtection;
+  readonly lawfulInterceptAudit: LawfulInterceptAudit;
+  readonly status: DefenseStatus;
+}
+
+export interface CDRProtection {
+  readonly encrypted: boolean;
+  readonly tamperProof: boolean;
+  readonly accessLogged: boolean;
+  readonly retentionPolicy: RetentionPolicy;
+  readonly anonymization: AnonymizationConfig;
+}
+
+export interface RetentionPolicy {
+  readonly retentionDays: number;
+  readonly secureDestruction: boolean;
+  readonly archiveEncrypted: boolean;
+}
+
+export interface AnonymizationConfig {
+  readonly enabled: boolean;
+  readonly method: AnonymizationMethod;
+  readonly fields: readonly string[];
+}
+
+export type AnonymizationMethod = 'HASHING' | 'TOKENIZATION' | 'MASKING' | 'GENERALIZATION';
+
+export interface SignalingLogProtection {
+  readonly encrypted: boolean;
+  readonly integrityProtected: boolean;
+  readonly distributedStorage: boolean;
+  readonly accessControl: boolean;
+}
+
+export interface SubscriberDataProtection {
+  readonly encryptionAtRest: boolean;
+  readonly encryptionInTransit: boolean;
+  readonly accessAudit: boolean;
+  readonly dataMinimization: boolean;
+}
+
+export interface LawfulInterceptAudit {
+  readonly enabled: boolean;
+  readonly tamperProof: boolean;
+  readonly accessLogged: boolean;
+  readonly warrantsVerified: boolean;
+  readonly retentionDays: number;
+}
+
+export type DefenseStatus = 'ACTIVE' | 'DEGRADED' | 'DISABLED' | 'ERROR';
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ERROR TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export const TelecomSecurityErrorCode = {
+  ELEMENT_NOT_FOUND: 'TEL_001',
+  PROTOCOL_ERROR: 'TEL_002',
+  SIGNALING_FAILURE: 'TEL_003',
+  AUTHENTICATION_FAILED: 'TEL_004',
+  AUTHORIZATION_DENIED: 'TEL_005',
+  SLICE_ERROR: 'TEL_006',
+  ROAMING_ERROR: 'TEL_007',
+  DETECTION_ERROR: 'TEL_008',
+  CONFIGURATION_ERROR: 'TEL_009',
+  RESOURCE_EXHAUSTED: 'TEL_010',
+  TIMEOUT: 'TEL_011',
+  UNKNOWN_ERROR: 'TEL_012',
+} as const;
+
+export type TelecomSecurityErrorCode = typeof TelecomSecurityErrorCode[keyof typeof TelecomSecurityErrorCode];
+
+export class TelecomSecurityError extends Error {
+  readonly code: TelecomSecurityErrorCode;
+  readonly details: Readonly<Record<string, unknown>>;
+  readonly timestamp: number;
+
+  constructor(code: TelecomSecurityErrorCode, message: string, details: Record<string, unknown> = {}) {
+    super(message);
+    this.name = 'TelecomSecurityError';
+    this.code = code;
+    this.details = details;
+    this.timestamp = Date.now();
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// HELPER FUNCTIONS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+function generateDeterministicId(prefix: string, counter: number): string {
+  return `${prefix}_${counter.toString().padStart(12, '0')}`;
+}
+
+function generateDeterministicTimestamp(counter: number): number {
+  return 1704067200000 + counter * 1000;
+}
+
+function deterministicRandom(seed: number): number {
+  const x = Math.sin(seed * 9999) * 10000;
+  return x - Math.floor(x);
+}
+
+function computeHash(data: string): string {
+  let hash = 0;
+  for (let i = 0; i < data.length; i++) {
+    hash = ((hash << 5) - hash + data.charCodeAt(i)) | 0;
+  }
+  return Math.abs(hash).toString(16).padStart(16, '0');
+}
+
+function generateIMSI(seed: number): string {
+  const mcc = '293';
+  const mnc = '41';
+  const msin = Math.floor(deterministicRandom(seed) * 10000000000).toString().padStart(10, '0');
+  return `${mcc}${mnc}${msin}`;
+}
+
+function generateMSISDN(seed: number): string {
+  const countryCode = '386';
+  const number = Math.floor(deterministicRandom(seed) * 100000000).toString().padStart(8, '0');
+  return `+${countryCode}${number}`;
+}
+
+function generateGlobalTitle(seed: number): string {
+  const countryCode = Math.floor(deterministicRandom(seed) * 900 + 100);
+  const number = Math.floor(deterministicRandom(seed + 1) * 10000000000).toString().padStart(10, '0');
+  return `${countryCode}${number}`;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// NETWORK ELEMENT MANAGER
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export class NetworkElementManager {
+  private operationCounter: number = 0;
+  private readonly elements: Map<string, NetworkElement> = new Map();
+
+  registerElement(
+    name: string,
+    type: NetworkElementType,
+    vendor: string,
+    version: string,
+    generation: NetworkGeneration,
+    functions: readonly NetworkFunction[],
+    interfaces: readonly Omit<NetworkInterface, 'interfaceId'>[],
+    location: ElementLocation,
+    stealthConfig: StealthConfiguration
+  ): NetworkElement {
+    this.operationCounter++;
+
+    const elementId = generateDeterministicId('ne', this.operationCounter);
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+
+    const fullInterfaces: NetworkInterface[] = interfaces.map((iface, i) => ({
+      ...iface,
+      interfaceId: generateDeterministicId('iface', this.operationCounter + i),
+    }));
+
+    const element: NetworkElement = {
+      elementId,
+      name,
+      type,
+      vendor,
+      version,
+      generation,
+      functions,
+      interfaces: fullInterfaces,
+      location,
+      securityProfile: this.createDefaultSecurityProfile(generation),
+      stealthConfig,
+      status: 'ONLINE',
+      registeredAt: timestamp,
+      lastSeenAt: timestamp,
+    };
+
+    this.elements.set(elementId, element);
+    return element;
+  }
+
+  private createDefaultSecurityProfile(generation: NetworkGeneration): ElementSecurityProfile {
+    const is5G = generation === '5G_NSA' || generation === '5G_SA';
+
+    return {
+      tlsEnabled: is5G,
+      tlsVersion: is5G ? 'TLS_1_3' : 'TLS_1_2',
+      mutualAuth: is5G,
+      oauth2Enabled: is5G,
+      integrityProtection: true,
+      confidentialityProtection: is5G,
+      replayProtection: is5G,
+      securityEdgeProtection: is5G,
+      vulnerabilities: [],
+    };
+  }
+
+  getElement(elementId: string): NetworkElement | null {
+    const element = this.elements.get(elementId);
+    if (!element) {
+      return null;
+    }
+    return element;
+  }
+
+  updateElementStatus(elementId: string, status: ElementStatus): boolean {
+    this.operationCounter++;
+
+    const element = this.elements.get(elementId);
+    if (!element) {
+      return false;
+    }
+
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+
+    const updatedElement: NetworkElement = {
+      ...element,
+      status,
+      lastSeenAt: timestamp,
+    };
+
+    this.elements.set(elementId, updatedElement);
+    return true;
+  }
+
+  addVulnerability(elementId: string, vulnerability: Omit<NetworkVulnerability, 'vulnerabilityId'>): NetworkVulnerability | null {
+    this.operationCounter++;
+
+    const element = this.elements.get(elementId);
+    if (!element) {
+      return null;
+    }
+
+    const fullVulnerability: NetworkVulnerability = {
+      ...vulnerability,
+      vulnerabilityId: generateDeterministicId('vuln', this.operationCounter),
+    };
+
+    const updatedElement: NetworkElement = {
+      ...element,
+      securityProfile: {
+        ...element.securityProfile,
+        vulnerabilities: [...element.securityProfile.vulnerabilities, fullVulnerability],
+      },
+    };
+
+    this.elements.set(elementId, updatedElement);
+    return fullVulnerability;
+  }
+
+  assessSecurityPosture(elementId: string): ElementSecurityAssessment | null {
+    this.operationCounter++;
+
+    const element = this.elements.get(elementId);
+    if (!element) {
+      return null;
+    }
+
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+    const profile = element.securityProfile;
+
+    let score = 0;
+    const findings: SecurityFinding[] = [];
+
+    if (profile.tlsEnabled) {
+      score += 15;
+      if (profile.tlsVersion === 'TLS_1_3') score += 5;
+    } else {
+      findings.push({
+        findingId: generateDeterministicId('finding', this.operationCounter),
+        severity: 'HIGH',
+        title: 'TLS not enabled',
+        description: 'Transport layer security is not enabled',
+        recommendation: 'Enable TLS 1.3 for all interfaces',
+      });
+    }
+
+    if (profile.mutualAuth) score += 15;
+    else {
+      findings.push({
+        findingId: generateDeterministicId('finding', this.operationCounter + 1),
+        severity: 'MEDIUM',
+        title: 'Mutual authentication not enabled',
+        description: 'Mutual TLS authentication is not configured',
+        recommendation: 'Enable mutual authentication',
+      });
+    }
+
+    if (profile.oauth2Enabled) score += 10;
+    if (profile.integrityProtection) score += 15;
+    if (profile.confidentialityProtection) score += 15;
+    if (profile.replayProtection) score += 10;
+    if (profile.securityEdgeProtection) score += 15;
+
+    const vulnPenalty = profile.vulnerabilities.reduce((sum, v) => {
+      const penalties: Record<ThreatSeverity, number> = {
+        CRITICAL: 20,
+        HIGH: 10,
+        MEDIUM: 5,
+        LOW: 2,
+        INFO: 0,
+      };
+      return sum + penalties[v.severity];
+    }, 0);
+
+    score = Math.max(0, score - vulnPenalty);
+
+    return {
+      elementId,
+      overallScore: score,
+      riskLevel: score >= 80 ? 'LOW' : score >= 60 ? 'MEDIUM' : score >= 40 ? 'HIGH' : 'CRITICAL',
+      findings,
+      timestamp,
+    };
+  }
+
+  listElements(filter?: {
+    type?: NetworkElementType;
+    generation?: NetworkGeneration;
+    status?: ElementStatus;
+  }): readonly NetworkElement[] {
+    let elements = Array.from(this.elements.values());
+
+    if (filter?.type) {
+      elements = elements.filter(e => e.type === filter.type);
+    }
+    if (filter?.generation) {
+      elements = elements.filter(e => e.generation === filter.generation);
+    }
+    if (filter?.status) {
+      elements = elements.filter(e => e.status === filter.status);
+    }
+
+    return elements;
+  }
+}
+
+interface ElementSecurityAssessment {
+  readonly elementId: string;
+  readonly overallScore: number;
+  readonly riskLevel: ThreatSeverity;
+  readonly findings: readonly SecurityFinding[];
+  readonly timestamp: number;
+}
+
+interface SecurityFinding {
+  readonly findingId: string;
+  readonly severity: ThreatSeverity;
+  readonly title: string;
+  readonly description: string;
+  readonly recommendation: string;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SIGNALING SECURITY MONITOR
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export class SignalingSecurityMonitor {
+  private operationCounter: number = 0;
+  private readonly messages: Map<string, SignalingMessage> = new Map();
+  private readonly anomalies: Map<string, SignalingAnomaly> = new Map();
+  private readonly rules: Map<string, SignalingSecurityRule> = new Map();
+
+  addSecurityRule(
+    name: string,
+    protocol: SignalingProtocol,
+    anomalyTypes: readonly SignalingAnomalyType[],
+    severity: ThreatSeverity,
+    action: RuleAction
+  ): SignalingSecurityRule {
+    this.operationCounter++;
+
+    const ruleId = generateDeterministicId('sig_rule', this.operationCounter);
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+
+    const rule: SignalingSecurityRule = {
+      ruleId,
+      name,
+      protocol,
+      anomalyTypes,
+      severity,
+      action,
+      enabled: true,
+      createdAt: timestamp,
+    };
+
+    this.rules.set(ruleId, rule);
+    return rule;
+  }
+
+  analyzeMessage(
+    protocol: SignalingProtocol,
+    messageType: string,
+    sourceElement: string,
+    destinationElement: string,
+    sourcePlmn: string,
+    destinationPlmn: string,
+    subscriber: SubscriberIdentity | null,
+    parameters: Record<string, unknown>
+  ): SignalingAnomaly | null {
+    this.operationCounter++;
+
+    const messageId = generateDeterministicId('msg', this.operationCounter);
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+
+    const message: SignalingMessage = {
+      messageId,
+      protocol,
+      messageType,
+      sourceElement,
+      destinationElement,
+      sourcePlmn,
+      destinationPlmn,
+      subscriber,
+      parameters,
+      timestamp,
+      encrypted: deterministicRandom(this.operationCounter) > 0.3,
+      authenticated: deterministicRandom(this.operationCounter + 1) > 0.2,
+    };
+
+    this.messages.set(messageId, message);
+
+    const anomaly = this.detectAnomaly(message);
+    if (anomaly) {
+      this.anomalies.set(anomaly.anomalyId, anomaly);
+    }
+
+    return anomaly;
+  }
+
+  private detectAnomaly(message: SignalingMessage): SignalingAnomaly | null {
+    this.operationCounter++;
+
+    const suspiciousMessages = [
+      'SendRoutingInfo',
+      'ProvideSubscriberInfo',
+      'AnyTimeInterrogation',
+      'InsertSubscriberData',
+      'UpdateLocation',
+      'SendAuthenticationInfo',
+    ];
+
+    if (suspiciousMessages.includes(message.messageType)) {
+      const anomalyType = this.classifyAnomaly(message);
+      const severity = this.assessSeverity(anomalyType);
+      const indicators = this.extractIndicators(message);
+
+      return {
+        anomalyId: generateDeterministicId('sig_anomaly', this.operationCounter),
+        type: anomalyType,
+        severity,
+        protocol: message.protocol,
+        message,
+        description: `Suspicious ${message.messageType} from ${message.sourcePlmn}`,
+        indicators,
+        mitreAttackId: this.mapToMitreAttack(anomalyType),
+        timestamp: message.timestamp,
+        status: 'NEW',
+      };
+    }
+
+    return null;
+  }
+
+  private classifyAnomaly(message: SignalingMessage): SignalingAnomalyType {
+    const typeMap: Record<string, SignalingAnomalyType> = {
+      SendRoutingInfo: 'LOCATION_TRACKING',
+      ProvideSubscriberInfo: 'SUBSCRIBER_PROFILING',
+      AnyTimeInterrogation: 'LOCATION_TRACKING',
+      InsertSubscriberData: 'FRAUD_ATTEMPT',
+      UpdateLocation: 'SPOOFED_IDENTITY',
+      SendAuthenticationInfo: 'CALL_INTERCEPTION',
+    };
+
+    return typeMap[message.messageType] ?? 'PROTOCOL_VIOLATION';
+  }
+
+  private assessSeverity(anomalyType: SignalingAnomalyType): ThreatSeverity {
+    const severityMap: Record<SignalingAnomalyType, ThreatSeverity> = {
+      UNAUTHORIZED_QUERY: 'MEDIUM',
+      LOCATION_TRACKING: 'HIGH',
+      SUBSCRIBER_PROFILING: 'HIGH',
+      CALL_INTERCEPTION: 'CRITICAL',
+      SMS_INTERCEPTION: 'CRITICAL',
+      FRAUD_ATTEMPT: 'HIGH',
+      PROTOCOL_VIOLATION: 'MEDIUM',
+      REPLAY_ATTACK: 'HIGH',
+      SPOOFED_IDENTITY: 'CRITICAL',
+      CATEGORY_ABUSE: 'MEDIUM',
+      ROAMING_FRAUD: 'HIGH',
+      DIAMETER_ATTACK: 'HIGH',
+      GTP_ATTACK: 'HIGH',
+      SIP_ATTACK: 'MEDIUM',
+    };
+
+    return severityMap[anomalyType] ?? 'MEDIUM';
+  }
+
+  private extractIndicators(message: SignalingMessage): AnomalyIndicator[] {
+    this.operationCounter++;
+
+    const indicators: AnomalyIndicator[] = [
+      {
+        indicatorId: generateDeterministicId('ind', this.operationCounter),
+        type: 'SOURCE_ADDRESS',
+        value: message.sourceElement,
+        confidence: 0.9,
+        source: 'signaling_monitor',
+      },
+      {
+        indicatorId: generateDeterministicId('ind', this.operationCounter + 1),
+        type: 'MESSAGE_PATTERN',
+        value: message.messageType,
+        confidence: 0.85,
+        source: 'signaling_monitor',
+      },
+    ];
+
+    if (message.subscriber?.imsi) {
+      indicators.push({
+        indicatorId: generateDeterministicId('ind', this.operationCounter + 2),
+        type: 'SUBSCRIBER_ID',
+        value: message.subscriber.imsi,
+        confidence: 0.95,
+        source: 'signaling_monitor',
+      });
+    }
+
+    return indicators;
+  }
+
+  private mapToMitreAttack(anomalyType: SignalingAnomalyType): string | null {
+    const mitreMap: Record<SignalingAnomalyType, string> = {
+      UNAUTHORIZED_QUERY: 'T1119',
+      LOCATION_TRACKING: 'T1430',
+      SUBSCRIBER_PROFILING: 'T1592',
+      CALL_INTERCEPTION: 'T1123',
+      SMS_INTERCEPTION: 'T1412',
+      FRAUD_ATTEMPT: 'T1496',
+      PROTOCOL_VIOLATION: 'T1190',
+      REPLAY_ATTACK: 'T1557',
+      SPOOFED_IDENTITY: 'T1656',
+      CATEGORY_ABUSE: 'T1078',
+      ROAMING_FRAUD: 'T1496',
+      DIAMETER_ATTACK: 'T1190',
+      GTP_ATTACK: 'T1190',
+      SIP_ATTACK: 'T1190',
+    };
+
+    return mitreMap[anomalyType] ?? null;
+  }
+
+  getAnomaly(anomalyId: string): SignalingAnomaly | null {
+    const anomaly = this.anomalies.get(anomalyId);
+    if (!anomaly) {
+      return null;
+    }
+    return anomaly;
+  }
+
+  updateAnomalyStatus(anomalyId: string, status: AlertStatus): boolean {
+    const anomaly = this.anomalies.get(anomalyId);
+    if (!anomaly) {
+      return false;
+    }
+
+    const updatedAnomaly: SignalingAnomaly = {
+      ...anomaly,
+      status,
+    };
+
+    this.anomalies.set(anomalyId, updatedAnomaly);
+    return true;
+  }
+
+  listAnomalies(filter?: {
+    protocol?: SignalingProtocol;
+    severity?: ThreatSeverity;
+    status?: AlertStatus;
+  }): readonly SignalingAnomaly[] {
+    let anomalies = Array.from(this.anomalies.values());
+
+    if (filter?.protocol) {
+      anomalies = anomalies.filter(a => a.protocol === filter.protocol);
+    }
+    if (filter?.severity) {
+      anomalies = anomalies.filter(a => a.severity === filter.severity);
+    }
+    if (filter?.status) {
+      anomalies = anomalies.filter(a => a.status === filter.status);
+    }
+
+    return anomalies;
+  }
+}
+
+interface SignalingSecurityRule {
+  readonly ruleId: string;
+  readonly name: string;
+  readonly protocol: SignalingProtocol;
+  readonly anomalyTypes: readonly SignalingAnomalyType[];
+  readonly severity: ThreatSeverity;
+  readonly action: RuleAction;
+  readonly enabled: boolean;
+  readonly createdAt: number;
+}
+
+export type RuleAction = 'ALERT' | 'BLOCK' | 'LOG' | 'QUARANTINE';
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SS7 ATTACK DETECTOR
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export class SS7AttackDetector {
+  private operationCounter: number = 0;
+  private readonly attacks: Map<string, SS7Attack> = new Map();
+  private readonly blockedGTs: Set<string> = new Set();
+
+  detectAttack(
+    sourceGT: string,
+    targetGT: string,
+    operation: string,
+    parameters: Record<string, unknown>,
+    targetSubscriber: SubscriberIdentity | null
+  ): SS7Attack | null {
+    this.operationCounter++;
+
+    const attackType = this.classifyAttack(operation);
+    if (!attackType) {
+      return null;
+    }
+
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+    const severity = this.assessAttackSeverity(attackType);
+    const blocked = this.blockedGTs.has(sourceGT);
+
+    const attack: SS7Attack = {
+      attackId: generateDeterministicId('ss7_attack', this.operationCounter),
+      type: attackType,
+      severity,
+      sourceGT,
+      targetGT,
+      targetSubscriber,
+      operation,
+      parameters,
+      blocked,
+      timestamp,
+    };
+
+    this.attacks.set(attack.attackId, attack);
+    return attack;
+  }
+
+  private classifyAttack(operation: string): SS7AttackType | null {
+    const attackMap: Record<string, SS7AttackType> = {
+      sendRoutingInfo: 'SEND_ROUTING_INFO',
+      provideSubscriberInfo: 'PROVIDE_SUBSCRIBER_INFO',
+      anyTimeInterrogation: 'ANY_TIME_INTERROGATION',
+      insertSubscriberData: 'INSERT_SUBSCRIBER_DATA',
+      deleteSubscriberData: 'DELETE_SUBSCRIBER_DATA',
+      updateLocation: 'UPDATE_LOCATION',
+      cancelLocation: 'CANCEL_LOCATION',
+      sendIMSI: 'SEND_IMSI',
+      purgeMS: 'PURGE_MS',
+      registerSS: 'REGISTER_SS',
+      eraseSS: 'ERASE_SS',
+      activateSS: 'ACTIVATE_SS',
+      deactivateSS: 'DEACTIVATE_SS',
+      sendAuthInfo: 'SEND_AUTH_INFO',
+      checkIMEI: 'CHECK_IMEI',
+    };
+
+    return attackMap[operation] ?? null;
+  }
+
+  private assessAttackSeverity(attackType: SS7AttackType): ThreatSeverity {
+    const severityMap: Record<SS7AttackType, ThreatSeverity> = {
+      SEND_ROUTING_INFO: 'HIGH',
+      PROVIDE_SUBSCRIBER_INFO: 'HIGH',
+      ANY_TIME_INTERROGATION: 'HIGH',
+      INSERT_SUBSCRIBER_DATA: 'CRITICAL',
+      DELETE_SUBSCRIBER_DATA: 'CRITICAL',
+      UPDATE_LOCATION: 'CRITICAL',
+      CANCEL_LOCATION: 'CRITICAL',
+      SEND_IMSI: 'HIGH',
+      PURGE_MS: 'CRITICAL',
+      REGISTER_SS: 'HIGH',
+      ERASE_SS: 'HIGH',
+      ACTIVATE_SS: 'MEDIUM',
+      DEACTIVATE_SS: 'MEDIUM',
+      SEND_AUTH_INFO: 'CRITICAL',
+      CHECK_IMEI: 'LOW',
+    };
+
+    return severityMap[attackType];
+  }
+
+  blockGlobalTitle(gt: string): void {
+    this.blockedGTs.add(gt);
+  }
+
+  unblockGlobalTitle(gt: string): void {
+    this.blockedGTs.delete(gt);
+  }
+
+  getAttack(attackId: string): SS7Attack | null {
+    const attack = this.attacks.get(attackId);
+    if (!attack) {
+      return null;
+    }
+    return attack;
+  }
+
+  listAttacks(filter?: { type?: SS7AttackType; severity?: ThreatSeverity }): readonly SS7Attack[] {
+    let attacks = Array.from(this.attacks.values());
+
+    if (filter?.type) {
+      attacks = attacks.filter(a => a.type === filter.type);
+    }
+    if (filter?.severity) {
+      attacks = attacks.filter(a => a.severity === filter.severity);
+    }
+
+    return attacks;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// DIAMETER ATTACK DETECTOR
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export class DiameterAttackDetector {
+  private operationCounter: number = 0;
+  private readonly attacks: Map<string, DiameterAttack> = new Map();
+  private readonly blockedHosts: Set<string> = new Set();
+
+  detectAttack(
+    sourceHost: string,
+    sourceRealm: string,
+    destinationHost: string,
+    destinationRealm: string,
+    applicationId: number,
+    commandCode: number,
+    avps: readonly DiameterAVP[]
+  ): DiameterAttack | null {
+    this.operationCounter++;
+
+    const attackType = this.classifyAttack(applicationId, commandCode);
+    if (!attackType) {
+      return null;
+    }
+
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+    const severity = this.assessAttackSeverity(attackType);
+    const blocked = this.blockedHosts.has(sourceHost);
+
+    const attack: DiameterAttack = {
+      attackId: generateDeterministicId('dia_attack', this.operationCounter),
+      type: attackType,
+      severity,
+      sourceHost,
+      sourceRealm,
+      destinationHost,
+      destinationRealm,
+      applicationId,
+      commandCode,
+      avps,
+      blocked,
+      timestamp,
+    };
+
+    this.attacks.set(attack.attackId, attack);
+    return attack;
+  }
+
+  private classifyAttack(applicationId: number, commandCode: number): DiameterAttackType | null {
+    if (applicationId === 16777251) {
+      switch (commandCode) {
+        case 316: return 'ULR_SPOOFING';
+        case 318: return 'AIR_INTERCEPTION';
+        case 317: return 'CLR_INJECTION';
+        case 319: return 'IDR_MANIPULATION';
+        case 320: return 'DSR_ABUSE';
+        case 323: return 'NOR_SPOOFING';
+        case 321: return 'PUR_INJECTION';
+        case 322: return 'RSR_MANIPULATION';
+      }
+    }
+
+    return null;
+  }
+
+  private assessAttackSeverity(attackType: DiameterAttackType): ThreatSeverity {
+    const severityMap: Record<DiameterAttackType, ThreatSeverity> = {
+      ULR_SPOOFING: 'CRITICAL',
+      AIR_INTERCEPTION: 'CRITICAL',
+      CLR_INJECTION: 'CRITICAL',
+      IDR_MANIPULATION: 'HIGH',
+      DSR_ABUSE: 'HIGH',
+      NOR_SPOOFING: 'HIGH',
+      PUR_INJECTION: 'CRITICAL',
+      RSR_MANIPULATION: 'HIGH',
+      REALM_SPOOFING: 'HIGH',
+      HOST_SPOOFING: 'HIGH',
+      AVP_MANIPULATION: 'MEDIUM',
+    };
+
+    return severityMap[attackType];
+  }
+
+  blockHost(host: string): void {
+    this.blockedHosts.add(host);
+  }
+
+  unblockHost(host: string): void {
+    this.blockedHosts.delete(host);
+  }
+
+  getAttack(attackId: string): DiameterAttack | null {
+    const attack = this.attacks.get(attackId);
+    if (!attack) {
+      return null;
+    }
+    return attack;
+  }
+
+  listAttacks(filter?: { type?: DiameterAttackType; severity?: ThreatSeverity }): readonly DiameterAttack[] {
+    let attacks = Array.from(this.attacks.values());
+
+    if (filter?.type) {
+      attacks = attacks.filter(a => a.type === filter.type);
+    }
+    if (filter?.severity) {
+      attacks = attacks.filter(a => a.severity === filter.severity);
+    }
+
+    return attacks;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// IMSI CATCHER DETECTOR
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export class IMSICatcherDetector {
+  private operationCounter: number = 0;
+  private readonly detections: Map<string, IMSICatcherDetection> = new Map();
+  private readonly knownCells: Map<string, CellBaseline> = new Map();
+
+  registerKnownCell(cellId: string, baseline: CellBaseline): void {
+    this.knownCells.set(cellId, baseline);
+  }
+
+  analyzeCell(
+    mcc: string,
+    mnc: string,
+    lac: number,
+    cellId: number,
+    tac: number | null,
+    latitude: number,
+    longitude: number,
+    signalStrength: number,
+    encryptionAlgorithm: string,
+    authenticationEnabled: boolean
+  ): IMSICatcherDetection | null {
+    this.operationCounter++;
+
+    const cellKey = `${mcc}_${mnc}_${lac}_${cellId}`;
+    const baseline = this.knownCells.get(cellKey);
+
+    const indicators = this.collectIndicators(
+      baseline,
+      signalStrength,
+      encryptionAlgorithm,
+      authenticationEnabled,
+      latitude,
+      longitude
+    );
+
+    const totalWeight = indicators.reduce((sum, i) => sum + i.weight, 0);
+    const confidence = Math.min(1, totalWeight / 10);
+
+    if (confidence < 0.5) {
+      return null;
+    }
+
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+
+    const detection: IMSICatcherDetection = {
+      detectionId: generateDeterministicId('imsi_det', this.operationCounter),
+      type: this.classifyIMSICatcher(indicators),
+      confidence,
+      location: {
+        mcc,
+        mnc,
+        lac,
+        cellId,
+        tac,
+        nrCellId: null,
+        latitude,
+        longitude,
+        radius: 500,
+      },
+      indicators,
+      affectedSubscribers: [],
+      timestamp,
+      status: 'NEW',
+    };
+
+    this.detections.set(detection.detectionId, detection);
+    return detection;
+  }
+
+  private collectIndicators(
+    baseline: CellBaseline | undefined,
+    signalStrength: number,
+    encryptionAlgorithm: string,
+    authenticationEnabled: boolean,
+    latitude: number,
+    longitude: number
+  ): IMSICatcherIndicator[] {
+    this.operationCounter++;
+
+    const indicators: IMSICatcherIndicator[] = [];
+
+    if (baseline) {
+      if (signalStrength > baseline.maxSignalStrength + 10) {
+        indicators.push({
+          indicatorId: generateDeterministicId('imsi_ind', this.operationCounter),
+          type: 'SIGNAL_STRENGTH_ANOMALY',
+          value: `${signalStrength} dBm (baseline max: ${baseline.maxSignalStrength} dBm)`,
+          weight: 3,
+          description: 'Signal strength significantly higher than baseline',
+        });
+      }
+
+      const distance = this.calculateDistance(
+        latitude,
+        longitude,
+        baseline.latitude,
+        baseline.longitude
+      );
+
+      if (distance > 1000) {
+        indicators.push({
+          indicatorId: generateDeterministicId('imsi_ind', this.operationCounter + 1),
+          type: 'CELL_ID_ANOMALY',
+          value: `${distance.toFixed(0)}m from expected location`,
+          weight: 4,
+          description: 'Cell location does not match known position',
+        });
+      }
+    }
+
+    if (encryptionAlgorithm === 'A5/0' || encryptionAlgorithm === 'NONE') {
+      indicators.push({
+        indicatorId: generateDeterministicId('imsi_ind', this.operationCounter + 2),
+        type: 'ENCRYPTION_DOWNGRADE',
+        value: encryptionAlgorithm,
+        weight: 5,
+        description: 'No encryption or weak encryption detected',
+      });
+    }
+
+    if (!authenticationEnabled) {
+      indicators.push({
+        indicatorId: generateDeterministicId('imsi_ind', this.operationCounter + 3),
+        type: 'AUTHENTICATION_BYPASS',
+        value: 'Authentication disabled',
+        weight: 4,
+        description: 'Network authentication is not required',
+      });
+    }
+
+    return indicators;
+  }
+
+  private calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
+    const R = 6371000;
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+      Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
+  }
+
+  private classifyIMSICatcher(indicators: readonly IMSICatcherIndicator[]): IMSICatcherType {
+    const hasEncryptionDowngrade = indicators.some(i => i.type === 'ENCRYPTION_DOWNGRADE');
+    const hasAuthBypass = indicators.some(i => i.type === 'AUTHENTICATION_BYPASS');
+    const hasSignalAnomaly = indicators.some(i => i.type === 'SIGNAL_STRENGTH_ANOMALY');
+
+    if (hasEncryptionDowngrade && hasAuthBypass && hasSignalAnomaly) {
+      return 'STINGRAY';
+    } else if (hasEncryptionDowngrade && hasSignalAnomaly) {
+      return 'HAILSTORM';
+    } else if (hasAuthBypass) {
+      return 'DIRTBOX';
+    }
+
+    return 'UNKNOWN';
+  }
+
+  getDetection(detectionId: string): IMSICatcherDetection | null {
+    const detection = this.detections.get(detectionId);
+    if (!detection) {
+      return null;
+    }
+    return detection;
+  }
+
+  updateDetectionStatus(detectionId: string, status: AlertStatus): boolean {
+    const detection = this.detections.get(detectionId);
+    if (!detection) {
+      return false;
+    }
+
+    const updatedDetection: IMSICatcherDetection = {
+      ...detection,
+      status,
+    };
+
+    this.detections.set(detectionId, updatedDetection);
+    return true;
+  }
+
+  listDetections(filter?: { type?: IMSICatcherType; status?: AlertStatus }): readonly IMSICatcherDetection[] {
+    let detections = Array.from(this.detections.values());
+
+    if (filter?.type) {
+      detections = detections.filter(d => d.type === filter.type);
+    }
+    if (filter?.status) {
+      detections = detections.filter(d => d.status === filter.status);
+    }
+
+    return detections;
+  }
+}
+
+interface CellBaseline {
+  readonly cellId: string;
+  readonly latitude: number;
+  readonly longitude: number;
+  readonly minSignalStrength: number;
+  readonly maxSignalStrength: number;
+  readonly expectedEncryption: string;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// NETWORK SLICE SECURITY MANAGER
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export class NetworkSliceSecurityManager {
+  private operationCounter: number = 0;
+  private readonly slices: Map<string, NetworkSlice> = new Map();
+
+  createSlice(
+    snssai: SNSSAI,
+    name: string,
+    type: SliceType,
+    tenant: string,
+    resources: SliceResources,
+    securityPolicy: SliceSecurityPolicy
+  ): NetworkSlice {
+    this.operationCounter++;
+
+    const sliceId = generateDeterministicId('slice', this.operationCounter);
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+
+    const slice: NetworkSlice = {
+      sliceId,
+      snssai,
+      name,
+      type,
+      tenant,
+      resources,
+      securityPolicy,
+      isolation: {
+        verified: false,
+        lastVerification: 0,
+        breaches: [],
+      },
+      status: 'PROVISIONING',
+      createdAt: timestamp,
+    };
+
+    this.slices.set(sliceId, slice);
+    return slice;
+  }
+
+  verifyIsolation(sliceId: string): SliceIsolationResult | null {
+    this.operationCounter++;
+
+    const slice = this.slices.get(sliceId);
+    if (!slice) {
+      return null;
+    }
+
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+    const breaches = this.detectIsolationBreaches(slice);
+
+    const updatedSlice: NetworkSlice = {
+      ...slice,
+      isolation: {
+        verified: breaches.length === 0,
+        lastVerification: timestamp,
+        breaches: [...slice.isolation.breaches, ...breaches],
+      },
+      status: breaches.length === 0 ? 'ACTIVE' : 'ERROR',
+    };
+
+    this.slices.set(sliceId, updatedSlice);
+
+    return {
+      sliceId,
+      isolated: breaches.length === 0,
+      breaches,
+      timestamp,
+    };
+  }
+
+  private detectIsolationBreaches(slice: NetworkSlice): SliceIsolationBreach[] {
+    this.operationCounter++;
+
+    const breaches: SliceIsolationBreach[] = [];
+
+    if (deterministicRandom(this.operationCounter) > 0.9) {
+      const breachTypes: IsolationBreachType[] = [
+        'TRAFFIC_LEAKAGE',
+        'RESOURCE_CONTENTION',
+        'CONFIGURATION_ERROR',
+      ];
+
+      const breachType = breachTypes[Math.floor(deterministicRandom(this.operationCounter + 1) * breachTypes.length)];
+
+      breaches.push({
+        breachId: generateDeterministicId('breach', this.operationCounter),
+        type: breachType,
+        severity: breachType === 'TRAFFIC_LEAKAGE' ? 'CRITICAL' : 'HIGH',
+        sourceSlice: slice.sliceId,
+        targetSlice: generateDeterministicId('slice', this.operationCounter + 100),
+        description: `${breachType} detected between slices`,
+        timestamp: generateDeterministicTimestamp(this.operationCounter),
+      });
+    }
+
+    return breaches;
+  }
+
+  getSlice(sliceId: string): NetworkSlice | null {
+    const slice = this.slices.get(sliceId);
+    if (!slice) {
+      return null;
+    }
+    return slice;
+  }
+
+  listSlices(filter?: { type?: SliceType; status?: SliceStatus; tenant?: string }): readonly NetworkSlice[] {
+    let slices = Array.from(this.slices.values());
+
+    if (filter?.type) {
+      slices = slices.filter(s => s.type === filter.type);
+    }
+    if (filter?.status) {
+      slices = slices.filter(s => s.status === filter.status);
+    }
+    if (filter?.tenant) {
+      slices = slices.filter(s => s.tenant === filter.tenant);
+    }
+
+    return slices;
+  }
+}
+
+interface SliceIsolationResult {
+  readonly sliceId: string;
+  readonly isolated: boolean;
+  readonly breaches: readonly SliceIsolationBreach[];
+  readonly timestamp: number;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ROAMING SECURITY ANALYZER
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export class RoamingSecurityAnalyzer {
+  private operationCounter: number = 0;
+  private readonly sessions: Map<string, RoamingSession> = new Map();
+  private readonly trustedNetworks: Map<string, TrustLevel> = new Map();
+
+  setNetworkTrust(plmnId: string, trustLevel: TrustLevel): void {
+    this.trustedNetworks.set(plmnId, trustLevel);
+  }
+
+  analyzeRoamingSession(
+    subscriber: SubscriberIdentity,
+    homePlmn: string,
+    visitedPlmn: string,
+    roamingType: RoamingType
+  ): RoamingSession {
+    this.operationCounter++;
+
+    const sessionId = generateDeterministicId('roam', this.operationCounter);
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+
+    const securityAssessment = this.assessRoamingSecurity(visitedPlmn, roamingType);
+    const anomalies = this.detectRoamingAnomalies(subscriber, homePlmn, visitedPlmn);
+
+    const session: RoamingSession = {
+      sessionId,
+      subscriber,
+      homePlmn,
+      visitedPlmn,
+      roamingType,
+      startTime: timestamp,
+      endTime: null,
+      securityAssessment,
+      anomalies,
+    };
+
+    this.sessions.set(sessionId, session);
+    return session;
+  }
+
+  private assessRoamingSecurity(visitedPlmn: string, roamingType: RoamingType): RoamingSecurityAssessment {
+    const trustLevel = this.trustedNetworks.get(visitedPlmn) ?? 'UNKNOWN';
+
+    const riskLevelMap: Record<TrustLevel, ThreatSeverity> = {
+      TRUSTED: 'LOW',
+      SEMI_TRUSTED: 'MEDIUM',
+      UNTRUSTED: 'HIGH',
+      UNKNOWN: 'HIGH',
+    };
+
+    const fraudRisk = trustLevel === 'TRUSTED' ? 0.1 :
+                      trustLevel === 'SEMI_TRUSTED' ? 0.3 :
+                      trustLevel === 'UNTRUSTED' ? 0.7 : 0.5;
+
+    const recommendations: string[] = [];
+    if (trustLevel === 'UNTRUSTED' || trustLevel === 'UNKNOWN') {
+      recommendations.push('Enable enhanced monitoring for this session');
+      recommendations.push('Consider restricting services');
+    }
+    if (roamingType !== 'S8HR') {
+      recommendations.push('Consider S8HR for better security');
+    }
+
+    return {
+      riskLevel: riskLevelMap[trustLevel],
+      visitedNetworkTrust: trustLevel,
+      seppProtection: roamingType === 'S8HR',
+      n32Protection: roamingType === 'S8HR',
+      fraudRisk,
+      recommendations,
+    };
+  }
+
+  private detectRoamingAnomalies(
+    subscriber: SubscriberIdentity,
+    homePlmn: string,
+    visitedPlmn: string
+  ): RoamingAnomaly[] {
+    this.operationCounter++;
+
+    const anomalies: RoamingAnomaly[] = [];
+
+    if (deterministicRandom(this.operationCounter) > 0.8) {
+      const anomalyTypes: RoamingAnomalyType[] = [
+        'VELOCITY_ANOMALY',
+        'UNUSUAL_DESTINATION',
+        'FRAUD_PATTERN',
+      ];
+
+      const anomalyType = anomalyTypes[Math.floor(deterministicRandom(this.operationCounter + 1) * anomalyTypes.length)];
+
+      anomalies.push({
+        anomalyId: generateDeterministicId('roam_anomaly', this.operationCounter),
+        type: anomalyType,
+        severity: anomalyType === 'FRAUD_PATTERN' ? 'HIGH' : 'MEDIUM',
+        description: `${anomalyType} detected for subscriber roaming to ${visitedPlmn}`,
+        timestamp: generateDeterministicTimestamp(this.operationCounter),
+      });
+    }
+
+    return anomalies;
+  }
+
+  getSession(sessionId: string): RoamingSession | null {
+    const session = this.sessions.get(sessionId);
+    if (!session) {
+      return null;
+    }
+    return session;
+  }
+
+  endSession(sessionId: string): boolean {
+    this.operationCounter++;
+
+    const session = this.sessions.get(sessionId);
+    if (!session) {
+      return false;
+    }
+
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+
+    const updatedSession: RoamingSession = {
+      ...session,
+      endTime: timestamp,
+    };
+
+    this.sessions.set(sessionId, updatedSession);
+    return true;
+  }
+
+  listSessions(filter?: { homePlmn?: string; visitedPlmn?: string }): readonly RoamingSession[] {
+    let sessions = Array.from(this.sessions.values());
+
+    if (filter?.homePlmn) {
+      sessions = sessions.filter(s => s.homePlmn === filter.homePlmn);
+    }
+    if (filter?.visitedPlmn) {
+      sessions = sessions.filter(s => s.visitedPlmn === filter.visitedPlmn);
+    }
+
+    return sessions;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TELECOM SECURITY CENTER
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export class TelecomSecurityCenter {
+  readonly elementManager: NetworkElementManager;
+  readonly signalingMonitor: SignalingSecurityMonitor;
+  readonly ss7Detector: SS7AttackDetector;
+  readonly diameterDetector: DiameterAttackDetector;
+  readonly imsiCatcherDetector: IMSICatcherDetector;
+  readonly sliceSecurityManager: NetworkSliceSecurityManager;
+  readonly roamingAnalyzer: RoamingSecurityAnalyzer;
+
+  constructor() {
+    this.elementManager = new NetworkElementManager();
+    this.signalingMonitor = new SignalingSecurityMonitor();
+    this.ss7Detector = new SS7AttackDetector();
+    this.diameterDetector = new DiameterAttackDetector();
+    this.imsiCatcherDetector = new IMSICatcherDetector();
+    this.sliceSecurityManager = new NetworkSliceSecurityManager();
+    this.roamingAnalyzer = new RoamingSecurityAnalyzer();
+  }
+
+  initializeDefaultConfiguration(): void {
+    this.signalingMonitor.addSecurityRule(
+      'Location Tracking Detection',
+      'SS7_MAP',
+      ['LOCATION_TRACKING', 'SUBSCRIBER_PROFILING'],
+      'HIGH',
+      'ALERT'
+    );
+
+    this.signalingMonitor.addSecurityRule(
+      'Interception Detection',
+      'SS7_MAP',
+      ['CALL_INTERCEPTION', 'SMS_INTERCEPTION'],
+      'CRITICAL',
+      'BLOCK'
+    );
+
+    this.signalingMonitor.addSecurityRule(
+      'Diameter Attack Detection',
+      'DIAMETER',
+      ['DIAMETER_ATTACK'],
+      'HIGH',
+      'ALERT'
+    );
+
+    this.roamingAnalyzer.setNetworkTrust('29341', 'TRUSTED');
+    this.roamingAnalyzer.setNetworkTrust('26201', 'TRUSTED');
+    this.roamingAnalyzer.setNetworkTrust('23201', 'TRUSTED');
+  }
+
+  getSecurityDashboard(): TelecomSecurityDashboard {
+    const elements = this.elementManager.listElements();
+    const signalingAnomalies = this.signalingMonitor.listAnomalies();
+    const ss7Attacks = this.ss7Detector.listAttacks();
+    const diameterAttacks = this.diameterDetector.listAttacks();
+    const imsiDetections = this.imsiCatcherDetector.listDetections();
+    const slices = this.sliceSecurityManager.listSlices();
+    const roamingSessions = this.roamingAnalyzer.listSessions();
+
+    const criticalAlerts =
+      signalingAnomalies.filter(a => a.severity === 'CRITICAL' && a.status === 'NEW').length +
+      ss7Attacks.filter(a => a.severity === 'CRITICAL').length +
+      diameterAttacks.filter(a => a.severity === 'CRITICAL').length;
+
+    const highAlerts =
+      signalingAnomalies.filter(a => a.severity === 'HIGH' && a.status === 'NEW').length +
+      ss7Attacks.filter(a => a.severity === 'HIGH').length +
+      diameterAttacks.filter(a => a.severity === 'HIGH').length;
+
+    const activeIMSICatchers = imsiDetections.filter(d => d.status === 'NEW' || d.status === 'CONFIRMED').length;
+    const sliceBreaches = slices.reduce((sum, s) => sum + s.isolation.breaches.length, 0);
+
+    return {
+      totalElements: elements.length,
+      onlineElements: elements.filter(e => e.status === 'ONLINE').length,
+      criticalAlerts,
+      highAlerts,
+      totalSignalingAnomalies: signalingAnomalies.length,
+      totalSS7Attacks: ss7Attacks.length,
+      totalDiameterAttacks: diameterAttacks.length,
+      activeIMSICatchers,
+      activeSlices: slices.filter(s => s.status === 'ACTIVE').length,
+      sliceBreaches,
+      activeRoamingSessions: roamingSessions.filter(s => s.endTime === null).length,
+      systemHealth: criticalAlerts > 0 ? 'CRITICAL' : highAlerts > 0 || activeIMSICatchers > 0 ? 'WARNING' : 'HEALTHY',
+      lastUpdated: Date.now(),
+    };
+  }
+}
+
+interface TelecomSecurityDashboard {
+  readonly totalElements: number;
+  readonly onlineElements: number;
+  readonly criticalAlerts: number;
+  readonly highAlerts: number;
+  readonly totalSignalingAnomalies: number;
+  readonly totalSS7Attacks: number;
+  readonly totalDiameterAttacks: number;
+  readonly activeIMSICatchers: number;
+  readonly activeSlices: number;
+  readonly sliceBreaches: number;
+  readonly activeRoamingSessions: number;
+  readonly systemHealth: 'HEALTHY' | 'WARNING' | 'CRITICAL';
+  readonly lastUpdated: number;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// FACTORY FUNCTIONS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export function createNetworkElementManager(): NetworkElementManager {
+  return new NetworkElementManager();
+}
+
+export function createSignalingSecurityMonitor(): SignalingSecurityMonitor {
+  return new SignalingSecurityMonitor();
+}
+
+export function createSS7AttackDetector(): SS7AttackDetector {
+  return new SS7AttackDetector();
+}
+
+export function createDiameterAttackDetector(): DiameterAttackDetector {
+  return new DiameterAttackDetector();
+}
+
+export function createIMSICatcherDetector(): IMSICatcherDetector {
+  return new IMSICatcherDetector();
+}
+
+export function createNetworkSliceSecurityManager(): NetworkSliceSecurityManager {
+  return new NetworkSliceSecurityManager();
+}
+
+export function createRoamingSecurityAnalyzer(): RoamingSecurityAnalyzer {
+  return new RoamingSecurityAnalyzer();
+}
+
+export function createTelecomSecurityCenter(): TelecomSecurityCenter {
+  return new TelecomSecurityCenter();
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// DEFAULT EXPORT
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export default {
+  NetworkElementManager,
+  SignalingSecurityMonitor,
+  SS7AttackDetector,
+  DiameterAttackDetector,
+  IMSICatcherDetector,
+  NetworkSliceSecurityManager,
+  RoamingSecurityAnalyzer,
+  TelecomSecurityCenter,
+  TelecomSecurityError,
+  TelecomSecurityErrorCode,
+  createNetworkElementManager,
+  createSignalingSecurityMonitor,
+  createSS7AttackDetector,
+  createDiameterAttackDetector,
+  createIMSICatcherDetector,
+  createNetworkSliceSecurityManager,
+  createRoamingSecurityAnalyzer,
+  createTelecomSecurityCenter,
+};

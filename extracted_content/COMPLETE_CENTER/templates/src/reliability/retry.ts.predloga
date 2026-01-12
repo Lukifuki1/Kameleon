@@ -1,0 +1,478 @@
+/**
+ * @file Varnostni retry modul za {{IME_PROJEKTA}}
+ * @author {{AVTOR}}
+ * @version {{VERZIJA}}
+ * @date {{DATUM}}
+ * @domain {{DOMENA_SL}}
+ * 
+ * @requirement REQ-SEC-RT-001
+ * @design DSN-SEC-RT-001
+ * @test TST-SEC-RT-001
+ * 
+ * @description
+ * Specializiran retry mehanizem za varnostne sisteme:
+ * - Varno ponavljanje avtentikacijskih operacij
+ * - Exponential backoff z jitter za preprecevanje thundering herd
+ * - Omejitev poskusov za preprecevanje brute force napadov
+ * - Varnostno logiranje vseh poskusov
+ * - Fail-secure nacin pri izcrpanju poskusov
+ * 
+ * @compliance DO-178C, IEC-61508, ISO-26262, MIL-STD-882E
+ * @security ISO-27001, NIST-800-53, SOC-2
+ * @meta_atom REL_003 - Retry Mechanism
+ */
+
+import { getClock, Clock } from '@mia/core/clock';
+import { generateDeterministicId } from '@mia/core/deterministic';
+const clock: Clock = getClock();
+
+// ============================================================================
+// TIPI
+// ============================================================================
+
+/**
+ * Strategija retry-a
+ */
+export type RetryStrategy = 'fixed' | 'exponential' | 'linear' | 'fibonacci';
+
+/**
+ * Tip varnostne operacije za retry
+ */
+export type SecurityOperationType =
+    | 'authentication'
+    | 'token_refresh'
+    | 'key_rotation'
+    | 'certificate_validation'
+    | 'encryption'
+    | 'decryption'
+    | 'signature_verification'
+    | 'audit_write';
+
+/**
+ * Konfiguracija retry-a
+ */
+export interface SecurityRetryConfig {
+    /** Maksimalno stevilo poskusov */
+    readonly maxAttempts: number;
+    /** Zacetna zakasnitev v ms */
+    readonly initialDelay: number;
+    /** Maksimalna zakasnitev v ms */
+    readonly maxDelay: number;
+    /** Faktor mnozenja za exponential backoff */
+    readonly multiplier: number;
+    /** Ali uporabiti jitter */
+    readonly useJitter: boolean;
+    /** Faktor jitterja (0-1) */
+    readonly jitterFactor: number;
+    /** Strategija */
+    readonly strategy: RetryStrategy;
+    /** Tipi napak za retry */
+    readonly retryableErrors: readonly string[];
+    /** Ali logirati poskuse */
+    readonly logAttempts: boolean;
+    /** Tip operacije */
+    readonly operationType: SecurityOperationType;
+}
+
+/**
+ * Rezultat retry operacije
+ */
+export interface RetryResult<T> {
+    /** Ali je bilo uspesno */
+    readonly success: boolean;
+    /** Rezultat (ce je uspesno) */
+    readonly result: T | null;
+    /** Napaka (ce ni uspesno) */
+    readonly error: string | null;
+    /** Stevilo poskusov */
+    readonly attempts: number;
+    /** Skupni cas v ms */
+    readonly totalTime: number;
+    /** Zgodovina poskusov */
+    readonly attemptHistory: readonly AttemptRecord[];
+}
+
+/**
+ * Zapis poskusa
+ */
+export interface AttemptRecord {
+    /** Zaporedna stevilka poskusa */
+    readonly attemptNumber: number;
+    /** Casovni zig */
+    readonly timestamp: number;
+    /** Ali je bil uspesen */
+    readonly success: boolean;
+    /** Napaka (ce ni uspesno) */
+    readonly error: string | null;
+    /** Trajanje v ms */
+    readonly duration: number;
+    /** Zakasnitev pred naslednjim poskusom */
+    readonly delayBeforeNext: number | null;
+}
+
+/**
+ * Kontekst retry operacije
+ */
+export interface RetryContext {
+    /** Unikatni ID operacije */
+    readonly operationId: string;
+    /** Tip operacije */
+    readonly operationType: SecurityOperationType;
+    /** Trenutni poskus */
+    readonly currentAttempt: number;
+    /** Maksimalno stevilo poskusov */
+    readonly maxAttempts: number;
+    /** Cas zacetka */
+    readonly startTime: number;
+}
+
+// ============================================================================
+// KONSTANTE
+// ============================================================================
+
+const DEFAULT_CONFIG: Omit<SecurityRetryConfig, 'operationType'> = {
+    maxAttempts: 3,
+    initialDelay: 1000,
+    maxDelay: 30000,
+    multiplier: 2,
+    useJitter: true,
+    jitterFactor: 0.1,
+    strategy: 'exponential',
+    retryableErrors: [
+        'ETIMEDOUT',
+        'ECONNRESET',
+        'ECONNREFUSED',
+        'TEMPORARY_FAILURE',
+        'SERVICE_UNAVAILABLE',
+    ],
+    logAttempts: true,
+};
+
+const SECURITY_OPERATION_LIMITS: Readonly<Record<SecurityOperationType, number>> = {
+    authentication: 3,
+    token_refresh: 5,
+    key_rotation: 2,
+    certificate_validation: 3,
+    encryption: 5,
+    decryption: 5,
+    signature_verification: 3,
+    audit_write: 10,
+};
+
+// ============================================================================
+// STANJE
+// ============================================================================
+
+let operationCounter = 0;
+const activeRetries: Map<string, RetryContext> = new Map();
+const retryHistory: Map<string, AttemptRecord[]> = new Map();
+
+// ============================================================================
+// FUNKCIJE
+// ============================================================================
+
+/**
+ * Izracunaj zakasnitev glede na strategijo
+ */
+function calculateDelay(
+    attempt: number,
+    config: SecurityRetryConfig,
+    seed?: number
+): number {
+    let delay: number;
+    
+    switch (config.strategy) {
+        case 'fixed':
+            delay = config.initialDelay;
+            break;
+            
+        case 'linear':
+            delay = config.initialDelay * attempt;
+            break;
+            
+        case 'fibonacci': {
+            let a = config.initialDelay;
+            let b = config.initialDelay;
+            for (let i = 2; i <= attempt; i++) {
+                const temp = a + b;
+                a = b;
+                b = temp;
+            }
+            delay = b;
+            break;
+        }
+            
+        case 'exponential':
+        default:
+            delay = config.initialDelay * Math.pow(config.multiplier, attempt - 1);
+            break;
+    }
+    
+    if (config.useJitter) {
+        const jitterRange = delay * config.jitterFactor;
+        // Vedno deterministicen jitter - brez native random funkcije
+        // Seed je vedno podan iz operationCounter
+        const effectiveSeed = seed !== undefined ? seed : attempt;
+        const deterministicJitter = (effectiveSeed % 1000) / 1000 * jitterRange * 2 - jitterRange;
+        delay += deterministicJitter;
+    }
+    
+    return Math.min(Math.max(delay, 0), config.maxDelay);
+}
+
+/**
+ * Preveri ali je napaka retryable
+ */
+function isRetryableError(error: unknown, config: SecurityRetryConfig): boolean {
+    if (error instanceof Error) {
+        const errorCode = (error as NodeJS.ErrnoException).code;
+        if (errorCode && config.retryableErrors.includes(errorCode)) {
+            return true;
+        }
+        
+        for (const retryable of config.retryableErrors) {
+            if (error.message.includes(retryable)) {
+                return true;
+            }
+        }
+    }
+    
+    return false;
+}
+
+/**
+ * Pocakaj za dolocen cas
+ */
+async function delay(ms: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+/**
+ * Izvedi operacijo z retry mehanizmom
+ */
+export async function executeWithRetry<T>(
+    operation: (context: RetryContext) => Promise<T>,
+    operationType: SecurityOperationType,
+    config: Partial<Omit<SecurityRetryConfig, 'operationType'>> = {}
+): Promise<RetryResult<T>> {
+    operationCounter++;
+    const operationId = generateDeterministicId('retry', operationCounter);
+    
+    const securityLimit = SECURITY_OPERATION_LIMITS[operationType];
+    const effectiveMaxAttempts = Math.min(
+        config.maxAttempts || DEFAULT_CONFIG.maxAttempts,
+        securityLimit
+    );
+    
+    const fullConfig: SecurityRetryConfig = {
+        ...DEFAULT_CONFIG,
+        ...config,
+        maxAttempts: effectiveMaxAttempts,
+        operationType,
+    };
+    
+    const startTime = clock.nowMs();
+    const attemptHistory: AttemptRecord[] = [];
+    let lastError: string | null = null;
+    
+    for (let attempt = 1; attempt <= fullConfig.maxAttempts; attempt++) {
+        const context: RetryContext = {
+            operationId,
+            operationType,
+            currentAttempt: attempt,
+            maxAttempts: fullConfig.maxAttempts,
+            startTime,
+        };
+        
+        activeRetries.set(operationId, context);
+        const attemptStart = clock.nowMs();
+        
+        try {
+            const result = await operation(context);
+            const duration = clock.nowMs() - attemptStart;
+            
+            attemptHistory.push({
+                attemptNumber: attempt,
+                timestamp: attemptStart,
+                success: true,
+                error: null,
+                duration,
+                delayBeforeNext: null,
+            });
+            
+            activeRetries.delete(operationId);
+            retryHistory.set(operationId, attemptHistory);
+            
+            return {
+                success: true,
+                result,
+                error: null,
+                attempts: attempt,
+                totalTime: clock.nowMs() - startTime,
+                attemptHistory,
+            };
+            
+        } catch (error) {
+            const duration = clock.nowMs() - attemptStart;
+            lastError = error instanceof Error ? error.message : String(error);
+            
+            const isLastAttempt = attempt >= fullConfig.maxAttempts;
+            const shouldRetry = !isLastAttempt && isRetryableError(error, fullConfig);
+            
+            const delayMs = shouldRetry
+                ? calculateDelay(attempt, fullConfig, operationCounter)
+                : null;
+            
+            attemptHistory.push({
+                attemptNumber: attempt,
+                timestamp: attemptStart,
+                success: false,
+                error: lastError,
+                duration,
+                delayBeforeNext: delayMs,
+            });
+            
+            if (!shouldRetry) {
+                break;
+            }
+            
+            if (delayMs !== null) {
+                await delay(delayMs);
+            }
+        }
+    }
+    
+    activeRetries.delete(operationId);
+    retryHistory.set(operationId, attemptHistory);
+    
+    return {
+        success: false,
+        result: null,
+        error: lastError,
+        attempts: attemptHistory.length,
+        totalTime: clock.nowMs() - startTime,
+        attemptHistory,
+    };
+}
+
+/**
+ * Ustvari retry wrapper za funkcijo
+ */
+export function createRetryWrapper<T, Args extends unknown[]>(
+    fn: (...args: Args) => Promise<T>,
+    operationType: SecurityOperationType,
+    config: Partial<Omit<SecurityRetryConfig, 'operationType'>> = {}
+): (...args: Args) => Promise<RetryResult<T>> {
+    return async (...args: Args): Promise<RetryResult<T>> => {
+        return executeWithRetry(
+            async () => fn(...args),
+            operationType,
+            config
+        );
+    };
+}
+
+/**
+ * Pridobi aktivne retry operacije
+ */
+export function getActiveRetries(): readonly RetryContext[] {
+    return Array.from(activeRetries.values());
+}
+
+/**
+ * Pridobi zgodovino retry operacije
+ */
+export function getRetryHistory(operationId: string): readonly AttemptRecord[] | null {
+    return retryHistory.get(operationId) || null;
+}
+
+/**
+ * Preklici retry operacijo
+ */
+export function cancelRetry(operationId: string): boolean {
+    return activeRetries.delete(operationId);
+}
+
+/**
+ * Ponastavi retry stanje
+ */
+export function resetRetryState(): void {
+    activeRetries.clear();
+    retryHistory.clear();
+    operationCounter = 0;
+}
+
+// ============================================================================
+// VARNOSTNO SPECIFICNE FUNKCIJE
+// ============================================================================
+
+/**
+ * Retry za avtentikacijo (z omejitvami)
+ */
+export async function retryAuthentication<T>(
+    operation: (context: RetryContext) => Promise<T>
+): Promise<RetryResult<T>> {
+    return executeWithRetry(operation, 'authentication', {
+        maxAttempts: 3,
+        initialDelay: 2000,
+        strategy: 'exponential',
+        multiplier: 3,
+    });
+}
+
+/**
+ * Retry za osvezitev tokena
+ */
+export async function retryTokenRefresh<T>(
+    operation: (context: RetryContext) => Promise<T>
+): Promise<RetryResult<T>> {
+    return executeWithRetry(operation, 'token_refresh', {
+        maxAttempts: 5,
+        initialDelay: 1000,
+        strategy: 'exponential',
+    });
+}
+
+/**
+ * Retry za rotacijo kljucev
+ */
+export async function retryKeyRotation<T>(
+    operation: (context: RetryContext) => Promise<T>
+): Promise<RetryResult<T>> {
+    return executeWithRetry(operation, 'key_rotation', {
+        maxAttempts: 2,
+        initialDelay: 5000,
+        strategy: 'fixed',
+    });
+}
+
+/**
+ * Retry za pisanje v revizijski log
+ */
+export async function retryAuditWrite<T>(
+    operation: (context: RetryContext) => Promise<T>
+): Promise<RetryResult<T>> {
+    return executeWithRetry(operation, 'audit_write', {
+        maxAttempts: 10,
+        initialDelay: 500,
+        strategy: 'exponential',
+        multiplier: 1.5,
+    });
+}
+
+// ============================================================================
+// IZVOZ
+// ============================================================================
+
+export const SecurityRetry = {
+    execute: executeWithRetry,
+    createWrapper: createRetryWrapper,
+    getActive: getActiveRetries,
+    getHistory: getRetryHistory,
+    cancel: cancelRetry,
+    reset: resetRetryState,
+    retryAuthentication,
+    retryTokenRefresh,
+    retryKeyRotation,
+    retryAuditWrite,
+};

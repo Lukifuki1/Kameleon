@@ -1,0 +1,135 @@
+# NACRT VERIFIKACIJE PROGRAMSKE OPREME (SVP)
+
+**Projekt:** {{IME_PROJEKTA}}
+**Verzija:** {{VERZIJA}}
+**Domena:** Varnostni sistemi
+**Datum:** {{DATUM}}
+**Avtor:** {{AVTOR}}
+
+---
+
+## 1. UVOD
+
+### 1.1 Namen
+Ta dokument opisuje nacrt verifikacije za projekt {{IME_PROJEKTA}} v domeni **Varnostni sistemi** (VARNOSTNI_SISTEMI) v skladu s standardi DO-178C, IEC 61508, ISO 26262 in MIL-STD-882E.
+
+### 1.2 Domensko-specificni obseg
+Verifikacija za domeno Varnostni sistemi vkljucuje:
+- Kriptografija
+- Avtentikacija
+- Varnostna skladnost in sledljivost
+
+### 1.3 Kljucni koncepti domene
+- encryption
+- authentication
+- authorization
+- firewall
+- vulnerability
+
+### 1.4 Obseg verifikacije
+- Verifikacija zahtev za Varnostni sistemi
+- Verifikacija dizajna
+- Verifikacija kode
+- Verifikacija testov
+- Verifikacija integracije
+
+---
+
+## 2. STRATEGIJA VERIFIKACIJE ZA VARNOSTNI_SISTEMI
+
+### 2.1 Nivoji verifikacije
+
+| Nivo | Opis | Orodja | Kriterij uspesnosti |
+|------|------|--------|---------------------|
+| V1 | Staticna analiza za Varnostni sistemi | ESLint, TypeScript | 0 napak, 0 opozoril |
+| V2 | Enotni testi za VARNOSTNI_SISTEMI | Jest | >= 80% pokritost |
+| V3 | Integracijski testi | Jest | Vsi testi PASS |
+| V4 | Varnostno skeniranje | TRIVY | 0 kriticnih ranljivosti |
+| V5 | SBOM generiranje | SYFT | Veljaven SPDX format |
+| V6 | Podpisovanje | COSIGN | Veljaven podpis |
+
+### 2.2 Deterministicnost za Varnostni sistemi
+Vsi testi morajo biti deterministicni:
+- Brez odvisnosti od casa (fiksni datumi)
+- Brez odvisnosti od omrezja (offline nacin)
+- Brez nakljucnih vrednosti (seed-based)
+
+---
+
+## 3. TESTNI PRIMERI ZA VARNOSTNI_SISTEMI
+
+### 3.1 Domensko-specificni testi
+
+| ID testa | Zahteva | Opis | Pricakovani rezultat |
+|----------|---------|------|----------------------|
+| TEST-DOMENA-001 | ZAH-DOMENA-001 | Preveri domensko-specificne konstante za Varnostni sistemi | Konstante pravilne |
+| TEST-DOMENA-002 | ZAH-DOMENA-002 | Preveri domensko konfiguracijo | Konfiguracija veljavna |
+
+### 3.2 Enotni testi
+
+| ID testa | Zahteva | Opis | Pricakovani rezultat |
+|----------|---------|------|----------------------|
+| TEST-001 | ZAH-FUNK-001 | Preveri deterministicno delovanje za Varnostni sistemi | Identicen izhod pri ponovnem zagonu |
+| TEST-002 | ZAH-FUNK-002 | Preveri podporo modulov za VARNOSTNI_SISTEMI | Vsi moduli delujejo |
+| TEST-003 | ZAH-FUNK-003 | Preveri generiranje artefaktov | Artefakti generirani |
+
+### 3.3 Integracijski testi
+
+| ID testa | Zahteva | Opis | Pricakovani rezultat |
+|----------|---------|------|----------------------|
+| TEST-INT-001 | ZAH-FUNK-001,002 | End-to-end gradnja za Varnostni sistemi | Uspesna gradnja |
+| TEST-INT-002 | ZAH-VAR-001,002,003 | Varnostni pipeline | Vsi koraki PASS |
+
+### 3.4 Varnostni testi
+
+| ID testa | Zahteva | Opis | Pricakovani rezultat |
+|----------|---------|------|----------------------|
+| TEST-VAR-001 | ZAH-VAR-001 | COSIGN podpisovanje za VARNOSTNI_SISTEMI | Veljaven podpis |
+| TEST-VAR-002 | ZAH-VAR-002 | SYFT SBOM | Veljaven SBOM |
+| TEST-VAR-003 | ZAH-VAR-003 | TRIVY skeniranje | 0 kriticnih |
+
+---
+
+## 4. ORODJA ZA VERIFIKACIJO
+
+| Orodje | Namen | Verzija | Licenca |
+|--------|-------|---------|---------|
+| TypeScript | Staticna tipizacija | >= 5.3.0 | Apache 2.0 |
+| ESLint | Staticna analiza | >= 8.56.0 | MIT |
+| Jest | Testiranje | >= 29.7.0 | MIT |
+| TRIVY | Varnostno skeniranje | >= 0.48.0 | Apache 2.0 |
+| SYFT | SBOM generiranje | >= 0.100.0 | Apache 2.0 |
+| COSIGN | Podpisovanje | >= 2.2.0 | Apache 2.0 |
+
+---
+
+## 5. KRITERIJI SPREJEMLJIVOSTI ZA Varnostni sistemi
+
+### 5.1 Minimalni kriteriji
+- [ ] Vsi enotni testi PASS za VARNOSTNI_SISTEMI
+- [ ] Pokritost kode >= 80%
+- [ ] 0 kriticnih varnostnih ranljivosti
+- [ ] Veljaven SBOM generiran
+- [ ] Artefakti podpisani
+- [ ] Deterministicna gradnja potrjena
+
+### 5.2 Industrijski/vojanski kriteriji za Varnostni sistemi
+- [ ] Sledljivost zahtev 100%
+- [ ] Dokumentacija popolna
+- [ ] Evidence shranjene
+- [ ] Konfiguracija zaklenjena
+
+---
+
+## 6. POROCANJE
+
+### 6.1 Porocila verifikacije za VARNOSTNI_SISTEMI
+- evidence/porocilo_verifikacije.json
+- evidence/pokritost_testov.json
+- evidence/varnostno_porocilo.json
+- evidence/sbom.spdx.json
+
+---
+
+**Domena:** Varnostni sistemi
+**Konec dokumenta**

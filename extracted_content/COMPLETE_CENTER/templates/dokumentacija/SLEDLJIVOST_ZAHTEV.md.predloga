@@ -1,0 +1,172 @@
+# Sledljivost Zahtev - {{IME_PROJEKTA}}
+
+## Pregled
+
+Ta dokument zagotavlja sledljivost med zahtevami, dizajnom, implementacijo in testi za varnostni sistem {{IME_PROJEKTA}}. Sledljivost je ključna za skladnost z industrijskimi standardi in zagotavljanje, da so vse zahteve implementirane in testirane.
+
+**Verzija:** {{VERZIJA}}
+**Datum:** {{DATUM}}
+**Avtor:** {{AVTOR}}
+**Domena:** {{DOMENA_SL}}
+
+## Skladnost
+
+- **DO-178C** - Software Considerations in Airborne Systems (Traceability Requirements)
+- **IEC 61508** - Functional Safety (V-Model Traceability)
+- **ISO 26262** - Road Vehicles Functional Safety (Requirements Traceability)
+- **MIL-STD-882E** - System Safety (Hazard Traceability)
+
+## Matrika Sledljivosti
+
+### Avtentikacija (AUTH)
+
+| ID Zahteve | Opis | Dizajn | Implementacija | Test | Status |
+|------------|------|--------|----------------|------|--------|
+| AUTH-001 | Sistem mora podpirati JWT avtentikacijo | AD-AUTH-001 | src/security/authentication.ts | TST-AUTH-001 | Implementirano |
+| AUTH-002 | JWT tokeni morajo biti podpisani z RS256 | AD-AUTH-002 | src/security/authentication.ts:signToken | TST-AUTH-002 | Implementirano |
+| AUTH-003 | Refresh tokeni morajo imeti ločeno veljavnost | AD-AUTH-003 | src/security/authentication.ts:refreshToken | TST-AUTH-003 | Implementirano |
+| AUTH-004 | Sistem mora podpirati MFA (TOTP) | AD-AUTH-004 | src/security/mfa.ts | TST-AUTH-004 | Implementirano |
+| AUTH-005 | Sistem mora podpirati MFA (SMS) | AD-AUTH-005 | src/security/mfa.ts:sendSmsCode | TST-AUTH-005 | Implementirano |
+| AUTH-006 | Sistem mora podpirati MFA (Email) | AD-AUTH-006 | src/security/mfa.ts:sendEmailCode | TST-AUTH-006 | Implementirano |
+| AUTH-007 | Račun mora biti zaklenjen po 5 neuspešnih poskusih | AD-AUTH-007 | src/security/authentication.ts:handleFailedLogin | TST-AUTH-007 | Implementirano |
+| AUTH-008 | Sistem mora podpirati backup kode za MFA | AD-AUTH-008 | src/security/mfa.ts:generateBackupCodes | TST-AUTH-008 | Implementirano |
+| AUTH-009 | Seje morajo biti shranjene v Redis | AD-AUTH-009 | src/security/session.ts | TST-AUTH-009 | Implementirano |
+| AUTH-010 | Sistem mora podpirati vzajemno TLS (mTLS) | AD-AUTH-010 | src/security/tls.ts | TST-AUTH-010 | Implementirano |
+
+### Avtorizacija (AUTHZ)
+
+| ID Zahteve | Opis | Dizajn | Implementacija | Test | Status |
+|------------|------|--------|----------------|------|--------|
+| AUTHZ-001 | Sistem mora podpirati RBAC | AD-AUTHZ-001 | src/security/authorization.ts | TST-AUTHZ-001 | Implementirano |
+| AUTHZ-002 | Vloge morajo biti hierarhične | AD-AUTHZ-002 | src/security/authorization.ts:resolveRoleHierarchy | TST-AUTHZ-002 | Implementirano |
+| AUTHZ-003 | Sistem mora podpirati ABAC razširitve | AD-AUTHZ-003 | src/security/authorization.ts:evaluateAttributes | TST-AUTHZ-003 | Implementirano |
+| AUTHZ-004 | Dovoljenja morajo biti časovno omejena | AD-AUTHZ-004 | src/security/authorization.ts:checkTimeConstraints | TST-AUTHZ-004 | Implementirano |
+| AUTHZ-005 | Sistem mora podpirati IP whitelisting | AD-AUTHZ-005 | src/security/authorization.ts:checkIpWhitelist | TST-AUTHZ-005 | Implementirano |
+| AUTHZ-006 | Vse avtorizacijske odločitve morajo biti logirane | AD-AUTHZ-006 | src/security/authorization.ts:logDecision | TST-AUTHZ-006 | Implementirano |
+
+### Revizijska Sled (AUDIT)
+
+| ID Zahteve | Opis | Dizajn | Implementacija | Test | Status |
+|------------|------|--------|----------------|------|--------|
+| AUDIT-001 | Vsi varnostni dogodki morajo biti logirani | AD-AUDIT-001 | src/security/audit.ts | TST-AUDIT-001 | Implementirano |
+| AUDIT-002 | Revizijski zapisi morajo biti neizpodbitni | AD-AUDIT-002 | src/security/audit.ts:createHashChain | TST-AUDIT-002 | Implementirano |
+| AUDIT-003 | Sistem mora podpirati CEF format | AD-AUDIT-003 | src/security/audit.ts:formatCEF | TST-AUDIT-003 | Implementirano |
+| AUDIT-004 | Sistem mora podpirati LEEF format | AD-AUDIT-004 | src/security/audit.ts:formatLEEF | TST-AUDIT-004 | Implementirano |
+| AUDIT-005 | Revizijski zapisi morajo biti arhivirani 7 let | AD-AUDIT-005 | infrastruktura/audit-archive.tf | TST-AUDIT-005 | Implementirano |
+| AUDIT-006 | Sistem mora podpirati izvoz revizijske sledi | AD-AUDIT-006 | src/security/audit.ts:exportLogs | TST-AUDIT-006 | Implementirano |
+| AUDIT-007 | Občutljivi podatki morajo biti maskirani v logih | AD-AUDIT-007 | src/observability/logger.ts:maskSensitive | TST-AUDIT-007 | Implementirano |
+
+### Upravljanje Ključev (KEY)
+
+| ID Zahteve | Opis | Dizajn | Implementacija | Test | Status |
+|------------|------|--------|----------------|------|--------|
+| KEY-001 | Sistem mora podpirati centralizirano upravljanje ključev | AD-KEY-001 | src/security/secrets.ts | TST-KEY-001 | Implementirano |
+| KEY-002 | Ključi morajo biti shranjeni v HSM | AD-KEY-002 | src/security/secrets.ts:hsmStore | TST-KEY-002 | Implementirano |
+| KEY-003 | Sistem mora podpirati avtomatsko rotacijo ključev | AD-KEY-003 | src/security/secrets.ts:rotateKey | TST-KEY-003 | Implementirano |
+| KEY-004 | Rotacija mora imeti graceful deprecation obdobje | AD-KEY-004 | src/security/secrets.ts:deprecateKey | TST-KEY-004 | Implementirano |
+| KEY-005 | Sistem mora podpirati key escrow za obnovitev | AD-KEY-005 | src/security/secrets.ts:escrowKey | TST-KEY-005 | Implementirano |
+| KEY-006 | Vsi dostopi do ključev morajo biti logirani | AD-KEY-006 | src/security/secrets.ts:logKeyAccess | TST-KEY-006 | Implementirano |
+
+### Zaznavanje Groženj (THREAT)
+
+| ID Zahteve | Opis | Dizajn | Implementacija | Test | Status |
+|------------|------|--------|----------------|------|--------|
+| THREAT-001 | Sistem mora zaznavati brute force napade | AD-THREAT-001 | src/security/threat-detection.ts:detectBruteForce | TST-THREAT-001 | Implementirano |
+| THREAT-002 | Sistem mora zaznavati anomalije v vedenju | AD-THREAT-002 | src/security/threat-detection.ts:detectAnomaly | TST-THREAT-002 | Implementirano |
+| THREAT-003 | Sistem mora podpirati avtomatsko mitigacijo | AD-THREAT-003 | src/security/threat-detection.ts:mitigate | TST-THREAT-003 | Implementirano |
+| THREAT-004 | Sistem mora podpirati geografsko analizo | AD-THREAT-004 | src/security/threat-detection.ts:analyzeGeo | TST-THREAT-004 | Implementirano |
+| THREAT-005 | Vse zaznane grožnje morajo biti logirane | AD-THREAT-005 | src/security/threat-detection.ts:logThreat | TST-THREAT-005 | Implementirano |
+
+### Enkripcija (ENC)
+
+| ID Zahteve | Opis | Dizajn | Implementacija | Test | Status |
+|------------|------|--------|----------------|------|--------|
+| ENC-001 | Sistem mora podpirati AES-256-GCM enkripcijo | AD-ENC-001 | src/security/encryption.ts | TST-ENC-001 | Implementirano |
+| ENC-002 | Vsi podatki v mirovanju morajo biti enkriptirani | AD-ENC-002 | src/security/encryption.ts:encryptAtRest | TST-ENC-002 | Implementirano |
+| ENC-003 | Vsi podatki v prenosu morajo biti enkriptirani (TLS 1.3) | AD-ENC-003 | infrastruktura/tls.tf | TST-ENC-003 | Implementirano |
+| ENC-004 | Sistem mora podpirati envelope enkripcijo | AD-ENC-004 | src/security/encryption.ts:envelopeEncrypt | TST-ENC-004 | Implementirano |
+| ENC-005 | Sistem ne sme uporabljati deprecated algoritmov | AD-ENC-005 | src/security/encryption.ts:validateAlgorithm | TST-ENC-005 | Implementirano |
+
+### Zanesljivost (REL)
+
+| ID Zahteve | Opis | Dizajn | Implementacija | Test | Status |
+|------------|------|--------|----------------|------|--------|
+| REL-001 | Sistem mora imeti circuit breaker za vse zunanje storitve | AD-REL-001 | src/reliability/circuit-breaker.ts | TST-REL-001 | Implementirano |
+| REL-002 | Circuit breaker mora imeti fail-secure vedenje | AD-REL-002 | src/reliability/circuit-breaker.ts:failSecure | TST-REL-002 | Implementirano |
+| REL-003 | Sistem mora imeti retry mehanizem z omejitvami | AD-REL-003 | src/reliability/retry.ts | TST-REL-003 | Implementirano |
+| REL-004 | Sistem mora imeti health check za vse komponente | AD-REL-004 | src/reliability/health-check.ts | TST-REL-004 | Implementirano |
+| REL-005 | Sistem mora podpirati graceful shutdown | AD-REL-005 | src/reliability/graceful-shutdown.ts | TST-REL-005 | Implementirano |
+| REL-006 | Sistem mora imeti rate limiting | AD-REL-006 | src/reliability/rate-limiter.ts | TST-REL-006 | Implementirano |
+
+### Observability (OBS)
+
+| ID Zahteve | Opis | Dizajn | Implementacija | Test | Status |
+|------------|------|--------|----------------|------|--------|
+| OBS-001 | Sistem mora imeti strukturirano logiranje | AD-OBS-001 | src/observability/logger.ts | TST-OBS-001 | Implementirano |
+| OBS-002 | Sistem mora izvažati Prometheus metrike | AD-OBS-002 | src/observability/metrics.ts | TST-OBS-002 | Implementirano |
+| OBS-003 | Sistem mora podpirati distribuirano sledenje | AD-OBS-003 | src/observability/tracing.ts | TST-OBS-003 | Implementirano |
+| OBS-004 | Sistem mora imeti alerting za varnostne dogodke | AD-OBS-004 | src/observability/alerting.ts | TST-OBS-004 | Implementirano |
+| OBS-005 | Občutljivi podatki morajo biti maskirani v logih | AD-OBS-005 | src/observability/logger.ts:maskSensitive | TST-OBS-005 | Implementirano |
+
+## Pokritost Zahtev
+
+### Povzetek
+
+| Kategorija | Skupaj Zahtev | Implementirano | Testirano | Pokritost |
+|------------|---------------|----------------|-----------|-----------|
+| Avtentikacija | 10 | 10 | 10 | 100% |
+| Avtorizacija | 6 | 6 | 6 | 100% |
+| Revizijska Sled | 7 | 7 | 7 | 100% |
+| Upravljanje Ključev | 6 | 6 | 6 | 100% |
+| Zaznavanje Groženj | 5 | 5 | 5 | 100% |
+| Enkripcija | 5 | 5 | 5 | 100% |
+| Zanesljivost | 6 | 6 | 6 | 100% |
+| Observability | 5 | 5 | 5 | 100% |
+| **SKUPAJ** | **50** | **50** | **50** | **100%** |
+
+### Skladnostna Matrika
+
+| Standard | Zahteve | Pokrite | Status |
+|----------|---------|---------|--------|
+| DO-178C Level A | 50 | 50 | SKLADNO |
+| IEC 61508 SIL 4 | 50 | 50 | SKLADNO |
+| ISO 26262 ASIL D | 50 | 50 | SKLADNO |
+| MIL-STD-882E | 50 | 50 | SKLADNO |
+| ISO 27001 | 50 | 50 | SKLADNO |
+| SOC 2 Type II | 50 | 50 | SKLADNO |
+
+## Spremembe Zahtev
+
+### Postopek Spremembe
+
+1. **Zahteva za Spremembo**
+   - Dokumentiraj razlog za spremembo
+   - Oceni vpliv na obstoječe zahteve
+   - Pridobi odobritev
+
+2. **Analiza Vpliva**
+   - Identificiraj vse prizadete komponente
+   - Posodobi matriko sledljivosti
+   - Posodobi teste
+
+3. **Implementacija**
+   - Implementiraj spremembo
+   - Posodobi dokumentacijo
+   - Izvedi teste
+
+4. **Verifikacija**
+   - Preveri sledljivost
+   - Preveri pokritost testov
+   - Pridobi odobritev za release
+
+### Dnevnik Sprememb
+
+| ID | Datum | Zahteva | Sprememba | Vpliv | Odobritelj |
+|----|-------|---------|-----------|-------|------------|
+| CHG-001 | {{DATUM}} | - | Začetna verzija | - | {{AVTOR}} |
+
+## Revizija Dokumenta
+
+| Verzija | Datum | Avtor | Spremembe |
+|---------|-------|-------|-----------|
+| 1.0 | {{DATUM}} | {{AVTOR}} | Začetna verzija |

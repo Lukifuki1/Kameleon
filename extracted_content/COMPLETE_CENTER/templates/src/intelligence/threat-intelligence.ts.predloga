@@ -1,0 +1,1579 @@
+/**
+ * @file Threat Intelligence - Cyber Threat Intelligence Framework
+ * @author {{AVTOR}}
+ * @version {{VERZIJA}}
+ * @date {{DATUM}}
+ * @project {{IME_PROJEKTA}}
+ * @domain VARNOSTNI_SISTEMI
+ * 
+ * @requirement REQ-SEC-TIN-001
+ * @design DSN-SEC-TIN-001
+ * @test TST-SEC-TIN-001
+ * 
+ * @description
+ * Enterprise-grade Cyber Threat Intelligence (CTI) framework implementing
+ * STIX/TAXII integration, threat feeds, indicator management, threat actor
+ * profiling, campaign tracking, and intelligence sharing capabilities.
+ * 
+ * @compliance STIX 2.1, TAXII 2.1, MISP, OpenIOC, CybOX
+ * @classification TOP SECRET - Intelligence Operations
+ */
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// INTELLIGENCE TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export type IntelligenceType =
+  | 'STRATEGIC' | 'TACTICAL' | 'OPERATIONAL' | 'TECHNICAL';
+
+export type IntelligenceSource =
+  | 'OSINT' | 'HUMINT' | 'SIGINT' | 'TECHINT' | 'FININT'
+  | 'SOCMINT' | 'GEOINT' | 'MASINT' | 'CYBINT';
+
+export type ThreatLevel =
+  | 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW' | 'INFORMATIONAL';
+
+export type ConfidenceLevel =
+  | 'CONFIRMED' | 'PROBABLE' | 'POSSIBLE' | 'DOUBTFUL' | 'IMPROBABLE';
+
+export type TLPClassification =
+  | 'TLP_RED' | 'TLP_AMBER' | 'TLP_AMBER_STRICT' | 'TLP_GREEN' | 'TLP_CLEAR';
+
+export type STIXObjectType =
+  | 'attack-pattern' | 'campaign' | 'course-of-action' | 'grouping'
+  | 'identity' | 'indicator' | 'infrastructure' | 'intrusion-set'
+  | 'location' | 'malware' | 'malware-analysis' | 'note' | 'observed-data'
+  | 'opinion' | 'report' | 'threat-actor' | 'tool' | 'vulnerability';
+
+export type IndicatorType =
+  | 'IP_ADDRESS' | 'DOMAIN' | 'URL' | 'EMAIL' | 'FILE_HASH_MD5'
+  | 'FILE_HASH_SHA1' | 'FILE_HASH_SHA256' | 'FILE_NAME' | 'FILE_PATH'
+  | 'REGISTRY_KEY' | 'MUTEX' | 'USER_AGENT' | 'JA3' | 'JA3S'
+  | 'CERTIFICATE_HASH' | 'PROCESS_NAME' | 'COMMAND_LINE' | 'SERVICE_NAME'
+  | 'SCHEDULED_TASK' | 'NAMED_PIPE' | 'IMPHASH' | 'SSDEEP' | 'TLSH'
+  | 'YARA_RULE' | 'SIGMA_RULE' | 'SNORT_RULE' | 'CVE' | 'ASN';
+
+export type RelationshipType =
+  | 'INDICATES' | 'USES' | 'TARGETS' | 'ATTRIBUTED_TO' | 'MITIGATES'
+  | 'DERIVED_FROM' | 'DUPLICATE_OF' | 'RELATED_TO' | 'VARIANT_OF'
+  | 'IMPERSONATES' | 'LOCATED_AT' | 'BASED_ON' | 'DELIVERS' | 'DROPS'
+  | 'EXPLOITS' | 'COMMUNICATES_WITH' | 'CONTROLS' | 'HOSTS' | 'OWNS';
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// STIX TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface STIXObject {
+  readonly type: STIXObjectType;
+  readonly spec_version: '2.1';
+  readonly id: string;
+  readonly created_by_ref: string | null;
+  readonly created: string;
+  readonly modified: string;
+  readonly revoked: boolean;
+  readonly labels: readonly string[];
+  readonly confidence: number | null;
+  readonly lang: string | null;
+  readonly external_references: readonly ExternalReference[];
+  readonly object_marking_refs: readonly string[];
+  readonly granular_markings: readonly GranularMarking[];
+  readonly extensions: Readonly<Record<string, unknown>>;
+}
+
+export interface ExternalReference {
+  readonly source_name: string;
+  readonly description: string | null;
+  readonly url: string | null;
+  readonly hashes: Readonly<Record<string, string>> | null;
+  readonly external_id: string | null;
+}
+
+export interface GranularMarking {
+  readonly lang: string | null;
+  readonly marking_ref: string;
+  readonly selectors: readonly string[];
+}
+
+export interface STIXIndicator extends STIXObject {
+  readonly type: 'indicator';
+  readonly name: string;
+  readonly description: string | null;
+  readonly indicator_types: readonly string[];
+  readonly pattern: string;
+  readonly pattern_type: 'stix' | 'pcre' | 'sigma' | 'snort' | 'suricata' | 'yara';
+  readonly pattern_version: string | null;
+  readonly valid_from: string;
+  readonly valid_until: string | null;
+  readonly kill_chain_phases: readonly KillChainPhase[];
+}
+
+export interface KillChainPhase {
+  readonly kill_chain_name: string;
+  readonly phase_name: string;
+}
+
+export interface STIXThreatActor extends STIXObject {
+  readonly type: 'threat-actor';
+  readonly name: string;
+  readonly description: string | null;
+  readonly threat_actor_types: readonly string[];
+  readonly aliases: readonly string[];
+  readonly first_seen: string | null;
+  readonly last_seen: string | null;
+  readonly roles: readonly string[];
+  readonly goals: readonly string[];
+  readonly sophistication: string | null;
+  readonly resource_level: string | null;
+  readonly primary_motivation: string | null;
+  readonly secondary_motivations: readonly string[];
+  readonly personal_motivations: readonly string[];
+}
+
+export interface STIXMalware extends STIXObject {
+  readonly type: 'malware';
+  readonly name: string;
+  readonly description: string | null;
+  readonly malware_types: readonly string[];
+  readonly is_family: boolean;
+  readonly aliases: readonly string[];
+  readonly kill_chain_phases: readonly KillChainPhase[];
+  readonly first_seen: string | null;
+  readonly last_seen: string | null;
+  readonly operating_system_refs: readonly string[];
+  readonly architecture_execution_envs: readonly string[];
+  readonly implementation_languages: readonly string[];
+  readonly capabilities: readonly string[];
+  readonly sample_refs: readonly string[];
+}
+
+export interface STIXCampaign extends STIXObject {
+  readonly type: 'campaign';
+  readonly name: string;
+  readonly description: string | null;
+  readonly aliases: readonly string[];
+  readonly first_seen: string | null;
+  readonly last_seen: string | null;
+  readonly objective: string | null;
+}
+
+export interface STIXAttackPattern extends STIXObject {
+  readonly type: 'attack-pattern';
+  readonly name: string;
+  readonly description: string | null;
+  readonly aliases: readonly string[];
+  readonly kill_chain_phases: readonly KillChainPhase[];
+}
+
+export interface STIXRelationship {
+  readonly type: 'relationship';
+  readonly spec_version: '2.1';
+  readonly id: string;
+  readonly created_by_ref: string | null;
+  readonly created: string;
+  readonly modified: string;
+  readonly relationship_type: string;
+  readonly description: string | null;
+  readonly source_ref: string;
+  readonly target_ref: string;
+  readonly start_time: string | null;
+  readonly stop_time: string | null;
+}
+
+export interface STIXBundle {
+  readonly type: 'bundle';
+  readonly id: string;
+  readonly objects: readonly (STIXObject | STIXRelationship)[];
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TAXII TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface TAXIIServer {
+  readonly serverId: string;
+  readonly title: string;
+  readonly description: string | null;
+  readonly contact: string | null;
+  readonly default: string | null;
+  readonly api_roots: readonly string[];
+}
+
+export interface TAXIIAPIRoot {
+  readonly title: string;
+  readonly description: string | null;
+  readonly versions: readonly string[];
+  readonly max_content_length: number;
+}
+
+export interface TAXIICollection {
+  readonly id: string;
+  readonly title: string;
+  readonly description: string | null;
+  readonly alias: string | null;
+  readonly can_read: boolean;
+  readonly can_write: boolean;
+  readonly media_types: readonly string[];
+}
+
+export interface TAXIIStatus {
+  readonly id: string;
+  readonly status: 'pending' | 'complete' | 'failed';
+  readonly request_timestamp: string;
+  readonly total_count: number;
+  readonly success_count: number;
+  readonly failure_count: number;
+  readonly pending_count: number;
+  readonly successes: readonly TAXIIStatusDetail[];
+  readonly failures: readonly TAXIIStatusDetail[];
+  readonly pendings: readonly TAXIIStatusDetail[];
+}
+
+export interface TAXIIStatusDetail {
+  readonly id: string;
+  readonly version: string;
+  readonly message: string | null;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// INDICATOR TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface ThreatIndicator {
+  readonly indicatorId: string;
+  readonly type: IndicatorType;
+  readonly value: string;
+  readonly confidence: ConfidenceLevel;
+  readonly threatLevel: ThreatLevel;
+  readonly tlp: TLPClassification;
+  readonly source: IndicatorSource;
+  readonly context: IndicatorContext;
+  readonly validity: IndicatorValidity;
+  readonly enrichment: IndicatorEnrichment;
+  readonly relationships: readonly IndicatorRelationship[];
+  readonly tags: readonly string[];
+  readonly stixId: string | null;
+}
+
+export interface IndicatorSource {
+  readonly feedId: string;
+  readonly feedName: string;
+  readonly sourceType: IntelligenceSource;
+  readonly reliability: number;
+  readonly firstReported: number;
+  readonly lastReported: number;
+  readonly reportCount: number;
+}
+
+export interface IndicatorContext {
+  readonly description: string | null;
+  readonly malwareFamily: string | null;
+  readonly threatActor: string | null;
+  readonly campaign: string | null;
+  readonly killChainPhase: string | null;
+  readonly mitreAttack: readonly MitreReference[];
+  readonly targetSectors: readonly string[];
+  readonly targetRegions: readonly string[];
+}
+
+export interface MitreReference {
+  readonly tacticId: string;
+  readonly tacticName: string;
+  readonly techniqueId: string;
+  readonly techniqueName: string;
+  readonly subTechniqueId: string | null;
+}
+
+export interface IndicatorValidity {
+  readonly validFrom: number;
+  readonly validUntil: number | null;
+  readonly lastValidated: number;
+  readonly status: 'ACTIVE' | 'EXPIRED' | 'REVOKED' | 'UNKNOWN';
+  readonly falsePositiveRate: number;
+}
+
+export interface IndicatorEnrichment {
+  readonly geoLocation: GeoLocation | null;
+  readonly whois: WhoisData | null;
+  readonly dns: DNSData | null;
+  readonly reputation: ReputationData | null;
+  readonly passiveDNS: readonly PassiveDNSRecord[];
+  readonly sslCertificate: SSLCertificateData | null;
+  readonly malwareAnalysis: MalwareAnalysisData | null;
+}
+
+export interface GeoLocation {
+  readonly country: string;
+  readonly countryCode: string;
+  readonly region: string | null;
+  readonly city: string | null;
+  readonly latitude: number | null;
+  readonly longitude: number | null;
+  readonly asn: number | null;
+  readonly asnOrg: string | null;
+  readonly isp: string | null;
+}
+
+export interface WhoisData {
+  readonly registrar: string | null;
+  readonly registrant: string | null;
+  readonly createdDate: number | null;
+  readonly updatedDate: number | null;
+  readonly expiresDate: number | null;
+  readonly nameServers: readonly string[];
+  readonly status: readonly string[];
+}
+
+export interface DNSData {
+  readonly aRecords: readonly string[];
+  readonly aaaaRecords: readonly string[];
+  readonly mxRecords: readonly string[];
+  readonly nsRecords: readonly string[];
+  readonly txtRecords: readonly string[];
+  readonly cnameRecords: readonly string[];
+  readonly soaRecord: string | null;
+}
+
+export interface ReputationData {
+  readonly score: number;
+  readonly category: string;
+  readonly sources: readonly ReputationSource[];
+  readonly lastChecked: number;
+}
+
+export interface ReputationSource {
+  readonly name: string;
+  readonly score: number;
+  readonly category: string;
+  readonly listed: boolean;
+}
+
+export interface PassiveDNSRecord {
+  readonly query: string;
+  readonly answer: string;
+  readonly recordType: string;
+  readonly firstSeen: number;
+  readonly lastSeen: number;
+  readonly count: number;
+}
+
+export interface SSLCertificateData {
+  readonly sha256: string;
+  readonly sha1: string;
+  readonly issuer: string;
+  readonly subject: string;
+  readonly validFrom: number;
+  readonly validTo: number;
+  readonly serialNumber: string;
+  readonly signatureAlgorithm: string;
+  readonly subjectAltNames: readonly string[];
+}
+
+export interface MalwareAnalysisData {
+  readonly detectionRate: number;
+  readonly detections: readonly MalwareDetection[];
+  readonly behaviorTags: readonly string[];
+  readonly sandboxReports: readonly string[];
+}
+
+export interface MalwareDetection {
+  readonly engine: string;
+  readonly detected: boolean;
+  readonly malwareName: string | null;
+  readonly category: string | null;
+}
+
+export interface IndicatorRelationship {
+  readonly relationshipType: RelationshipType;
+  readonly targetId: string;
+  readonly targetType: string;
+  readonly confidence: number;
+  readonly description: string | null;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// THREAT FEED TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface ThreatFeed {
+  readonly feedId: string;
+  readonly name: string;
+  readonly description: string;
+  readonly provider: string;
+  readonly type: FeedType;
+  readonly format: FeedFormat;
+  readonly url: string;
+  readonly authentication: FeedAuthentication | null;
+  readonly schedule: FeedSchedule;
+  readonly filters: FeedFilters;
+  readonly mapping: FeedMapping;
+  readonly status: FeedStatus;
+  readonly statistics: FeedStatistics;
+}
+
+export type FeedType =
+  | 'COMMERCIAL' | 'OPEN_SOURCE' | 'ISAC' | 'GOVERNMENT'
+  | 'INTERNAL' | 'PARTNER' | 'COMMUNITY';
+
+export type FeedFormat =
+  | 'STIX_2_1' | 'STIX_2_0' | 'STIX_1_2' | 'TAXII_2_1' | 'TAXII_2_0'
+  | 'MISP' | 'OPENIOC' | 'CSV' | 'JSON' | 'XML' | 'TXT' | 'CUSTOM';
+
+export interface FeedAuthentication {
+  readonly type: 'API_KEY' | 'BASIC' | 'OAUTH2' | 'CERTIFICATE' | 'NONE';
+  readonly credentials: Readonly<Record<string, string>>;
+}
+
+export interface FeedSchedule {
+  readonly enabled: boolean;
+  readonly frequency: number;
+  readonly lastRun: number | null;
+  readonly nextRun: number;
+  readonly retryOnFailure: boolean;
+  readonly maxRetries: number;
+}
+
+export interface FeedFilters {
+  readonly indicatorTypes: readonly IndicatorType[];
+  readonly minConfidence: ConfidenceLevel;
+  readonly minThreatLevel: ThreatLevel;
+  readonly tlpLevels: readonly TLPClassification[];
+  readonly excludePatterns: readonly string[];
+  readonly includePatterns: readonly string[];
+  readonly maxAge: number;
+}
+
+export interface FeedMapping {
+  readonly indicatorField: string;
+  readonly typeField: string | null;
+  readonly confidenceField: string | null;
+  readonly threatLevelField: string | null;
+  readonly descriptionField: string | null;
+  readonly tagsField: string | null;
+  readonly customMappings: Readonly<Record<string, string>>;
+}
+
+export interface FeedStatus {
+  readonly status: 'ACTIVE' | 'PAUSED' | 'ERROR' | 'DISABLED';
+  readonly lastError: string | null;
+  readonly lastErrorTime: number | null;
+  readonly consecutiveFailures: number;
+}
+
+export interface FeedStatistics {
+  readonly totalIndicators: number;
+  readonly activeIndicators: number;
+  readonly expiredIndicators: number;
+  readonly lastUpdateCount: number;
+  readonly averageUpdateCount: number;
+  readonly falsePositiveRate: number;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// INTELLIGENCE REPORT TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface IntelligenceReport {
+  readonly reportId: string;
+  readonly title: string;
+  readonly description: string;
+  readonly type: IntelligenceType;
+  readonly tlp: TLPClassification;
+  readonly confidence: ConfidenceLevel;
+  readonly author: string;
+  readonly created: number;
+  readonly modified: number;
+  readonly published: number | null;
+  readonly validFrom: number;
+  readonly validUntil: number | null;
+  readonly executiveSummary: string;
+  readonly sections: readonly ReportSection[];
+  readonly indicators: readonly string[];
+  readonly threatActors: readonly string[];
+  readonly campaigns: readonly string[];
+  readonly malware: readonly string[];
+  readonly vulnerabilities: readonly string[];
+  readonly mitreMapping: readonly MitreReference[];
+  readonly recommendations: readonly string[];
+  readonly references: readonly ExternalReference[];
+  readonly relatedReports: readonly string[];
+  readonly tags: readonly string[];
+  readonly stixBundle: STIXBundle | null;
+}
+
+export interface ReportSection {
+  readonly sectionId: string;
+  readonly title: string;
+  readonly content: string;
+  readonly order: number;
+  readonly subsections: readonly ReportSubsection[];
+}
+
+export interface ReportSubsection {
+  readonly subsectionId: string;
+  readonly title: string;
+  readonly content: string;
+  readonly order: number;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// THREAT ACTOR PROFILE TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface ThreatActorProfile {
+  readonly profileId: string;
+  readonly name: string;
+  readonly aliases: readonly string[];
+  readonly description: string;
+  readonly attribution: Attribution;
+  readonly motivation: readonly string[];
+  readonly sophistication: SophisticationLevel;
+  readonly resourceLevel: ResourceLevel;
+  readonly targeting: TargetingProfile;
+  readonly capabilities: ActorCapabilities;
+  readonly ttps: readonly TTPProfile[];
+  readonly infrastructure: readonly InfrastructureProfile[];
+  readonly malware: readonly MalwareProfile[];
+  readonly tools: readonly ToolProfile[];
+  readonly campaigns: readonly CampaignProfile[];
+  readonly timeline: readonly ActorTimelineEntry[];
+  readonly relationships: readonly ActorRelationship[];
+  readonly confidence: ConfidenceLevel;
+  readonly lastUpdated: number;
+  readonly references: readonly ExternalReference[];
+  readonly stixId: string | null;
+}
+
+export interface Attribution {
+  readonly nationState: string | null;
+  readonly organization: string | null;
+  readonly confidence: ConfidenceLevel;
+  readonly evidence: readonly AttributionEvidence[];
+}
+
+export interface AttributionEvidence {
+  readonly evidenceType: string;
+  readonly description: string;
+  readonly confidence: number;
+  readonly source: string;
+}
+
+export type SophisticationLevel =
+  | 'NONE' | 'MINIMAL' | 'INTERMEDIATE' | 'ADVANCED' | 'EXPERT' | 'INNOVATOR';
+
+export type ResourceLevel =
+  | 'INDIVIDUAL' | 'CLUB' | 'CONTEST' | 'TEAM' | 'ORGANIZATION' | 'GOVERNMENT';
+
+export interface TargetingProfile {
+  readonly sectors: readonly string[];
+  readonly regions: readonly string[];
+  readonly countries: readonly string[];
+  readonly organizations: readonly string[];
+  readonly technologies: readonly string[];
+  readonly dataTypes: readonly string[];
+}
+
+export interface ActorCapabilities {
+  readonly initialAccess: readonly string[];
+  readonly execution: readonly string[];
+  readonly persistence: readonly string[];
+  readonly privilegeEscalation: readonly string[];
+  readonly defenseEvasion: readonly string[];
+  readonly credentialAccess: readonly string[];
+  readonly discovery: readonly string[];
+  readonly lateralMovement: readonly string[];
+  readonly collection: readonly string[];
+  readonly commandAndControl: readonly string[];
+  readonly exfiltration: readonly string[];
+  readonly impact: readonly string[];
+}
+
+export interface TTPProfile {
+  readonly ttpId: string;
+  readonly name: string;
+  readonly description: string;
+  readonly mitreId: string | null;
+  readonly killChainPhase: string;
+  readonly frequency: 'COMMON' | 'OCCASIONAL' | 'RARE';
+  readonly firstSeen: number | null;
+  readonly lastSeen: number | null;
+  readonly examples: readonly string[];
+}
+
+export interface InfrastructureProfile {
+  readonly infrastructureId: string;
+  readonly type: 'C2' | 'STAGING' | 'DELIVERY' | 'EXFILTRATION' | 'PROXY' | 'OTHER';
+  readonly indicators: readonly string[];
+  readonly firstSeen: number;
+  readonly lastSeen: number;
+  readonly status: 'ACTIVE' | 'INACTIVE' | 'UNKNOWN';
+}
+
+export interface MalwareProfile {
+  readonly malwareId: string;
+  readonly name: string;
+  readonly aliases: readonly string[];
+  readonly type: string;
+  readonly description: string;
+  readonly capabilities: readonly string[];
+  readonly indicators: readonly string[];
+  readonly firstSeen: number | null;
+  readonly lastSeen: number | null;
+}
+
+export interface ToolProfile {
+  readonly toolId: string;
+  readonly name: string;
+  readonly type: 'COMMERCIAL' | 'OPEN_SOURCE' | 'CUSTOM' | 'DUAL_USE';
+  readonly description: string;
+  readonly capabilities: readonly string[];
+  readonly usage: string;
+}
+
+export interface CampaignProfile {
+  readonly campaignId: string;
+  readonly name: string;
+  readonly description: string;
+  readonly startDate: number;
+  readonly endDate: number | null;
+  readonly status: 'ACTIVE' | 'CONCLUDED' | 'UNKNOWN';
+  readonly targets: readonly string[];
+  readonly objectives: readonly string[];
+}
+
+export interface ActorTimelineEntry {
+  readonly timestamp: number;
+  readonly eventType: string;
+  readonly description: string;
+  readonly confidence: ConfidenceLevel;
+  readonly references: readonly string[];
+}
+
+export interface ActorRelationship {
+  readonly relationshipType: string;
+  readonly targetId: string;
+  readonly targetName: string;
+  readonly description: string;
+  readonly confidence: ConfidenceLevel;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// INTELLIGENCE SHARING TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface SharingCommunity {
+  readonly communityId: string;
+  readonly name: string;
+  readonly description: string;
+  readonly type: 'ISAC' | 'ISAO' | 'CERT' | 'GOVERNMENT' | 'PRIVATE' | 'VENDOR';
+  readonly members: readonly CommunityMember[];
+  readonly sharingPolicy: SharingPolicy;
+  readonly taxiiServer: TAXIIServerConfig | null;
+  readonly mispInstance: MISPConfig | null;
+  readonly statistics: CommunityStatistics;
+}
+
+export interface CommunityMember {
+  readonly memberId: string;
+  readonly name: string;
+  readonly organization: string;
+  readonly role: 'ADMIN' | 'CONTRIBUTOR' | 'CONSUMER' | 'OBSERVER';
+  readonly joinedAt: number;
+  readonly lastActive: number;
+  readonly contributionCount: number;
+}
+
+export interface SharingPolicy {
+  readonly defaultTLP: TLPClassification;
+  readonly allowedTLPLevels: readonly TLPClassification[];
+  readonly requireApproval: boolean;
+  readonly autoShare: boolean;
+  readonly retentionDays: number;
+  readonly anonymization: AnonymizationPolicy;
+}
+
+export interface AnonymizationPolicy {
+  readonly enabled: boolean;
+  readonly removeSourceInfo: boolean;
+  readonly removeVictimInfo: boolean;
+  readonly generalizeIndicators: boolean;
+}
+
+export interface TAXIIServerConfig {
+  readonly url: string;
+  readonly version: '2.0' | '2.1';
+  readonly apiRoot: string;
+  readonly collectionId: string;
+  readonly authentication: FeedAuthentication;
+}
+
+export interface MISPConfig {
+  readonly url: string;
+  readonly apiKey: string;
+  readonly orgId: string;
+  readonly sharingGroupId: string | null;
+  readonly publishEvents: boolean;
+}
+
+export interface CommunityStatistics {
+  readonly totalMembers: number;
+  readonly activeMembers: number;
+  readonly totalIndicators: number;
+  readonly totalReports: number;
+  readonly indicatorsSharedLast30Days: number;
+  readonly reportsSharedLast30Days: number;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// UI/UX CENTER INTEGRATION
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface ThreatIntelUIConfig {
+  readonly dashboardEnabled: boolean;
+  readonly realTimeUpdates: boolean;
+  readonly visualizations: readonly ThreatIntelVisualization[];
+  readonly notifications: ThreatIntelNotificationConfig;
+  readonly reporting: ThreatIntelReportingConfig;
+  readonly search: ThreatIntelSearchConfig;
+  readonly enrichment: EnrichmentUIConfig;
+}
+
+export type ThreatIntelVisualization =
+  | 'INDICATOR_TIMELINE' | 'THREAT_LANDSCAPE' | 'ACTOR_NETWORK'
+  | 'CAMPAIGN_TRACKER' | 'FEED_HEALTH' | 'IOC_HEATMAP'
+  | 'GEOGRAPHIC_DISTRIBUTION' | 'TTP_MATRIX' | 'MALWARE_FAMILIES'
+  | 'INDICATOR_TRENDS' | 'SHARING_METRICS' | 'ENRICHMENT_STATUS';
+
+export interface ThreatIntelNotificationConfig {
+  readonly newHighConfidenceIOC: boolean;
+  readonly newThreatActor: boolean;
+  readonly newCampaign: boolean;
+  readonly feedError: boolean;
+  readonly indicatorMatch: boolean;
+  readonly reportPublished: boolean;
+  readonly sharingAlert: boolean;
+}
+
+export interface ThreatIntelReportingConfig {
+  readonly autoGenerate: boolean;
+  readonly format: 'PDF' | 'HTML' | 'STIX' | 'MISP' | 'JSON';
+  readonly schedules: readonly ReportSchedule[];
+  readonly templates: readonly string[];
+  readonly distribution: readonly string[];
+}
+
+export interface ReportSchedule {
+  readonly reportType: string;
+  readonly frequency: 'DAILY' | 'WEEKLY' | 'MONTHLY';
+  readonly time: string;
+  readonly recipients: readonly string[];
+}
+
+export interface ThreatIntelSearchConfig {
+  readonly enableFullText: boolean;
+  readonly enableRegex: boolean;
+  readonly enableFuzzy: boolean;
+  readonly maxResults: number;
+  readonly defaultTimeRange: number;
+  readonly savedSearches: readonly SavedSearch[];
+}
+
+export interface SavedSearch {
+  readonly searchId: string;
+  readonly name: string;
+  readonly query: string;
+  readonly filters: Readonly<Record<string, unknown>>;
+  readonly createdBy: string;
+  readonly isPublic: boolean;
+}
+
+export interface EnrichmentUIConfig {
+  readonly autoEnrich: boolean;
+  readonly enrichmentSources: readonly string[];
+  readonly maxEnrichmentAge: number;
+  readonly showEnrichmentDetails: boolean;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ERROR TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export enum ThreatIntelErrorCode {
+  FEED_ERROR = 'TI_E001',
+  INDICATOR_PROCESSING_ERROR = 'TI_E002',
+  ENRICHMENT_ERROR = 'TI_E003',
+  STIX_PARSING_ERROR = 'TI_E004',
+  TAXII_CONNECTION_ERROR = 'TI_E005',
+  SHARING_ERROR = 'TI_E006',
+  REPORT_GENERATION_ERROR = 'TI_E007',
+  SEARCH_ERROR = 'TI_E008',
+}
+
+export class ThreatIntelError extends Error {
+  constructor(
+    public readonly code: ThreatIntelErrorCode,
+    message: string,
+    public readonly details: Readonly<Record<string, unknown>> = {}
+  ) {
+    super(`[${code}] ${message}`);
+    this.name = 'ThreatIntelError';
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// DETERMINISTIC UTILITIES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+function deterministicHash(input: string): number {
+  let hash = 0;
+  for (let i = 0; i < input.length; i++) {
+    const char = input.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash;
+  }
+  return Math.abs(hash);
+}
+
+function generateDeterministicId(prefix: string, seed: number): string {
+  const hash = deterministicHash(`${prefix}-${seed}`);
+  const jitter = Math.abs(Math.sin(seed * 12.9898) * 43758.5453) % 1;
+  return `${prefix}-${hash.toString(16)}-${Math.floor(jitter * 10000).toString(16)}`;
+}
+
+function generateDeterministicTimestamp(seed: number): number {
+  const baseTime = 1704067200000;
+  const offset = Math.abs(deterministicHash(`timestamp-${seed}`)) % 86400000;
+  return baseTime + offset;
+}
+
+function generateSTIXId(type: STIXObjectType, seed: number): string {
+  const uuid = generateDeterministicId('uuid', seed).replace(/-/g, '');
+  const formatted = `${uuid.slice(0, 8)}-${uuid.slice(8, 12)}-${uuid.slice(12, 16)}-${uuid.slice(16, 20)}-${uuid.slice(20, 32)}`;
+  return `${type}--${formatted}`;
+}
+
+function generateISOTimestamp(timestamp: number): string {
+  return new Date(timestamp).toISOString();
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// INDICATOR MANAGER
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export class IndicatorManager {
+  private operationCounter: number = 0;
+  private readonly indicators: Map<string, ThreatIndicator> = new Map();
+
+  addIndicator(
+    type: IndicatorType,
+    value: string,
+    source: IndicatorSource,
+    context: IndicatorContext,
+    confidence: ConfidenceLevel,
+    threatLevel: ThreatLevel,
+    tlp: TLPClassification
+  ): ThreatIndicator {
+    this.operationCounter++;
+
+    const indicatorId = generateDeterministicId('ioc', this.operationCounter);
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+
+    const indicator: ThreatIndicator = {
+      indicatorId,
+      type,
+      value,
+      confidence,
+      threatLevel,
+      tlp,
+      source,
+      context,
+      validity: {
+        validFrom: timestamp,
+        validUntil: timestamp + 7776000000,
+        lastValidated: timestamp,
+        status: 'ACTIVE',
+        falsePositiveRate: 0,
+      },
+      enrichment: {
+        geoLocation: null,
+        whois: null,
+        dns: null,
+        reputation: null,
+        passiveDNS: [],
+        sslCertificate: null,
+        malwareAnalysis: null,
+      },
+      relationships: [],
+      tags: [],
+      stixId: generateSTIXId('indicator', this.operationCounter),
+    };
+
+    this.indicators.set(indicatorId, indicator);
+    return indicator;
+  }
+
+  enrichIndicator(indicatorId: string, enrichment: Partial<IndicatorEnrichment>): ThreatIndicator | null {
+    this.operationCounter++;
+
+    const indicator = this.indicators.get(indicatorId);
+    if (!indicator) return null;
+
+    const updatedIndicator: ThreatIndicator = {
+      ...indicator,
+      enrichment: {
+        ...indicator.enrichment,
+        ...enrichment,
+      },
+    };
+
+    this.indicators.set(indicatorId, updatedIndicator);
+    return updatedIndicator;
+  }
+
+  searchIndicators(query: IndicatorSearchQuery): readonly ThreatIndicator[] {
+    this.operationCounter++;
+
+    let results = Array.from(this.indicators.values());
+
+    if (query.type) {
+      results = results.filter(i => i.type === query.type);
+    }
+
+    if (query.value) {
+      results = results.filter(i => i.value.includes(query.value));
+    }
+
+    if (query.minConfidence) {
+      const confidenceOrder: ConfidenceLevel[] = ['IMPROBABLE', 'DOUBTFUL', 'POSSIBLE', 'PROBABLE', 'CONFIRMED'];
+      const minIndex = confidenceOrder.indexOf(query.minConfidence);
+      results = results.filter(i => confidenceOrder.indexOf(i.confidence) >= minIndex);
+    }
+
+    if (query.minThreatLevel) {
+      const threatOrder: ThreatLevel[] = ['INFORMATIONAL', 'LOW', 'MEDIUM', 'HIGH', 'CRITICAL'];
+      const minIndex = threatOrder.indexOf(query.minThreatLevel);
+      results = results.filter(i => threatOrder.indexOf(i.threatLevel) >= minIndex);
+    }
+
+    if (query.tags && query.tags.length > 0) {
+      results = results.filter(i => query.tags!.some(t => i.tags.includes(t)));
+    }
+
+    if (query.validOnly) {
+      results = results.filter(i => i.validity.status === 'ACTIVE');
+    }
+
+    return results;
+  }
+
+  getIndicators(): ReadonlyMap<string, ThreatIndicator> {
+    return this.indicators;
+  }
+}
+
+export interface IndicatorSearchQuery {
+  readonly type?: IndicatorType;
+  readonly value?: string;
+  readonly minConfidence?: ConfidenceLevel;
+  readonly minThreatLevel?: ThreatLevel;
+  readonly tags?: readonly string[];
+  readonly validOnly?: boolean;
+  readonly timeRange?: { start: number; end: number };
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// FEED MANAGER
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export class FeedManager {
+  private operationCounter: number = 0;
+  private readonly feeds: Map<string, ThreatFeed> = new Map();
+  private readonly indicatorManager: IndicatorManager;
+
+  constructor(indicatorManager: IndicatorManager) {
+    this.indicatorManager = indicatorManager;
+    this.initializeDefaultFeeds();
+  }
+
+  private initializeDefaultFeeds(): void {
+    const defaultFeeds: ThreatFeed[] = [
+      {
+        feedId: 'feed-001',
+        name: 'AlienVault OTX',
+        description: 'Open Threat Exchange community threat intelligence',
+        provider: 'AlienVault',
+        type: 'OPEN_SOURCE',
+        format: 'JSON',
+        url: 'https://otx.alienvault.com/api/v1/pulses/subscribed',
+        authentication: { type: 'API_KEY', credentials: {} },
+        schedule: { enabled: true, frequency: 3600000, lastRun: null, nextRun: 0, retryOnFailure: true, maxRetries: 3 },
+        filters: { indicatorTypes: [], minConfidence: 'POSSIBLE', minThreatLevel: 'LOW', tlpLevels: ['TLP_GREEN', 'TLP_CLEAR'], excludePatterns: [], includePatterns: [], maxAge: 7776000000 },
+        mapping: { indicatorField: 'indicator', typeField: 'type', confidenceField: null, threatLevelField: null, descriptionField: 'description', tagsField: 'tags', customMappings: {} },
+        status: { status: 'ACTIVE', lastError: null, lastErrorTime: null, consecutiveFailures: 0 },
+        statistics: { totalIndicators: 0, activeIndicators: 0, expiredIndicators: 0, lastUpdateCount: 0, averageUpdateCount: 0, falsePositiveRate: 0 },
+      },
+      {
+        feedId: 'feed-002',
+        name: 'Abuse.ch URLhaus',
+        description: 'Malware URL database',
+        provider: 'Abuse.ch',
+        type: 'OPEN_SOURCE',
+        format: 'CSV',
+        url: 'https://urlhaus.abuse.ch/downloads/csv_recent/',
+        authentication: null,
+        schedule: { enabled: true, frequency: 300000, lastRun: null, nextRun: 0, retryOnFailure: true, maxRetries: 3 },
+        filters: { indicatorTypes: ['URL'], minConfidence: 'POSSIBLE', minThreatLevel: 'MEDIUM', tlpLevels: ['TLP_CLEAR'], excludePatterns: [], includePatterns: [], maxAge: 604800000 },
+        mapping: { indicatorField: 'url', typeField: null, confidenceField: null, threatLevelField: null, descriptionField: 'threat', tagsField: 'tags', customMappings: {} },
+        status: { status: 'ACTIVE', lastError: null, lastErrorTime: null, consecutiveFailures: 0 },
+        statistics: { totalIndicators: 0, activeIndicators: 0, expiredIndicators: 0, lastUpdateCount: 0, averageUpdateCount: 0, falsePositiveRate: 0 },
+      },
+      {
+        feedId: 'feed-003',
+        name: 'Abuse.ch Feodo Tracker',
+        description: 'Botnet C2 indicators',
+        provider: 'Abuse.ch',
+        type: 'OPEN_SOURCE',
+        format: 'JSON',
+        url: 'https://feodotracker.abuse.ch/downloads/ipblocklist.json',
+        authentication: null,
+        schedule: { enabled: true, frequency: 3600000, lastRun: null, nextRun: 0, retryOnFailure: true, maxRetries: 3 },
+        filters: { indicatorTypes: ['IP_ADDRESS'], minConfidence: 'PROBABLE', minThreatLevel: 'HIGH', tlpLevels: ['TLP_CLEAR'], excludePatterns: [], includePatterns: [], maxAge: 2592000000 },
+        mapping: { indicatorField: 'ip_address', typeField: null, confidenceField: null, threatLevelField: null, descriptionField: 'malware', tagsField: null, customMappings: {} },
+        status: { status: 'ACTIVE', lastError: null, lastErrorTime: null, consecutiveFailures: 0 },
+        statistics: { totalIndicators: 0, activeIndicators: 0, expiredIndicators: 0, lastUpdateCount: 0, averageUpdateCount: 0, falsePositiveRate: 0 },
+      },
+    ];
+
+    for (const feed of defaultFeeds) {
+      this.feeds.set(feed.feedId, feed);
+    }
+  }
+
+  addFeed(feed: ThreatFeed): void {
+    this.feeds.set(feed.feedId, feed);
+  }
+
+  removeFeed(feedId: string): boolean {
+    return this.feeds.delete(feedId);
+  }
+
+  updateFeedStatus(feedId: string, status: Partial<FeedStatus>): ThreatFeed | null {
+    this.operationCounter++;
+
+    const feed = this.feeds.get(feedId);
+    if (!feed) return null;
+
+    const updatedFeed: ThreatFeed = {
+      ...feed,
+      status: { ...feed.status, ...status },
+    };
+
+    this.feeds.set(feedId, updatedFeed);
+    return updatedFeed;
+  }
+
+  processFeedData(feedId: string, data: readonly Readonly<Record<string, unknown>>[]): number {
+    this.operationCounter++;
+
+    const feed = this.feeds.get(feedId);
+    if (!feed) return 0;
+
+    let processedCount = 0;
+
+    for (const item of data) {
+      const indicatorValue = item[feed.mapping.indicatorField] as string | undefined;
+      if (!indicatorValue) continue;
+
+      const indicatorType = this.inferIndicatorType(indicatorValue, feed.mapping.typeField ? item[feed.mapping.typeField] as string : undefined);
+
+      const source: IndicatorSource = {
+        feedId: feed.feedId,
+        feedName: feed.name,
+        sourceType: 'TECHINT',
+        reliability: 0.7,
+        firstReported: generateDeterministicTimestamp(this.operationCounter),
+        lastReported: generateDeterministicTimestamp(this.operationCounter),
+        reportCount: 1,
+      };
+
+      const context: IndicatorContext = {
+        description: feed.mapping.descriptionField ? item[feed.mapping.descriptionField] as string : null,
+        malwareFamily: null,
+        threatActor: null,
+        campaign: null,
+        killChainPhase: null,
+        mitreAttack: [],
+        targetSectors: [],
+        targetRegions: [],
+      };
+
+      this.indicatorManager.addIndicator(
+        indicatorType,
+        indicatorValue,
+        source,
+        context,
+        'POSSIBLE',
+        'MEDIUM',
+        'TLP_GREEN'
+      );
+
+      processedCount++;
+    }
+
+    const updatedFeed: ThreatFeed = {
+      ...feed,
+      statistics: {
+        ...feed.statistics,
+        totalIndicators: feed.statistics.totalIndicators + processedCount,
+        activeIndicators: feed.statistics.activeIndicators + processedCount,
+        lastUpdateCount: processedCount,
+      },
+      schedule: {
+        ...feed.schedule,
+        lastRun: generateDeterministicTimestamp(this.operationCounter),
+      },
+    };
+
+    this.feeds.set(feedId, updatedFeed);
+    return processedCount;
+  }
+
+  private inferIndicatorType(value: string, typeHint?: string): IndicatorType {
+    if (typeHint) {
+      const typeMap: Record<string, IndicatorType> = {
+        'IPv4': 'IP_ADDRESS',
+        'IPv6': 'IP_ADDRESS',
+        'domain': 'DOMAIN',
+        'hostname': 'DOMAIN',
+        'URL': 'URL',
+        'url': 'URL',
+        'email': 'EMAIL',
+        'FileHash-MD5': 'FILE_HASH_MD5',
+        'FileHash-SHA1': 'FILE_HASH_SHA1',
+        'FileHash-SHA256': 'FILE_HASH_SHA256',
+      };
+      if (typeMap[typeHint]) return typeMap[typeHint];
+    }
+
+    if (/^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$/.test(value)) {
+      return 'IP_ADDRESS';
+    }
+
+    if (/^https?:\/\//.test(value)) {
+      return 'URL';
+    }
+
+    if (/^[a-f0-9]{32}$/i.test(value)) {
+      return 'FILE_HASH_MD5';
+    }
+
+    if (/^[a-f0-9]{40}$/i.test(value)) {
+      return 'FILE_HASH_SHA1';
+    }
+
+    if (/^[a-f0-9]{64}$/i.test(value)) {
+      return 'FILE_HASH_SHA256';
+    }
+
+    if (/^[a-zA-Z0-9][a-zA-Z0-9-]*\.[a-zA-Z]{2,}$/.test(value)) {
+      return 'DOMAIN';
+    }
+
+    if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+      return 'EMAIL';
+    }
+
+    return 'FILE_NAME';
+  }
+
+  getFeeds(): ReadonlyMap<string, ThreatFeed> {
+    return this.feeds;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// STIX/TAXII ENGINE
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export class STIXEngine {
+  private operationCounter: number = 0;
+
+  createIndicatorSTIX(indicator: ThreatIndicator): STIXIndicator {
+    this.operationCounter++;
+
+    const timestamp = generateISOTimestamp(generateDeterministicTimestamp(this.operationCounter));
+
+    return {
+      type: 'indicator',
+      spec_version: '2.1',
+      id: indicator.stixId ?? generateSTIXId('indicator', this.operationCounter),
+      created_by_ref: null,
+      created: timestamp,
+      modified: timestamp,
+      revoked: false,
+      labels: indicator.tags,
+      confidence: this.confidenceToNumber(indicator.confidence),
+      lang: 'en',
+      external_references: [],
+      object_marking_refs: [this.tlpToMarkingRef(indicator.tlp)],
+      granular_markings: [],
+      extensions: {},
+      name: `${indicator.type}: ${indicator.value}`,
+      description: indicator.context.description,
+      indicator_types: [this.indicatorTypeToSTIX(indicator.type)],
+      pattern: this.createSTIXPattern(indicator),
+      pattern_type: 'stix',
+      pattern_version: '2.1',
+      valid_from: generateISOTimestamp(indicator.validity.validFrom),
+      valid_until: indicator.validity.validUntil ? generateISOTimestamp(indicator.validity.validUntil) : null,
+      kill_chain_phases: indicator.context.killChainPhase ? [{ kill_chain_name: 'lockheed-martin-cyber-kill-chain', phase_name: indicator.context.killChainPhase }] : [],
+    };
+  }
+
+  createThreatActorSTIX(actor: ThreatActorProfile): STIXThreatActor {
+    this.operationCounter++;
+
+    const timestamp = generateISOTimestamp(generateDeterministicTimestamp(this.operationCounter));
+
+    return {
+      type: 'threat-actor',
+      spec_version: '2.1',
+      id: actor.stixId ?? generateSTIXId('threat-actor', this.operationCounter),
+      created_by_ref: null,
+      created: timestamp,
+      modified: timestamp,
+      revoked: false,
+      labels: [],
+      confidence: this.confidenceToNumber(actor.confidence),
+      lang: 'en',
+      external_references: actor.references,
+      object_marking_refs: [],
+      granular_markings: [],
+      extensions: {},
+      name: actor.name,
+      description: actor.description,
+      threat_actor_types: ['nation-state'],
+      aliases: actor.aliases,
+      first_seen: null,
+      last_seen: generateISOTimestamp(actor.lastUpdated),
+      roles: ['agent'],
+      goals: actor.motivation,
+      sophistication: this.sophisticationToSTIX(actor.sophistication),
+      resource_level: this.resourceLevelToSTIX(actor.resourceLevel),
+      primary_motivation: actor.motivation[0] ?? null,
+      secondary_motivations: actor.motivation.slice(1),
+      personal_motivations: [],
+    };
+  }
+
+  createBundle(objects: readonly (STIXObject | STIXRelationship)[]): STIXBundle {
+    this.operationCounter++;
+
+    return {
+      type: 'bundle',
+      id: `bundle--${generateDeterministicId('bundle', this.operationCounter)}`,
+      objects,
+    };
+  }
+
+  parseBundle(bundleJson: string): STIXBundle {
+    this.operationCounter++;
+
+    const parsed = JSON.parse(bundleJson) as STIXBundle;
+
+    if (parsed.type !== 'bundle') {
+      throw new ThreatIntelError(ThreatIntelErrorCode.STIX_PARSING_ERROR, 'Invalid STIX bundle');
+    }
+
+    return parsed;
+  }
+
+  private confidenceToNumber(confidence: ConfidenceLevel): number {
+    const mapping: Record<ConfidenceLevel, number> = {
+      CONFIRMED: 100,
+      PROBABLE: 75,
+      POSSIBLE: 50,
+      DOUBTFUL: 25,
+      IMPROBABLE: 0,
+    };
+    return mapping[confidence];
+  }
+
+  private tlpToMarkingRef(tlp: TLPClassification): string {
+    const mapping: Record<TLPClassification, string> = {
+      TLP_RED: 'marking-definition--5e57c739-391a-4eb3-b6be-7d15ca92d5ed',
+      TLP_AMBER: 'marking-definition--f88d31f6-486f-44da-b317-01333bde0b82',
+      TLP_AMBER_STRICT: 'marking-definition--826578e1-40ad-459f-bc73-ede076f81f37',
+      TLP_GREEN: 'marking-definition--34098fce-860f-48ae-8e50-ebd3cc5e41da',
+      TLP_CLEAR: 'marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9',
+    };
+    return mapping[tlp];
+  }
+
+  private indicatorTypeToSTIX(type: IndicatorType): string {
+    const mapping: Record<IndicatorType, string> = {
+      IP_ADDRESS: 'malicious-activity',
+      DOMAIN: 'malicious-activity',
+      URL: 'malicious-activity',
+      EMAIL: 'malicious-activity',
+      FILE_HASH_MD5: 'malicious-activity',
+      FILE_HASH_SHA1: 'malicious-activity',
+      FILE_HASH_SHA256: 'malicious-activity',
+      FILE_NAME: 'malicious-activity',
+      FILE_PATH: 'malicious-activity',
+      REGISTRY_KEY: 'malicious-activity',
+      MUTEX: 'malicious-activity',
+      USER_AGENT: 'malicious-activity',
+      JA3: 'malicious-activity',
+      JA3S: 'malicious-activity',
+      CERTIFICATE_HASH: 'malicious-activity',
+      PROCESS_NAME: 'malicious-activity',
+      COMMAND_LINE: 'malicious-activity',
+      SERVICE_NAME: 'malicious-activity',
+      SCHEDULED_TASK: 'malicious-activity',
+      NAMED_PIPE: 'malicious-activity',
+      IMPHASH: 'malicious-activity',
+      SSDEEP: 'malicious-activity',
+      TLSH: 'malicious-activity',
+      YARA_RULE: 'malicious-activity',
+      SIGMA_RULE: 'malicious-activity',
+      SNORT_RULE: 'malicious-activity',
+      CVE: 'malicious-activity',
+      ASN: 'malicious-activity',
+    };
+    return mapping[type];
+  }
+
+  private createSTIXPattern(indicator: ThreatIndicator): string {
+    const patternMap: Record<IndicatorType, (value: string) => string> = {
+      IP_ADDRESS: (v) => `[ipv4-addr:value = '${v}']`,
+      DOMAIN: (v) => `[domain-name:value = '${v}']`,
+      URL: (v) => `[url:value = '${v}']`,
+      EMAIL: (v) => `[email-addr:value = '${v}']`,
+      FILE_HASH_MD5: (v) => `[file:hashes.MD5 = '${v}']`,
+      FILE_HASH_SHA1: (v) => `[file:hashes.'SHA-1' = '${v}']`,
+      FILE_HASH_SHA256: (v) => `[file:hashes.'SHA-256' = '${v}']`,
+      FILE_NAME: (v) => `[file:name = '${v}']`,
+      FILE_PATH: (v) => `[file:name = '${v}']`,
+      REGISTRY_KEY: (v) => `[windows-registry-key:key = '${v}']`,
+      MUTEX: (v) => `[mutex:name = '${v}']`,
+      USER_AGENT: (v) => `[network-traffic:extensions.'http-request-ext'.request_header.'User-Agent' = '${v}']`,
+      JA3: (v) => `[network-traffic:extensions.'ja3-ext'.ja3_hash = '${v}']`,
+      JA3S: (v) => `[network-traffic:extensions.'ja3s-ext'.ja3s_hash = '${v}']`,
+      CERTIFICATE_HASH: (v) => `[x509-certificate:hashes.'SHA-256' = '${v}']`,
+      PROCESS_NAME: (v) => `[process:name = '${v}']`,
+      COMMAND_LINE: (v) => `[process:command_line = '${v}']`,
+      SERVICE_NAME: (v) => `[windows-service:name = '${v}']`,
+      SCHEDULED_TASK: (v) => `[windows-scheduled-task:name = '${v}']`,
+      NAMED_PIPE: (v) => `[windows-named-pipe:name = '${v}']`,
+      IMPHASH: (v) => `[file:hashes.IMPHASH = '${v}']`,
+      SSDEEP: (v) => `[file:hashes.SSDEEP = '${v}']`,
+      TLSH: (v) => `[file:hashes.TLSH = '${v}']`,
+      YARA_RULE: (v) => `[file:name MATCHES '${v}']`,
+      SIGMA_RULE: (v) => `[process:name MATCHES '${v}']`,
+      SNORT_RULE: (v) => `[network-traffic:src_ref.value MATCHES '${v}']`,
+      CVE: (v) => `[vulnerability:name = '${v}']`,
+      ASN: (v) => `[autonomous-system:number = ${v}]`,
+    };
+
+    const patternFn = patternMap[indicator.type];
+    return patternFn ? patternFn(indicator.value) : `[artifact:payload_bin = '${indicator.value}']`;
+  }
+
+  private sophisticationToSTIX(level: SophisticationLevel): string {
+    const mapping: Record<SophisticationLevel, string> = {
+      NONE: 'none',
+      MINIMAL: 'minimal',
+      INTERMEDIATE: 'intermediate',
+      ADVANCED: 'advanced',
+      EXPERT: 'expert',
+      INNOVATOR: 'innovator',
+    };
+    return mapping[level];
+  }
+
+  private resourceLevelToSTIX(level: ResourceLevel): string {
+    const mapping: Record<ResourceLevel, string> = {
+      INDIVIDUAL: 'individual',
+      CLUB: 'club',
+      CONTEST: 'contest',
+      TEAM: 'team',
+      ORGANIZATION: 'organization',
+      GOVERNMENT: 'government',
+    };
+    return mapping[level];
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// THREAT INTELLIGENCE MANAGER
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export class ThreatIntelligenceManager {
+  private readonly indicatorManager: IndicatorManager;
+  private readonly feedManager: FeedManager;
+  private readonly stixEngine: STIXEngine;
+  private readonly uiConfig: ThreatIntelUIConfig;
+  private readonly reports: Map<string, IntelligenceReport> = new Map();
+  private readonly actorProfiles: Map<string, ThreatActorProfile> = new Map();
+  private operationCounter: number = 0;
+
+  constructor(uiConfig: ThreatIntelUIConfig) {
+    this.indicatorManager = new IndicatorManager();
+    this.feedManager = new FeedManager(this.indicatorManager);
+    this.stixEngine = new STIXEngine();
+    this.uiConfig = uiConfig;
+  }
+
+  addIndicator(
+    type: IndicatorType,
+    value: string,
+    source: IndicatorSource,
+    context: IndicatorContext,
+    confidence: ConfidenceLevel,
+    threatLevel: ThreatLevel,
+    tlp: TLPClassification
+  ): ThreatIndicator {
+    return this.indicatorManager.addIndicator(type, value, source, context, confidence, threatLevel, tlp);
+  }
+
+  searchIndicators(query: IndicatorSearchQuery): readonly ThreatIndicator[] {
+    return this.indicatorManager.searchIndicators(query);
+  }
+
+  enrichIndicator(indicatorId: string, enrichment: Partial<IndicatorEnrichment>): ThreatIndicator | null {
+    return this.indicatorManager.enrichIndicator(indicatorId, enrichment);
+  }
+
+  createReport(
+    title: string,
+    description: string,
+    type: IntelligenceType,
+    tlp: TLPClassification,
+    author: string,
+    executiveSummary: string,
+    sections: readonly ReportSection[]
+  ): IntelligenceReport {
+    this.operationCounter++;
+
+    const reportId = generateDeterministicId('report', this.operationCounter);
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+
+    const report: IntelligenceReport = {
+      reportId,
+      title,
+      description,
+      type,
+      tlp,
+      confidence: 'PROBABLE',
+      author,
+      created: timestamp,
+      modified: timestamp,
+      published: null,
+      validFrom: timestamp,
+      validUntil: null,
+      executiveSummary,
+      sections,
+      indicators: [],
+      threatActors: [],
+      campaigns: [],
+      malware: [],
+      vulnerabilities: [],
+      mitreMapping: [],
+      recommendations: [],
+      references: [],
+      relatedReports: [],
+      tags: [],
+      stixBundle: null,
+    };
+
+    this.reports.set(reportId, report);
+    return report;
+  }
+
+  addThreatActorProfile(profile: ThreatActorProfile): void {
+    this.actorProfiles.set(profile.profileId, profile);
+  }
+
+  exportToSTIX(indicatorIds: readonly string[]): STIXBundle {
+    const stixObjects: STIXIndicator[] = [];
+
+    for (const indicatorId of indicatorIds) {
+      const indicators = this.indicatorManager.getIndicators();
+      const indicator = indicators.get(indicatorId);
+      if (indicator) {
+        stixObjects.push(this.stixEngine.createIndicatorSTIX(indicator));
+      }
+    }
+
+    return this.stixEngine.createBundle(stixObjects);
+  }
+
+  getIndicatorManager(): IndicatorManager {
+    return this.indicatorManager;
+  }
+
+  getFeedManager(): FeedManager {
+    return this.feedManager;
+  }
+
+  getSTIXEngine(): STIXEngine {
+    return this.stixEngine;
+  }
+
+  getReports(): ReadonlyMap<string, IntelligenceReport> {
+    return this.reports;
+  }
+
+  getActorProfiles(): ReadonlyMap<string, ThreatActorProfile> {
+    return this.actorProfiles;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// DEFAULT CONFIGURATIONS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export function createDefaultThreatIntelUIConfig(): ThreatIntelUIConfig {
+  return {
+    dashboardEnabled: true,
+    realTimeUpdates: true,
+    visualizations: [
+      'INDICATOR_TIMELINE', 'THREAT_LANDSCAPE', 'ACTOR_NETWORK',
+      'CAMPAIGN_TRACKER', 'FEED_HEALTH', 'IOC_HEATMAP',
+      'GEOGRAPHIC_DISTRIBUTION', 'TTP_MATRIX', 'MALWARE_FAMILIES',
+    ],
+    notifications: {
+      newHighConfidenceIOC: true,
+      newThreatActor: true,
+      newCampaign: true,
+      feedError: true,
+      indicatorMatch: true,
+      reportPublished: true,
+      sharingAlert: true,
+    },
+    reporting: {
+      autoGenerate: true,
+      format: 'PDF',
+      schedules: [
+        { reportType: 'DAILY_IOC_SUMMARY', frequency: 'DAILY', time: '08:00', recipients: ['security-team@company.com'] },
+        { reportType: 'WEEKLY_THREAT_LANDSCAPE', frequency: 'WEEKLY', time: '09:00', recipients: ['security-team@company.com', 'management@company.com'] },
+      ],
+      templates: ['ioc_report', 'threat_actor_profile', 'campaign_summary'],
+      distribution: ['security-team@company.com'],
+    },
+    search: {
+      enableFullText: true,
+      enableRegex: true,
+      enableFuzzy: true,
+      maxResults: 1000,
+      defaultTimeRange: 2592000000,
+      savedSearches: [],
+    },
+    enrichment: {
+      autoEnrich: true,
+      enrichmentSources: ['virustotal', 'shodan', 'whois', 'geoip'],
+      maxEnrichmentAge: 86400000,
+      showEnrichmentDetails: true,
+    },
+  };
+}

@@ -1,0 +1,51 @@
+{
+  "name": "{{IME_PROJEKTA_SLUG}}",
+  "version": "{{VERZIJA}}",
+  "description": "{{OPIS}} - Domena: Varnostni sistemi",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "domain": "VARNOSTNI_SISTEMI",
+  "domainInfo": {
+    "name": "Varnostni sistemi",
+    "description": "Kriptografija in zascita podatkov",
+    "keywords": ["encryption", "authentication", "authorization", "firewall", "vulnerability"]
+  },
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src --ext .ts",
+    "format": "prettier --write src",
+    "verify": "npm run typecheck && npm run lint",
+    "security:scan": "trivy fs .",
+    "security:sbom": "syft . -o cyclonedx-json > sbom.json",
+    "security:sign": "cosign sign-blob --key cosign.key dist/index.js"
+  },
+  "keywords": [
+    "{{DOMENA_SL}}",
+    "VARNOSTNI_SISTEMI",
+    "Varnostni sistemi",
+    "encryption", "authentication", "authorization", "firewall", "vulnerability"
+  ],
+  "author": "{{AVTOR}}",
+  "license": "MIT",
+  "dependencies": {
+    "@mia/core": "^1.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0",
+    "eslint": "^8.0.0",
+    "prettier": "^3.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "mia": {
+    "domena": "VARNOSTNI_SISTEMI",
+    "domenaNaziv": "Varnostni sistemi",
+    "domenaPodatki": {
+      "kategorije": ["Kriptografija","Avtentikacija","Varnostna skladnost in sledljivost"],
+      "moduli": ["AES","RSA","TOTP","Sledljivost varnostnih zahtev","Generiranje kriptografskih dokazov"],
+      "kljucneBesede": ["encryption","authentication","authorization","firewall","vulnerability"]
+    }
+  }
+}

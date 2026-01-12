@@ -1,0 +1,364 @@
+# ==============================================================================
+# Kubernetes Deployment za {{IME_PROJEKTA}}
+# ==============================================================================
+# @file Kubernetes deployment manifest za varnostni sistem
+# @author {{AVTOR}}
+# @version {{VERZIJA}}
+# @date {{DATUM}}
+# @domain {{DOMENA_SL}}
+#
+# @description
+# Kubernetes deployment za varnostne sisteme z:
+# - Pod Security Standards (restricted)
+# - Network Policies
+# - Resource Limits
+# - Security Context
+# - Secrets Management
+#
+# @compliance DO-178C, IEC-61508, ISO-26262, MIL-STD-882E
+# @security ISO-27001, NIST-800-53, SOC-2, CIS Kubernetes Benchmark
+# @meta_atom DEP_003 - Kubernetes Deployment
+# ==============================================================================
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: {{IME_PROJEKTA_SLUG}}
+  labels:
+    app.kubernetes.io/name: {{IME_PROJEKTA_SLUG}}
+    app.kubernetes.io/version: "{{VERZIJA}}"
+    pod-security.kubernetes.io/enforce: restricted
+    pod-security.kubernetes.io/audit: restricted
+    pod-security.kubernetes.io/warn: restricted
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{IME_PROJEKTA_SLUG}}-sa
+  namespace: {{IME_PROJEKTA_SLUG}}
+  labels:
+    app.kubernetes.io/name: {{IME_PROJEKTA_SLUG}}
+automountServiceAccountToken: false
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{IME_PROJEKTA_SLUG}}-secrets
+  namespace: {{IME_PROJEKTA_SLUG}}
+  labels:
+    app.kubernetes.io/name: {{IME_PROJEKTA_SLUG}}
+type: Opaque
+data:
+  # Skrivnosti so shranjene v zunanjem secrets managerju (Vault, AWS Secrets Manager)
+  # in injicirane ob deploymentu
+  database-url: ""
+  jwt-secret: ""
+  encryption-key: ""
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{IME_PROJEKTA_SLUG}}-config
+  namespace: {{IME_PROJEKTA_SLUG}}
+  labels:
+    app.kubernetes.io/name: {{IME_PROJEKTA_SLUG}}
+data:
+  NODE_ENV: "production"
+  LOG_LEVEL: "info"
+  LOG_FORMAT: "json"
+  METRICS_ENABLED: "true"
+  TRACING_ENABLED: "true"
+  HEALTH_CHECK_INTERVAL: "30000"
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{IME_PROJEKTA_SLUG}}
+  namespace: {{IME_PROJEKTA_SLUG}}
+  labels:
+    app.kubernetes.io/name: {{IME_PROJEKTA_SLUG}}
+    app.kubernetes.io/version: "{{VERZIJA}}"
+    app.kubernetes.io/component: security-system
+  annotations:
+    compliance.mia/do-178c: "true"
+    compliance.mia/iec-61508: "true"
+    compliance.mia/iso-26262: "true"
+spec:
+  replicas: 3
+  revisionHistoryLimit: 5
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{IME_PROJEKTA_SLUG}}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{IME_PROJEKTA_SLUG}}
+        app.kubernetes.io/version: "{{VERZIJA}}"
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9090"
+        prometheus.io/path: "/metrics"
+    spec:
+      serviceAccountName: {{IME_PROJEKTA_SLUG}}-sa
+      automountServiceAccountToken: false
+      
+      # Pod Security Context
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65534
+        runAsGroup: 65534
+        fsGroup: 65534
+        seccompProfile:
+          type: RuntimeDefault
+      
+      # Anti-affinity za visoko razpolozljivost
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app.kubernetes.io/name: {{IME_PROJEKTA_SLUG}}
+                topologyKey: kubernetes.io/hostname
+      
+      # Topology Spread Constraints
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: {{IME_PROJEKTA_SLUG}}
+      
+      containers:
+        - name: {{IME_PROJEKTA_SLUG}}
+          image: ghcr.io/{{ORGANIZACIJA_SLUG}}/{{IME_PROJEKTA_SLUG}}:{{VERZIJA}}
+          imagePullPolicy: Always
+          
+          # Container Security Context
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 65534
+            capabilities:
+              drop:
+                - ALL
+          
+          ports:
+            - name: http
+              containerPort: 8443
+              protocol: TCP
+            - name: metrics
+              containerPort: 9090
+              protocol: TCP
+          
+          envFrom:
+            - configMapRef:
+                name: {{IME_PROJEKTA_SLUG}}-config
+          
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: {{IME_PROJEKTA_SLUG}}-secrets
+                  key: database-url
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{IME_PROJEKTA_SLUG}}-secrets
+                  key: jwt-secret
+            - name: CIPHER_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{IME_PROJEKTA_SLUG}}-secrets
+                  key: encryption-key
+          
+          # Resource Limits
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "256Mi"
+            limits:
+              cpu: "1000m"
+              memory: "512Mi"
+          
+          # Health Checks
+          livenessProbe:
+            httpGet:
+              path: /health/live
+              port: http
+              scheme: HTTP
+            initialDelaySeconds: 10
+            periodSeconds: 15
+            timeoutSeconds: 5
+            failureThreshold: 3
+          
+          readinessProbe:
+            httpGet:
+              path: /health/ready
+              port: http
+              scheme: HTTP
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          
+          startupProbe:
+            httpGet:
+              path: /health/startup
+              port: http
+              scheme: HTTP
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 5
+            failureThreshold: 30
+          
+          # Volume Mounts
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+            - name: cache
+              mountPath: /app/.cache
+      
+      volumes:
+        - name: tmp
+          emptyDir:
+            sizeLimit: 100Mi
+        - name: cache
+          emptyDir:
+            sizeLimit: 200Mi
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{IME_PROJEKTA_SLUG}}
+  namespace: {{IME_PROJEKTA_SLUG}}
+  labels:
+    app.kubernetes.io/name: {{IME_PROJEKTA_SLUG}}
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 443
+      targetPort: http
+      protocol: TCP
+    - name: metrics
+      port: 9090
+      targetPort: metrics
+      protocol: TCP
+  selector:
+    app.kubernetes.io/name: {{IME_PROJEKTA_SLUG}}
+
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{IME_PROJEKTA_SLUG}}
+  namespace: {{IME_PROJEKTA_SLUG}}
+  labels:
+    app.kubernetes.io/name: {{IME_PROJEKTA_SLUG}}
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{IME_PROJEKTA_SLUG}}
+  minReplicas: 3
+  maxReplicas: 10
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+        - type: Percent
+          value: 10
+          periodSeconds: 60
+    scaleUp:
+      stabilizationWindowSeconds: 0
+      policies:
+        - type: Percent
+          value: 100
+          periodSeconds: 15
+        - type: Pods
+          value: 4
+          periodSeconds: 15
+      selectPolicy: Max
+
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{IME_PROJEKTA_SLUG}}
+  namespace: {{IME_PROJEKTA_SLUG}}
+  labels:
+    app.kubernetes.io/name: {{IME_PROJEKTA_SLUG}}
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{IME_PROJEKTA_SLUG}}
+
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{IME_PROJEKTA_SLUG}}-network-policy
+  namespace: {{IME_PROJEKTA_SLUG}}
+  labels:
+    app.kubernetes.io/name: {{IME_PROJEKTA_SLUG}}
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: {{IME_PROJEKTA_SLUG}}
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: ingress-nginx
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: monitoring
+      ports:
+        - protocol: TCP
+          port: 8443
+        - protocol: TCP
+          port: 9090
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: database
+      ports:
+        - protocol: TCP
+          port: 5432
+    - to:
+        - namespaceSelector: {}
+      ports:
+        - protocol: UDP
+          port: 53

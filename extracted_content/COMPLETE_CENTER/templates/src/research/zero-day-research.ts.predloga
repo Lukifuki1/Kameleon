@@ -1,0 +1,1069 @@
+/**
+ * @file Zero-Day Research - Self-Contained Vulnerability Research Platform
+ * @author {{AVTOR}}
+ * @version {{VERZIJA}}
+ * @date {{DATUM}}
+ * @project {{IME_PROJEKTA}}
+ * @domain VARNOSTNI_SISTEMI
+ * 
+ * @requirement REQ-SEC-ZDR-001
+ * @design DSN-SEC-ZDR-001
+ * @test TST-SEC-ZDR-001
+ * 
+ * @description
+ * Enterprise-grade self-contained zero-day vulnerability research platform
+ * implementing comprehensive vulnerability discovery, exploit development,
+ * fuzzing infrastructure, reverse engineering, and responsible disclosure.
+ * All research algorithms are natively implemented without external dependencies.
+ * 
+ * @classification TOP SECRET - Vulnerability Research
+ * @authorization Required: Level 5 Security Clearance
+ * @dependencies NONE - Fully self-contained implementation
+ */
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ZERO-DAY RESEARCH TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export type ResearchType =
+  | 'VULNERABILITY_DISCOVERY'
+  | 'EXPLOIT_DEVELOPMENT'
+  | 'FUZZING'
+  | 'REVERSE_ENGINEERING'
+  | 'CODE_AUDIT'
+  | 'BINARY_ANALYSIS'
+  | 'PROTOCOL_ANALYSIS';
+
+export type VulnerabilityClass =
+  | 'MEMORY_CORRUPTION'
+  | 'INJECTION'
+  | 'AUTHENTICATION'
+  | 'AUTHORIZATION'
+  | 'CRYPTOGRAPHIC'
+  | 'CONFIGURATION'
+  | 'LOGIC'
+  | 'RACE_CONDITION'
+  | 'INFORMATION_DISCLOSURE';
+
+export type MemoryCorruptionType =
+  | 'BUFFER_OVERFLOW'
+  | 'HEAP_OVERFLOW'
+  | 'STACK_OVERFLOW'
+  | 'INTEGER_OVERFLOW'
+  | 'USE_AFTER_FREE'
+  | 'DOUBLE_FREE'
+  | 'NULL_POINTER_DEREFERENCE'
+  | 'TYPE_CONFUSION'
+  | 'UNINITIALIZED_MEMORY'
+  | 'OUT_OF_BOUNDS';
+
+export type ExploitType =
+  | 'LOCAL_PRIVILEGE_ESCALATION'
+  | 'REMOTE_CODE_EXECUTION'
+  | 'DENIAL_OF_SERVICE'
+  | 'INFORMATION_LEAK'
+  | 'SANDBOX_ESCAPE'
+  | 'KERNEL_EXPLOIT'
+  | 'BROWSER_EXPLOIT'
+  | 'MOBILE_EXPLOIT';
+
+export type TargetPlatform =
+  | 'WINDOWS'
+  | 'LINUX'
+  | 'MACOS'
+  | 'IOS'
+  | 'ANDROID'
+  | 'EMBEDDED'
+  | 'FIRMWARE'
+  | 'WEB'
+  | 'NETWORK';
+
+export type SecurityLevel =
+  | 'TOP_SECRET'
+  | 'SECRET'
+  | 'CONFIDENTIAL'
+  | 'UNCLASSIFIED';
+
+export type OperationalMode =
+  | 'RESEARCH'
+  | 'DEVELOPMENT'
+  | 'TESTING'
+  | 'PRODUCTION';
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ZERO-DAY RESEARCH CONFIGURATION
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface ZeroDayResearchConfig {
+  readonly platformId: string;
+  readonly name: string;
+  readonly version: string;
+  readonly mode: OperationalMode;
+  readonly discovery: VulnerabilityDiscoveryConfig;
+  readonly fuzzing: FuzzingConfig;
+  readonly reverseEngineering: ReverseEngineeringConfig;
+  readonly exploitDevelopment: ExploitDevelopmentConfig;
+  readonly codeAudit: CodeAuditConfig;
+  readonly testing: ExploitTestingConfig;
+  readonly disclosure: DisclosureConfig;
+  readonly reporting: ReportingConfig;
+  readonly storage: StorageConfig;
+  readonly security: SecurityConfig;
+  readonly metadata: PlatformMetadata;
+}
+
+export interface VulnerabilityDiscoveryConfig {
+  readonly enabled: boolean;
+  readonly static: StaticAnalysisConfig;
+  readonly dynamic: DynamicAnalysisConfig;
+  readonly hybrid: HybridAnalysisConfig;
+  readonly manual: ManualAnalysisConfig;
+}
+
+export interface StaticAnalysisConfig {
+  readonly enabled: boolean;
+  readonly sourceCode: SourceCodeAnalysisConfig;
+  readonly binary: BinaryAnalysisConfig;
+  readonly dataFlow: DataFlowAnalysisConfig;
+  readonly controlFlow: ControlFlowAnalysisConfig;
+}
+
+export interface SourceCodeAnalysisConfig {
+  readonly enabled: boolean;
+  readonly languages: readonly ProgrammingLanguage[];
+  readonly patterns: PatternMatchingConfig;
+  readonly taint: TaintAnalysisConfig;
+  readonly symbolic: SymbolicExecutionConfig;
+}
+
+export type ProgrammingLanguage =
+  | 'C'
+  | 'CPP'
+  | 'RUST'
+  | 'GO'
+  | 'JAVA'
+  | 'CSHARP'
+  | 'PYTHON'
+  | 'JAVASCRIPT'
+  | 'TYPESCRIPT'
+  | 'PHP'
+  | 'RUBY'
+  | 'SWIFT'
+  | 'KOTLIN'
+  | 'ASSEMBLY';
+
+export interface PatternMatchingConfig {
+  readonly enabled: boolean;
+  readonly vulnerabilityPatterns: boolean;
+  readonly dangerousFunctions: boolean;
+  readonly insecureAPIs: boolean;
+  readonly customPatterns: readonly string[];
+}
+
+export interface TaintAnalysisConfig {
+  readonly enabled: boolean;
+  readonly sources: readonly string[];
+  readonly sinks: readonly string[];
+  readonly sanitizers: readonly string[];
+  readonly propagation: boolean;
+}
+
+export interface SymbolicExecutionConfig {
+  readonly enabled: boolean;
+  readonly pathExploration: boolean;
+  readonly constraintSolving: boolean;
+  readonly concolicExecution: boolean;
+  readonly timeout: number;
+}
+
+export interface BinaryAnalysisConfig {
+  readonly enabled: boolean;
+  readonly disassembly: DisassemblyConfig;
+  readonly decompilation: DecompilationConfig;
+  readonly patternMatching: BinaryPatternConfig;
+}
+
+export interface DisassemblyConfig {
+  readonly enabled: boolean;
+  readonly architectures: readonly ProcessorArchitecture[];
+  readonly recursive: boolean;
+  readonly linear: boolean;
+  readonly symbolResolution: boolean;
+}
+
+export type ProcessorArchitecture =
+  | 'X86'
+  | 'X86_64'
+  | 'ARM'
+  | 'ARM64'
+  | 'MIPS'
+  | 'POWERPC'
+  | 'RISCV'
+  | 'SPARC';
+
+export interface DecompilationConfig {
+  readonly enabled: boolean;
+  readonly typeRecovery: boolean;
+  readonly variableRecovery: boolean;
+  readonly structureRecovery: boolean;
+  readonly optimization: boolean;
+}
+
+export interface BinaryPatternConfig {
+  readonly enabled: boolean;
+  readonly signatures: boolean;
+  readonly heuristics: boolean;
+  readonly machinelearning: boolean;
+}
+
+export interface DataFlowAnalysisConfig {
+  readonly enabled: boolean;
+  readonly reachingDefinitions: boolean;
+  readonly liveVariables: boolean;
+  readonly availableExpressions: boolean;
+  readonly defUseChains: boolean;
+}
+
+export interface ControlFlowAnalysisConfig {
+  readonly enabled: boolean;
+  readonly cfgGeneration: boolean;
+  readonly dominatorAnalysis: boolean;
+  readonly loopDetection: boolean;
+  readonly callGraphAnalysis: boolean;
+}
+
+export interface DynamicAnalysisConfig {
+  readonly enabled: boolean;
+  readonly instrumentation: InstrumentationConfig;
+  readonly tracing: TracingConfig;
+  readonly monitoring: RuntimeMonitoringConfig;
+  readonly debugging: DebuggingConfig;
+}
+
+export interface InstrumentationConfig {
+  readonly enabled: boolean;
+  readonly binary: boolean;
+  readonly source: boolean;
+  readonly coverage: boolean;
+  readonly sanitizers: readonly SanitizerType[];
+}
+
+export type SanitizerType =
+  | 'ADDRESS'
+  | 'MEMORY'
+  | 'THREAD'
+  | 'UNDEFINED'
+  | 'LEAK'
+  | 'CFI';
+
+export interface TracingConfig {
+  readonly enabled: boolean;
+  readonly syscalls: boolean;
+  readonly libraryFunctions: boolean;
+  readonly memoryAccess: boolean;
+  readonly networkTraffic: boolean;
+}
+
+export interface RuntimeMonitoringConfig {
+  readonly enabled: boolean;
+  readonly memoryAllocation: boolean;
+  readonly fileOperations: boolean;
+  readonly networkOperations: boolean;
+  readonly processOperations: boolean;
+}
+
+export interface DebuggingConfig {
+  readonly enabled: boolean;
+  readonly breakpoints: boolean;
+  readonly watchpoints: boolean;
+  readonly stepping: boolean;
+  readonly memoryInspection: boolean;
+}
+
+export interface HybridAnalysisConfig {
+  readonly enabled: boolean;
+  readonly concolic: boolean;
+  readonly guidedFuzzing: boolean;
+  readonly feedbackLoop: boolean;
+}
+
+export interface ManualAnalysisConfig {
+  readonly enabled: boolean;
+  readonly codeReview: boolean;
+  readonly architectureReview: boolean;
+  readonly threatModeling: boolean;
+  readonly attackSurfaceAnalysis: boolean;
+}
+
+export interface FuzzingConfig {
+  readonly enabled: boolean;
+  readonly coverage: CoverageFuzzingConfig;
+  readonly mutation: MutationFuzzingConfig;
+  readonly generation: GenerationFuzzingConfig;
+  readonly grammar: GrammarFuzzingConfig;
+  readonly protocol: ProtocolFuzzingConfig;
+  readonly kernel: KernelFuzzingConfig;
+}
+
+export interface CoverageFuzzingConfig {
+  readonly enabled: boolean;
+  readonly instrumentation: 'SOURCE' | 'BINARY' | 'HARDWARE';
+  readonly feedbackTypes: readonly FeedbackType[];
+  readonly corpusManagement: CorpusManagementConfig;
+}
+
+export type FeedbackType =
+  | 'EDGE_COVERAGE'
+  | 'BLOCK_COVERAGE'
+  | 'PATH_COVERAGE'
+  | 'COMPARISON_COVERAGE'
+  | 'DATA_FLOW_COVERAGE';
+
+export interface CorpusManagementConfig {
+  readonly enabled: boolean;
+  readonly minimization: boolean;
+  readonly deduplication: boolean;
+  readonly prioritization: boolean;
+  readonly seeding: boolean;
+}
+
+export interface MutationFuzzingConfig {
+  readonly enabled: boolean;
+  readonly strategies: readonly MutationStrategy[];
+  readonly scheduling: MutationSchedulingConfig;
+  readonly dictionary: boolean;
+}
+
+export type MutationStrategy =
+  | 'BIT_FLIP'
+  | 'BYTE_FLIP'
+  | 'ARITHMETIC'
+  | 'INTERESTING_VALUES'
+  | 'HAVOC'
+  | 'SPLICE'
+  | 'TRIM'
+  | 'DICTIONARY';
+
+export interface MutationSchedulingConfig {
+  readonly enabled: boolean;
+  readonly energyBased: boolean;
+  readonly rareBranches: boolean;
+  readonly recentlyDiscovered: boolean;
+}
+
+export interface GenerationFuzzingConfig {
+  readonly enabled: boolean;
+  readonly modelBased: boolean;
+  readonly constraintBased: boolean;
+  readonly templateBased: boolean;
+}
+
+export interface GrammarFuzzingConfig {
+  readonly enabled: boolean;
+  readonly grammarInference: boolean;
+  readonly grammarMutation: boolean;
+  readonly semanticAwareness: boolean;
+}
+
+export interface ProtocolFuzzingConfig {
+  readonly enabled: boolean;
+  readonly stateful: boolean;
+  readonly stateless: boolean;
+  readonly protocols: readonly string[];
+  readonly messageSequencing: boolean;
+}
+
+export interface KernelFuzzingConfig {
+  readonly enabled: boolean;
+  readonly syscallFuzzing: boolean;
+  readonly driverFuzzing: boolean;
+  readonly filesystemFuzzing: boolean;
+  readonly networkStackFuzzing: boolean;
+}
+
+export interface ReverseEngineeringConfig {
+  readonly enabled: boolean;
+  readonly disassembly: REDisassemblyConfig;
+  readonly decompilation: REDecompilationConfig;
+  readonly debugging: REDebuggingConfig;
+  readonly emulation: EmulationConfig;
+  readonly diffing: DiffingConfig;
+}
+
+export interface REDisassemblyConfig {
+  readonly enabled: boolean;
+  readonly architectures: readonly ProcessorArchitecture[];
+  readonly formats: readonly BinaryFormat[];
+  readonly analysis: DisassemblyAnalysisConfig;
+}
+
+export type BinaryFormat =
+  | 'PE'
+  | 'ELF'
+  | 'MACHO'
+  | 'DEX'
+  | 'RAW';
+
+export interface DisassemblyAnalysisConfig {
+  readonly enabled: boolean;
+  readonly functionDetection: boolean;
+  readonly stringExtraction: boolean;
+  readonly crossReferences: boolean;
+  readonly dataTypeRecovery: boolean;
+}
+
+export interface REDecompilationConfig {
+  readonly enabled: boolean;
+  readonly pseudocode: boolean;
+  readonly typeReconstruction: boolean;
+  readonly variableNaming: boolean;
+  readonly structureReconstruction: boolean;
+}
+
+export interface REDebuggingConfig {
+  readonly enabled: boolean;
+  readonly userMode: boolean;
+  readonly kernelMode: boolean;
+  readonly remoteDebugging: boolean;
+  readonly scriptableDebugging: boolean;
+}
+
+export interface EmulationConfig {
+  readonly enabled: boolean;
+  readonly fullSystem: boolean;
+  readonly userMode: boolean;
+  readonly unicorn: boolean;
+  readonly qemu: boolean;
+}
+
+export interface DiffingConfig {
+  readonly enabled: boolean;
+  readonly binaryDiff: boolean;
+  readonly patchAnalysis: boolean;
+  readonly versionComparison: boolean;
+}
+
+export interface ExploitDevelopmentConfig {
+  readonly enabled: boolean;
+  readonly primitives: ExploitPrimitivesConfig;
+  readonly techniques: ExploitTechniquesConfig;
+  readonly payloads: PayloadConfig;
+  readonly reliability: ReliabilityConfig;
+}
+
+export interface ExploitPrimitivesConfig {
+  readonly enabled: boolean;
+  readonly memoryRead: boolean;
+  readonly memoryWrite: boolean;
+  readonly codeExecution: boolean;
+  readonly informationLeak: boolean;
+}
+
+export interface ExploitTechniquesConfig {
+  readonly enabled: boolean;
+  readonly rop: ROPConfig;
+  readonly jop: boolean;
+  readonly heapExploitation: HeapExploitationConfig;
+  readonly kernelExploitation: KernelExploitationConfig;
+}
+
+export interface ROPConfig {
+  readonly enabled: boolean;
+  readonly gadgetFinding: boolean;
+  readonly chainGeneration: boolean;
+  readonly automaticGeneration: boolean;
+}
+
+export interface HeapExploitationConfig {
+  readonly enabled: boolean;
+  readonly allocatorAnalysis: boolean;
+  readonly primitiveGeneration: boolean;
+  readonly heapFengShui: boolean;
+}
+
+export interface KernelExploitationConfig {
+  readonly enabled: boolean;
+  readonly privilegeEscalation: boolean;
+  readonly arbitraryRead: boolean;
+  readonly arbitraryWrite: boolean;
+  readonly codeExecution: boolean;
+}
+
+export interface PayloadConfig {
+  readonly enabled: boolean;
+  readonly shellcode: ShellcodeConfig;
+  readonly stagers: boolean;
+  readonly encoders: boolean;
+  readonly evasion: PayloadEvasionConfig;
+}
+
+export interface ShellcodeConfig {
+  readonly enabled: boolean;
+  readonly architectures: readonly ProcessorArchitecture[];
+  readonly platforms: readonly TargetPlatform[];
+  readonly types: readonly ShellcodeType[];
+}
+
+export type ShellcodeType =
+  | 'REVERSE_SHELL'
+  | 'BIND_SHELL'
+  | 'EXEC'
+  | 'DOWNLOAD_EXEC'
+  | 'METERPRETER'
+  | 'CUSTOM';
+
+export interface PayloadEvasionConfig {
+  readonly enabled: boolean;
+  readonly encoding: boolean;
+  readonly encryption: boolean;
+  readonly polymorphism: boolean;
+  readonly metamorphism: boolean;
+}
+
+export interface ReliabilityConfig {
+  readonly enabled: boolean;
+  readonly stabilization: boolean;
+  readonly multipleAttempts: boolean;
+  readonly cleanupRoutines: boolean;
+  readonly failsafes: boolean;
+}
+
+export interface CodeAuditConfig {
+  readonly enabled: boolean;
+  readonly manual: ManualAuditConfig;
+  readonly automated: AutomatedAuditConfig;
+  readonly checklist: ChecklistConfig;
+}
+
+export interface ManualAuditConfig {
+  readonly enabled: boolean;
+  readonly securityReview: boolean;
+  readonly architectureReview: boolean;
+  readonly codeWalkthrough: boolean;
+  readonly peerReview: boolean;
+}
+
+export interface AutomatedAuditConfig {
+  readonly enabled: boolean;
+  readonly staticAnalysis: boolean;
+  readonly dependencyScanning: boolean;
+  readonly secretsDetection: boolean;
+  readonly configurationAudit: boolean;
+}
+
+export interface ChecklistConfig {
+  readonly enabled: boolean;
+  readonly owaspTop10: boolean;
+  readonly cweTop25: boolean;
+  readonly customChecklist: readonly string[];
+}
+
+export interface ExploitTestingConfig {
+  readonly enabled: boolean;
+  readonly environment: TestEnvironmentConfig;
+  readonly validation: ValidationConfig;
+  readonly documentation: TestDocumentationConfig;
+}
+
+export interface TestEnvironmentConfig {
+  readonly enabled: boolean;
+  readonly isolated: boolean;
+  readonly virtualMachines: boolean;
+  readonly containers: boolean;
+  readonly hardware: boolean;
+}
+
+export interface ValidationConfig {
+  readonly enabled: boolean;
+  readonly proofOfConcept: boolean;
+  readonly reliabilityTesting: boolean;
+  readonly impactAssessment: boolean;
+  readonly sideEffects: boolean;
+}
+
+export interface TestDocumentationConfig {
+  readonly enabled: boolean;
+  readonly screenshots: boolean;
+  readonly logs: boolean;
+  readonly networkCaptures: boolean;
+  readonly memoryDumps: boolean;
+}
+
+export interface DisclosureConfig {
+  readonly enabled: boolean;
+  readonly responsible: ResponsibleDisclosureConfig;
+  readonly coordinated: CoordinatedDisclosureConfig;
+  readonly internal: InternalDisclosureConfig;
+}
+
+export interface ResponsibleDisclosureConfig {
+  readonly enabled: boolean;
+  readonly timeline: number;
+  readonly vendorNotification: boolean;
+  readonly publicDisclosure: boolean;
+  readonly patchVerification: boolean;
+}
+
+export interface CoordinatedDisclosureConfig {
+  readonly enabled: boolean;
+  readonly certCoordination: boolean;
+  readonly multiVendor: boolean;
+  readonly embargoManagement: boolean;
+}
+
+export interface InternalDisclosureConfig {
+  readonly enabled: boolean;
+  readonly classification: boolean;
+  readonly needToKnow: boolean;
+  readonly operationalUse: boolean;
+}
+
+export interface ReportingConfig {
+  readonly enabled: boolean;
+  readonly formats: readonly ReportFormat[];
+  readonly sections: readonly ReportSection[];
+  readonly automation: ReportAutomationConfig;
+}
+
+export type ReportFormat =
+  | 'PDF'
+  | 'HTML'
+  | 'JSON'
+  | 'MARKDOWN';
+
+export type ReportSection =
+  | 'EXECUTIVE_SUMMARY'
+  | 'VULNERABILITY_DETAILS'
+  | 'TECHNICAL_ANALYSIS'
+  | 'EXPLOIT_DETAILS'
+  | 'PROOF_OF_CONCEPT'
+  | 'REMEDIATION'
+  | 'TIMELINE';
+
+export interface ReportAutomationConfig {
+  readonly enabled: boolean;
+  readonly scheduling: boolean;
+  readonly triggers: readonly string[];
+}
+
+export interface StorageConfig {
+  readonly type: 'DATABASE' | 'FILE_SYSTEM' | 'HYBRID';
+  readonly encryption: StorageEncryptionConfig;
+  readonly retention: RetentionConfig;
+  readonly backup: BackupConfig;
+}
+
+export interface StorageEncryptionConfig {
+  readonly enabled: boolean;
+  readonly algorithm: 'AES_256_GCM' | 'CHACHA20_POLY1305';
+  readonly keyManagement: 'LOCAL' | 'HSM' | 'KMS';
+}
+
+export interface RetentionConfig {
+  readonly enabled: boolean;
+  readonly research: number;
+  readonly exploits: number;
+  readonly logs: number;
+}
+
+export interface BackupConfig {
+  readonly enabled: boolean;
+  readonly frequency: number;
+  readonly encryption: boolean;
+  readonly offsite: boolean;
+}
+
+export interface SecurityConfig {
+  readonly authentication: AuthenticationConfig;
+  readonly authorization: AuthorizationConfig;
+  readonly audit: AuditConfig;
+  readonly classification: ClassificationConfig;
+}
+
+export interface AuthenticationConfig {
+  readonly enabled: boolean;
+  readonly methods: readonly ('PKI' | 'CAC' | 'BIOMETRIC' | 'MFA')[];
+  readonly sessionTimeout: number;
+}
+
+export interface AuthorizationConfig {
+  readonly enabled: boolean;
+  readonly model: 'RBAC' | 'ABAC' | 'MAC';
+  readonly clearanceRequired: boolean;
+}
+
+export interface AuditConfig {
+  readonly enabled: boolean;
+  readonly logAllAccess: boolean;
+  readonly logAllOperations: boolean;
+  readonly retention: number;
+}
+
+export interface ClassificationConfig {
+  readonly enabled: boolean;
+  readonly defaultLevel: SecurityLevel;
+  readonly autoClassification: boolean;
+}
+
+export interface PlatformMetadata {
+  readonly createdAt: number;
+  readonly updatedAt: number;
+  readonly createdBy: string;
+  readonly version: string;
+  readonly tags: readonly string[];
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// VULNERABILITY TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface Vulnerability {
+  readonly vulnerabilityId: string;
+  readonly name: string;
+  readonly class: VulnerabilityClass;
+  readonly type: string;
+  readonly severity: VulnerabilitySeverity;
+  readonly target: VulnerabilityTarget;
+  readonly analysis: VulnerabilityAnalysis;
+  readonly exploitation: ExploitationInfo;
+  readonly disclosure: DisclosureInfo;
+  readonly status: VulnerabilityStatus;
+  readonly metadata: VulnerabilityMetadata;
+}
+
+export interface VulnerabilitySeverity {
+  readonly cvss: CVSSScore;
+  readonly impact: ImpactAssessment;
+  readonly exploitability: ExploitabilityAssessment;
+}
+
+export interface CVSSScore {
+  readonly version: '3.1' | '4.0';
+  readonly baseScore: number;
+  readonly temporalScore: number | null;
+  readonly environmentalScore: number | null;
+  readonly vector: string;
+}
+
+export interface ImpactAssessment {
+  readonly confidentiality: 'NONE' | 'LOW' | 'HIGH';
+  readonly integrity: 'NONE' | 'LOW' | 'HIGH';
+  readonly availability: 'NONE' | 'LOW' | 'HIGH';
+}
+
+export interface ExploitabilityAssessment {
+  readonly attackVector: 'NETWORK' | 'ADJACENT' | 'LOCAL' | 'PHYSICAL';
+  readonly attackComplexity: 'LOW' | 'HIGH';
+  readonly privilegesRequired: 'NONE' | 'LOW' | 'HIGH';
+  readonly userInteraction: 'NONE' | 'REQUIRED';
+}
+
+export interface VulnerabilityTarget {
+  readonly platform: TargetPlatform;
+  readonly product: string;
+  readonly vendor: string;
+  readonly version: VersionInfo;
+  readonly component: string;
+}
+
+export interface VersionInfo {
+  readonly affected: readonly string[];
+  readonly fixed: string | null;
+  readonly introduced: string | null;
+}
+
+export interface VulnerabilityAnalysis {
+  readonly rootCause: RootCauseAnalysis;
+  readonly triggerConditions: readonly string[];
+  readonly attackSurface: AttackSurfaceInfo;
+  readonly mitigations: readonly MitigationInfo[];
+}
+
+export interface RootCauseAnalysis {
+  readonly description: string;
+  readonly cwe: string | null;
+  readonly location: CodeLocation;
+  readonly dataFlow: readonly DataFlowStep[];
+}
+
+export interface CodeLocation {
+  readonly file: string | null;
+  readonly function: string | null;
+  readonly line: number | null;
+  readonly offset: number | null;
+}
+
+export interface DataFlowStep {
+  readonly stepId: string;
+  readonly type: 'SOURCE' | 'PROPAGATION' | 'SINK';
+  readonly location: CodeLocation;
+  readonly description: string;
+}
+
+export interface AttackSurfaceInfo {
+  readonly entryPoints: readonly string[];
+  readonly prerequisites: readonly string[];
+  readonly constraints: readonly string[];
+}
+
+export interface MitigationInfo {
+  readonly mitigationId: string;
+  readonly type: 'PATCH' | 'WORKAROUND' | 'CONFIGURATION' | 'DETECTION';
+  readonly description: string;
+  readonly effectiveness: 'HIGH' | 'MEDIUM' | 'LOW';
+}
+
+export interface ExploitationInfo {
+  readonly exploitable: boolean;
+  readonly exploitType: ExploitType | null;
+  readonly reliability: 'HIGH' | 'MEDIUM' | 'LOW' | null;
+  readonly exploit: ExploitDetails | null;
+}
+
+export interface ExploitDetails {
+  readonly exploitId: string;
+  readonly name: string;
+  readonly type: ExploitType;
+  readonly techniques: readonly string[];
+  readonly payload: PayloadInfo | null;
+  readonly requirements: ExploitRequirements;
+  readonly testing: ExploitTestingResults;
+}
+
+export interface PayloadInfo {
+  readonly payloadId: string;
+  readonly type: ShellcodeType;
+  readonly architecture: ProcessorArchitecture;
+  readonly platform: TargetPlatform;
+  readonly size: number;
+  readonly encoded: boolean;
+}
+
+export interface ExploitRequirements {
+  readonly prerequisites: readonly string[];
+  readonly permissions: readonly string[];
+  readonly timing: string | null;
+  readonly environment: readonly string[];
+}
+
+export interface ExploitTestingResults {
+  readonly tested: boolean;
+  readonly successRate: number | null;
+  readonly environments: readonly TestedEnvironment[];
+  readonly sideEffects: readonly string[];
+}
+
+export interface TestedEnvironment {
+  readonly environmentId: string;
+  readonly platform: TargetPlatform;
+  readonly version: string;
+  readonly configuration: string;
+  readonly result: 'SUCCESS' | 'FAILURE' | 'PARTIAL';
+}
+
+export interface DisclosureInfo {
+  readonly status: DisclosureStatus;
+  readonly timeline: DisclosureTimeline;
+  readonly identifiers: DisclosureIdentifiers;
+}
+
+export type DisclosureStatus =
+  | 'UNDISCLOSED'
+  | 'VENDOR_NOTIFIED'
+  | 'PATCH_AVAILABLE'
+  | 'PUBLIC'
+  | 'INTERNAL_ONLY';
+
+export interface DisclosureTimeline {
+  readonly discovered: number;
+  readonly vendorNotified: number | null;
+  readonly patchReleased: number | null;
+  readonly publicDisclosure: number | null;
+}
+
+export interface DisclosureIdentifiers {
+  readonly cve: string | null;
+  readonly internalId: string;
+  readonly vendorId: string | null;
+  readonly certId: string | null;
+}
+
+export type VulnerabilityStatus =
+  | 'DISCOVERED'
+  | 'ANALYZING'
+  | 'CONFIRMED'
+  | 'EXPLOITING'
+  | 'DOCUMENTED'
+  | 'DISCLOSED'
+  | 'ARCHIVED';
+
+export interface VulnerabilityMetadata {
+  readonly createdAt: number;
+  readonly updatedAt: number;
+  readonly createdBy: string;
+  readonly classification: SecurityLevel;
+  readonly tags: readonly string[];
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SESSION TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface ResearchSession {
+  readonly sessionId: string;
+  readonly platformId: string;
+  readonly state: SessionState;
+  readonly config: SessionConfig;
+  readonly progress: SessionProgress;
+  readonly vulnerabilities: readonly Vulnerability[];
+  readonly fuzzingCampaigns: readonly FuzzingCampaign[];
+  readonly alerts: readonly SessionAlert[];
+  readonly errors: readonly SessionError[];
+  readonly startTime: number;
+  readonly endTime: number | null;
+  readonly metadata: SessionMetadata;
+}
+
+export type SessionState =
+  | 'PENDING'
+  | 'INITIALIZING'
+  | 'DISCOVERING'
+  | 'ANALYZING'
+  | 'EXPLOITING'
+  | 'DOCUMENTING'
+  | 'COMPLETED'
+  | 'FAILED';
+
+export interface SessionConfig {
+  readonly mode: OperationalMode;
+  readonly targets: readonly string[];
+  readonly options: Readonly<Record<string, unknown>>;
+}
+
+export interface SessionProgress {
+  readonly phase: SessionPhase;
+  readonly percentage: number;
+  readonly currentTask: string | null;
+  readonly estimatedTimeRemaining: number | null;
+}
+
+export type SessionPhase =
+  | 'INITIALIZING'
+  | 'TARGET_ANALYSIS'
+  | 'VULNERABILITY_DISCOVERY'
+  | 'EXPLOIT_DEVELOPMENT'
+  | 'TESTING'
+  | 'DOCUMENTATION'
+  | 'FINALIZING';
+
+export interface FuzzingCampaign {
+  readonly campaignId: string;
+  readonly name: string;
+  readonly target: string;
+  readonly type: FuzzingType;
+  readonly status: CampaignStatus;
+  readonly statistics: FuzzingStatistics;
+  readonly crashes: readonly CrashInfo[];
+  readonly coverage: CoverageInfo;
+}
+
+export type FuzzingType =
+  | 'COVERAGE_GUIDED'
+  | 'MUTATION'
+  | 'GENERATION'
+  | 'GRAMMAR'
+  | 'PROTOCOL';
+
+export type CampaignStatus =
+  | 'PENDING'
+  | 'RUNNING'
+  | 'PAUSED'
+  | 'COMPLETED'
+  | 'FAILED';
+
+export interface FuzzingStatistics {
+  readonly executions: number;
+  readonly executionsPerSecond: number;
+  readonly crashes: number;
+  readonly uniqueCrashes: number;
+  readonly hangs: number;
+  readonly coverage: number;
+  readonly runtime: number;
+}
+
+export interface CrashInfo {
+  readonly crashId: string;
+  readonly timestamp: number;
+  readonly type: CrashType;
+  readonly signal: number | null;
+  readonly stackTrace: readonly string[];
+  readonly input: string;
+  readonly minimized: boolean;
+  readonly deduplicated: boolean;
+}
+
+export type CrashType =
+  | 'SEGFAULT'
+  | 'ABORT'
+  | 'HEAP_CORRUPTION'
+  | 'STACK_CORRUPTION'
+  | 'ASSERTION'
+  | 'TIMEOUT'
+  | 'OOM';
+
+export interface CoverageInfo {
+  readonly edges: number;
+  readonly blocks: number;
+  readonly functions: number;
+  readonly lines: number | null;
+  readonly percentage: number;
+}
+
+export interface SessionAlert {
+  readonly alertId: string;
+  readonly timestamp: number;
+  readonly type: AlertType;
+  readonly severity: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
+  readonly source: string;
+  readonly description: string;
+  readonly status: AlertStatus;
+}
+
+export type AlertType =
+  | 'CRASH_DETECTED'
+  | 'VULNERABILITY_FOUND'
+  | 'EXPLOIT_SUCCESS'
+  | 'COVERAGE_PLATEAU'
+  | 'RESOURCE_EXHAUSTION';
+
+export type AlertStatus =
+  | 'NEW'
+  | 'ACKNOWLEDGED'
+  | 'INVESTIGATING'
+  | 'RESOLVED'
+  | 'ESCALATED';
+
+export interface SessionError {
+  readonly errorId: string;
+  readonly timestamp: number;
+  readonly type: SessionErrorType;
+  readonly message: string;
+  readonly details: string | null;
+  readonly recoverable: boolean;
+}
+
+export type SessionErrorType =
+  | 'ANALYSIS_ERROR'
+  | 'FUZZING_ERROR'
+  | 'EXPLOITATION_ERROR'
+  | 'ENVIRONMENT_ERROR'
+  | 'TIMEOUT'
+  | 'INTERNAL_ERROR';
+
+export interface SessionMetadata {
+  readonly platformVersion: string;
+  readonly startedBy: string;
+  readonly classification: SecurityLevel;
+  readonly authorization: string;
+  readonly tags: readonly string[];
+}

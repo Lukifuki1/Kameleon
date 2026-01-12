@@ -1,0 +1,1769 @@
+/**
+ * @file Web Crawler Engine - Self-Contained Intelligent Web Crawling System
+ * @author {{AVTOR}}
+ * @version {{VERZIJA}}
+ * @date {{DATUM}}
+ * @project {{IME_PROJEKTA}}
+ * @domain VARNOSTNI_SISTEMI
+ * 
+ * @requirement REQ-SEC-WCE-001
+ * @design DSN-SEC-WCE-001
+ * @test TST-SEC-WCE-001
+ * 
+ * @description
+ * Enterprise-grade self-contained web crawler engine implementing intelligent
+ * recursive crawling with JavaScript rendering, form handling, authentication
+ * awareness, and stealth capabilities. All protocols and parsers are natively
+ * implemented without external dependencies.
+ * 
+ * @classification TOP SECRET - Web Intelligence Operations
+ * @authorization Required: Level 5 Security Clearance
+ * @dependencies NONE - Fully self-contained implementation
+ */
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// CRAWLER TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export type CrawlerMode =
+  | 'BREADTH_FIRST'
+  | 'DEPTH_FIRST'
+  | 'BEST_FIRST'
+  | 'FOCUSED'
+  | 'INCREMENTAL'
+  | 'DISTRIBUTED'
+  | 'STEALTH';
+
+export type CrawlerState =
+  | 'IDLE'
+  | 'INITIALIZING'
+  | 'CRAWLING'
+  | 'PAUSED'
+  | 'STOPPING'
+  | 'STOPPED'
+  | 'COMPLETED'
+  | 'FAILED';
+
+export type URLPriority =
+  | 'CRITICAL'
+  | 'HIGH'
+  | 'MEDIUM'
+  | 'LOW'
+  | 'BACKGROUND';
+
+export type ContentType =
+  | 'HTML'
+  | 'XHTML'
+  | 'XML'
+  | 'JSON'
+  | 'JAVASCRIPT'
+  | 'CSS'
+  | 'IMAGE'
+  | 'VIDEO'
+  | 'AUDIO'
+  | 'PDF'
+  | 'DOCUMENT'
+  | 'ARCHIVE'
+  | 'BINARY'
+  | 'UNKNOWN';
+
+export type LinkType =
+  | 'ANCHOR'
+  | 'FORM_ACTION'
+  | 'REDIRECT'
+  | 'JAVASCRIPT'
+  | 'CSS_IMPORT'
+  | 'IMAGE_SRC'
+  | 'SCRIPT_SRC'
+  | 'IFRAME_SRC'
+  | 'OBJECT_DATA'
+  | 'EMBED_SRC'
+  | 'VIDEO_SRC'
+  | 'AUDIO_SRC'
+  | 'LINK_HREF'
+  | 'META_REFRESH'
+  | 'BASE_HREF'
+  | 'AREA_HREF'
+  | 'SITEMAP'
+  | 'ROBOTS_TXT'
+  | 'API_ENDPOINT'
+  | 'WEBSOCKET';
+
+export type RenderingMode =
+  | 'STATIC'
+  | 'JAVASCRIPT'
+  | 'FULL_BROWSER'
+  | 'HEADLESS'
+  | 'HYBRID';
+
+export type AuthenticationMethod =
+  | 'NONE'
+  | 'BASIC'
+  | 'DIGEST'
+  | 'NTLM'
+  | 'FORM'
+  | 'BEARER'
+  | 'API_KEY'
+  | 'OAUTH2'
+  | 'CERTIFICATE'
+  | 'CUSTOM';
+
+export type StealthLevel =
+  | 'NONE'
+  | 'LOW'
+  | 'MEDIUM'
+  | 'HIGH'
+  | 'PARANOID';
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// CRAWLER CONFIGURATION
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface WebCrawlerConfig {
+  readonly crawlerId: string;
+  readonly name: string;
+  readonly version: string;
+  readonly seeds: readonly SeedURL[];
+  readonly scope: CrawlerScope;
+  readonly behavior: CrawlerBehavior;
+  readonly rendering: RenderingConfig;
+  readonly authentication: CrawlerAuthConfig | null;
+  readonly extraction: ExtractionConfig;
+  readonly storage: StorageConfig;
+  readonly scheduling: CrawlerSchedulingConfig;
+  readonly stealth: StealthConfig;
+  readonly distributed: DistributedConfig | null;
+  readonly monitoring: MonitoringConfig;
+  readonly metadata: CrawlerMetadata;
+}
+
+export interface SeedURL {
+  readonly url: string;
+  readonly priority: URLPriority;
+  readonly depth: number;
+  readonly tags: readonly string[];
+  readonly metadata: Readonly<Record<string, unknown>>;
+}
+
+export interface CrawlerScope {
+  readonly allowedDomains: readonly string[];
+  readonly blockedDomains: readonly string[];
+  readonly allowedPaths: readonly string[];
+  readonly blockedPaths: readonly string[];
+  readonly allowedProtocols: readonly string[];
+  readonly allowedExtensions: readonly string[];
+  readonly blockedExtensions: readonly string[];
+  readonly allowedContentTypes: readonly ContentType[];
+  readonly maxDepth: number;
+  readonly maxPages: number;
+  readonly maxPageSize: number;
+  readonly followSubdomains: boolean;
+  readonly followExternalLinks: boolean;
+  readonly respectRobotsTxt: boolean;
+  readonly respectMetaRobots: boolean;
+  readonly respectCanonical: boolean;
+  readonly respectNoFollow: boolean;
+  readonly urlPatterns: readonly URLPattern[];
+}
+
+export interface URLPattern {
+  readonly patternId: string;
+  readonly pattern: string;
+  readonly type: 'INCLUDE' | 'EXCLUDE';
+  readonly priority: number;
+  readonly caseSensitive: boolean;
+}
+
+export interface CrawlerBehavior {
+  readonly mode: CrawlerMode;
+  readonly concurrency: ConcurrencyConfig;
+  readonly delays: DelayConfig;
+  readonly retries: RetryConfig;
+  readonly timeouts: TimeoutConfig;
+  readonly redirects: RedirectConfig;
+  readonly cookies: CookieConfig;
+  readonly headers: HeaderConfig;
+  readonly userAgent: UserAgentConfig;
+  readonly deduplication: DeduplicationConfig;
+  readonly prioritization: PrioritizationConfig;
+}
+
+export interface ConcurrencyConfig {
+  readonly maxConcurrentRequests: number;
+  readonly maxConcurrentDomainsPerHost: number;
+  readonly maxRequestsPerDomain: number;
+  readonly connectionPoolSize: number;
+  readonly keepAliveConnections: boolean;
+}
+
+export interface DelayConfig {
+  readonly minDelay: number;
+  readonly maxDelay: number;
+  readonly delayPerDomain: Readonly<Record<string, number>>;
+  readonly adaptiveDelay: boolean;
+  readonly respectCrawlDelay: boolean;
+  readonly jitter: JitterConfig;
+}
+
+export interface JitterConfig {
+  readonly enabled: boolean;
+  readonly minJitter: number;
+  readonly maxJitter: number;
+  readonly distribution: 'UNIFORM' | 'GAUSSIAN' | 'EXPONENTIAL';
+}
+
+export interface RetryConfig {
+  readonly maxRetries: number;
+  readonly retryDelay: number;
+  readonly retryBackoff: number;
+  readonly retryOnStatusCodes: readonly number[];
+  readonly retryOnErrors: readonly string[];
+}
+
+export interface TimeoutConfig {
+  readonly connectionTimeout: number;
+  readonly readTimeout: number;
+  readonly writeTimeout: number;
+  readonly totalTimeout: number;
+  readonly dnsTimeout: number;
+  readonly sslTimeout: number;
+}
+
+export interface RedirectConfig {
+  readonly followRedirects: boolean;
+  readonly maxRedirects: number;
+  readonly followMetaRefresh: boolean;
+  readonly followJavaScriptRedirects: boolean;
+  readonly preserveMethod: boolean;
+  readonly preserveHeaders: boolean;
+}
+
+export interface CookieConfig {
+  readonly enabled: boolean;
+  readonly persistCookies: boolean;
+  readonly maxCookiesPerDomain: number;
+  readonly maxTotalCookies: number;
+  readonly acceptThirdPartyCookies: boolean;
+  readonly customCookies: readonly CrawlerCookie[];
+}
+
+export interface CrawlerCookie {
+  readonly name: string;
+  readonly value: string;
+  readonly domain: string;
+  readonly path: string;
+  readonly secure: boolean;
+  readonly httpOnly: boolean;
+  readonly sameSite: 'STRICT' | 'LAX' | 'NONE';
+  readonly expires: number | null;
+}
+
+export interface HeaderConfig {
+  readonly defaultHeaders: Readonly<Record<string, string>>;
+  readonly acceptLanguage: string;
+  readonly acceptEncoding: string;
+  readonly accept: string;
+  readonly refererPolicy: RefererPolicy;
+  readonly customHeaders: Readonly<Record<string, string>>;
+}
+
+export type RefererPolicy =
+  | 'NO_REFERRER'
+  | 'NO_REFERRER_WHEN_DOWNGRADE'
+  | 'ORIGIN'
+  | 'ORIGIN_WHEN_CROSS_ORIGIN'
+  | 'SAME_ORIGIN'
+  | 'STRICT_ORIGIN'
+  | 'STRICT_ORIGIN_WHEN_CROSS_ORIGIN'
+  | 'UNSAFE_URL';
+
+export interface UserAgentConfig {
+  readonly userAgent: string;
+  readonly rotateUserAgents: boolean;
+  readonly userAgentPool: readonly string[];
+  readonly rotationStrategy: 'RANDOM' | 'ROUND_ROBIN' | 'WEIGHTED';
+}
+
+export interface DeduplicationConfig {
+  readonly enabled: boolean;
+  readonly method: DeduplicationMethod;
+  readonly hashAlgorithm: 'MD5' | 'SHA1' | 'SHA256' | 'XXHASH' | 'SIMHASH';
+  readonly similarityThreshold: number;
+  readonly normalizeUrls: boolean;
+  readonly ignoreQueryParams: readonly string[];
+  readonly ignoreFragments: boolean;
+}
+
+export type DeduplicationMethod =
+  | 'URL_HASH'
+  | 'CONTENT_HASH'
+  | 'SIMHASH'
+  | 'MINHASH'
+  | 'BLOOM_FILTER';
+
+export interface PrioritizationConfig {
+  readonly enabled: boolean;
+  readonly strategy: PrioritizationStrategy;
+  readonly factors: readonly PrioritizationFactor[];
+  readonly customScoring: Readonly<Record<string, number>>;
+}
+
+export type PrioritizationStrategy =
+  | 'FIFO'
+  | 'LIFO'
+  | 'PRIORITY_QUEUE'
+  | 'WEIGHTED'
+  | 'ADAPTIVE';
+
+export interface PrioritizationFactor {
+  readonly factor: string;
+  readonly weight: number;
+  readonly direction: 'ASC' | 'DESC';
+}
+
+export interface RenderingConfig {
+  readonly mode: RenderingMode;
+  readonly javascript: JavaScriptConfig;
+  readonly browser: BrowserConfig;
+  readonly screenshots: ScreenshotConfig;
+  readonly dom: DOMConfig;
+}
+
+export interface JavaScriptConfig {
+  readonly enabled: boolean;
+  readonly timeout: number;
+  readonly waitForNetworkIdle: boolean;
+  readonly networkIdleTimeout: number;
+  readonly waitForSelectors: readonly string[];
+  readonly executeScripts: readonly string[];
+  readonly blockScripts: readonly string[];
+  readonly interceptRequests: boolean;
+}
+
+export interface BrowserConfig {
+  readonly headless: boolean;
+  readonly viewport: ViewportConfig;
+  readonly deviceEmulation: DeviceEmulation | null;
+  readonly geolocation: GeolocationConfig | null;
+  readonly timezone: string | null;
+  readonly locale: string | null;
+  readonly permissions: readonly string[];
+  readonly blockResources: readonly ResourceType[];
+}
+
+export interface ViewportConfig {
+  readonly width: number;
+  readonly height: number;
+  readonly deviceScaleFactor: number;
+  readonly isMobile: boolean;
+  readonly hasTouch: boolean;
+  readonly isLandscape: boolean;
+}
+
+export interface DeviceEmulation {
+  readonly name: string;
+  readonly userAgent: string;
+  readonly viewport: ViewportConfig;
+}
+
+export interface GeolocationConfig {
+  readonly latitude: number;
+  readonly longitude: number;
+  readonly accuracy: number;
+}
+
+export type ResourceType =
+  | 'DOCUMENT'
+  | 'STYLESHEET'
+  | 'IMAGE'
+  | 'MEDIA'
+  | 'FONT'
+  | 'SCRIPT'
+  | 'TEXTTRACK'
+  | 'XHR'
+  | 'FETCH'
+  | 'EVENTSOURCE'
+  | 'WEBSOCKET'
+  | 'MANIFEST'
+  | 'OTHER';
+
+export interface ScreenshotConfig {
+  readonly enabled: boolean;
+  readonly format: 'PNG' | 'JPEG' | 'WEBP';
+  readonly quality: number;
+  readonly fullPage: boolean;
+  readonly clip: ClipRegion | null;
+  readonly omitBackground: boolean;
+}
+
+export interface ClipRegion {
+  readonly x: number;
+  readonly y: number;
+  readonly width: number;
+  readonly height: number;
+}
+
+export interface DOMConfig {
+  readonly captureDOM: boolean;
+  readonly captureOuterHTML: boolean;
+  readonly captureInnerText: boolean;
+  readonly captureComputedStyles: boolean;
+  readonly maxDOMSize: number;
+}
+
+export interface CrawlerAuthConfig {
+  readonly method: AuthenticationMethod;
+  readonly credentials: CrawlerCredentials;
+  readonly loginSequence: LoginSequenceConfig | null;
+  readonly sessionManagement: SessionManagementConfig;
+  readonly logoutDetection: LogoutDetectionConfig;
+}
+
+export interface CrawlerCredentials {
+  readonly username: string | null;
+  readonly password: string | null;
+  readonly token: string | null;
+  readonly apiKey: string | null;
+  readonly certificate: CertificateCredentials | null;
+  readonly oauth: OAuthCredentials | null;
+}
+
+export interface CertificateCredentials {
+  readonly cert: string;
+  readonly key: string;
+  readonly passphrase: string | null;
+  readonly ca: string | null;
+}
+
+export interface OAuthCredentials {
+  readonly clientId: string;
+  readonly clientSecret: string;
+  readonly tokenUrl: string;
+  readonly scope: string;
+  readonly grantType: 'CLIENT_CREDENTIALS' | 'PASSWORD' | 'AUTHORIZATION_CODE' | 'REFRESH_TOKEN';
+}
+
+export interface LoginSequenceConfig {
+  readonly steps: readonly LoginStepConfig[];
+  readonly successIndicators: readonly SuccessIndicatorConfig[];
+  readonly failureIndicators: readonly FailureIndicatorConfig[];
+}
+
+export interface LoginStepConfig {
+  readonly stepId: string;
+  readonly action: LoginAction;
+  readonly target: string;
+  readonly value: string | null;
+  readonly waitAfter: number;
+}
+
+export type LoginAction =
+  | 'NAVIGATE'
+  | 'CLICK'
+  | 'TYPE'
+  | 'SELECT'
+  | 'SUBMIT'
+  | 'WAIT'
+  | 'SCREENSHOT';
+
+export interface SuccessIndicatorConfig {
+  readonly type: 'URL_PATTERN' | 'ELEMENT_PRESENT' | 'ELEMENT_ABSENT' | 'COOKIE_PRESENT' | 'TEXT_PRESENT';
+  readonly value: string;
+}
+
+export interface FailureIndicatorConfig {
+  readonly type: 'URL_PATTERN' | 'ELEMENT_PRESENT' | 'TEXT_PRESENT' | 'STATUS_CODE';
+  readonly value: string;
+}
+
+export interface SessionManagementConfig {
+  readonly sessionCookieName: string | null;
+  readonly sessionHeaderName: string | null;
+  readonly sessionTokenExtraction: TokenExtractionConfig | null;
+  readonly sessionRefresh: SessionRefreshConfig | null;
+}
+
+export interface TokenExtractionConfig {
+  readonly method: 'REGEX' | 'XPATH' | 'CSS_SELECTOR' | 'JSON_PATH';
+  readonly pattern: string;
+  readonly source: 'RESPONSE_BODY' | 'RESPONSE_HEADER' | 'COOKIE';
+}
+
+export interface SessionRefreshConfig {
+  readonly enabled: boolean;
+  readonly refreshUrl: string;
+  readonly refreshInterval: number;
+  readonly refreshOnError: boolean;
+}
+
+export interface LogoutDetectionConfig {
+  readonly enabled: boolean;
+  readonly indicators: readonly LogoutIndicatorConfig[];
+  readonly reloginOnLogout: boolean;
+}
+
+export interface LogoutIndicatorConfig {
+  readonly type: 'URL_PATTERN' | 'STATUS_CODE' | 'ELEMENT_PRESENT' | 'COOKIE_ABSENT';
+  readonly value: string;
+}
+
+export interface ExtractionConfig {
+  readonly links: LinkExtractionConfig;
+  readonly forms: FormExtractionConfig;
+  readonly content: ContentExtractionConfig;
+  readonly metadata: MetadataExtractionConfig;
+  readonly custom: readonly CustomExtractorConfig[];
+}
+
+export interface LinkExtractionConfig {
+  readonly extractFromHTML: boolean;
+  readonly extractFromJavaScript: boolean;
+  readonly extractFromCSS: boolean;
+  readonly extractFromComments: boolean;
+  readonly extractFromJSON: boolean;
+  readonly extractFromXML: boolean;
+  readonly extractFromSitemap: boolean;
+  readonly extractFromRobotsTxt: boolean;
+  readonly linkTypes: readonly LinkType[];
+  readonly normalizeUrls: boolean;
+  readonly resolveRelativeUrls: boolean;
+  readonly decodeUrls: boolean;
+  readonly customPatterns: readonly LinkPatternConfig[];
+}
+
+export interface LinkPatternConfig {
+  readonly patternId: string;
+  readonly pattern: string;
+  readonly type: LinkType;
+  readonly priority: URLPriority;
+}
+
+export interface FormExtractionConfig {
+  readonly enabled: boolean;
+  readonly extractInputs: boolean;
+  readonly extractSelects: boolean;
+  readonly extractTextareas: boolean;
+  readonly extractButtons: boolean;
+  readonly extractHiddenFields: boolean;
+  readonly detectCSRFTokens: boolean;
+  readonly detectCaptcha: boolean;
+}
+
+export interface ContentExtractionConfig {
+  readonly extractTitle: boolean;
+  readonly extractDescription: boolean;
+  readonly extractKeywords: boolean;
+  readonly extractHeadings: boolean;
+  readonly extractParagraphs: boolean;
+  readonly extractLists: boolean;
+  readonly extractTables: boolean;
+  readonly extractImages: boolean;
+  readonly extractVideos: boolean;
+  readonly extractAudio: boolean;
+  readonly extractStructuredData: boolean;
+  readonly extractOpenGraph: boolean;
+  readonly extractTwitterCards: boolean;
+  readonly extractMicrodata: boolean;
+  readonly extractJSONLD: boolean;
+  readonly extractRDFa: boolean;
+}
+
+export interface MetadataExtractionConfig {
+  readonly extractResponseHeaders: boolean;
+  readonly extractCookies: boolean;
+  readonly extractTiming: boolean;
+  readonly extractTLS: boolean;
+  readonly extractIP: boolean;
+  readonly extractDNS: boolean;
+  readonly extractServerInfo: boolean;
+  readonly extractTechnology: boolean;
+}
+
+export interface CustomExtractorConfig {
+  readonly extractorId: string;
+  readonly name: string;
+  readonly type: 'XPATH' | 'CSS_SELECTOR' | 'REGEX' | 'JSON_PATH';
+  readonly pattern: string;
+  readonly attribute: string | null;
+  readonly multiple: boolean;
+  readonly transform: TransformConfig | null;
+}
+
+export interface TransformConfig {
+  readonly type: 'TRIM' | 'LOWERCASE' | 'UPPERCASE' | 'REGEX_REPLACE' | 'SPLIT' | 'JOIN' | 'CUSTOM';
+  readonly parameters: Readonly<Record<string, unknown>>;
+}
+
+export interface StorageConfig {
+  readonly type: StorageType;
+  readonly path: string;
+  readonly compression: CompressionConfig;
+  readonly rotation: RotationConfig;
+  readonly indexing: IndexingConfig;
+  readonly retention: RetentionConfig;
+}
+
+export type StorageType =
+  | 'FILESYSTEM'
+  | 'DATABASE'
+  | 'OBJECT_STORAGE'
+  | 'MEMORY'
+  | 'HYBRID';
+
+export interface CompressionConfig {
+  readonly enabled: boolean;
+  readonly algorithm: 'GZIP' | 'BROTLI' | 'LZ4' | 'ZSTD' | 'SNAPPY';
+  readonly level: number;
+}
+
+export interface RotationConfig {
+  readonly enabled: boolean;
+  readonly maxFileSize: number;
+  readonly maxFiles: number;
+  readonly rotateOnDate: boolean;
+}
+
+export interface IndexingConfig {
+  readonly enabled: boolean;
+  readonly indexFields: readonly string[];
+  readonly fullTextSearch: boolean;
+  readonly fuzzySearch: boolean;
+}
+
+export interface RetentionConfig {
+  readonly enabled: boolean;
+  readonly maxAge: number;
+  readonly maxSize: number;
+  readonly deleteOnExpiry: boolean;
+}
+
+export interface CrawlerSchedulingConfig {
+  readonly enabled: boolean;
+  readonly schedule: ScheduleConfig | null;
+  readonly recurring: RecurringScheduleConfig | null;
+  readonly blackoutPeriods: readonly BlackoutPeriodConfig[];
+  readonly maxDuration: number;
+}
+
+export interface ScheduleConfig {
+  readonly startTime: number;
+  readonly endTime: number | null;
+  readonly timezone: string;
+}
+
+export interface RecurringScheduleConfig {
+  readonly frequency: 'HOURLY' | 'DAILY' | 'WEEKLY' | 'MONTHLY';
+  readonly interval: number;
+  readonly daysOfWeek: readonly number[];
+  readonly daysOfMonth: readonly number[];
+  readonly time: string;
+}
+
+export interface BlackoutPeriodConfig {
+  readonly periodId: string;
+  readonly name: string;
+  readonly startTime: string;
+  readonly endTime: string;
+  readonly daysOfWeek: readonly number[];
+}
+
+export interface StealthConfig {
+  readonly level: StealthLevel;
+  readonly fingerprinting: FingerprintConfig;
+  readonly evasion: EvasionConfig;
+  readonly proxy: ProxyConfig;
+  readonly timing: TimingConfig;
+}
+
+export interface FingerprintConfig {
+  readonly randomizeFingerprint: boolean;
+  readonly spoofWebGL: boolean;
+  readonly spoofCanvas: boolean;
+  readonly spoofAudioContext: boolean;
+  readonly spoofFonts: boolean;
+  readonly spoofPlugins: boolean;
+  readonly spoofTimezone: boolean;
+  readonly spoofLanguage: boolean;
+  readonly spoofPlatform: boolean;
+  readonly spoofHardwareConcurrency: boolean;
+  readonly spoofDeviceMemory: boolean;
+  readonly spoofScreenResolution: boolean;
+}
+
+export interface EvasionConfig {
+  readonly bypassBotDetection: boolean;
+  readonly bypassCaptcha: boolean;
+  readonly bypassRateLimit: boolean;
+  readonly bypassWAF: boolean;
+  readonly bypassCloudflare: boolean;
+  readonly bypassAkamai: boolean;
+  readonly bypassImperva: boolean;
+  readonly bypassRecaptcha: boolean;
+  readonly bypassHCaptcha: boolean;
+  readonly techniques: readonly EvasionTechnique[];
+}
+
+export type EvasionTechnique =
+  | 'MOUSE_MOVEMENT'
+  | 'SCROLL_BEHAVIOR'
+  | 'TYPING_PATTERN'
+  | 'CLICK_PATTERN'
+  | 'NAVIGATION_PATTERN'
+  | 'TIMING_VARIATION'
+  | 'HEADER_NORMALIZATION'
+  | 'TLS_FINGERPRINT'
+  | 'HTTP2_FINGERPRINT';
+
+export interface ProxyConfig {
+  readonly enabled: boolean;
+  readonly type: 'HTTP' | 'HTTPS' | 'SOCKS4' | 'SOCKS5';
+  readonly host: string;
+  readonly port: number;
+  readonly username: string | null;
+  readonly password: string | null;
+  readonly rotation: ProxyRotationConfig | null;
+}
+
+export interface ProxyRotationConfig {
+  readonly enabled: boolean;
+  readonly strategy: 'ROUND_ROBIN' | 'RANDOM' | 'LEAST_USED' | 'GEOGRAPHIC';
+  readonly proxies: readonly ProxyConfig[];
+  readonly rotateOnError: boolean;
+  readonly rotateOnBlock: boolean;
+  readonly rotateInterval: number;
+}
+
+export interface TimingConfig {
+  readonly humanLikeDelays: boolean;
+  readonly minPageDelay: number;
+  readonly maxPageDelay: number;
+  readonly minActionDelay: number;
+  readonly maxActionDelay: number;
+  readonly randomizeTimings: boolean;
+}
+
+export interface DistributedConfig {
+  readonly enabled: boolean;
+  readonly mode: DistributedMode;
+  readonly coordinator: CoordinatorConfig;
+  readonly workers: readonly WorkerConfig[];
+  readonly partitioning: PartitioningConfig;
+  readonly synchronization: SynchronizationConfig;
+}
+
+export type DistributedMode =
+  | 'MASTER_SLAVE'
+  | 'PEER_TO_PEER'
+  | 'HIERARCHICAL';
+
+export interface CoordinatorConfig {
+  readonly host: string;
+  readonly port: number;
+  readonly protocol: 'HTTP' | 'HTTPS' | 'GRPC' | 'WEBSOCKET';
+  readonly authentication: CoordinatorAuthConfig | null;
+}
+
+export interface CoordinatorAuthConfig {
+  readonly type: 'API_KEY' | 'BEARER' | 'MTLS';
+  readonly credentials: Readonly<Record<string, string>>;
+}
+
+export interface WorkerConfig {
+  readonly workerId: string;
+  readonly host: string;
+  readonly port: number;
+  readonly capacity: number;
+  readonly tags: readonly string[];
+}
+
+export interface PartitioningConfig {
+  readonly strategy: 'DOMAIN' | 'URL_HASH' | 'ROUND_ROBIN' | 'GEOGRAPHIC';
+  readonly rebalanceOnFailure: boolean;
+  readonly rebalanceInterval: number;
+}
+
+export interface SynchronizationConfig {
+  readonly urlQueueSync: boolean;
+  readonly visitedUrlsSync: boolean;
+  readonly cookieSync: boolean;
+  readonly sessionSync: boolean;
+  readonly syncInterval: number;
+}
+
+export interface MonitoringConfig {
+  readonly enabled: boolean;
+  readonly metrics: MetricsConfig;
+  readonly logging: LoggingConfig;
+  readonly alerting: AlertingConfig;
+  readonly dashboard: DashboardConfig;
+}
+
+export interface MetricsConfig {
+  readonly enabled: boolean;
+  readonly collectInterval: number;
+  readonly metrics: readonly MetricType[];
+  readonly exportFormat: 'PROMETHEUS' | 'STATSD' | 'INFLUXDB' | 'CUSTOM';
+}
+
+export type MetricType =
+  | 'REQUESTS_TOTAL'
+  | 'REQUESTS_PER_SECOND'
+  | 'RESPONSE_TIME'
+  | 'ERROR_RATE'
+  | 'PAGES_CRAWLED'
+  | 'QUEUE_SIZE'
+  | 'MEMORY_USAGE'
+  | 'CPU_USAGE'
+  | 'BANDWIDTH'
+  | 'ACTIVE_CONNECTIONS';
+
+export interface LoggingConfig {
+  readonly level: 'DEBUG' | 'INFO' | 'WARN' | 'ERROR';
+  readonly format: 'JSON' | 'TEXT' | 'STRUCTURED';
+  readonly destination: 'CONSOLE' | 'FILE' | 'SYSLOG' | 'CUSTOM';
+  readonly logRequests: boolean;
+  readonly logResponses: boolean;
+  readonly logErrors: boolean;
+  readonly logPerformance: boolean;
+  readonly redactSensitive: boolean;
+}
+
+export interface AlertingConfig {
+  readonly enabled: boolean;
+  readonly channels: readonly AlertChannelConfig[];
+  readonly rules: readonly AlertRuleConfig[];
+}
+
+export interface AlertChannelConfig {
+  readonly channelId: string;
+  readonly type: 'EMAIL' | 'WEBHOOK' | 'SLACK' | 'PAGERDUTY';
+  readonly config: Readonly<Record<string, unknown>>;
+}
+
+export interface AlertRuleConfig {
+  readonly ruleId: string;
+  readonly name: string;
+  readonly condition: string;
+  readonly threshold: number;
+  readonly duration: number;
+  readonly severity: 'INFO' | 'WARNING' | 'CRITICAL';
+  readonly channels: readonly string[];
+}
+
+export interface DashboardConfig {
+  readonly enabled: boolean;
+  readonly port: number;
+  readonly authentication: boolean;
+  readonly refreshInterval: number;
+}
+
+export interface CrawlerMetadata {
+  readonly createdAt: number;
+  readonly updatedAt: number;
+  readonly createdBy: string;
+  readonly version: string;
+  readonly tags: readonly string[];
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// CRAWL RESULT TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface CrawlSession {
+  readonly sessionId: string;
+  readonly crawlerId: string;
+  readonly state: CrawlerState;
+  readonly startTime: number;
+  readonly endTime: number | null;
+  readonly duration: number | null;
+  readonly progress: CrawlProgress;
+  readonly statistics: CrawlStatistics;
+  readonly pages: readonly CrawledPage[];
+  readonly errors: readonly CrawlError[];
+  readonly metadata: CrawlSessionMetadata;
+}
+
+export interface CrawlProgress {
+  readonly phase: CrawlPhase;
+  readonly percentage: number;
+  readonly currentUrl: string | null;
+  readonly urlsQueued: number;
+  readonly urlsCrawled: number;
+  readonly urlsRemaining: number;
+  readonly urlsFailed: number;
+  readonly urlsSkipped: number;
+  readonly depth: number;
+  readonly maxDepth: number;
+}
+
+export type CrawlPhase =
+  | 'INITIALIZING'
+  | 'SEEDING'
+  | 'CRAWLING'
+  | 'RENDERING'
+  | 'EXTRACTING'
+  | 'STORING'
+  | 'FINALIZING'
+  | 'COMPLETED';
+
+export interface CrawlStatistics {
+  readonly totalUrls: number;
+  readonly crawledUrls: number;
+  readonly failedUrls: number;
+  readonly skippedUrls: number;
+  readonly duplicateUrls: number;
+  readonly outOfScopeUrls: number;
+  readonly totalRequests: number;
+  readonly totalResponses: number;
+  readonly totalBytes: number;
+  readonly averageResponseTime: number;
+  readonly maxResponseTime: number;
+  readonly minResponseTime: number;
+  readonly statusCodeDistribution: Readonly<Record<number, number>>;
+  readonly contentTypeDistribution: Readonly<Record<string, number>>;
+  readonly domainDistribution: Readonly<Record<string, number>>;
+  readonly depthDistribution: Readonly<Record<number, number>>;
+  readonly errorDistribution: Readonly<Record<string, number>>;
+  readonly linksExtracted: number;
+  readonly formsExtracted: number;
+  readonly imagesExtracted: number;
+  readonly scriptsExtracted: number;
+  readonly stylesExtracted: number;
+}
+
+export interface CrawledPage {
+  readonly pageId: string;
+  readonly sessionId: string;
+  readonly url: string;
+  readonly normalizedUrl: string;
+  readonly method: string;
+  readonly request: CrawlRequest;
+  readonly response: CrawlResponse;
+  readonly content: PageContent;
+  readonly links: readonly ExtractedLink[];
+  readonly forms: readonly ExtractedForm[];
+  readonly resources: readonly ExtractedResource[];
+  readonly metadata: PageMetadata;
+  readonly timing: PageTiming;
+  readonly parent: string | null;
+  readonly depth: number;
+  readonly crawledAt: number;
+}
+
+export interface CrawlRequest {
+  readonly method: string;
+  readonly url: string;
+  readonly headers: Readonly<Record<string, string>>;
+  readonly body: string | null;
+  readonly cookies: readonly CrawlerCookie[];
+  readonly timestamp: number;
+}
+
+export interface CrawlResponse {
+  readonly statusCode: number;
+  readonly statusMessage: string;
+  readonly headers: Readonly<Record<string, string>>;
+  readonly cookies: readonly CrawlerCookie[];
+  readonly contentType: string;
+  readonly contentLength: number;
+  readonly contentEncoding: string | null;
+  readonly charset: string | null;
+  readonly body: string | null;
+  readonly bodyHash: string;
+  readonly timestamp: number;
+  readonly fromCache: boolean;
+}
+
+export interface PageContent {
+  readonly html: string | null;
+  readonly text: string | null;
+  readonly title: string | null;
+  readonly description: string | null;
+  readonly keywords: readonly string[];
+  readonly headings: readonly HeadingContent[];
+  readonly paragraphs: readonly string[];
+  readonly lists: readonly ListContent[];
+  readonly tables: readonly TableContent[];
+  readonly structuredData: readonly StructuredDataContent[];
+  readonly openGraph: OpenGraphContent | null;
+  readonly twitterCard: TwitterCardContent | null;
+  readonly language: string | null;
+  readonly charset: string | null;
+}
+
+export interface HeadingContent {
+  readonly level: number;
+  readonly text: string;
+}
+
+export interface ListContent {
+  readonly type: 'ORDERED' | 'UNORDERED';
+  readonly items: readonly string[];
+}
+
+export interface TableContent {
+  readonly headers: readonly string[];
+  readonly rows: readonly readonly string[][];
+}
+
+export interface StructuredDataContent {
+  readonly type: 'JSON_LD' | 'MICRODATA' | 'RDFA';
+  readonly data: Readonly<Record<string, unknown>>;
+}
+
+export interface OpenGraphContent {
+  readonly title: string | null;
+  readonly type: string | null;
+  readonly url: string | null;
+  readonly image: string | null;
+  readonly description: string | null;
+  readonly siteName: string | null;
+  readonly locale: string | null;
+  readonly custom: Readonly<Record<string, string>>;
+}
+
+export interface TwitterCardContent {
+  readonly card: string | null;
+  readonly site: string | null;
+  readonly creator: string | null;
+  readonly title: string | null;
+  readonly description: string | null;
+  readonly image: string | null;
+  readonly custom: Readonly<Record<string, string>>;
+}
+
+export interface ExtractedLink {
+  readonly linkId: string;
+  readonly url: string;
+  readonly normalizedUrl: string;
+  readonly type: LinkType;
+  readonly text: string | null;
+  readonly title: string | null;
+  readonly rel: string | null;
+  readonly target: string | null;
+  readonly noFollow: boolean;
+  readonly external: boolean;
+  readonly absolute: boolean;
+  readonly position: ElementPosition;
+}
+
+export interface ElementPosition {
+  readonly xpath: string;
+  readonly cssSelector: string;
+  readonly lineNumber: number;
+  readonly columnNumber: number;
+}
+
+export interface ExtractedForm {
+  readonly formId: string;
+  readonly action: string;
+  readonly method: string;
+  readonly enctype: string;
+  readonly name: string | null;
+  readonly id: string | null;
+  readonly inputs: readonly FormInput[];
+  readonly selects: readonly FormSelect[];
+  readonly textareas: readonly FormTextarea[];
+  readonly buttons: readonly FormButton[];
+  readonly hasFileUpload: boolean;
+  readonly hasPassword: boolean;
+  readonly hasCsrfToken: boolean;
+  readonly csrfTokenName: string | null;
+  readonly csrfTokenValue: string | null;
+  readonly position: ElementPosition;
+}
+
+export interface FormInput {
+  readonly name: string | null;
+  readonly type: string;
+  readonly value: string | null;
+  readonly placeholder: string | null;
+  readonly required: boolean;
+  readonly disabled: boolean;
+  readonly readonly: boolean;
+  readonly maxLength: number | null;
+  readonly minLength: number | null;
+  readonly pattern: string | null;
+  readonly autocomplete: string | null;
+}
+
+export interface FormSelect {
+  readonly name: string | null;
+  readonly multiple: boolean;
+  readonly required: boolean;
+  readonly disabled: boolean;
+  readonly options: readonly FormOption[];
+}
+
+export interface FormOption {
+  readonly value: string;
+  readonly text: string;
+  readonly selected: boolean;
+  readonly disabled: boolean;
+}
+
+export interface FormTextarea {
+  readonly name: string | null;
+  readonly value: string;
+  readonly placeholder: string | null;
+  readonly required: boolean;
+  readonly disabled: boolean;
+  readonly readonly: boolean;
+  readonly maxLength: number | null;
+  readonly rows: number | null;
+  readonly cols: number | null;
+}
+
+export interface FormButton {
+  readonly name: string | null;
+  readonly type: string;
+  readonly value: string | null;
+  readonly disabled: boolean;
+  readonly text: string;
+}
+
+export interface ExtractedResource {
+  readonly resourceId: string;
+  readonly url: string;
+  readonly type: ResourceType;
+  readonly mimeType: string | null;
+  readonly size: number | null;
+  readonly integrity: string | null;
+  readonly crossOrigin: string | null;
+  readonly async: boolean;
+  readonly defer: boolean;
+  readonly position: ElementPosition;
+}
+
+export interface PageMetadata {
+  readonly serverInfo: ServerInfo | null;
+  readonly technology: TechnologyInfo;
+  readonly security: SecurityInfo;
+  readonly performance: PerformanceInfo;
+  readonly seo: SEOInfo;
+}
+
+export interface ServerInfo {
+  readonly server: string | null;
+  readonly poweredBy: string | null;
+  readonly aspNetVersion: string | null;
+  readonly phpVersion: string | null;
+  readonly via: string | null;
+  readonly xCache: string | null;
+}
+
+export interface TechnologyInfo {
+  readonly webServer: string | null;
+  readonly applicationServer: string | null;
+  readonly framework: string | null;
+  readonly language: string | null;
+  readonly cms: string | null;
+  readonly ecommerce: string | null;
+  readonly analytics: readonly string[];
+  readonly advertising: readonly string[];
+  readonly cdn: string | null;
+  readonly hosting: string | null;
+  readonly ssl: string | null;
+  readonly waf: string | null;
+}
+
+export interface SecurityInfo {
+  readonly https: boolean;
+  readonly hsts: boolean;
+  readonly hstsMaxAge: number | null;
+  readonly hstsIncludeSubdomains: boolean;
+  readonly hstsPreload: boolean;
+  readonly contentSecurityPolicy: string | null;
+  readonly xFrameOptions: string | null;
+  readonly xContentTypeOptions: string | null;
+  readonly xXssProtection: string | null;
+  readonly referrerPolicy: string | null;
+  readonly permissionsPolicy: string | null;
+  readonly cors: CORSInfo | null;
+}
+
+export interface CORSInfo {
+  readonly allowOrigin: string | null;
+  readonly allowMethods: readonly string[];
+  readonly allowHeaders: readonly string[];
+  readonly allowCredentials: boolean;
+  readonly exposeHeaders: readonly string[];
+  readonly maxAge: number | null;
+}
+
+export interface PerformanceInfo {
+  readonly ttfb: number;
+  readonly domContentLoaded: number | null;
+  readonly load: number | null;
+  readonly firstPaint: number | null;
+  readonly firstContentfulPaint: number | null;
+  readonly largestContentfulPaint: number | null;
+  readonly cumulativeLayoutShift: number | null;
+  readonly firstInputDelay: number | null;
+  readonly totalBlockingTime: number | null;
+}
+
+export interface SEOInfo {
+  readonly hasTitle: boolean;
+  readonly titleLength: number;
+  readonly hasDescription: boolean;
+  readonly descriptionLength: number;
+  readonly hasCanonical: boolean;
+  readonly canonicalUrl: string | null;
+  readonly hasRobotsMeta: boolean;
+  readonly robotsContent: string | null;
+  readonly hasHreflang: boolean;
+  readonly hreflangTags: readonly HreflangTag[];
+  readonly hasStructuredData: boolean;
+  readonly structuredDataTypes: readonly string[];
+  readonly hasOpenGraph: boolean;
+  readonly hasTwitterCard: boolean;
+  readonly h1Count: number;
+  readonly imageAltMissing: number;
+  readonly brokenLinks: number;
+}
+
+export interface HreflangTag {
+  readonly hreflang: string;
+  readonly href: string;
+}
+
+export interface PageTiming {
+  readonly dnsLookup: number;
+  readonly tcpConnection: number;
+  readonly tlsHandshake: number;
+  readonly requestSent: number;
+  readonly waitingForResponse: number;
+  readonly contentDownload: number;
+  readonly domParsing: number | null;
+  readonly jsExecution: number | null;
+  readonly rendering: number | null;
+  readonly total: number;
+}
+
+export interface CrawlError {
+  readonly errorId: string;
+  readonly sessionId: string;
+  readonly url: string;
+  readonly type: CrawlErrorType;
+  readonly code: string;
+  readonly message: string;
+  readonly stackTrace: string | null;
+  readonly timestamp: number;
+  readonly retryCount: number;
+  readonly recoverable: boolean;
+}
+
+export type CrawlErrorType =
+  | 'DNS_ERROR'
+  | 'CONNECTION_ERROR'
+  | 'TIMEOUT'
+  | 'SSL_ERROR'
+  | 'HTTP_ERROR'
+  | 'PARSE_ERROR'
+  | 'RENDER_ERROR'
+  | 'AUTHENTICATION_ERROR'
+  | 'RATE_LIMIT'
+  | 'BLOCKED'
+  | 'CAPTCHA'
+  | 'INTERNAL_ERROR';
+
+export interface CrawlSessionMetadata {
+  readonly crawlerVersion: string;
+  readonly engineVersion: string;
+  readonly startedBy: string;
+  readonly environment: string;
+  readonly tags: readonly string[];
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// URL FRONTIER TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface URLFrontier {
+  readonly frontierId: string;
+  readonly config: FrontierConfig;
+  readonly queues: readonly URLQueue[];
+  readonly statistics: FrontierStatistics;
+}
+
+export interface FrontierConfig {
+  readonly maxSize: number;
+  readonly maxQueueSize: number;
+  readonly politenessPolicy: PolitenessPolicy;
+  readonly prioritization: PrioritizationConfig;
+  readonly deduplication: DeduplicationConfig;
+}
+
+export interface PolitenessPolicy {
+  readonly enabled: boolean;
+  readonly defaultDelay: number;
+  readonly maxDelay: number;
+  readonly respectCrawlDelay: boolean;
+  readonly respectRobotsTxt: boolean;
+  readonly maxConcurrentPerHost: number;
+}
+
+export interface URLQueue {
+  readonly queueId: string;
+  readonly domain: string;
+  readonly priority: URLPriority;
+  readonly urls: readonly QueuedURL[];
+  readonly lastAccess: number;
+  readonly nextAccess: number;
+  readonly crawlDelay: number;
+}
+
+export interface QueuedURL {
+  readonly url: string;
+  readonly priority: URLPriority;
+  readonly depth: number;
+  readonly parent: string | null;
+  readonly discoveredAt: number;
+  readonly retryCount: number;
+  readonly metadata: Readonly<Record<string, unknown>>;
+}
+
+export interface FrontierStatistics {
+  readonly totalUrls: number;
+  readonly pendingUrls: number;
+  readonly inProgressUrls: number;
+  readonly completedUrls: number;
+  readonly failedUrls: number;
+  readonly duplicateUrls: number;
+  readonly queueCount: number;
+  readonly averageQueueSize: number;
+  readonly urlsPerSecond: number;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// NATIVE HTTP CLIENT TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface NativeHTTPClient {
+  readonly clientId: string;
+  readonly config: HTTPClientConfig;
+  readonly connectionPool: ConnectionPool;
+  readonly cookieStore: CookieStore;
+  readonly interceptors: InterceptorChain;
+}
+
+export interface HTTPClientConfig {
+  readonly timeout: number;
+  readonly keepAlive: boolean;
+  readonly keepAliveTimeout: number;
+  readonly maxSockets: number;
+  readonly maxFreeSockets: number;
+  readonly socketTimeout: number;
+  readonly dnsCache: boolean;
+  readonly dnsCacheTtl: number;
+  readonly tcpNoDelay: boolean;
+  readonly rejectUnauthorized: boolean;
+  readonly secureProtocol: string;
+  readonly ciphers: string;
+  readonly honorCipherOrder: boolean;
+  readonly http2: boolean;
+  readonly http2MaxConcurrentStreams: number;
+}
+
+export interface ConnectionPool {
+  readonly maxConnections: number;
+  readonly maxConnectionsPerHost: number;
+  readonly connectionTimeout: number;
+  readonly idleTimeout: number;
+  readonly connections: readonly PooledConnection[];
+}
+
+export interface PooledConnection {
+  readonly connectionId: string;
+  readonly host: string;
+  readonly port: number;
+  readonly protocol: 'HTTP' | 'HTTPS' | 'HTTP2';
+  readonly state: 'IDLE' | 'ACTIVE' | 'CLOSED';
+  readonly createdAt: number;
+  readonly lastUsedAt: number;
+  readonly requestCount: number;
+  readonly bytesRead: number;
+  readonly bytesWritten: number;
+}
+
+export interface CookieStore {
+  readonly cookies: readonly StoredCookie[];
+  readonly maxCookies: number;
+  readonly maxCookiesPerDomain: number;
+}
+
+export interface StoredCookie {
+  readonly name: string;
+  readonly value: string;
+  readonly domain: string;
+  readonly path: string;
+  readonly expires: number | null;
+  readonly maxAge: number | null;
+  readonly secure: boolean;
+  readonly httpOnly: boolean;
+  readonly sameSite: 'STRICT' | 'LAX' | 'NONE' | null;
+  readonly createdAt: number;
+  readonly lastAccessedAt: number;
+}
+
+export interface InterceptorChain {
+  readonly requestInterceptors: readonly RequestInterceptor[];
+  readonly responseInterceptors: readonly ResponseInterceptor[];
+}
+
+export interface RequestInterceptor {
+  readonly interceptorId: string;
+  readonly name: string;
+  readonly priority: number;
+  readonly enabled: boolean;
+}
+
+export interface ResponseInterceptor {
+  readonly interceptorId: string;
+  readonly name: string;
+  readonly priority: number;
+  readonly enabled: boolean;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// NATIVE HTML PARSER TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface NativeHTMLParser {
+  readonly parserId: string;
+  readonly config: HTMLParserConfig;
+}
+
+export interface HTMLParserConfig {
+  readonly strictMode: boolean;
+  readonly decodeEntities: boolean;
+  readonly lowerCaseTags: boolean;
+  readonly lowerCaseAttributes: boolean;
+  readonly recognizeSelfClosing: boolean;
+  readonly recognizeCDATA: boolean;
+  readonly maxDepth: number;
+  readonly maxAttributes: number;
+  readonly maxTagLength: number;
+  readonly maxTextLength: number;
+}
+
+export interface ParsedHTML {
+  readonly documentId: string;
+  readonly url: string;
+  readonly doctype: string | null;
+  readonly root: HTMLNode;
+  readonly head: HTMLNode | null;
+  readonly body: HTMLNode | null;
+  readonly title: string | null;
+  readonly charset: string | null;
+  readonly language: string | null;
+  readonly baseUrl: string | null;
+}
+
+export interface HTMLNode {
+  readonly nodeId: string;
+  readonly type: HTMLNodeType;
+  readonly tagName: string | null;
+  readonly attributes: Readonly<Record<string, string>>;
+  readonly children: readonly HTMLNode[];
+  readonly textContent: string;
+  readonly innerHTML: string;
+  readonly outerHTML: string;
+  readonly parent: string | null;
+  readonly depth: number;
+  readonly position: NodePosition;
+}
+
+export type HTMLNodeType =
+  | 'ELEMENT'
+  | 'TEXT'
+  | 'COMMENT'
+  | 'CDATA'
+  | 'DOCTYPE'
+  | 'PROCESSING_INSTRUCTION';
+
+export interface NodePosition {
+  readonly startLine: number;
+  readonly startColumn: number;
+  readonly endLine: number;
+  readonly endColumn: number;
+  readonly startOffset: number;
+  readonly endOffset: number;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// NATIVE URL PARSER TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface NativeURLParser {
+  readonly parserId: string;
+  readonly config: URLParserConfig;
+}
+
+export interface URLParserConfig {
+  readonly strictMode: boolean;
+  readonly decodeComponents: boolean;
+  readonly normalizeCase: boolean;
+  readonly removeDefaultPort: boolean;
+  readonly removeTrailingSlash: boolean;
+  readonly sortQueryParams: boolean;
+  readonly removeEmptyQueryParams: boolean;
+  readonly removeFragment: boolean;
+}
+
+export interface ParsedURL {
+  readonly href: string;
+  readonly protocol: string;
+  readonly username: string;
+  readonly password: string;
+  readonly host: string;
+  readonly hostname: string;
+  readonly port: string;
+  readonly pathname: string;
+  readonly search: string;
+  readonly searchParams: Readonly<Record<string, string | readonly string[]>>;
+  readonly hash: string;
+  readonly origin: string;
+  readonly isAbsolute: boolean;
+  readonly isRelative: boolean;
+  readonly normalized: string;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// NATIVE JAVASCRIPT PARSER TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface NativeJSParser {
+  readonly parserId: string;
+  readonly config: JSParserConfig;
+}
+
+export interface JSParserConfig {
+  readonly ecmaVersion: number;
+  readonly sourceType: 'SCRIPT' | 'MODULE';
+  readonly allowHashBang: boolean;
+  readonly allowAwaitOutsideFunction: boolean;
+  readonly allowImportExportEverywhere: boolean;
+  readonly allowReserved: boolean;
+  readonly locations: boolean;
+  readonly ranges: boolean;
+  readonly tolerant: boolean;
+}
+
+export interface ParsedJS {
+  readonly documentId: string;
+  readonly url: string;
+  readonly ast: JSNode;
+  readonly strings: readonly ExtractedString[];
+  readonly urls: readonly ExtractedURL[];
+  readonly functions: readonly ExtractedFunction[];
+  readonly variables: readonly ExtractedVariable[];
+  readonly comments: readonly ExtractedComment[];
+}
+
+export interface JSNode {
+  readonly nodeId: string;
+  readonly type: string;
+  readonly children: readonly JSNode[];
+  readonly location: JSLocation | null;
+  readonly range: readonly [number, number] | null;
+}
+
+export interface JSLocation {
+  readonly start: JSPosition;
+  readonly end: JSPosition;
+}
+
+export interface JSPosition {
+  readonly line: number;
+  readonly column: number;
+}
+
+export interface ExtractedString {
+  readonly value: string;
+  readonly location: JSLocation | null;
+  readonly context: string;
+}
+
+export interface ExtractedURL {
+  readonly url: string;
+  readonly type: 'ABSOLUTE' | 'RELATIVE' | 'PROTOCOL_RELATIVE';
+  readonly location: JSLocation | null;
+  readonly context: string;
+}
+
+export interface ExtractedFunction {
+  readonly name: string | null;
+  readonly parameters: readonly string[];
+  readonly async: boolean;
+  readonly generator: boolean;
+  readonly location: JSLocation | null;
+}
+
+export interface ExtractedVariable {
+  readonly name: string;
+  readonly kind: 'VAR' | 'LET' | 'CONST';
+  readonly value: string | null;
+  readonly location: JSLocation | null;
+}
+
+export interface ExtractedComment {
+  readonly type: 'LINE' | 'BLOCK';
+  readonly value: string;
+  readonly location: JSLocation | null;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ROBOTS.TXT PARSER TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface RobotsTxtParser {
+  readonly parserId: string;
+  readonly config: RobotsTxtParserConfig;
+}
+
+export interface RobotsTxtParserConfig {
+  readonly strictMode: boolean;
+  readonly cacheResults: boolean;
+  readonly cacheTtl: number;
+}
+
+export interface ParsedRobotsTxt {
+  readonly url: string;
+  readonly userAgents: readonly RobotsTxtUserAgent[];
+  readonly sitemaps: readonly string[];
+  readonly host: string | null;
+  readonly crawlDelay: number | null;
+  readonly requestRate: RequestRate | null;
+  readonly cleanParam: readonly string[];
+}
+
+export interface RobotsTxtUserAgent {
+  readonly userAgent: string;
+  readonly allow: readonly RobotsTxtRule[];
+  readonly disallow: readonly RobotsTxtRule[];
+  readonly crawlDelay: number | null;
+}
+
+export interface RobotsTxtRule {
+  readonly path: string;
+  readonly pattern: string;
+  readonly priority: number;
+}
+
+export interface RequestRate {
+  readonly requests: number;
+  readonly seconds: number;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SITEMAP PARSER TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface SitemapParser {
+  readonly parserId: string;
+  readonly config: SitemapParserConfig;
+}
+
+export interface SitemapParserConfig {
+  readonly maxUrls: number;
+  readonly maxSitemaps: number;
+  readonly followSitemapIndex: boolean;
+  readonly validateUrls: boolean;
+}
+
+export interface ParsedSitemap {
+  readonly url: string;
+  readonly type: 'SITEMAP' | 'SITEMAP_INDEX';
+  readonly urls: readonly SitemapURL[];
+  readonly sitemaps: readonly SitemapReference[];
+  readonly lastModified: number | null;
+}
+
+export interface SitemapURL {
+  readonly loc: string;
+  readonly lastmod: number | null;
+  readonly changefreq: ChangeFrequency | null;
+  readonly priority: number | null;
+  readonly images: readonly SitemapImage[];
+  readonly videos: readonly SitemapVideo[];
+  readonly news: SitemapNews | null;
+  readonly alternates: readonly SitemapAlternate[];
+}
+
+export type ChangeFrequency =
+  | 'ALWAYS'
+  | 'HOURLY'
+  | 'DAILY'
+  | 'WEEKLY'
+  | 'MONTHLY'
+  | 'YEARLY'
+  | 'NEVER';
+
+export interface SitemapImage {
+  readonly loc: string;
+  readonly caption: string | null;
+  readonly title: string | null;
+  readonly geoLocation: string | null;
+  readonly license: string | null;
+}
+
+export interface SitemapVideo {
+  readonly thumbnailLoc: string;
+  readonly title: string;
+  readonly description: string;
+  readonly contentLoc: string | null;
+  readonly playerLoc: string | null;
+  readonly duration: number | null;
+  readonly expirationDate: number | null;
+  readonly rating: number | null;
+  readonly viewCount: number | null;
+  readonly publicationDate: number | null;
+  readonly familyFriendly: boolean;
+  readonly restriction: VideoRestriction | null;
+  readonly platform: VideoPlatform | null;
+  readonly requiresSubscription: boolean;
+  readonly uploader: VideoUploader | null;
+  readonly live: boolean;
+  readonly tags: readonly string[];
+  readonly category: string | null;
+}
+
+export interface VideoRestriction {
+  readonly relationship: 'ALLOW' | 'DENY';
+  readonly countries: readonly string[];
+}
+
+export interface VideoPlatform {
+  readonly relationship: 'ALLOW' | 'DENY';
+  readonly platforms: readonly string[];
+}
+
+export interface VideoUploader {
+  readonly name: string;
+  readonly info: string | null;
+}
+
+export interface SitemapNews {
+  readonly publication: NewsPublication;
+  readonly publicationDate: number;
+  readonly title: string;
+  readonly keywords: readonly string[];
+  readonly stockTickers: readonly string[];
+}
+
+export interface NewsPublication {
+  readonly name: string;
+  readonly language: string;
+}
+
+export interface SitemapAlternate {
+  readonly hreflang: string;
+  readonly href: string;
+}
+
+export interface SitemapReference {
+  readonly loc: string;
+  readonly lastmod: number | null;
+}

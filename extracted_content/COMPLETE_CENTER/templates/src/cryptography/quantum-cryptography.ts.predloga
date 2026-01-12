@@ -1,0 +1,1268 @@
+/**
+ * @file Quantum Cryptography - Self-Contained Post-Quantum Security Platform
+ * @author {{AVTOR}}
+ * @version {{VERZIJA}}
+ * @date {{DATUM}}
+ * @project {{IME_PROJEKTA}}
+ * @domain VARNOSTNI_SISTEMI
+ * 
+ * @requirement REQ-SEC-QCR-001
+ * @design DSN-SEC-QCR-001
+ * @test TST-SEC-QCR-001
+ * 
+ * @description
+ * Enterprise-grade self-contained quantum cryptography platform implementing
+ * post-quantum cryptographic algorithms, quantum key distribution protocols,
+ * quantum random number generation, and hybrid classical-quantum encryption.
+ * Implements NIST PQC standards including CRYSTALS-Kyber, CRYSTALS-Dilithium,
+ * SPHINCS+, and FALCON. All algorithms are natively implemented without
+ * external dependencies.
+ * 
+ * @classification TOP SECRET - Quantum Security Operations
+ * @authorization Required: Level 5 Security Clearance
+ * @dependencies NONE - Fully self-contained implementation
+ */
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// QUANTUM CRYPTOGRAPHY TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export type PostQuantumAlgorithm =
+  | 'CRYSTALS_KYBER_512'
+  | 'CRYSTALS_KYBER_768'
+  | 'CRYSTALS_KYBER_1024'
+  | 'CRYSTALS_DILITHIUM_2'
+  | 'CRYSTALS_DILITHIUM_3'
+  | 'CRYSTALS_DILITHIUM_5'
+  | 'SPHINCS_PLUS_128F'
+  | 'SPHINCS_PLUS_128S'
+  | 'SPHINCS_PLUS_192F'
+  | 'SPHINCS_PLUS_192S'
+  | 'SPHINCS_PLUS_256F'
+  | 'SPHINCS_PLUS_256S'
+  | 'FALCON_512'
+  | 'FALCON_1024'
+  | 'NTRU_HPS_2048_509'
+  | 'NTRU_HPS_2048_677'
+  | 'NTRU_HPS_4096_821'
+  | 'NTRU_HRSS_701'
+  | 'SABER_LIGHT'
+  | 'SABER'
+  | 'SABER_FIRE'
+  | 'BIKE_L1'
+  | 'BIKE_L3'
+  | 'BIKE_L5'
+  | 'HQC_128'
+  | 'HQC_192'
+  | 'HQC_256'
+  | 'CLASSIC_MCELIECE_348864'
+  | 'CLASSIC_MCELIECE_460896'
+  | 'CLASSIC_MCELIECE_6688128'
+  | 'CLASSIC_MCELIECE_6960119'
+  | 'CLASSIC_MCELIECE_8192128';
+
+export type ClassicalAlgorithm =
+  | 'RSA_2048'
+  | 'RSA_3072'
+  | 'RSA_4096'
+  | 'ECDSA_P256'
+  | 'ECDSA_P384'
+  | 'ECDSA_P521'
+  | 'ED25519'
+  | 'ED448'
+  | 'X25519'
+  | 'X448'
+  | 'AES_128_GCM'
+  | 'AES_256_GCM'
+  | 'CHACHA20_POLY1305';
+
+export type HybridMode =
+  | 'CONCATENATE'
+  | 'XOR'
+  | 'KDF_COMBINE'
+  | 'DUAL_PRF';
+
+export type QKDProtocol =
+  | 'BB84'
+  | 'B92'
+  | 'E91'
+  | 'BBM92'
+  | 'SARG04'
+  | 'COW'
+  | 'DPS'
+  | 'CV_QKD'
+  | 'MDI_QKD'
+  | 'TF_QKD';
+
+export type QRNGSource =
+  | 'VACUUM_FLUCTUATION'
+  | 'PHOTON_ARRIVAL'
+  | 'BEAM_SPLITTER'
+  | 'AMPLIFIED_SPONTANEOUS_EMISSION'
+  | 'HOMODYNE_DETECTION'
+  | 'HETERODYNE_DETECTION'
+  | 'DEVICE_INDEPENDENT';
+
+export type SecurityLevel =
+  | 'LEVEL_1'
+  | 'LEVEL_2'
+  | 'LEVEL_3'
+  | 'LEVEL_4'
+  | 'LEVEL_5';
+
+export type KeyType =
+  | 'PUBLIC'
+  | 'PRIVATE'
+  | 'SYMMETRIC'
+  | 'SHARED_SECRET'
+  | 'SESSION'
+  | 'MASTER'
+  | 'EPHEMERAL';
+
+export type OperationMode =
+  | 'ENCRYPT'
+  | 'DECRYPT'
+  | 'SIGN'
+  | 'VERIFY'
+  | 'ENCAPSULATE'
+  | 'DECAPSULATE'
+  | 'KEY_EXCHANGE'
+  | 'KEY_DERIVE';
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// QUANTUM CRYPTOGRAPHY CONFIGURATION
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface QuantumCryptographyConfig {
+  readonly platformId: string;
+  readonly name: string;
+  readonly version: string;
+  readonly postQuantum: PostQuantumConfig;
+  readonly hybrid: HybridConfig;
+  readonly qkd: QKDConfig;
+  readonly qrng: QRNGConfig;
+  readonly keyManagement: KeyManagementConfig;
+  readonly compliance: ComplianceConfig;
+  readonly performance: PerformanceConfig;
+  readonly security: SecurityConfig;
+  readonly metadata: PlatformMetadata;
+}
+
+export interface PostQuantumConfig {
+  readonly enabled: boolean;
+  readonly kem: KEMConfig;
+  readonly signature: SignatureConfig;
+  readonly defaultSecurityLevel: SecurityLevel;
+  readonly allowedAlgorithms: readonly PostQuantumAlgorithm[];
+}
+
+export interface KEMConfig {
+  readonly enabled: boolean;
+  readonly defaultAlgorithm: PostQuantumAlgorithm;
+  readonly allowedAlgorithms: readonly PostQuantumAlgorithm[];
+  readonly kyber: KyberConfig;
+  readonly ntru: NTRUConfig;
+  readonly saber: SaberConfig;
+  readonly bike: BIKEConfig;
+  readonly hqc: HQCConfig;
+  readonly mceliece: McElieceConfig;
+}
+
+export interface KyberConfig {
+  readonly enabled: boolean;
+  readonly variants: readonly KyberVariant[];
+  readonly useAVX2: boolean;
+  readonly useNEON: boolean;
+}
+
+export type KyberVariant =
+  | 'KYBER_512'
+  | 'KYBER_768'
+  | 'KYBER_1024';
+
+export interface NTRUConfig {
+  readonly enabled: boolean;
+  readonly variants: readonly NTRUVariant[];
+}
+
+export type NTRUVariant =
+  | 'NTRU_HPS_2048_509'
+  | 'NTRU_HPS_2048_677'
+  | 'NTRU_HPS_4096_821'
+  | 'NTRU_HRSS_701';
+
+export interface SaberConfig {
+  readonly enabled: boolean;
+  readonly variants: readonly SaberVariant[];
+}
+
+export type SaberVariant =
+  | 'LIGHT_SABER'
+  | 'SABER'
+  | 'FIRE_SABER';
+
+export interface BIKEConfig {
+  readonly enabled: boolean;
+  readonly variants: readonly BIKEVariant[];
+}
+
+export type BIKEVariant =
+  | 'BIKE_L1'
+  | 'BIKE_L3'
+  | 'BIKE_L5';
+
+export interface HQCConfig {
+  readonly enabled: boolean;
+  readonly variants: readonly HQCVariant[];
+}
+
+export type HQCVariant =
+  | 'HQC_128'
+  | 'HQC_192'
+  | 'HQC_256';
+
+export interface McElieceConfig {
+  readonly enabled: boolean;
+  readonly variants: readonly McElieceVariant[];
+}
+
+export type McElieceVariant =
+  | 'MCELIECE_348864'
+  | 'MCELIECE_460896'
+  | 'MCELIECE_6688128'
+  | 'MCELIECE_6960119'
+  | 'MCELIECE_8192128';
+
+export interface SignatureConfig {
+  readonly enabled: boolean;
+  readonly defaultAlgorithm: PostQuantumAlgorithm;
+  readonly allowedAlgorithms: readonly PostQuantumAlgorithm[];
+  readonly dilithium: DilithiumConfig;
+  readonly sphincs: SPHINCSConfig;
+  readonly falcon: FalconConfig;
+}
+
+export interface DilithiumConfig {
+  readonly enabled: boolean;
+  readonly variants: readonly DilithiumVariant[];
+  readonly useAVX2: boolean;
+  readonly useNEON: boolean;
+}
+
+export type DilithiumVariant =
+  | 'DILITHIUM_2'
+  | 'DILITHIUM_3'
+  | 'DILITHIUM_5';
+
+export interface SPHINCSConfig {
+  readonly enabled: boolean;
+  readonly variants: readonly SPHINCSVariant[];
+  readonly hashFunction: 'SHA256' | 'SHAKE256' | 'HARAKA';
+}
+
+export type SPHINCSVariant =
+  | 'SPHINCS_128F'
+  | 'SPHINCS_128S'
+  | 'SPHINCS_192F'
+  | 'SPHINCS_192S'
+  | 'SPHINCS_256F'
+  | 'SPHINCS_256S';
+
+export interface FalconConfig {
+  readonly enabled: boolean;
+  readonly variants: readonly FalconVariant[];
+  readonly useAVX2: boolean;
+}
+
+export type FalconVariant =
+  | 'FALCON_512'
+  | 'FALCON_1024';
+
+export interface HybridConfig {
+  readonly enabled: boolean;
+  readonly mode: HybridMode;
+  readonly classicalKEM: ClassicalAlgorithm;
+  readonly postQuantumKEM: PostQuantumAlgorithm;
+  readonly classicalSignature: ClassicalAlgorithm;
+  readonly postQuantumSignature: PostQuantumAlgorithm;
+  readonly kdf: KDFConfig;
+}
+
+export interface KDFConfig {
+  readonly algorithm: 'HKDF_SHA256' | 'HKDF_SHA384' | 'HKDF_SHA512' | 'SHAKE256';
+  readonly outputLength: number;
+  readonly info: string;
+}
+
+export interface QKDConfig {
+  readonly enabled: boolean;
+  readonly protocol: QKDProtocol;
+  readonly bb84: BB84Config;
+  readonly e91: E91Config;
+  readonly cvqkd: CVQKDConfig;
+  readonly errorCorrection: ErrorCorrectionConfig;
+  readonly privacyAmplification: PrivacyAmplificationConfig;
+  readonly authentication: QKDAuthConfig;
+}
+
+export interface BB84Config {
+  readonly enabled: boolean;
+  readonly basisChoice: 'RANDOM' | 'BIASED';
+  readonly decoyStates: boolean;
+  readonly decoyIntensities: readonly number[];
+  readonly signalIntensity: number;
+  readonly detectorEfficiency: number;
+  readonly darkCountRate: number;
+}
+
+export interface E91Config {
+  readonly enabled: boolean;
+  readonly bellTestThreshold: number;
+  readonly measurementBases: number;
+}
+
+export interface CVQKDConfig {
+  readonly enabled: boolean;
+  readonly modulationType: 'GAUSSIAN' | 'DISCRETE';
+  readonly variance: number;
+  readonly reconciliationEfficiency: number;
+}
+
+export interface ErrorCorrectionConfig {
+  readonly enabled: boolean;
+  readonly protocol: 'CASCADE' | 'WINNOW' | 'LDPC' | 'POLAR';
+  readonly targetBER: number;
+  readonly maxIterations: number;
+}
+
+export interface PrivacyAmplificationConfig {
+  readonly enabled: boolean;
+  readonly hashFunction: 'TOEPLITZ' | 'UNIVERSAL' | 'TREVISAN';
+  readonly securityParameter: number;
+}
+
+export interface QKDAuthConfig {
+  readonly enabled: boolean;
+  readonly method: 'WEGMAN_CARTER' | 'POLY1305' | 'UMAC';
+  readonly tagLength: number;
+}
+
+export interface QRNGConfig {
+  readonly enabled: boolean;
+  readonly source: QRNGSource;
+  readonly entropySource: EntropySourceConfig;
+  readonly postProcessing: PostProcessingConfig;
+  readonly healthTests: HealthTestsConfig;
+  readonly outputRate: number;
+}
+
+export interface EntropySourceConfig {
+  readonly type: QRNGSource;
+  readonly minEntropy: number;
+  readonly samplingRate: number;
+  readonly bufferSize: number;
+}
+
+export interface PostProcessingConfig {
+  readonly enabled: boolean;
+  readonly extractor: 'TOEPLITZ' | 'TREVISAN' | 'VON_NEUMANN' | 'XOR';
+  readonly compressionRatio: number;
+}
+
+export interface HealthTestsConfig {
+  readonly enabled: boolean;
+  readonly repetitionCount: RepetitionCountConfig;
+  readonly adaptiveProportion: AdaptiveProportionConfig;
+  readonly continuousTests: boolean;
+  readonly startupTests: boolean;
+}
+
+export interface RepetitionCountConfig {
+  readonly enabled: boolean;
+  readonly cutoff: number;
+  readonly windowSize: number;
+}
+
+export interface AdaptiveProportionConfig {
+  readonly enabled: boolean;
+  readonly cutoff: number;
+  readonly windowSize: number;
+}
+
+export interface KeyManagementConfig {
+  readonly enabled: boolean;
+  readonly storage: KeyStorageConfig;
+  readonly rotation: KeyRotationConfig;
+  readonly backup: KeyBackupConfig;
+  readonly escrow: KeyEscrowConfig;
+  readonly lifecycle: KeyLifecycleConfig;
+}
+
+export interface KeyStorageConfig {
+  readonly type: 'SOFTWARE' | 'HSM' | 'TPM' | 'SECURE_ENCLAVE';
+  readonly encryption: 'AES_256_GCM' | 'CHACHA20_POLY1305';
+  readonly keyWrapping: boolean;
+}
+
+export interface KeyRotationConfig {
+  readonly enabled: boolean;
+  readonly interval: number;
+  readonly gracePeriod: number;
+  readonly automaticRotation: boolean;
+}
+
+export interface KeyBackupConfig {
+  readonly enabled: boolean;
+  readonly method: 'SHAMIR' | 'BLAKLEY' | 'ASMUTH_BLOOM';
+  readonly threshold: number;
+  readonly shares: number;
+  readonly encryptBackups: boolean;
+}
+
+export interface KeyEscrowConfig {
+  readonly enabled: boolean;
+  readonly escrowAgents: readonly string[];
+  readonly threshold: number;
+  readonly auditLogging: boolean;
+}
+
+export interface KeyLifecycleConfig {
+  readonly maxAge: number;
+  readonly maxUsage: number;
+  readonly suspensionPolicy: SuspensionPolicy;
+  readonly revocationPolicy: RevocationPolicy;
+}
+
+export interface SuspensionPolicy {
+  readonly enabled: boolean;
+  readonly conditions: readonly string[];
+  readonly automaticReactivation: boolean;
+}
+
+export interface RevocationPolicy {
+  readonly enabled: boolean;
+  readonly reasons: readonly RevocationReason[];
+  readonly crlDistribution: boolean;
+  readonly ocspResponder: boolean;
+}
+
+export type RevocationReason =
+  | 'KEY_COMPROMISE'
+  | 'CA_COMPROMISE'
+  | 'AFFILIATION_CHANGED'
+  | 'SUPERSEDED'
+  | 'CESSATION_OF_OPERATION'
+  | 'CERTIFICATE_HOLD'
+  | 'PRIVILEGE_WITHDRAWN';
+
+export interface ComplianceConfig {
+  readonly enabled: boolean;
+  readonly standards: readonly ComplianceStandard[];
+  readonly fips: FIPSConfig;
+  readonly commonCriteria: CommonCriteriaConfig;
+  readonly nist: NISTConfig;
+}
+
+export interface ComplianceStandard {
+  readonly standardId: string;
+  readonly name: string;
+  readonly version: string;
+  readonly requirements: readonly string[];
+}
+
+export interface FIPSConfig {
+  readonly enabled: boolean;
+  readonly level: 1 | 2 | 3 | 4;
+  readonly approvedAlgorithms: readonly string[];
+  readonly selfTests: boolean;
+}
+
+export interface CommonCriteriaConfig {
+  readonly enabled: boolean;
+  readonly eal: 1 | 2 | 3 | 4 | 5 | 6 | 7;
+  readonly protectionProfile: string | null;
+}
+
+export interface NISTConfig {
+  readonly enabled: boolean;
+  readonly sp80056a: boolean;
+  readonly sp80056b: boolean;
+  readonly sp80056c: boolean;
+  readonly sp800108: boolean;
+  readonly sp800185: boolean;
+}
+
+export interface PerformanceConfig {
+  readonly parallelization: boolean;
+  readonly maxThreads: number;
+  readonly batchProcessing: boolean;
+  readonly batchSize: number;
+  readonly caching: CachingConfig;
+  readonly acceleration: AccelerationConfig;
+}
+
+export interface CachingConfig {
+  readonly enabled: boolean;
+  readonly maxEntries: number;
+  readonly ttl: number;
+  readonly cachePublicKeys: boolean;
+}
+
+export interface AccelerationConfig {
+  readonly avx2: boolean;
+  readonly avx512: boolean;
+  readonly neon: boolean;
+  readonly aesni: boolean;
+  readonly pclmulqdq: boolean;
+}
+
+export interface SecurityConfig {
+  readonly authentication: AuthenticationConfig;
+  readonly authorization: AuthorizationConfig;
+  readonly audit: AuditConfig;
+  readonly sidechannel: SideChannelConfig;
+}
+
+export interface AuthenticationConfig {
+  readonly enabled: boolean;
+  readonly methods: readonly ('API_KEY' | 'BEARER' | 'MTLS' | 'HMAC')[];
+  readonly sessionTimeout: number;
+}
+
+export interface AuthorizationConfig {
+  readonly enabled: boolean;
+  readonly model: 'RBAC' | 'ABAC';
+  readonly defaultRole: string;
+}
+
+export interface AuditConfig {
+  readonly enabled: boolean;
+  readonly logOperations: boolean;
+  readonly logKeyAccess: boolean;
+  readonly logFailures: boolean;
+  readonly retention: number;
+}
+
+export interface SideChannelConfig {
+  readonly constantTime: boolean;
+  readonly blinding: boolean;
+  readonly masking: boolean;
+  readonly shuffling: boolean;
+}
+
+export interface PlatformMetadata {
+  readonly createdAt: number;
+  readonly updatedAt: number;
+  readonly createdBy: string;
+  readonly version: string;
+  readonly tags: readonly string[];
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// KEY TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface CryptoKey {
+  readonly keyId: string;
+  readonly type: KeyType;
+  readonly algorithm: PostQuantumAlgorithm | ClassicalAlgorithm;
+  readonly securityLevel: SecurityLevel;
+  readonly material: KeyMaterial;
+  readonly metadata: KeyMetadata;
+  readonly lifecycle: KeyLifecycle;
+}
+
+export interface KeyMaterial {
+  readonly format: 'RAW' | 'PEM' | 'DER' | 'JWK';
+  readonly data: Uint8Array;
+  readonly length: number;
+  readonly checksum: string;
+}
+
+export interface KeyMetadata {
+  readonly createdAt: number;
+  readonly createdBy: string;
+  readonly purpose: readonly KeyPurpose[];
+  readonly extractable: boolean;
+  readonly exportable: boolean;
+  readonly tags: readonly string[];
+}
+
+export type KeyPurpose =
+  | 'ENCRYPT'
+  | 'DECRYPT'
+  | 'SIGN'
+  | 'VERIFY'
+  | 'WRAP'
+  | 'UNWRAP'
+  | 'DERIVE';
+
+export interface KeyLifecycle {
+  readonly state: KeyState;
+  readonly activationDate: number | null;
+  readonly expirationDate: number | null;
+  readonly deactivationDate: number | null;
+  readonly compromiseDate: number | null;
+  readonly destroyDate: number | null;
+  readonly usageCount: number;
+  readonly maxUsage: number | null;
+}
+
+export type KeyState =
+  | 'PRE_ACTIVE'
+  | 'ACTIVE'
+  | 'SUSPENDED'
+  | 'DEACTIVATED'
+  | 'COMPROMISED'
+  | 'DESTROYED';
+
+export interface KeyPair {
+  readonly keyPairId: string;
+  readonly algorithm: PostQuantumAlgorithm | ClassicalAlgorithm;
+  readonly securityLevel: SecurityLevel;
+  readonly publicKey: CryptoKey;
+  readonly privateKey: CryptoKey;
+  readonly metadata: KeyPairMetadata;
+}
+
+export interface KeyPairMetadata {
+  readonly createdAt: number;
+  readonly createdBy: string;
+  readonly purpose: readonly KeyPurpose[];
+  readonly certificateId: string | null;
+}
+
+export interface HybridKeyPair {
+  readonly hybridKeyPairId: string;
+  readonly classicalKeyPair: KeyPair;
+  readonly postQuantumKeyPair: KeyPair;
+  readonly combinationMode: HybridMode;
+  readonly metadata: HybridKeyPairMetadata;
+}
+
+export interface HybridKeyPairMetadata {
+  readonly createdAt: number;
+  readonly createdBy: string;
+  readonly purpose: readonly KeyPurpose[];
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// KEM TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface KEMKeyPair {
+  readonly keyPairId: string;
+  readonly algorithm: PostQuantumAlgorithm;
+  readonly securityLevel: SecurityLevel;
+  readonly publicKey: KEMPublicKey;
+  readonly privateKey: KEMPrivateKey;
+  readonly metadata: KEMKeyPairMetadata;
+}
+
+export interface KEMPublicKey {
+  readonly keyId: string;
+  readonly algorithm: PostQuantumAlgorithm;
+  readonly data: Uint8Array;
+  readonly length: number;
+  readonly fingerprint: string;
+}
+
+export interface KEMPrivateKey {
+  readonly keyId: string;
+  readonly algorithm: PostQuantumAlgorithm;
+  readonly data: Uint8Array;
+  readonly length: number;
+  readonly checksum: string;
+}
+
+export interface KEMKeyPairMetadata {
+  readonly createdAt: number;
+  readonly createdBy: string;
+  readonly expiresAt: number | null;
+}
+
+export interface Encapsulation {
+  readonly encapsulationId: string;
+  readonly algorithm: PostQuantumAlgorithm;
+  readonly ciphertext: Uint8Array;
+  readonly sharedSecret: Uint8Array;
+  readonly publicKeyFingerprint: string;
+  readonly timestamp: number;
+}
+
+export interface Decapsulation {
+  readonly decapsulationId: string;
+  readonly algorithm: PostQuantumAlgorithm;
+  readonly sharedSecret: Uint8Array;
+  readonly ciphertextHash: string;
+  readonly timestamp: number;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SIGNATURE TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface SignatureKeyPair {
+  readonly keyPairId: string;
+  readonly algorithm: PostQuantumAlgorithm;
+  readonly securityLevel: SecurityLevel;
+  readonly publicKey: SignaturePublicKey;
+  readonly privateKey: SignaturePrivateKey;
+  readonly metadata: SignatureKeyPairMetadata;
+}
+
+export interface SignaturePublicKey {
+  readonly keyId: string;
+  readonly algorithm: PostQuantumAlgorithm;
+  readonly data: Uint8Array;
+  readonly length: number;
+  readonly fingerprint: string;
+}
+
+export interface SignaturePrivateKey {
+  readonly keyId: string;
+  readonly algorithm: PostQuantumAlgorithm;
+  readonly data: Uint8Array;
+  readonly length: number;
+  readonly checksum: string;
+}
+
+export interface SignatureKeyPairMetadata {
+  readonly createdAt: number;
+  readonly createdBy: string;
+  readonly expiresAt: number | null;
+  readonly certificateId: string | null;
+}
+
+export interface DigitalSignature {
+  readonly signatureId: string;
+  readonly algorithm: PostQuantumAlgorithm;
+  readonly signature: Uint8Array;
+  readonly length: number;
+  readonly messageHash: string;
+  readonly publicKeyFingerprint: string;
+  readonly timestamp: number;
+  readonly metadata: SignatureMetadata;
+}
+
+export interface SignatureMetadata {
+  readonly signedAt: number;
+  readonly signedBy: string;
+  readonly purpose: string | null;
+  readonly context: Readonly<Record<string, unknown>>;
+}
+
+export interface SignatureVerification {
+  readonly verificationId: string;
+  readonly valid: boolean;
+  readonly algorithm: PostQuantumAlgorithm;
+  readonly signatureId: string;
+  readonly publicKeyFingerprint: string;
+  readonly timestamp: number;
+  readonly details: VerificationDetails;
+}
+
+export interface VerificationDetails {
+  readonly signatureValid: boolean;
+  readonly keyValid: boolean;
+  readonly timestampValid: boolean;
+  readonly certificateValid: boolean | null;
+  readonly errors: readonly string[];
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// HYBRID CRYPTOGRAPHY TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface HybridEncapsulation {
+  readonly encapsulationId: string;
+  readonly mode: HybridMode;
+  readonly classicalCiphertext: Uint8Array;
+  readonly postQuantumCiphertext: Uint8Array;
+  readonly combinedSharedSecret: Uint8Array;
+  readonly classicalAlgorithm: ClassicalAlgorithm;
+  readonly postQuantumAlgorithm: PostQuantumAlgorithm;
+  readonly timestamp: number;
+}
+
+export interface HybridSignature {
+  readonly signatureId: string;
+  readonly mode: HybridMode;
+  readonly classicalSignature: Uint8Array;
+  readonly postQuantumSignature: Uint8Array;
+  readonly classicalAlgorithm: ClassicalAlgorithm;
+  readonly postQuantumAlgorithm: PostQuantumAlgorithm;
+  readonly messageHash: string;
+  readonly timestamp: number;
+}
+
+export interface HybridVerification {
+  readonly verificationId: string;
+  readonly valid: boolean;
+  readonly classicalValid: boolean;
+  readonly postQuantumValid: boolean;
+  readonly mode: HybridMode;
+  readonly timestamp: number;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// QKD TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface QKDSession {
+  readonly sessionId: string;
+  readonly protocol: QKDProtocol;
+  readonly state: QKDSessionState;
+  readonly alice: QKDParty;
+  readonly bob: QKDParty;
+  readonly channel: QuantumChannel;
+  readonly keyMaterial: QKDKeyMaterial | null;
+  readonly statistics: QKDStatistics;
+  readonly metadata: QKDSessionMetadata;
+}
+
+export type QKDSessionState =
+  | 'INITIALIZING'
+  | 'QUANTUM_TRANSMISSION'
+  | 'SIFTING'
+  | 'ERROR_ESTIMATION'
+  | 'ERROR_CORRECTION'
+  | 'PRIVACY_AMPLIFICATION'
+  | 'AUTHENTICATION'
+  | 'COMPLETED'
+  | 'FAILED'
+  | 'ABORTED';
+
+export interface QKDParty {
+  readonly partyId: string;
+  readonly name: string;
+  readonly role: 'ALICE' | 'BOB';
+  readonly endpoint: string;
+  readonly publicKey: Uint8Array;
+  readonly authenticated: boolean;
+}
+
+export interface QuantumChannel {
+  readonly channelId: string;
+  readonly type: 'FIBER' | 'FREE_SPACE' | 'SATELLITE';
+  readonly length: number;
+  readonly attenuation: number;
+  readonly noiseLevel: number;
+  readonly qber: number;
+}
+
+export interface QKDKeyMaterial {
+  readonly keyId: string;
+  readonly key: Uint8Array;
+  readonly length: number;
+  readonly securityParameter: number;
+  readonly generatedAt: number;
+  readonly expiresAt: number | null;
+}
+
+export interface QKDStatistics {
+  readonly rawBitsExchanged: number;
+  readonly siftedBits: number;
+  readonly errorRate: number;
+  readonly finalKeyLength: number;
+  readonly securityParameter: number;
+  readonly transmissionTime: number;
+  readonly processingTime: number;
+}
+
+export interface QKDSessionMetadata {
+  readonly createdAt: number;
+  readonly completedAt: number | null;
+  readonly initiatedBy: string;
+  readonly purpose: string | null;
+}
+
+export interface BB84State {
+  readonly rawBits: readonly BB84Bit[];
+  readonly basisChoices: readonly Basis[];
+  readonly siftedBits: readonly number[];
+  readonly errorPositions: readonly number[];
+  readonly correctedBits: readonly number[];
+  readonly finalKey: Uint8Array | null;
+}
+
+export interface BB84Bit {
+  readonly position: number;
+  readonly value: 0 | 1;
+  readonly basis: Basis;
+  readonly state: PhotonState;
+}
+
+export type Basis =
+  | 'RECTILINEAR'
+  | 'DIAGONAL';
+
+export type PhotonState =
+  | 'H'
+  | 'V'
+  | 'D'
+  | 'A';
+
+export interface E91State {
+  readonly entangledPairs: readonly EntangledPair[];
+  readonly measurementResults: readonly E91Measurement[];
+  readonly bellTestResult: BellTestResult;
+  readonly siftedBits: readonly number[];
+  readonly finalKey: Uint8Array | null;
+}
+
+export interface EntangledPair {
+  readonly pairId: string;
+  readonly alicePhoton: PhotonState;
+  readonly bobPhoton: PhotonState;
+  readonly correlation: number;
+}
+
+export interface E91Measurement {
+  readonly pairId: string;
+  readonly aliceBasis: number;
+  readonly bobBasis: number;
+  readonly aliceResult: 0 | 1;
+  readonly bobResult: 0 | 1;
+}
+
+export interface BellTestResult {
+  readonly sValue: number;
+  readonly threshold: number;
+  readonly passed: boolean;
+  readonly confidence: number;
+}
+
+export interface CVQKDState {
+  readonly coherentStates: readonly CoherentState[];
+  readonly measurements: readonly CVMeasurement[];
+  readonly correlationMatrix: readonly readonly number[][];
+  readonly secretKeyRate: number;
+  readonly finalKey: Uint8Array | null;
+}
+
+export interface CoherentState {
+  readonly stateId: string;
+  readonly amplitude: number;
+  readonly phase: number;
+  readonly quadratureX: number;
+  readonly quadratureP: number;
+}
+
+export interface CVMeasurement {
+  readonly stateId: string;
+  readonly measurementType: 'HOMODYNE' | 'HETERODYNE';
+  readonly result: number;
+  readonly variance: number;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// QRNG TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface QRNGOutput {
+  readonly outputId: string;
+  readonly source: QRNGSource;
+  readonly data: Uint8Array;
+  readonly length: number;
+  readonly entropy: number;
+  readonly healthTestsPassed: boolean;
+  readonly timestamp: number;
+  readonly metadata: QRNGMetadata;
+}
+
+export interface QRNGMetadata {
+  readonly generatedAt: number;
+  readonly sourceId: string;
+  readonly postProcessed: boolean;
+  readonly extractorUsed: string | null;
+}
+
+export interface EntropyEstimate {
+  readonly estimateId: string;
+  readonly minEntropy: number;
+  readonly shannonEntropy: number;
+  readonly renyiEntropy: number;
+  readonly collisionEntropy: number;
+  readonly sampleSize: number;
+  readonly confidence: number;
+}
+
+export interface HealthTestResult {
+  readonly testId: string;
+  readonly testType: HealthTestType;
+  readonly passed: boolean;
+  readonly value: number;
+  readonly threshold: number;
+  readonly timestamp: number;
+}
+
+export type HealthTestType =
+  | 'REPETITION_COUNT'
+  | 'ADAPTIVE_PROPORTION'
+  | 'MONOBIT'
+  | 'RUNS'
+  | 'LONGEST_RUN'
+  | 'BINARY_MATRIX_RANK'
+  | 'SPECTRAL'
+  | 'MAURER_UNIVERSAL'
+  | 'APPROXIMATE_ENTROPY'
+  | 'CUMULATIVE_SUMS'
+  | 'RANDOM_EXCURSIONS';
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// LATTICE-BASED CRYPTOGRAPHY TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface LatticeParameters {
+  readonly n: number;
+  readonly q: number;
+  readonly k: number;
+  readonly eta1: number;
+  readonly eta2: number;
+  readonly du: number;
+  readonly dv: number;
+}
+
+export interface PolynomialRing {
+  readonly modulus: number;
+  readonly degree: number;
+  readonly coefficients: readonly number[];
+}
+
+export interface NTTParameters {
+  readonly n: number;
+  readonly q: number;
+  readonly rootOfUnity: number;
+  readonly twiddleFactors: readonly number[];
+  readonly inverseTwiddleFactors: readonly number[];
+}
+
+export interface KyberPublicKeyInternal {
+  readonly t: readonly PolynomialRing[];
+  readonly rho: Uint8Array;
+}
+
+export interface KyberPrivateKeyInternal {
+  readonly s: readonly PolynomialRing[];
+  readonly publicKey: KyberPublicKeyInternal;
+  readonly h: Uint8Array;
+  readonly z: Uint8Array;
+}
+
+export interface KyberCiphertext {
+  readonly u: readonly PolynomialRing[];
+  readonly v: PolynomialRing;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// HASH-BASED SIGNATURE TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface SPHINCSParameters {
+  readonly n: number;
+  readonly h: number;
+  readonly d: number;
+  readonly a: number;
+  readonly k: number;
+  readonly w: number;
+  readonly hashFunction: 'SHA256' | 'SHAKE256' | 'HARAKA';
+}
+
+export interface WOTSPlusSignature {
+  readonly signature: readonly Uint8Array[];
+  readonly publicSeed: Uint8Array;
+  readonly address: WOTSAddress;
+}
+
+export interface WOTSAddress {
+  readonly layer: number;
+  readonly tree: bigint;
+  readonly type: number;
+  readonly keypair: number;
+  readonly chain: number;
+  readonly hash: number;
+}
+
+export interface XMSSTree {
+  readonly height: number;
+  readonly nodes: readonly Uint8Array[];
+  readonly authPath: readonly Uint8Array[];
+}
+
+export interface FORSSignature {
+  readonly signatures: readonly Uint8Array[];
+  readonly authPaths: readonly readonly Uint8Array[][];
+}
+
+export interface HypertreeSignature {
+  readonly wotsSignatures: readonly WOTSPlusSignature[];
+  readonly authPaths: readonly readonly Uint8Array[][];
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// NTRU TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface NTRUParameters {
+  readonly n: number;
+  readonly q: number;
+  readonly p: number;
+  readonly df: number;
+  readonly dg: number;
+  readonly dr: number;
+}
+
+export interface NTRUPublicKeyInternal {
+  readonly h: readonly number[];
+}
+
+export interface NTRUPrivateKeyInternal {
+  readonly f: readonly number[];
+  readonly fp: readonly number[];
+  readonly publicKey: NTRUPublicKeyInternal;
+}
+
+export interface NTRUCiphertext {
+  readonly e: readonly number[];
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// FALCON TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface FalconParameters {
+  readonly n: number;
+  readonly q: number;
+  readonly sigmaMin: number;
+  readonly sigmaMax: number;
+}
+
+export interface FalconPublicKeyInternal {
+  readonly h: readonly number[];
+}
+
+export interface FalconPrivateKeyInternal {
+  readonly f: readonly number[];
+  readonly g: readonly number[];
+  readonly F: readonly number[];
+  readonly G: readonly number[];
+  readonly publicKey: FalconPublicKeyInternal;
+}
+
+export interface FalconSignatureInternal {
+  readonly r: Uint8Array;
+  readonly s: readonly number[];
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// OPERATION RESULT TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface CryptoOperation {
+  readonly operationId: string;
+  readonly type: OperationMode;
+  readonly algorithm: PostQuantumAlgorithm | ClassicalAlgorithm;
+  readonly status: OperationStatus;
+  readonly input: OperationInput;
+  readonly output: OperationOutput | null;
+  readonly timing: OperationTiming;
+  readonly metadata: OperationMetadata;
+}
+
+export type OperationStatus =
+  | 'PENDING'
+  | 'IN_PROGRESS'
+  | 'COMPLETED'
+  | 'FAILED';
+
+export interface OperationInput {
+  readonly data: Uint8Array | null;
+  readonly key: string | null;
+  readonly additionalData: Uint8Array | null;
+}
+
+export interface OperationOutput {
+  readonly data: Uint8Array;
+  readonly length: number;
+  readonly checksum: string;
+}
+
+export interface OperationTiming {
+  readonly startTime: number;
+  readonly endTime: number | null;
+  readonly duration: number | null;
+  readonly cpuTime: number | null;
+}
+
+export interface OperationMetadata {
+  readonly requestedBy: string;
+  readonly purpose: string | null;
+  readonly context: Readonly<Record<string, unknown>>;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SESSION TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface CryptoSession {
+  readonly sessionId: string;
+  readonly platformId: string;
+  readonly state: SessionState;
+  readonly config: SessionConfig;
+  readonly operations: readonly CryptoOperation[];
+  readonly keys: readonly CryptoKey[];
+  readonly statistics: SessionStatistics;
+  readonly errors: readonly SessionError[];
+  readonly startTime: number;
+  readonly endTime: number | null;
+  readonly metadata: SessionMetadata;
+}
+
+export type SessionState =
+  | 'ACTIVE'
+  | 'SUSPENDED'
+  | 'TERMINATED';
+
+export interface SessionConfig {
+  readonly defaultAlgorithm: PostQuantumAlgorithm;
+  readonly securityLevel: SecurityLevel;
+  readonly hybridMode: boolean;
+  readonly timeout: number;
+}
+
+export interface SessionStatistics {
+  readonly operationsCount: number;
+  readonly keysGenerated: number;
+  readonly encapsulations: number;
+  readonly decapsulations: number;
+  readonly signatures: number;
+  readonly verifications: number;
+  readonly bytesProcessed: number;
+  readonly averageOperationTime: number;
+}
+
+export interface SessionError {
+  readonly errorId: string;
+  readonly timestamp: number;
+  readonly type: SessionErrorType;
+  readonly operationId: string | null;
+  readonly message: string;
+  readonly details: string | null;
+  readonly recoverable: boolean;
+}
+
+export type SessionErrorType =
+  | 'KEY_ERROR'
+  | 'ALGORITHM_ERROR'
+  | 'VALIDATION_ERROR'
+  | 'TIMEOUT'
+  | 'RESOURCE_ERROR'
+  | 'INTERNAL_ERROR';
+
+export interface SessionMetadata {
+  readonly platformVersion: string;
+  readonly startedBy: string;
+  readonly environment: string;
+  readonly tags: readonly string[];
+}

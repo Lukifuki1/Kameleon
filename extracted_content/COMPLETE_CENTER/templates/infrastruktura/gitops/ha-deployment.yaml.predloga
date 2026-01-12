@@ -1,0 +1,422 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{IME_PROJEKTA_SLUG}}-ha
+  namespace: {{IME_PROJEKTA_SLUG}}
+  labels:
+    app.kubernetes.io/name: {{IME_PROJEKTA_SLUG}}
+    app.kubernetes.io/component: security-system
+    app.kubernetes.io/version: "{{VERZIJA}}"
+    app.kubernetes.io/managed-by: argocd
+    domain: {{DOMENA_SLUG}}
+    tier: security
+    ha: "true"
+  annotations:
+    deployment.kubernetes.io/revision: "1"
+    kubernetes.io/change-cause: "Initial HA deployment"
+    compliance.{{ORGANIZACIJA_DOMENA}}/standards: "DO-178C,IEC-61508,ISO-26262,MIL-STD-882E"
+spec:
+  replicas: 3
+  revisionHistoryLimit: 10
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  minReadySeconds: 30
+  progressDeadlineSeconds: 600
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{IME_PROJEKTA_SLUG}}
+      app.kubernetes.io/component: security-system
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{IME_PROJEKTA_SLUG}}
+        app.kubernetes.io/component: security-system
+        app.kubernetes.io/version: "{{VERZIJA}}"
+        domain: {{DOMENA_SLUG}}
+        tier: security
+        ha: "true"
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9090"
+        prometheus.io/path: "/metrics"
+        sidecar.istio.io/inject: "true"
+        vault.hashicorp.com/agent-inject: "true"
+        vault.hashicorp.com/role: "{{IME_PROJEKTA_SLUG}}"
+        vault.hashicorp.com/agent-inject-secret-config: "secret/data/{{IME_PROJEKTA_SLUG}}/config"
+    spec:
+      serviceAccountName: {{IME_PROJEKTA_SLUG}}
+      automountServiceAccountToken: true
+      
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchLabels:
+                  app.kubernetes.io/name: {{IME_PROJEKTA_SLUG}}
+                  app.kubernetes.io/component: security-system
+              topologyKey: kubernetes.io/hostname
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app.kubernetes.io/name: {{IME_PROJEKTA_SLUG}}
+                topologyKey: topology.kubernetes.io/zone
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: node.kubernetes.io/instance-type
+                    operator: In
+                    values:
+                      - m5.xlarge
+                      - m5.2xlarge
+                      - m6i.xlarge
+                      - m6i.2xlarge
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 50
+              preference:
+                matchExpressions:
+                  - key: topology.kubernetes.io/zone
+                    operator: In
+                    values:
+                      - eu-central-1a
+                      - eu-central-1b
+                      - eu-central-1c
+      
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: DoNotSchedule
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: {{IME_PROJEKTA_SLUG}}
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: {{IME_PROJEKTA_SLUG}}
+      
+      priorityClassName: security-critical
+      
+      initContainers:
+        - name: init-config
+          image: busybox:1.36
+          command:
+            - sh
+            - -c
+            - |
+              echo "Initializing configuration..."
+              cp /config-template/* /config/
+              echo "Configuration initialized"
+          volumeMounts:
+            - name: config-template
+              mountPath: /config-template
+              readOnly: true
+            - name: config
+              mountPath: /config
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+          resources:
+            limits:
+              cpu: 100m
+              memory: 64Mi
+            requests:
+              cpu: 50m
+              memory: 32Mi
+        
+        - name: init-secrets
+          image: vault:1.15
+          command:
+            - sh
+            - -c
+            - |
+              echo "Fetching secrets from Vault..."
+              vault kv get -format=json secret/{{IME_PROJEKTA_SLUG}}/config > /secrets/config.json
+              echo "Secrets fetched"
+          env:
+            - name: VAULT_ADDR
+              value: "https://vault.{{ORGANIZACIJA_DOMENA}}"
+            - name: VAULT_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{IME_PROJEKTA_SLUG}}-vault-token
+                  key: token
+          volumeMounts:
+            - name: secrets
+              mountPath: /secrets
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+          resources:
+            limits:
+              cpu: 100m
+              memory: 64Mi
+            requests:
+              cpu: 50m
+              memory: 32Mi
+      
+      containers:
+        - name: {{IME_PROJEKTA_SLUG}}
+          image: "{{DOCKER_REGISTRY}}/{{IME_PROJEKTA_SLUG}}:{{VERZIJA}}"
+          imagePullPolicy: Always
+          
+          ports:
+            - name: https
+              containerPort: 8443
+              protocol: TCP
+            - name: metrics
+              containerPort: 9090
+              protocol: TCP
+            - name: health
+              containerPort: 8080
+              protocol: TCP
+          
+          env:
+            - name: NODE_ENV
+              value: "production"
+            - name: LOG_LEVEL
+              value: "info"
+            - name: LOG_FORMAT
+              value: "json"
+            - name: METRICS_ENABLED
+              value: "true"
+            - name: TRACING_ENABLED
+              value: "true"
+            - name: HA_MODE
+              value: "true"
+            - name: CLUSTER_SIZE
+              value: "3"
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+          
+          envFrom:
+            - configMapRef:
+                name: {{IME_PROJEKTA_SLUG}}-config
+            - secretRef:
+                name: {{IME_PROJEKTA_SLUG}}-secrets
+          
+          volumeMounts:
+            - name: config
+              mountPath: /app/config
+              readOnly: true
+            - name: secrets
+              mountPath: /app/secrets
+              readOnly: true
+            - name: tls-certs
+              mountPath: /app/certs
+              readOnly: true
+            - name: tmp
+              mountPath: /tmp
+            - name: cache
+              mountPath: /app/cache
+          
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+          
+          resources:
+            limits:
+              cpu: "2"
+              memory: 2Gi
+              ephemeral-storage: 1Gi
+            requests:
+              cpu: "500m"
+              memory: 512Mi
+              ephemeral-storage: 256Mi
+          
+          livenessProbe:
+            httpGet:
+              path: /health/live
+              port: health
+              scheme: HTTP
+            initialDelaySeconds: 30
+            periodSeconds: 15
+            timeoutSeconds: 5
+            failureThreshold: 3
+            successThreshold: 1
+          
+          readinessProbe:
+            httpGet:
+              path: /health/ready
+              port: health
+              scheme: HTTP
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+            successThreshold: 1
+          
+          startupProbe:
+            httpGet:
+              path: /health/startup
+              port: health
+              scheme: HTTP
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 5
+            failureThreshold: 30
+            successThreshold: 1
+          
+          lifecycle:
+            preStop:
+              exec:
+                command:
+                  - /bin/sh
+                  - -c
+                  - |
+                    echo "Starting graceful shutdown..."
+                    sleep 5
+                    kill -SIGTERM 1
+                    sleep 25
+                    echo "Graceful shutdown complete"
+      
+      volumes:
+        - name: config-template
+          configMap:
+            name: {{IME_PROJEKTA_SLUG}}-config
+        - name: config
+          emptyDir: {}
+        - name: secrets
+          emptyDir:
+            medium: Memory
+            sizeLimit: 64Mi
+        - name: tls-certs
+          secret:
+            secretName: {{IME_PROJEKTA_SLUG}}-tls
+            defaultMode: 0400
+        - name: tmp
+          emptyDir:
+            sizeLimit: 256Mi
+        - name: cache
+          emptyDir:
+            sizeLimit: 512Mi
+      
+      terminationGracePeriodSeconds: 60
+      
+      dnsPolicy: ClusterFirst
+      dnsConfig:
+        options:
+          - name: ndots
+            value: "2"
+          - name: single-request-reopen
+      
+      imagePullSecrets:
+        - name: {{DOCKER_REGISTRY_SECRET}}
+
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{IME_PROJEKTA_SLUG}}-pdb
+  namespace: {{IME_PROJEKTA_SLUG}}
+  labels:
+    app.kubernetes.io/name: {{IME_PROJEKTA_SLUG}}
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{IME_PROJEKTA_SLUG}}
+      app.kubernetes.io/component: security-system
+
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{IME_PROJEKTA_SLUG}}-hpa
+  namespace: {{IME_PROJEKTA_SLUG}}
+  labels:
+    app.kubernetes.io/name: {{IME_PROJEKTA_SLUG}}
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{IME_PROJEKTA_SLUG}}-ha
+  minReplicas: 3
+  maxReplicas: 10
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 75
+    - type: Pods
+      pods:
+        metric:
+          name: http_requests_per_second
+        target:
+          type: AverageValue
+          averageValue: "1000"
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 0
+      policies:
+        - type: Percent
+          value: 100
+          periodSeconds: 15
+        - type: Pods
+          value: 4
+          periodSeconds: 15
+      selectPolicy: Max
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+        - type: Percent
+          value: 10
+          periodSeconds: 60
+      selectPolicy: Min
+
+---
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: security-critical
+  labels:
+    app.kubernetes.io/name: {{IME_PROJEKTA_SLUG}}
+value: 1000000
+globalDefault: false
+description: "Priority class for security-critical workloads"
+preemptionPolicy: PreemptLowerPriority

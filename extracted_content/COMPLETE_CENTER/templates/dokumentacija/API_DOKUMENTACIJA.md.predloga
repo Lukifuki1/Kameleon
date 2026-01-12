@@ -1,0 +1,640 @@
+# API Dokumentacija - {{IME_PROJEKTA}}
+
+## Pregled
+
+Ta dokument opisuje API vmesnik varnostnega sistema {{IME_PROJEKTA}}. API sledi REST principom in zagotavlja varno komunikacijo preko HTTPS z vzajemno avtentikacijo (mTLS).
+
+**Verzija:** {{VERZIJA}}
+**Datum:** {{DATUM}}
+**Avtor:** {{AVTOR}}
+**Domena:** {{DOMENA_SL}}
+
+## Skladnost
+
+Ta API je skladen z naslednjimi standardi:
+- **DO-178C** - Software Considerations in Airborne Systems
+- **IEC 61508** - Functional Safety of Electrical/Electronic/Programmable Electronic Safety-related Systems
+- **ISO 26262** - Road Vehicles Functional Safety
+- **MIL-STD-882E** - System Safety
+- **OWASP API Security Top 10**
+- **ISO 27001** - Information Security Management
+
+## Bazni URL
+
+```
+Produkcija: https://api.{{IME_PROJEKTA_SLUG}}.{{ORGANIZACIJA_DOMENA}}/v1
+Staging:    https://api-staging.{{IME_PROJEKTA_SLUG}}.{{ORGANIZACIJA_DOMENA}}/v1
+Razvoj:     https://localhost:8443/v1
+```
+
+## Avtentikacija
+
+### Bearer Token (JWT)
+
+Vsi API klici zahtevajo veljavni JWT token v Authorization glavi:
+
+```http
+Authorization: Bearer <jwt_token>
+```
+
+### mTLS (Mutual TLS)
+
+Za produkcijsko okolje je obvezna vzajemna TLS avtentikacija:
+
+```bash
+curl --cert client.crt --key client.key --cacert ca.crt \
+  https://api.{{IME_PROJEKTA_SLUG}}.{{ORGANIZACIJA_DOMENA}}/v1/health
+```
+
+## Skupne Glave
+
+### Zahteva
+
+| Glava | Obvezno | Opis |
+|-------|---------|------|
+| `Authorization` | Da | Bearer JWT token |
+| `Content-Type` | Da | `application/json` |
+| `X-Request-ID` | Ne | Unikatni ID zahteve za sledenje |
+| `X-Correlation-ID` | Ne | ID za korelacijo med servisi |
+| `Accept-Language` | Ne | Jezik odgovora (sl, en) |
+
+### Odgovor
+
+| Glava | Opis |
+|-------|------|
+| `X-Request-ID` | ID zahteve (enak kot v zahtevi ali generiran) |
+| `X-Response-Time` | Cas obdelave v milisekundah |
+| `X-RateLimit-Limit` | Maksimalno stevilo zahtev |
+| `X-RateLimit-Remaining` | Preostalo stevilo zahtev |
+| `X-RateLimit-Reset` | Unix timestamp resetiranja limita |
+
+## Koncne Tocke
+
+### Avtentikacija
+
+#### POST /auth/login
+
+Avtenticira uporabnika in vrne JWT token.
+
+**Zahteva:**
+
+```json
+{
+  "username": "string",
+  "password": "string",
+  "mfaCode": "string (opcijsko)"
+}
+```
+
+**Odgovor (200 OK):**
+
+```json
+{
+  "success": true,
+  "data": {
+    "accessToken": "eyJhbGciOiJSUzI1NiIs...",
+    "refreshToken": "eyJhbGciOiJSUzI1NiIs...",
+    "expiresIn": 3600,
+    "tokenType": "Bearer",
+    "mfaRequired": false
+  },
+  "meta": {
+    "requestId": "req_abc123",
+    "timestamp": "2024-01-15T10:30:00Z"
+  }
+}
+```
+
+**Napake:**
+
+| Koda | Opis |
+|------|------|
+| 401 | Neveljavne poverilnice |
+| 403 | Racun zaklenjen |
+| 429 | Prevec poskusov |
+
+#### POST /auth/logout
+
+Odjavi uporabnika in razveljavi token.
+
+**Zahteva:**
+
+```json
+{
+  "refreshToken": "string"
+}
+```
+
+**Odgovor (200 OK):**
+
+```json
+{
+  "success": true,
+  "data": {
+    "message": "Uspesno odjavljen"
+  }
+}
+```
+
+#### POST /auth/refresh
+
+Osvezi dostopni token.
+
+**Zahteva:**
+
+```json
+{
+  "refreshToken": "string"
+}
+```
+
+**Odgovor (200 OK):**
+
+```json
+{
+  "success": true,
+  "data": {
+    "accessToken": "eyJhbGciOiJSUzI1NiIs...",
+    "expiresIn": 3600
+  }
+}
+```
+
+#### POST /auth/mfa/setup
+
+Nastavi vecfaktorsko avtentikacijo.
+
+**Zahteva:**
+
+```json
+{
+  "type": "totp | sms | email"
+}
+```
+
+**Odgovor (200 OK):**
+
+```json
+{
+  "success": true,
+  "data": {
+    "secret": "JBSWY3DPEHPK3PXP",
+    "qrCode": "data:image/png;base64,...",
+    "backupCodes": ["abc123", "def456", "..."]
+  }
+}
+```
+
+#### POST /auth/mfa/verify
+
+Preveri MFA kodo.
+
+**Zahteva:**
+
+```json
+{
+  "code": "123456",
+  "type": "totp | sms | email"
+}
+```
+
+**Odgovor (200 OK):**
+
+```json
+{
+  "success": true,
+  "data": {
+    "verified": true
+  }
+}
+```
+
+### Avtorizacija
+
+#### GET /authz/permissions
+
+Vrne dovoljenja trenutnega uporabnika.
+
+**Odgovor (200 OK):**
+
+```json
+{
+  "success": true,
+  "data": {
+    "userId": "usr_abc123",
+    "roles": ["admin", "security_officer"],
+    "permissions": [
+      "users:read",
+      "users:write",
+      "audit:read",
+      "security:manage"
+    ],
+    "restrictions": {
+      "ipWhitelist": ["10.0.0.0/8"],
+      "timeWindow": {
+        "start": "08:00",
+        "end": "18:00",
+        "timezone": "Europe/Ljubljana"
+      }
+    }
+  }
+}
+```
+
+#### POST /authz/check
+
+Preveri ali ima uporabnik dovoljenje za akcijo.
+
+**Zahteva:**
+
+```json
+{
+  "resource": "users",
+  "action": "delete",
+  "resourceId": "usr_xyz789"
+}
+```
+
+**Odgovor (200 OK):**
+
+```json
+{
+  "success": true,
+  "data": {
+    "allowed": true,
+    "reason": "Role admin has permission users:delete"
+  }
+}
+```
+
+### Revizijska Sled
+
+#### GET /audit/logs
+
+Vrne revizijske zapise.
+
+**Parametri poizvedbe:**
+
+| Parameter | Tip | Opis |
+|-----------|-----|------|
+| `startDate` | ISO 8601 | Zacetni datum |
+| `endDate` | ISO 8601 | Koncni datum |
+| `userId` | string | Filter po uporabniku |
+| `action` | string | Filter po akciji |
+| `resource` | string | Filter po viru |
+| `severity` | string | Filter po resnosti |
+| `page` | number | Stran (privzeto 1) |
+| `limit` | number | Stevilo na stran (privzeto 50, max 100) |
+
+**Odgovor (200 OK):**
+
+```json
+{
+  "success": true,
+  "data": {
+    "logs": [
+      {
+        "id": "aud_abc123",
+        "timestamp": "2024-01-15T10:30:00Z",
+        "userId": "usr_xyz789",
+        "action": "LOGIN",
+        "resource": "auth",
+        "resourceId": null,
+        "severity": "INFO",
+        "outcome": "SUCCESS",
+        "ipAddress": "192.168.1.100",
+        "userAgent": "Mozilla/5.0...",
+        "details": {
+          "mfaUsed": true,
+          "sessionId": "ses_abc123"
+        },
+        "hash": "sha256:abc123...",
+        "previousHash": "sha256:xyz789..."
+      }
+    ],
+    "pagination": {
+      "page": 1,
+      "limit": 50,
+      "total": 1234,
+      "totalPages": 25
+    }
+  }
+}
+```
+
+#### POST /audit/export
+
+Izvozi revizijske zapise.
+
+**Zahteva:**
+
+```json
+{
+  "startDate": "2024-01-01T00:00:00Z",
+  "endDate": "2024-01-31T23:59:59Z",
+  "format": "json | csv | syslog",
+  "includeHash": true
+}
+```
+
+**Odgovor (202 Accepted):**
+
+```json
+{
+  "success": true,
+  "data": {
+    "exportId": "exp_abc123",
+    "status": "processing",
+    "estimatedCompletion": "2024-01-15T10:35:00Z"
+  }
+}
+```
+
+### Upravljanje Kljucev
+
+#### GET /keys
+
+Vrne seznam kriptografskih kljucev.
+
+**Odgovor (200 OK):**
+
+```json
+{
+  "success": true,
+  "data": {
+    "keys": [
+      {
+        "id": "key_abc123",
+        "name": "primary-encryption-key",
+        "algorithm": "AES-256-GCM",
+        "purpose": "encryption",
+        "status": "active",
+        "createdAt": "2024-01-01T00:00:00Z",
+        "expiresAt": "2025-01-01T00:00:00Z",
+        "rotationSchedule": "90d",
+        "lastRotated": "2024-01-01T00:00:00Z"
+      }
+    ]
+  }
+}
+```
+
+#### POST /keys/rotate
+
+Rotira kriptografski kljuc.
+
+**Zahteva:**
+
+```json
+{
+  "keyId": "key_abc123",
+  "reason": "scheduled | compromised | policy"
+}
+```
+
+**Odgovor (200 OK):**
+
+```json
+{
+  "success": true,
+  "data": {
+    "oldKeyId": "key_abc123",
+    "newKeyId": "key_def456",
+    "rotatedAt": "2024-01-15T10:30:00Z",
+    "oldKeyStatus": "deprecated",
+    "deprecationPeriod": "30d"
+  }
+}
+```
+
+### Groznjo Zaznavanje
+
+#### GET /threats
+
+Vrne zaznane groznje.
+
+**Parametri poizvedbe:**
+
+| Parameter | Tip | Opis |
+|-----------|-----|------|
+| `severity` | string | critical, high, medium, low |
+| `status` | string | active, mitigated, false_positive |
+| `type` | string | Tip groznje |
+| `startDate` | ISO 8601 | Zacetni datum |
+| `endDate` | ISO 8601 | Koncni datum |
+
+**Odgovor (200 OK):**
+
+```json
+{
+  "success": true,
+  "data": {
+    "threats": [
+      {
+        "id": "thr_abc123",
+        "type": "brute_force",
+        "severity": "high",
+        "status": "active",
+        "detectedAt": "2024-01-15T10:30:00Z",
+        "source": {
+          "ipAddress": "192.168.1.100",
+          "country": "XX",
+          "asn": "AS12345"
+        },
+        "target": {
+          "resource": "auth",
+          "userId": "usr_xyz789"
+        },
+        "indicators": [
+          "50 failed login attempts in 5 minutes",
+          "Multiple usernames attempted"
+        ],
+        "mitigations": [
+          {
+            "action": "ip_block",
+            "appliedAt": "2024-01-15T10:31:00Z",
+            "duration": "1h"
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+#### POST /threats/{id}/mitigate
+
+Uporabi mitigacijo za groznju.
+
+**Zahteva:**
+
+```json
+{
+  "action": "block_ip | block_user | require_mfa | alert_only",
+  "duration": "1h | 24h | permanent",
+  "reason": "string"
+}
+```
+
+**Odgovor (200 OK):**
+
+```json
+{
+  "success": true,
+  "data": {
+    "threatId": "thr_abc123",
+    "mitigation": {
+      "action": "block_ip",
+      "appliedAt": "2024-01-15T10:35:00Z",
+      "expiresAt": "2024-01-15T11:35:00Z",
+      "appliedBy": "usr_admin123"
+    }
+  }
+}
+```
+
+### Zdravje Sistema
+
+#### GET /health
+
+Vrne stanje zdravja sistema.
+
+**Odgovor (200 OK):**
+
+```json
+{
+  "success": true,
+  "data": {
+    "status": "healthy",
+    "version": "{{VERZIJA}}",
+    "uptime": 86400,
+    "checks": {
+      "database": {
+        "status": "healthy",
+        "latency": 5
+      },
+      "redis": {
+        "status": "healthy",
+        "latency": 1
+      },
+      "vault": {
+        "status": "healthy",
+        "latency": 10
+      },
+      "hsm": {
+        "status": "healthy",
+        "latency": 2
+      }
+    }
+  }
+}
+```
+
+#### GET /health/live
+
+Liveness probe za Kubernetes.
+
+**Odgovor (200 OK):**
+
+```json
+{
+  "status": "alive"
+}
+```
+
+#### GET /health/ready
+
+Readiness probe za Kubernetes.
+
+**Odgovor (200 OK):**
+
+```json
+{
+  "status": "ready"
+}
+```
+
+## Kode Napak
+
+### HTTP Statusne Kode
+
+| Koda | Opis |
+|------|------|
+| 200 | Uspesno |
+| 201 | Ustvarjeno |
+| 202 | Sprejeto (asinhrono) |
+| 400 | Napacna zahteva |
+| 401 | Nepooblasceno |
+| 403 | Prepovedano |
+| 404 | Ni najdeno |
+| 409 | Konflikt |
+| 422 | Neobdelljiva entiteta |
+| 429 | Prevec zahtev |
+| 500 | Notranja napaka |
+| 503 | Storitev ni na voljo |
+
+### Struktura Napake
+
+```json
+{
+  "success": false,
+  "error": {
+    "code": "AUTH_001",
+    "message": "Neveljavne poverilnice",
+    "details": "Uporabnisko ime ali geslo je napacno",
+    "field": "password",
+    "requestId": "req_abc123"
+  }
+}
+```
+
+### Kode Napak
+
+| Koda | Opis |
+|------|------|
+| AUTH_001 | Neveljavne poverilnice |
+| AUTH_002 | Token potekel |
+| AUTH_003 | Token neveljaven |
+| AUTH_004 | MFA zahtevana |
+| AUTH_005 | MFA koda neveljavna |
+| AUTH_006 | Racun zaklenjen |
+| AUTHZ_001 | Ni dovoljenja |
+| AUTHZ_002 | Vloga ne obstaja |
+| AUDIT_001 | Napaka pri pisanju revizije |
+| KEY_001 | Kljuc ne obstaja |
+| KEY_002 | Kljuc potekel |
+| THREAT_001 | Groznja ne obstaja |
+| RATE_001 | Limit presezen |
+
+## Omejitve Hitrosti
+
+| Koncna tocka | Limit | Okno |
+|--------------|-------|------|
+| /auth/login | 5 | 1 min |
+| /auth/mfa/* | 3 | 1 min |
+| /audit/* | 100 | 1 min |
+| /keys/* | 10 | 1 min |
+| /threats/* | 50 | 1 min |
+| Ostalo | 1000 | 1 min |
+
+## Verzioniranje
+
+API uporablja verzioniranje v URL poti:
+
+```
+/v1/resource
+/v2/resource
+```
+
+Stare verzije so podprte 12 mesecev po izdaji nove verzije.
+
+## Changelog
+
+### v1.0.0 ({{DATUM}})
+
+- Zacetna izdaja
+- Avtentikacija z JWT in MFA
+- RBAC avtorizacija
+- Revizijska sled z hash verigami
+- Upravljanje kljucev
+- Zaznavanje grozenj

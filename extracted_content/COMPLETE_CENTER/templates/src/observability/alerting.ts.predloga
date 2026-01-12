@@ -1,0 +1,1412 @@
+/**
+ * {{IME_PROJEKTA}} - Security Alerting System
+ * Domain: {{DOMENA_SL}}
+ * 
+ * @requirement REQ-SEC-ALR-001
+ * @design DSN-SEC-ALR-001
+ * @test TST-SEC-ALR-001
+ * 
+ * Varnostni sistem za opozarjanje in obveščanje o varnostnih dogodkih.
+ * Skladen z DO-178C, IEC 61508, ISO 26262, MIL-STD-882E standardi.
+ * 
+ * @module observability/alerting
+ */
+
+import * as net from 'net';
+import * as tls from 'tls';
+import * as crypto from 'crypto';
+
+// ============================================================================
+// HTTP CLIENT INTERFACE (dependency injection)
+// ============================================================================
+
+/**
+ * Vmesnik za HTTP odjemalca
+ */
+export interface HttpClient {
+    request(url: string, options: {
+        method: string;
+        headers: Record<string, string>;
+        body?: string;
+    }): Promise<{ ok: boolean; status: number }>;
+}
+
+let httpClient: HttpClient;
+
+/**
+ * Nastavi HTTP odjemalca
+ */
+export function setHttpClient(client: HttpClient): void {
+    httpClient = client;
+}
+
+// ============================================================================
+// SMTP CLIENT INTERFACE
+// ============================================================================
+
+/**
+ * SMTP konfiguracija
+ */
+export interface SmtpConfig {
+    readonly host: string;
+    readonly port: number;
+    readonly secure: boolean;
+    readonly username: string;
+    readonly password: string;
+    readonly fromAddress: string;
+    readonly fromName: string;
+    readonly connectionTimeout: number;
+    readonly socketTimeout: number;
+}
+
+/**
+ * SMTP odjemalec z TLS podporo
+ */
+class SmtpClient {
+    private readonly config: SmtpConfig;
+
+    constructor(config: SmtpConfig) {
+        this.config = config;
+    }
+
+    async sendEmail(
+        to: string[],
+        subject: string,
+        htmlBody: string,
+        textBody: string
+    ): Promise<{ success: boolean; messageId?: string; error?: string }> {
+        return new Promise((resolve) => {
+            const messageId = `<${crypto.randomBytes(16).toString('hex')}@${this.config.host}>`;
+            
+            const emailContent = this.buildEmailContent(to, subject, htmlBody, textBody, messageId);
+            
+            const connectOptions = {
+                host: this.config.host,
+                port: this.config.port,
+                timeout: this.config.connectionTimeout
+            };
+
+            let socket: net.Socket | tls.TLSSocket;
+            let responseBuffer = '';
+            let currentCommand = 'CONNECT';
+            let commandQueue: string[] = [];
+
+            const handleResponse = (data: string) => {
+                responseBuffer += data;
+                const lines = responseBuffer.split('\r\n');
+                
+                for (let i = 0; i < lines.length - 1; i++) {
+                    const line = lines[i];
+                    const code = parseInt(line.substring(0, 3), 10);
+                    const isMultiline = line.charAt(3) === '-';
+                    
+                    if (isMultiline) continue;
+
+                    if (code >= 400) {
+                        socket.destroy();
+                        resolve({ success: false, error: `SMTP error ${code}: ${line}` });
+                        return;
+                    }
+
+                    if (commandQueue.length > 0) {
+                        const nextCommand = commandQueue.shift()!;
+                        currentCommand = nextCommand.split(' ')[0];
+                        socket.write(nextCommand + '\r\n');
+                    } else if (currentCommand === 'DATA_CONTENT') {
+                        socket.write('QUIT\r\n');
+                        currentCommand = 'QUIT';
+                    } else if (currentCommand === 'QUIT') {
+                        socket.destroy();
+                        resolve({ success: true, messageId });
+                    }
+                }
+                
+                responseBuffer = lines[lines.length - 1];
+            };
+
+            const startSession = () => {
+                const authString = Buffer.from(`\0${this.config.username}\0${this.config.password}`).toString('base64');
+                
+                commandQueue = [
+                    `EHLO ${this.config.host}`,
+                    `AUTH PLAIN ${authString}`,
+                    `MAIL FROM:<${this.config.fromAddress}>`,
+                    ...to.map(recipient => `RCPT TO:<${recipient}>`),
+                    'DATA'
+                ];
+
+                socket.once('data', (data) => {
+                    handleResponse(data.toString());
+                    
+                    socket.on('data', (data) => {
+                        const dataStr = data.toString();
+                        
+                        if (currentCommand === 'DATA' && dataStr.startsWith('354')) {
+                            socket.write(emailContent + '\r\n.\r\n');
+                            currentCommand = 'DATA_CONTENT';
+                        } else {
+                            handleResponse(dataStr);
+                        }
+                    });
+
+                    if (commandQueue.length > 0) {
+                        const firstCommand = commandQueue.shift()!;
+                        currentCommand = firstCommand.split(' ')[0];
+                        socket.write(firstCommand + '\r\n');
+                    }
+                });
+            };
+
+            if (this.config.secure) {
+                socket = tls.connect({
+                    ...connectOptions,
+                    rejectUnauthorized: true,
+                    minVersion: 'TLSv1.2'
+                }, startSession);
+            } else {
+                socket = net.connect(connectOptions, startSession);
+            }
+
+            socket.setTimeout(this.config.socketTimeout);
+
+            socket.on('timeout', () => {
+                socket.destroy();
+                resolve({ success: false, error: 'Connection timeout' });
+            });
+
+            socket.on('error', (err) => {
+                resolve({ success: false, error: err.message });
+            });
+        });
+    }
+
+    private buildEmailContent(
+        to: string[],
+        subject: string,
+        htmlBody: string,
+        textBody: string,
+        messageId: string
+    ): string {
+        const boundary = crypto.randomBytes(16).toString('hex');
+        const date = new Date().toUTCString();
+
+        const headers = [
+            `Message-ID: ${messageId}`,
+            `Date: ${date}`,
+            `From: ${this.config.fromName} <${this.config.fromAddress}>`,
+            `To: ${to.join(', ')}`,
+            `Subject: ${subject}`,
+            'MIME-Version: 1.0',
+            `Content-Type: multipart/alternative; boundary="${boundary}"`
+        ];
+
+        const textPart = [
+            `--${boundary}`,
+            'Content-Type: text/plain; charset=UTF-8',
+            'Content-Transfer-Encoding: quoted-printable',
+            '',
+            this.encodeQuotedPrintable(textBody)
+        ];
+
+        const htmlPart = [
+            `--${boundary}`,
+            'Content-Type: text/html; charset=UTF-8',
+            'Content-Transfer-Encoding: quoted-printable',
+            '',
+            this.encodeQuotedPrintable(htmlBody)
+        ];
+
+        return [
+            ...headers,
+            '',
+            ...textPart,
+            ...htmlPart,
+            `--${boundary}--`
+        ].join('\r\n');
+    }
+
+    private encodeQuotedPrintable(text: string): string {
+        return text.split('').map(char => {
+            const code = char.charCodeAt(0);
+            if ((code >= 33 && code <= 60) || (code >= 62 && code <= 126) || char === ' ' || char === '\t') {
+                return char;
+            }
+            if (char === '\r' || char === '\n') {
+                return char;
+            }
+            return '=' + code.toString(16).toUpperCase().padStart(2, '0');
+        }).join('').replace(/(.{75})/g, '$1=\r\n');
+    }
+}
+
+let smtpClient: SmtpClient | null = null;
+
+/**
+ * Nastavi SMTP odjemalca
+ */
+export function setSmtpClient(config: SmtpConfig): void {
+    smtpClient = new SmtpClient(config);
+}
+
+// ============================================================================
+// TIPI IN VMESNIKI
+// ============================================================================
+
+/**
+ * Resnost opozorila
+ */
+export enum AlertSeverity {
+    /** Kritično - takojšnje ukrepanje */
+    CRITICAL = 'critical',
+    /** Visoko - ukrepanje v 1 uri */
+    HIGH = 'high',
+    /** Srednje - ukrepanje v 24 urah */
+    MEDIUM = 'medium',
+    /** Nizko - informativno */
+    LOW = 'low',
+    /** Informativno - samo beleženje */
+    INFO = 'info'
+}
+
+/**
+ * Kategorija opozorila
+ */
+export enum AlertCategory {
+    /** Varnostni dogodek */
+    SECURITY = 'security',
+    /** Avtentikacija */
+    AUTHENTICATION = 'authentication',
+    /** Avtorizacija */
+    AUTHORIZATION = 'authorization',
+    /** Grožnja */
+    THREAT = 'threat',
+    /** Skladnost */
+    COMPLIANCE = 'compliance',
+    /** Razpoložljivost */
+    AVAILABILITY = 'availability',
+    /** Zmogljivost */
+    PERFORMANCE = 'performance',
+    /** Kriptografija */
+    CRYPTOGRAPHY = 'cryptography',
+    /** Revizija */
+    AUDIT = 'audit'
+}
+
+/**
+ * Status opozorila
+ */
+export enum AlertStatus {
+    /** Aktivno */
+    ACTIVE = 'active',
+    /** Potrjeno */
+    ACKNOWLEDGED = 'acknowledged',
+    /** Razrešeno */
+    RESOLVED = 'resolved',
+    /** Utišano */
+    SILENCED = 'silenced'
+}
+
+/**
+ * Kanal za obveščanje
+ */
+export enum NotificationChannel {
+    /** Email */
+    EMAIL = 'email',
+    /** Slack */
+    SLACK = 'slack',
+    /** PagerDuty */
+    PAGERDUTY = 'pagerduty',
+    /** Webhook */
+    WEBHOOK = 'webhook',
+    /** SMS */
+    SMS = 'sms',
+    /** SIEM */
+    SIEM = 'siem'
+}
+
+/**
+ * Opozorilo
+ */
+export interface Alert {
+    /** Unikatni identifikator */
+    readonly id: string;
+    /** Ime opozorila */
+    readonly name: string;
+    /** Opis */
+    readonly description: string;
+    /** Resnost */
+    readonly severity: AlertSeverity;
+    /** Kategorija */
+    readonly category: AlertCategory;
+    /** Status */
+    status: AlertStatus;
+    /** Čas sprožitve */
+    readonly firedAt: Date;
+    /** Čas razrešitve */
+    resolvedAt?: Date;
+    /** Oznake */
+    readonly labels: Record<string, string>;
+    /** Anotacije */
+    readonly annotations: Record<string, string>;
+    /** Vrednost ki je sprožila opozorilo */
+    readonly value?: number;
+    /** Prag */
+    readonly threshold?: number;
+    /** Vir */
+    readonly source: string;
+    /** Fingerprint za deduplikacijo */
+    readonly fingerprint: string;
+}
+
+/**
+ * Pravilo za opozarjanje
+ */
+export interface AlertRule {
+    /** Ime pravila */
+    readonly name: string;
+    /** Opis */
+    readonly description: string;
+    /** Izraz za evalvacijo */
+    readonly expression: string;
+    /** Trajanje pred sprožitvijo */
+    readonly duration: number;
+    /** Resnost */
+    readonly severity: AlertSeverity;
+    /** Kategorija */
+    readonly category: AlertCategory;
+    /** Oznake */
+    readonly labels: Record<string, string>;
+    /** Anotacije */
+    readonly annotations: Record<string, string>;
+    /** Ali je pravilo omogočeno */
+    enabled: boolean;
+}
+
+/**
+ * Konfiguracija za utišanje
+ */
+export interface SilenceConfig {
+    /** Unikatni identifikator */
+    readonly id: string;
+    /** Ujemalni vzorci */
+    readonly matchers: Array<{
+        name: string;
+        value: string;
+        isRegex: boolean;
+    }>;
+    /** Začetek utišanja */
+    readonly startsAt: Date;
+    /** Konec utišanja */
+    readonly endsAt: Date;
+    /** Avtor */
+    readonly createdBy: string;
+    /** Razlog */
+    readonly comment: string;
+}
+
+/**
+ * Konfiguracija za obveščanje
+ */
+export interface NotificationConfig {
+    /** Kanal */
+    readonly channel: NotificationChannel;
+    /** Ali je omogočeno */
+    enabled: boolean;
+    /** Konfiguracija kanala */
+    readonly config: Record<string, unknown>;
+    /** Filtriranje po resnosti */
+    readonly severityFilter?: AlertSeverity[];
+    /** Filtriranje po kategoriji */
+    readonly categoryFilter?: AlertCategory[];
+}
+
+/**
+ * Rezultat pošiljanja obvestila
+ */
+export interface NotificationResult {
+    /** Ali je bilo uspešno */
+    readonly success: boolean;
+    /** Kanal */
+    readonly channel: NotificationChannel;
+    /** Sporočilo o napaki */
+    readonly error?: string;
+    /** Čas pošiljanja */
+    readonly sentAt: Date;
+}
+
+/**
+ * Konfiguracija sistema za opozarjanje
+ */
+export interface AlertingConfig {
+    /** Ali je sistem omogočen */
+    readonly enabled: boolean;
+    /** Interval evalvacije (ms) */
+    readonly evaluationInterval: number;
+    /** Čas za razrešitev (ms) */
+    readonly resolveTimeout: number;
+    /** Čas za grupiranje (ms) */
+    readonly groupWait: number;
+    /** Interval za grupiranje (ms) */
+    readonly groupInterval: number;
+    /** Interval za ponavljanje (ms) */
+    readonly repeatInterval: number;
+    /** Kanali za obveščanje */
+    readonly notificationChannels: NotificationConfig[];
+}
+
+// ============================================================================
+// POMOŽNE FUNKCIJE
+// ============================================================================
+
+/**
+ * Generira deterministični fingerprint za opozorilo
+ */
+function generateFingerprint(
+    name: string,
+    labels: Record<string, string>,
+    counter: number
+): string {
+    const sortedLabels = Object.keys(labels)
+        .sort()
+        .map(key => `${key}=${labels[key]}`)
+        .join(',');
+    
+    const input = `${name}:${sortedLabels}:${counter}`;
+    
+    // Deterministični hash
+    let hash = 0;
+    for (let i = 0; i < input.length; i++) {
+        const char = input.charCodeAt(i);
+        hash = ((hash << 5) - hash) + char;
+        hash = hash & hash;
+    }
+    
+    return Math.abs(hash).toString(16).padStart(16, '0');
+}
+
+/**
+ * Generira deterministični ID
+ */
+function generateAlertId(fingerprint: string, timestamp: number): string {
+    const combined = `${fingerprint}-${timestamp}`;
+    let hash = 0;
+    for (let i = 0; i < combined.length; i++) {
+        const char = combined.charCodeAt(i);
+        hash = ((hash << 5) - hash) + char;
+        hash = hash & hash;
+    }
+    return `alert-${Math.abs(hash).toString(16).padStart(12, '0')}`;
+}
+
+// ============================================================================
+// GLAVNA IMPLEMENTACIJA
+// ============================================================================
+
+/**
+ * Sistem za opozarjanje
+ * 
+ * Implementira varnostno opozarjanje skladno z industrijskimi standardi.
+ */
+export class AlertingSystem {
+    private readonly config: AlertingConfig;
+    private readonly rules: Map<string, AlertRule>;
+    private readonly activeAlerts: Map<string, Alert>;
+    private readonly silences: Map<string, SilenceConfig>;
+    private readonly alertHistory: Alert[];
+    private alertCounter: number;
+    private evaluationTimer: ReturnType<typeof setInterval> | null;
+    private readonly maxHistorySize: number;
+
+    constructor(config: AlertingConfig) {
+        this.config = config;
+        this.rules = new Map();
+        this.activeAlerts = new Map();
+        this.silences = new Map();
+        this.alertHistory = [];
+        this.alertCounter = 0;
+        this.evaluationTimer = null;
+        this.maxHistorySize = 10000;
+    }
+
+    /**
+     * Zažene sistem za opozarjanje
+     */
+    start(): void {
+        if (!this.config.enabled) {
+            return;
+        }
+
+        if (this.evaluationTimer !== null) {
+            return;
+        }
+
+        this.evaluationTimer = setInterval(
+            () => this.evaluate(),
+            this.config.evaluationInterval
+        );
+    }
+
+    /**
+     * Ustavi sistem za opozarjanje
+     */
+    stop(): void {
+        if (this.evaluationTimer !== null) {
+            clearInterval(this.evaluationTimer);
+            this.evaluationTimer = null;
+        }
+    }
+
+    /**
+     * Registrira pravilo za opozarjanje
+     */
+    registerRule(rule: AlertRule): void {
+        this.rules.set(rule.name, rule);
+    }
+
+    /**
+     * Odstrani pravilo za opozarjanje
+     */
+    unregisterRule(name: string): boolean {
+        return this.rules.delete(name);
+    }
+
+    /**
+     * Pridobi vsa pravila
+     */
+    getRules(): AlertRule[] {
+        return Array.from(this.rules.values());
+    }
+
+    /**
+     * Sproži opozorilo
+     */
+    fire(
+        name: string,
+        description: string,
+        severity: AlertSeverity,
+        category: AlertCategory,
+        labels: Record<string, string> = {},
+        annotations: Record<string, string> = {},
+        value?: number,
+        threshold?: number
+    ): Alert {
+        this.alertCounter++;
+        
+        const fingerprint = generateFingerprint(name, labels, this.alertCounter);
+        const now = new Date();
+        const id = generateAlertId(fingerprint, now.getTime());
+
+        // Preveri ali je opozorilo utišano
+        if (this.isSilenced(name, labels)) {
+            const silencedAlert: Alert = {
+                id,
+                name,
+                description,
+                severity,
+                category,
+                status: AlertStatus.SILENCED,
+                firedAt: now,
+                labels,
+                annotations,
+                value,
+                threshold,
+                source: '{{IME_PROJEKTA_SLUG}}',
+                fingerprint
+            };
+            this.addToHistory(silencedAlert);
+            return silencedAlert;
+        }
+
+        // Preveri ali že obstaja aktivno opozorilo z istim fingerprint
+        const existingAlert = this.findAlertByFingerprint(fingerprint);
+        if (existingAlert !== undefined && existingAlert.status === AlertStatus.ACTIVE) {
+            return existingAlert;
+        }
+
+        const alert: Alert = {
+            id,
+            name,
+            description,
+            severity,
+            category,
+            status: AlertStatus.ACTIVE,
+            firedAt: now,
+            labels,
+            annotations,
+            value,
+            threshold,
+            source: '{{IME_PROJEKTA_SLUG}}',
+            fingerprint
+        };
+
+        this.activeAlerts.set(id, alert);
+        this.addToHistory(alert);
+
+        // Pošlji obvestila
+        this.sendNotifications(alert).catch(error => {
+            console.error('Failed to send alert notifications:', error);
+        });
+
+        return alert;
+    }
+
+    /**
+     * Potrdi opozorilo
+     */
+    acknowledge(alertId: string, acknowledgedBy: string): boolean {
+        const alert = this.activeAlerts.get(alertId);
+        if (alert === undefined) {
+            return false;
+        }
+
+        if (alert.status !== AlertStatus.ACTIVE) {
+            return false;
+        }
+
+        alert.status = AlertStatus.ACKNOWLEDGED;
+        alert.annotations['acknowledgedBy'] = acknowledgedBy;
+        alert.annotations['acknowledgedAt'] = new Date().toISOString();
+
+        return true;
+    }
+
+    /**
+     * Razreši opozorilo
+     */
+    resolve(alertId: string, resolvedBy?: string): boolean {
+        const alert = this.activeAlerts.get(alertId);
+        if (alert === undefined) {
+            return false;
+        }
+
+        alert.status = AlertStatus.RESOLVED;
+        alert.resolvedAt = new Date();
+        
+        if (resolvedBy !== undefined) {
+            alert.annotations['resolvedBy'] = resolvedBy;
+        }
+
+        this.activeAlerts.delete(alertId);
+
+        // Pošlji obvestilo o razrešitvi
+        this.sendNotifications(alert).catch(error => {
+            console.error('Failed to send resolution notification:', error);
+        });
+
+        return true;
+    }
+
+    /**
+     * Utiša opozorila
+     */
+    silence(config: Omit<SilenceConfig, 'id'>): SilenceConfig {
+        this.alertCounter++;
+        const id = `silence-${this.alertCounter.toString().padStart(8, '0')}`;
+        
+        const silence: SilenceConfig = {
+            id,
+            ...config
+        };
+
+        this.silences.set(id, silence);
+
+        // Utiša obstoječa aktivna opozorila
+        for (const alert of this.activeAlerts.values()) {
+            if (this.matchesSilence(alert, silence)) {
+                alert.status = AlertStatus.SILENCED;
+            }
+        }
+
+        return silence;
+    }
+
+    /**
+     * Odstrani utišanje
+     */
+    unsilence(silenceId: string): boolean {
+        const silence = this.silences.get(silenceId);
+        if (silence === undefined) {
+            return false;
+        }
+
+        this.silences.delete(silenceId);
+
+        // Reaktiviraj utišana opozorila
+        for (const alert of this.activeAlerts.values()) {
+            if (alert.status === AlertStatus.SILENCED && !this.isSilenced(alert.name, alert.labels)) {
+                alert.status = AlertStatus.ACTIVE;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Pridobi aktivna opozorila
+     */
+    getActiveAlerts(
+        severity?: AlertSeverity,
+        category?: AlertCategory
+    ): Alert[] {
+        let alerts = Array.from(this.activeAlerts.values());
+
+        if (severity !== undefined) {
+            alerts = alerts.filter(a => a.severity === severity);
+        }
+
+        if (category !== undefined) {
+            alerts = alerts.filter(a => a.category === category);
+        }
+
+        return alerts;
+    }
+
+    /**
+     * Pridobi opozorilo po ID
+     */
+    getAlert(alertId: string): Alert | undefined {
+        return this.activeAlerts.get(alertId);
+    }
+
+    /**
+     * Pridobi zgodovino opozoril
+     */
+    getAlertHistory(
+        limit: number = 100,
+        offset: number = 0
+    ): Alert[] {
+        return this.alertHistory.slice(offset, offset + limit);
+    }
+
+    /**
+     * Pridobi aktivna utišanja
+     */
+    getActiveSilences(): SilenceConfig[] {
+        const now = new Date();
+        return Array.from(this.silences.values())
+            .filter(s => s.startsAt <= now && s.endsAt > now);
+    }
+
+    /**
+     * Pridobi statistiko opozoril
+     */
+    getStatistics(): {
+        total: number;
+        bySeverity: Record<AlertSeverity, number>;
+        byCategory: Record<AlertCategory, number>;
+        byStatus: Record<AlertStatus, number>;
+    } {
+        const alerts = Array.from(this.activeAlerts.values());
+        
+        const bySeverity: Record<AlertSeverity, number> = {
+            [AlertSeverity.CRITICAL]: 0,
+            [AlertSeverity.HIGH]: 0,
+            [AlertSeverity.MEDIUM]: 0,
+            [AlertSeverity.LOW]: 0,
+            [AlertSeverity.INFO]: 0
+        };
+
+        const byCategory: Record<AlertCategory, number> = {
+            [AlertCategory.SECURITY]: 0,
+            [AlertCategory.AUTHENTICATION]: 0,
+            [AlertCategory.AUTHORIZATION]: 0,
+            [AlertCategory.THREAT]: 0,
+            [AlertCategory.COMPLIANCE]: 0,
+            [AlertCategory.AVAILABILITY]: 0,
+            [AlertCategory.PERFORMANCE]: 0,
+            [AlertCategory.CRYPTOGRAPHY]: 0,
+            [AlertCategory.AUDIT]: 0
+        };
+
+        const byStatus: Record<AlertStatus, number> = {
+            [AlertStatus.ACTIVE]: 0,
+            [AlertStatus.ACKNOWLEDGED]: 0,
+            [AlertStatus.RESOLVED]: 0,
+            [AlertStatus.SILENCED]: 0
+        };
+
+        for (const alert of alerts) {
+            bySeverity[alert.severity]++;
+            byCategory[alert.category]++;
+            byStatus[alert.status]++;
+        }
+
+        return {
+            total: alerts.length,
+            bySeverity,
+            byCategory,
+            byStatus
+        };
+    }
+
+    // ========================================================================
+    // PRIVATNE METODE
+    // ========================================================================
+
+    /**
+     * Evalvira pravila
+     */
+    private evaluate(): void {
+        const now = new Date();
+
+        // Počisti potekla utišanja
+        for (const [id, silence] of this.silences.entries()) {
+            if (silence.endsAt <= now) {
+                this.unsilence(id);
+            }
+        }
+
+        // Avtomatsko razreši stara opozorila
+        for (const [id, alert] of this.activeAlerts.entries()) {
+            const age = now.getTime() - alert.firedAt.getTime();
+            if (age > this.config.resolveTimeout) {
+                this.resolve(id, 'auto-resolve');
+            }
+        }
+    }
+
+    /**
+     * Preveri ali je opozorilo utišano
+     */
+    private isSilenced(name: string, labels: Record<string, string>): boolean {
+        const now = new Date();
+        
+        for (const silence of this.silences.values()) {
+            if (silence.startsAt > now || silence.endsAt <= now) {
+                continue;
+            }
+
+            const tempAlert = { name, labels } as Alert;
+            if (this.matchesSilence(tempAlert, silence)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Preveri ali opozorilo ustreza utišanju
+     */
+    private matchesSilence(alert: Alert, silence: SilenceConfig): boolean {
+        for (const matcher of silence.matchers) {
+            const value = matcher.name === 'alertname' 
+                ? alert.name 
+                : alert.labels[matcher.name];
+
+            if (value === undefined) {
+                return false;
+            }
+
+            if (matcher.isRegex) {
+                const regex = new RegExp(matcher.value);
+                if (!regex.test(value)) {
+                    return false;
+                }
+            } else {
+                if (value !== matcher.value) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Najde opozorilo po fingerprint
+     */
+    private findAlertByFingerprint(fingerprint: string): Alert | undefined {
+        for (const alert of this.activeAlerts.values()) {
+            if (alert.fingerprint === fingerprint) {
+                return alert;
+            }
+        }
+        return undefined;
+    }
+
+    /**
+     * Doda opozorilo v zgodovino
+     */
+    private addToHistory(alert: Alert): void {
+        this.alertHistory.push(alert);
+        
+        // Omeji velikost zgodovine
+        if (this.alertHistory.length > this.maxHistorySize) {
+            this.alertHistory.shift();
+        }
+    }
+
+    /**
+     * Pošlje obvestila
+     */
+    private async sendNotifications(alert: Alert): Promise<NotificationResult[]> {
+        const results: NotificationResult[] = [];
+
+        for (const channelConfig of this.config.notificationChannels) {
+            if (!channelConfig.enabled) {
+                continue;
+            }
+
+            // Filtriraj po resnosti
+            if (channelConfig.severityFilter !== undefined && 
+                !channelConfig.severityFilter.includes(alert.severity)) {
+                continue;
+            }
+
+            // Filtriraj po kategoriji
+            if (channelConfig.categoryFilter !== undefined && 
+                !channelConfig.categoryFilter.includes(alert.category)) {
+                continue;
+            }
+
+            try {
+                const result = await this.sendToChannel(channelConfig, alert);
+                results.push(result);
+            } catch (error) {
+                results.push({
+                    success: false,
+                    channel: channelConfig.channel,
+                    error: error instanceof Error ? error.message : 'Unknown error',
+                    sentAt: new Date()
+                });
+            }
+        }
+
+        return results;
+    }
+
+    /**
+     * Pošlje obvestilo na kanal
+     */
+    private async sendToChannel(
+        channelConfig: NotificationConfig,
+        alert: Alert
+    ): Promise<NotificationResult> {
+        const now = new Date();
+
+        switch (channelConfig.channel) {
+            case NotificationChannel.WEBHOOK:
+                return this.sendWebhook(channelConfig, alert);
+            
+            case NotificationChannel.SLACK:
+                return this.sendSlack(channelConfig, alert);
+            
+            case NotificationChannel.EMAIL:
+                return this.sendEmail(channelConfig, alert);
+            
+            case NotificationChannel.PAGERDUTY:
+                return this.sendPagerDuty(channelConfig, alert);
+            
+            case NotificationChannel.SIEM:
+                return this.sendSiem(channelConfig, alert);
+            
+            default:
+                return {
+                    success: false,
+                    channel: channelConfig.channel,
+                    error: `Unsupported channel: ${channelConfig.channel}`,
+                    sentAt: now
+                };
+        }
+    }
+
+    /**
+     * Pošlje webhook obvestilo
+     */
+    private async sendWebhook(
+        config: NotificationConfig,
+        alert: Alert
+    ): Promise<NotificationResult> {
+        const url = config.config['url'] as string;
+        
+        const payload = {
+            alert: {
+                id: alert.id,
+                name: alert.name,
+                description: alert.description,
+                severity: alert.severity,
+                category: alert.category,
+                status: alert.status,
+                firedAt: alert.firedAt.toISOString(),
+                resolvedAt: alert.resolvedAt?.toISOString(),
+                labels: alert.labels,
+                annotations: alert.annotations,
+                value: alert.value,
+                threshold: alert.threshold,
+                source: alert.source
+            },
+            timestamp: new Date().toISOString()
+        };
+
+        const response = await httpClient.request(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                ...(config.config['headers'] as Record<string, string> || {})
+            },
+            body: JSON.stringify(payload)
+        });
+
+        return {
+            success: response.ok,
+            channel: NotificationChannel.WEBHOOK,
+            error: response.ok ? undefined : `HTTP ${response.status}`,
+            sentAt: new Date()
+        };
+    }
+
+    /**
+     * Pošlje Slack obvestilo
+     */
+    private async sendSlack(
+        config: NotificationConfig,
+        alert: Alert
+    ): Promise<NotificationResult> {
+        const webhookUrl = config.config['webhookUrl'] as string;
+        const channel = config.config['channel'] as string;
+
+        const color = this.getSeverityColor(alert.severity);
+        const emoji = this.getSeverityEmoji(alert.severity);
+
+        const payload = {
+            channel,
+            username: 'Security Alert Bot',
+            icon_emoji: ':rotating_light:',
+            attachments: [{
+                color,
+                title: `${emoji} ${alert.severity.toUpperCase()}: ${alert.name}`,
+                text: alert.description,
+                fields: [
+                    { title: 'Category', value: alert.category, short: true },
+                    { title: 'Status', value: alert.status, short: true },
+                    { title: 'Source', value: alert.source, short: true },
+                    { title: 'Fired At', value: alert.firedAt.toISOString(), short: true }
+                ],
+                footer: '{{IME_PROJEKTA}}',
+                ts: Math.floor(alert.firedAt.getTime() / 1000)
+            }]
+        };
+
+        const response = await httpClient.request(webhookUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        return {
+            success: response.ok,
+            channel: NotificationChannel.SLACK,
+            error: response.ok ? undefined : `HTTP ${response.status}`,
+            sentAt: new Date()
+        };
+    }
+
+    /**
+     * Pošlje email obvestilo preko SMTP
+     */
+    private async sendEmail(
+        config: NotificationConfig,
+        alert: Alert
+    ): Promise<NotificationResult> {
+        if (smtpClient === null) {
+            return {
+                success: false,
+                channel: NotificationChannel.EMAIL,
+                error: 'SMTP client not configured',
+                sentAt: new Date()
+            };
+        }
+
+        const recipients = config.config['recipients'] as string[];
+        if (!recipients || recipients.length === 0) {
+            return {
+                success: false,
+                channel: NotificationChannel.EMAIL,
+                error: 'No recipients configured',
+                sentAt: new Date()
+            };
+        }
+
+        const severityColor = this.getSeverityColor(alert.severity);
+        const subject = `[${alert.severity.toUpperCase()}] ${alert.name} - {{IME_PROJEKTA}}`;
+        
+        const textBody = [
+            `Security Alert: ${alert.name}`,
+            ``,
+            `Severity: ${alert.severity.toUpperCase()}`,
+            `Category: ${alert.category}`,
+            `Status: ${alert.status}`,
+            ``,
+            `Description: ${alert.description}`,
+            ``,
+            `Source: ${alert.source}`,
+            `Fired At: ${alert.firedAt.toISOString()}`,
+            alert.resolvedAt ? `Resolved At: ${alert.resolvedAt.toISOString()}` : '',
+            ``,
+            `Labels:`,
+            ...Object.entries(alert.labels).map(([k, v]) => `  ${k}: ${v}`),
+            ``,
+            `Alert ID: ${alert.id}`,
+            `Fingerprint: ${alert.fingerprint}`
+        ].filter(line => line !== '').join('\n');
+
+        const htmlBody = `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 20px; background: #f5f5f5; }
+        .container { max-width: 600px; margin: 0 auto; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .header { background: ${severityColor}; color: white; padding: 20px; }
+        .header h1 { margin: 0; font-size: 18px; }
+        .content { padding: 20px; }
+        .field { margin-bottom: 12px; }
+        .field-label { font-weight: 600; color: #666; font-size: 12px; text-transform: uppercase; }
+        .field-value { color: #333; margin-top: 4px; }
+        .labels { background: #f9f9f9; padding: 12px; border-radius: 4px; margin-top: 16px; }
+        .label-item { display: inline-block; background: #e0e0e0; padding: 4px 8px; border-radius: 4px; margin: 2px; font-size: 12px; }
+        .footer { padding: 16px 20px; background: #f9f9f9; font-size: 12px; color: #666; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>${this.getSeverityEmoji(alert.severity)} ${alert.severity.toUpperCase()}: ${alert.name}</h1>
+        </div>
+        <div class="content">
+            <div class="field">
+                <div class="field-label">Description</div>
+                <div class="field-value">${alert.description}</div>
+            </div>
+            <div class="field">
+                <div class="field-label">Category</div>
+                <div class="field-value">${alert.category}</div>
+            </div>
+            <div class="field">
+                <div class="field-label">Status</div>
+                <div class="field-value">${alert.status}</div>
+            </div>
+            <div class="field">
+                <div class="field-label">Source</div>
+                <div class="field-value">${alert.source}</div>
+            </div>
+            <div class="field">
+                <div class="field-label">Fired At</div>
+                <div class="field-value">${alert.firedAt.toISOString()}</div>
+            </div>
+            ${alert.resolvedAt ? `
+            <div class="field">
+                <div class="field-label">Resolved At</div>
+                <div class="field-value">${alert.resolvedAt.toISOString()}</div>
+            </div>
+            ` : ''}
+            ${alert.value !== undefined ? `
+            <div class="field">
+                <div class="field-label">Value</div>
+                <div class="field-value">${alert.value}${alert.threshold !== undefined ? ` (threshold: ${alert.threshold})` : ''}</div>
+            </div>
+            ` : ''}
+            <div class="labels">
+                <div class="field-label">Labels</div>
+                ${Object.entries(alert.labels).map(([k, v]) => `<span class="label-item">${k}: ${v}</span>`).join('')}
+            </div>
+        </div>
+        <div class="footer">
+            Alert ID: ${alert.id}<br>
+            Fingerprint: ${alert.fingerprint}<br>
+            Generated by {{IME_PROJEKTA}}
+        </div>
+    </div>
+</body>
+</html>`;
+
+        const result = await smtpClient.sendEmail(recipients, subject, htmlBody, textBody);
+
+        return {
+            success: result.success,
+            channel: NotificationChannel.EMAIL,
+            error: result.error,
+            sentAt: new Date()
+        };
+    }
+
+    /**
+     * Pošlje PagerDuty obvestilo
+     */
+    private async sendPagerDuty(
+        config: NotificationConfig,
+        alert: Alert
+    ): Promise<NotificationResult> {
+        const serviceKey = config.config['serviceKey'] as string;
+        const pagerDutyEndpoint = config.config['pagerDutyEndpoint'] as string;
+
+        const eventAction = alert.status === AlertStatus.RESOLVED ? 'resolve' : 'trigger';
+
+        const payload = {
+            routing_key: serviceKey,
+            event_action: eventAction,
+            dedup_key: alert.fingerprint,
+            payload: {
+                summary: `${alert.severity.toUpperCase()}: ${alert.name}`,
+                source: alert.source,
+                severity: this.mapSeverityToPagerDuty(alert.severity),
+                timestamp: alert.firedAt.toISOString(),
+                custom_details: {
+                    description: alert.description,
+                    category: alert.category,
+                    labels: alert.labels,
+                    value: alert.value,
+                    threshold: alert.threshold
+                }
+            }
+        };
+
+        const response = await httpClient.request(pagerDutyEndpoint, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        return {
+            success: response.ok,
+            channel: NotificationChannel.PAGERDUTY,
+            error: response.ok ? undefined : `HTTP ${response.status}`,
+            sentAt: new Date()
+        };
+    }
+
+    /**
+     * Pošlje SIEM obvestilo
+     */
+    private async sendSiem(
+        config: NotificationConfig,
+        alert: Alert
+    ): Promise<NotificationResult> {
+        const endpoint = config.config['endpoint'] as string;
+
+        // CEF format za SIEM
+        const cefMessage = this.formatCef(alert);
+
+        const response = await httpClient.request(endpoint, {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'text/plain',
+                ...(config.config['headers'] as Record<string, string> || {})
+            },
+            body: cefMessage
+        });
+
+        return {
+            success: response.ok,
+            channel: NotificationChannel.SIEM,
+            error: response.ok ? undefined : `HTTP ${response.status}`,
+            sentAt: new Date()
+        };
+    }
+
+    /**
+     * Formatira opozorilo v CEF format
+     */
+    private formatCef(alert: Alert): string {
+        const severity = this.mapSeverityToCef(alert.severity);
+        const extension = [
+            `msg=${alert.description}`,
+            `cat=${alert.category}`,
+            `outcome=${alert.status}`,
+            `src=${alert.source}`,
+            `rt=${alert.firedAt.getTime()}`
+        ].join(' ');
+
+        return `CEF:0|{{ORGANIZACIJA}}|{{IME_PROJEKTA}}|{{VERZIJA}}|${alert.name}|${alert.description}|${severity}|${extension}`;
+    }
+
+    /**
+     * Pridobi barvo za resnost
+     */
+    private getSeverityColor(severity: AlertSeverity): string {
+        switch (severity) {
+            case AlertSeverity.CRITICAL: return '#FF0000';
+            case AlertSeverity.HIGH: return '#FF6600';
+            case AlertSeverity.MEDIUM: return '#FFCC00';
+            case AlertSeverity.LOW: return '#00CC00';
+            case AlertSeverity.INFO: return '#0066FF';
+            default: return '#808080';
+        }
+    }
+
+    /**
+     * Pridobi emoji za resnost
+     */
+    private getSeverityEmoji(severity: AlertSeverity): string {
+        switch (severity) {
+            case AlertSeverity.CRITICAL: return '🔴';
+            case AlertSeverity.HIGH: return '🟠';
+            case AlertSeverity.MEDIUM: return '🟡';
+            case AlertSeverity.LOW: return '🟢';
+            case AlertSeverity.INFO: return '🔵';
+            default: return '⚪';
+        }
+    }
+
+    /**
+     * Preslika resnost v PagerDuty format
+     */
+    private mapSeverityToPagerDuty(severity: AlertSeverity): string {
+        switch (severity) {
+            case AlertSeverity.CRITICAL: return 'critical';
+            case AlertSeverity.HIGH: return 'error';
+            case AlertSeverity.MEDIUM: return 'warning';
+            case AlertSeverity.LOW: return 'info';
+            case AlertSeverity.INFO: return 'info';
+            default: return 'info';
+        }
+    }
+
+    /**
+     * Preslika resnost v CEF format (0-10)
+     */
+    private mapSeverityToCef(severity: AlertSeverity): number {
+        switch (severity) {
+            case AlertSeverity.CRITICAL: return 10;
+            case AlertSeverity.HIGH: return 7;
+            case AlertSeverity.MEDIUM: return 5;
+            case AlertSeverity.LOW: return 3;
+            case AlertSeverity.INFO: return 1;
+            default: return 0;
+        }
+    }
+}
+
+// ============================================================================
+// TOVARNIŠKA FUNKCIJA
+// ============================================================================
+
+/**
+ * Ustvari privzeti sistem za opozarjanje
+ */
+export function createAlertingSystem(
+    config?: Partial<AlertingConfig>
+): AlertingSystem {
+    const defaultConfig: AlertingConfig = {
+        enabled: true,
+        evaluationInterval: 15000,
+        resolveTimeout: 300000,
+        groupWait: 30000,
+        groupInterval: 300000,
+        repeatInterval: 14400000,
+        notificationChannels: []
+    };
+
+    return new AlertingSystem({
+        ...defaultConfig,
+        ...config
+    });
+}
+
+// ============================================================================
+// IZVOZ
+// ============================================================================
+
+export default AlertingSystem;

@@ -1,0 +1,16 @@
+import { Submodule } from '../../../registry/types';
+
+export const SUBMODULE: Submodule = {
+    id: 'PODMODUL_08_TRACING_CONTEXT',
+    displayNameSL: 'Kontekst propagacija',
+    descriptionSL: 'Kontekst propagacija za porazdeljeno sledenje',
+    path: 'knowbank/domene/DOMENA_08/submodules/PODMODUL_08_TRACING_CONTEXT.ts',
+    domainId: 'DOMENA_08',
+    type: 'SUBMODULE',
+    version: '1.0.0',
+    hash: '',
+    links: [],
+    tags: ["trace","tracing"],
+    parentModuleId: 'MODUL_08_TRACING',
+    functionIds: []
+};

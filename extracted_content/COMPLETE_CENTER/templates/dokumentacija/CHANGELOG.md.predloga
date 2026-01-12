@@ -1,0 +1,183 @@
+# Changelog - {{IME_PROJEKTA}}
+
+Vse pomembne spremembe tega projekta bodo dokumentirane v tej datoteki.
+
+Format temelji na [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+in ta projekt sledi [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+**Projekt:** {{IME_PROJEKTA}}
+**Domena:** {{DOMENA_SL}}
+**Avtor:** {{AVTOR}}
+
+## [Unreleased]
+
+### Varnostne Posodobitve
+- Nobene znane varnostne ranljivosti
+
+### Dodano
+- Nobenih novih funkcionalnosti v cakanju
+
+### Spremenjeno
+- Nobenih sprememb v cakanju
+
+### Odstranjeno
+- Nobenih odstranitev v cakanju
+
+### Popravljeno
+- Nobenih popravkov v cakanju
+
+---
+
+## [{{VERZIJA}}] - {{DATUM}}
+
+### Varnostne Posodobitve
+
+#### Kriticne
+- Implementirana vzajemna TLS avtentikacija (mTLS) za vse produkcijske komunikacije
+- Dodana podpora za Hardware Security Module (HSM) za upravljanje kljucev
+- Implementirano avtomatsko zaklepanje racunov po 5 neuspesnih poskusih prijave
+
+#### Visoke
+- Dodana vecfaktorska avtentikacija (TOTP, SMS, Email)
+- Implementirana rotacija kljucev z graceful deprecation obdobjem
+- Dodano zaznavanje grozenj z avtomatsko mitigacijo
+
+#### Srednje
+- Izboljsano logiranje varnostnih dogodkov s CEF/LEEF formatom
+- Dodana integracija s SIEM sistemi
+- Implementirana rate limiting zasciita
+
+### Dodano
+
+#### Avtentikacija
+- JWT avtentikacija z RS256 podpisovanjem
+- Podpora za refresh tokene z rotacijo
+- Vecfaktorska avtentikacija (MFA)
+  - TOTP (Time-based One-Time Password)
+  - SMS verifikacija
+  - Email verifikacija
+- Backup kode za MFA obnovitev
+- Upravljanje sej z Redis
+
+#### Avtorizacija
+- Role-Based Access Control (RBAC)
+- Attribute-Based Access Control (ABAC) razsiritve
+- Casovno omejena dovoljenja
+- IP whitelisting
+- Hierarhicne vloge
+
+#### Revizijska Sled
+- Neizpodbiten audit log z hash verigami
+- CEF (Common Event Format) izvoz
+- LEEF (Log Event Extended Format) izvoz
+- Syslog integracija
+- Dolgorocno arhiviranje z integriteto
+
+#### Upravljanje Kljucev
+- Centralizirano upravljanje kriptografskih kljucev
+- Avtomatska rotacija kljucev
+- HSM integracija
+- Key escrow za obnovitev
+- Verzioniranje kljucev
+
+#### Zaznavanje Grozenj
+- Zaznavanje brute force napadov
+- Zaznavanje anomalij v vedenju
+- Geografska analiza dostopov
+- Avtomatska mitigacija grozenj
+- Integracija z threat intelligence viri
+
+#### Observability
+- Strukturirano logiranje z maskiranjem obcutljivih podatkov
+- Prometheus metrike za varnostne dogodke
+- Distribuirano sledenje z varnostnim kontekstom
+- Grafana dashboardi za varnostni pregled
+
+#### Reliability
+- Circuit breaker z fail-secure vedenjem
+- Retry mehanizem z varnostnimi omejitvami
+- Health check za vse varnostne komponente
+- Graceful shutdown z varnim zakljuckom sej
+
+#### Deployment
+- Multi-stage Docker build z varnostnim skeniranjem
+- Kubernetes deployment z Pod Security Standards
+- GitOps konfiguracija z ArgoCD
+- Terraform infrastruktura kot koda
+
+### Spremenjeno
+- Zacetna izdaja - ni predhodnih sprememb
+
+### Odstranjeno
+- Zacetna izdaja - ni predhodnih odstranitev
+
+### Popravljeno
+- Zacetna izdaja - ni predhodnih popravkov
+
+### Skladnost
+
+#### Dosezena Skladnost
+- **DO-178C** Level A - Software Considerations in Airborne Systems
+- **IEC 61508** SIL 4 - Functional Safety
+- **ISO 26262** ASIL D - Automotive Safety
+- **MIL-STD-882E** - System Safety
+- **ISO 27001** - Information Security Management
+- **SOC 2 Type II** - Service Organization Controls
+- **NIST 800-53** - Security and Privacy Controls
+
+#### Varnostni Standardi
+- OWASP Top 10 2021 - vse ranljivosti naslovljene
+- CWE/SANS Top 25 - vse ranljivosti naslovljene
+- NIST Cybersecurity Framework - implementiran
+
+### Znane Omejitve
+- HSM integracija zahteva specificno strojno opremo
+- MFA preko SMS ni priporocena za visoko varnostne aplikacije
+- Rate limiting je per-instance, ne globalen (razen z Redis)
+
+### Nadgradnja
+Za nadgradnjo na to verzijo:
+
+1. Preberite VARNOSTNA_POLITIKA.md za varnostne zahteve
+2. Konfigurirajte HSM ali uporabite software key store
+3. Nastavite MFA za vse administratorske racune
+4. Preglejte in prilagodite RBAC politike
+5. Konfigurirajte SIEM integracijo
+6. Izvedite varnostni pregled po nadgradnji
+
+---
+
+## Verzije v Razvoju
+
+### [1.1.0] - Planirano
+
+#### Planirane Funkcionalnosti
+- Podpora za FIDO2/WebAuthn avtentikacijo
+- Integracija z zunanjimi identity providerji (SAML, OIDC)
+- Napredna analitika grozenj z ML
+- Avtomatsko generiranje varnostnih porocil
+
+### [2.0.0] - Dolgorocno
+
+#### Planirane Funkcionalnosti
+- Zero Trust arhitektura
+- Kvantno odporna kriptografija
+- Decentralizirana identiteta
+- AI-podprto zaznavanje grozenj
+
+---
+
+## Varnostna Obvestila
+
+Za varnostna obvestila in ranljivosti glejte [SECURITY.md](./VARNOSTNA_POLITIKA.md).
+
+Za prijavo varnostnih ranljivosti kontaktirajte: security@{{ORGANIZACIJA_DOMENA}}
+
+---
+
+## Povezave
+
+- [Dokumentacija](./README.md)
+- [API Dokumentacija](./API_DOKUMENTACIJA.md)
+- [Arhitekturni Opis](./ARHITEKTURNI_OPIS.md)
+- [Varnostna Politika](./VARNOSTNA_POLITIKA.md)

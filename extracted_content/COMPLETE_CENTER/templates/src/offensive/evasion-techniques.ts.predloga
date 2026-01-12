@@ -1,0 +1,982 @@
+/**
+ * @file Evasion Techniques - Self-Contained Security Evasion Platform
+ * @author {{AVTOR}}
+ * @version {{VERZIJA}}
+ * @date {{DATUM}}
+ * @project {{IME_PROJEKTA}}
+ * @domain VARNOSTNI_SISTEMI
+ * 
+ * @requirement REQ-SEC-EVA-001
+ * @design DSN-SEC-EVA-001
+ * @test TST-SEC-EVA-001
+ * 
+ * @description
+ * Enterprise-grade self-contained security evasion platform implementing
+ * comprehensive EDR bypass, AV evasion, sandbox detection, anti-debugging,
+ * and defense circumvention techniques. All evasion algorithms are natively
+ * implemented without external dependencies.
+ * 
+ * @classification TOP SECRET - Evasion Techniques
+ * @authorization Required: Level 5 Security Clearance
+ * @dependencies NONE - Fully self-contained implementation
+ */
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// EVASION TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export type EvasionCategory =
+  | 'ANTIVIRUS'
+  | 'EDR'
+  | 'SANDBOX'
+  | 'DEBUGGING'
+  | 'FORENSICS'
+  | 'NETWORK'
+  | 'BEHAVIORAL'
+  | 'SIGNATURE';
+
+export type AVEvasionType =
+  | 'SIGNATURE_EVASION'
+  | 'HEURISTIC_EVASION'
+  | 'BEHAVIORAL_EVASION'
+  | 'CLOUD_EVASION'
+  | 'REALTIME_EVASION';
+
+export type EDREvasionType =
+  | 'HOOK_EVASION'
+  | 'SYSCALL_DIRECT'
+  | 'ETW_BYPASS'
+  | 'AMSI_BYPASS'
+  | 'CALLBACK_REMOVAL'
+  | 'DRIVER_BYPASS';
+
+export type SandboxEvasionType =
+  | 'ENVIRONMENT_CHECK'
+  | 'TIMING_BASED'
+  | 'USER_INTERACTION'
+  | 'RESOURCE_CHECK'
+  | 'ARTIFACT_CHECK';
+
+export type DebugEvasionType =
+  | 'API_CHECK'
+  | 'TIMING_CHECK'
+  | 'HARDWARE_BREAKPOINT'
+  | 'EXCEPTION_BASED'
+  | 'SELF_DEBUGGING';
+
+export type TargetPlatform =
+  | 'WINDOWS'
+  | 'LINUX'
+  | 'MACOS'
+  | 'CROSS_PLATFORM';
+
+export type SecurityLevel =
+  | 'TOP_SECRET'
+  | 'SECRET'
+  | 'CONFIDENTIAL'
+  | 'UNCLASSIFIED';
+
+export type OperationalMode =
+  | 'RESEARCH'
+  | 'TESTING'
+  | 'OPERATIONAL'
+  | 'COMBINED';
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// EVASION CONFIGURATION
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface EvasionTechniquesConfig {
+  readonly platformId: string;
+  readonly name: string;
+  readonly version: string;
+  readonly mode: OperationalMode;
+  readonly antivirus: AntivirusEvasionConfig;
+  readonly edr: EDREvasionConfig;
+  readonly sandbox: SandboxEvasionConfig;
+  readonly debugging: DebuggingEvasionConfig;
+  readonly forensics: ForensicsEvasionConfig;
+  readonly network: NetworkEvasionConfig;
+  readonly behavioral: BehavioralEvasionConfig;
+  readonly signature: SignatureEvasionConfig;
+  readonly testing: TestingConfig;
+  readonly reporting: ReportingConfig;
+  readonly storage: StorageConfig;
+  readonly security: SecurityConfig;
+  readonly metadata: PlatformMetadata;
+}
+
+export interface AntivirusEvasionConfig {
+  readonly enabled: boolean;
+  readonly signature: SignatureEvasionTechniquesConfig;
+  readonly heuristic: HeuristicEvasionConfig;
+  readonly behavioral: BehavioralAVEvasionConfig;
+  readonly cloud: CloudAVEvasionConfig;
+  readonly realtime: RealtimeEvasionConfig;
+}
+
+export interface SignatureEvasionTechniquesConfig {
+  readonly enabled: boolean;
+  readonly obfuscation: ObfuscationConfig;
+  readonly encryption: EncryptionEvasionConfig;
+  readonly packing: PackingConfig;
+  readonly metamorphism: MetamorphismConfig;
+}
+
+export interface ObfuscationConfig {
+  readonly enabled: boolean;
+  readonly stringObfuscation: StringObfuscationConfig;
+  readonly controlFlow: ControlFlowObfuscationConfig;
+  readonly dataObfuscation: DataObfuscationConfig;
+  readonly codeTransformation: CodeTransformationConfig;
+}
+
+export interface StringObfuscationConfig {
+  readonly enabled: boolean;
+  readonly encryption: boolean;
+  readonly encoding: boolean;
+  readonly splitting: boolean;
+  readonly stackStrings: boolean;
+  readonly dynamicResolution: boolean;
+}
+
+export interface ControlFlowObfuscationConfig {
+  readonly enabled: boolean;
+  readonly flattening: boolean;
+  readonly opaquePredicates: boolean;
+  readonly deadCode: boolean;
+  readonly bogusControlFlow: boolean;
+  readonly dispatcherBased: boolean;
+}
+
+export interface DataObfuscationConfig {
+  readonly enabled: boolean;
+  readonly constantBlinding: boolean;
+  readonly arrayTransformation: boolean;
+  readonly variableSplitting: boolean;
+  readonly dataEncoding: boolean;
+}
+
+export interface CodeTransformationConfig {
+  readonly enabled: boolean;
+  readonly instructionSubstitution: boolean;
+  readonly registerReassignment: boolean;
+  readonly codeReordering: boolean;
+  readonly functionInlining: boolean;
+}
+
+export interface EncryptionEvasionConfig {
+  readonly enabled: boolean;
+  readonly payloadEncryption: boolean;
+  readonly runtimeDecryption: boolean;
+  readonly keyDerivation: boolean;
+  readonly environmentKeys: boolean;
+}
+
+export interface PackingConfig {
+  readonly enabled: boolean;
+  readonly customPacker: boolean;
+  readonly multiLayer: boolean;
+  readonly antiUnpacking: boolean;
+  readonly virtualMachine: boolean;
+}
+
+export interface MetamorphismConfig {
+  readonly enabled: boolean;
+  readonly codeGeneration: boolean;
+  readonly selfModification: boolean;
+  readonly polymorphicEngine: boolean;
+  readonly uniqueInstances: boolean;
+}
+
+export interface HeuristicEvasionConfig {
+  readonly enabled: boolean;
+  readonly apiObfuscation: APIObfuscationConfig;
+  readonly behaviorMasking: BehaviorMaskingConfig;
+  readonly entryPointObfuscation: EntryPointConfig;
+  readonly importObfuscation: ImportObfuscationConfig;
+}
+
+export interface APIObfuscationConfig {
+  readonly enabled: boolean;
+  readonly dynamicResolution: boolean;
+  readonly hashBasedResolution: boolean;
+  readonly indirectCalls: boolean;
+  readonly apiUnhooking: boolean;
+}
+
+export interface BehaviorMaskingConfig {
+  readonly enabled: boolean;
+  readonly legitimateAPIs: boolean;
+  readonly delayedExecution: boolean;
+  readonly fragmentedOperations: boolean;
+  readonly benignDecoys: boolean;
+}
+
+export interface EntryPointConfig {
+  readonly enabled: boolean;
+  readonly tlsCallbacks: boolean;
+  readonly dllMain: boolean;
+  readonly constructors: boolean;
+  readonly customEntry: boolean;
+}
+
+export interface ImportObfuscationConfig {
+  readonly enabled: boolean;
+  readonly delayedImports: boolean;
+  readonly runtimeResolution: boolean;
+  readonly fakeImports: boolean;
+  readonly importRedirection: boolean;
+}
+
+export interface BehavioralAVEvasionConfig {
+  readonly enabled: boolean;
+  readonly processInjection: ProcessInjectionEvasionConfig;
+  readonly memoryOperations: MemoryOperationsConfig;
+  readonly fileOperations: FileOperationsConfig;
+  readonly networkOperations: NetworkOperationsEvasionConfig;
+}
+
+export interface ProcessInjectionEvasionConfig {
+  readonly enabled: boolean;
+  readonly indirectInjection: boolean;
+  readonly legitimateProcesses: boolean;
+  readonly delayedInjection: boolean;
+  readonly fragmentedInjection: boolean;
+}
+
+export interface MemoryOperationsConfig {
+  readonly enabled: boolean;
+  readonly legitimateAllocations: boolean;
+  readonly gradualPermissions: boolean;
+  readonly memoryGuards: boolean;
+  readonly heapSpray: boolean;
+}
+
+export interface FileOperationsConfig {
+  readonly enabled: boolean;
+  readonly legitimatePaths: boolean;
+  readonly alternateDataStreams: boolean;
+  readonly transactedOperations: boolean;
+  readonly directNTFS: boolean;
+}
+
+export interface NetworkOperationsEvasionConfig {
+  readonly enabled: boolean;
+  readonly legitimateProtocols: boolean;
+  readonly encryptedTraffic: boolean;
+  readonly domainFronting: boolean;
+  readonly trafficBlending: boolean;
+}
+
+export interface CloudAVEvasionConfig {
+  readonly enabled: boolean;
+  readonly offlineOperation: boolean;
+  readonly samplePrevention: boolean;
+  readonly reputationBypass: boolean;
+  readonly cloudDetection: boolean;
+}
+
+export interface RealtimeEvasionConfig {
+  readonly enabled: boolean;
+  readonly scannerDetection: boolean;
+  readonly scanEvasion: boolean;
+  readonly hookDetection: boolean;
+  readonly memoryProtection: boolean;
+}
+
+export interface EDREvasionConfig {
+  readonly enabled: boolean;
+  readonly hooks: HookEvasionConfig;
+  readonly syscalls: SyscallEvasionConfig;
+  readonly etw: ETWEvasionConfig;
+  readonly amsi: AMSIEvasionConfig;
+  readonly callbacks: CallbackEvasionConfig;
+  readonly drivers: DriverEvasionConfig;
+}
+
+export interface HookEvasionConfig {
+  readonly enabled: boolean;
+  readonly unhooking: UnhookingConfig;
+  readonly trampolineDetection: boolean;
+  readonly hookAvoidance: boolean;
+  readonly directExecution: boolean;
+}
+
+export interface UnhookingConfig {
+  readonly enabled: boolean;
+  readonly fullUnhook: boolean;
+  readonly selectiveUnhook: boolean;
+  readonly freshCopy: boolean;
+  readonly manualMapping: boolean;
+}
+
+export interface SyscallEvasionConfig {
+  readonly enabled: boolean;
+  readonly directSyscalls: DirectSyscallConfig;
+  readonly indirectSyscalls: IndirectSyscallConfig;
+  readonly syscallStubbing: boolean;
+  readonly syscallProxying: boolean;
+}
+
+export interface DirectSyscallConfig {
+  readonly enabled: boolean;
+  readonly staticNumbers: boolean;
+  readonly dynamicResolution: boolean;
+  readonly versionDetection: boolean;
+}
+
+export interface IndirectSyscallConfig {
+  readonly enabled: boolean;
+  readonly ntdllJumping: boolean;
+  readonly gadgetChaining: boolean;
+  readonly stackSpoofing: boolean;
+}
+
+export interface ETWEvasionConfig {
+  readonly enabled: boolean;
+  readonly providerBlinding: boolean;
+  readonly traceDisabling: boolean;
+  readonly bufferManipulation: boolean;
+  readonly sessionHijacking: boolean;
+}
+
+export interface AMSIEvasionConfig {
+  readonly enabled: boolean;
+  readonly patchBased: AMSIPatchConfig;
+  readonly contextBased: AMSIContextConfig;
+  readonly providerBased: AMSIProviderConfig;
+}
+
+export interface AMSIPatchConfig {
+  readonly enabled: boolean;
+  readonly amsiScanBuffer: boolean;
+  readonly amsiInitialize: boolean;
+  readonly amsiOpenSession: boolean;
+}
+
+export interface AMSIContextConfig {
+  readonly enabled: boolean;
+  readonly contextCorruption: boolean;
+  readonly contextHijacking: boolean;
+  readonly nullContext: boolean;
+}
+
+export interface AMSIProviderConfig {
+  readonly enabled: boolean;
+  readonly providerUnloading: boolean;
+  readonly providerHijacking: boolean;
+  readonly registryManipulation: boolean;
+}
+
+export interface CallbackEvasionConfig {
+  readonly enabled: boolean;
+  readonly processCallbacks: boolean;
+  readonly threadCallbacks: boolean;
+  readonly imageLoadCallbacks: boolean;
+  readonly registryCallbacks: boolean;
+  readonly objectCallbacks: boolean;
+}
+
+export interface DriverEvasionConfig {
+  readonly enabled: boolean;
+  readonly driverDetection: boolean;
+  readonly driverBypass: boolean;
+  readonly kernelCallbacks: boolean;
+  readonly minifilterBypass: boolean;
+}
+
+export interface SandboxEvasionConfig {
+  readonly enabled: boolean;
+  readonly environment: EnvironmentCheckConfig;
+  readonly timing: TimingEvasionConfig;
+  readonly interaction: InteractionEvasionConfig;
+  readonly resources: ResourceCheckConfig;
+  readonly artifacts: ArtifactCheckConfig;
+}
+
+export interface EnvironmentCheckConfig {
+  readonly enabled: boolean;
+  readonly vmDetection: VMDetectionConfig;
+  readonly sandboxDetection: SandboxDetectionConfig;
+  readonly analysisToolDetection: AnalysisToolConfig;
+}
+
+export interface VMDetectionConfig {
+  readonly enabled: boolean;
+  readonly cpuFeatures: boolean;
+  readonly registryKeys: boolean;
+  readonly processes: boolean;
+  readonly drivers: boolean;
+  readonly macAddresses: boolean;
+  readonly diskInfo: boolean;
+}
+
+export interface SandboxDetectionConfig {
+  readonly enabled: boolean;
+  readonly knownSandboxes: boolean;
+  readonly userBehavior: boolean;
+  readonly systemAge: boolean;
+  readonly installedSoftware: boolean;
+}
+
+export interface AnalysisToolConfig {
+  readonly enabled: boolean;
+  readonly debuggers: boolean;
+  readonly disassemblers: boolean;
+  readonly monitors: boolean;
+  readonly networkTools: boolean;
+}
+
+export interface TimingEvasionConfig {
+  readonly enabled: boolean;
+  readonly sleepAcceleration: boolean;
+  readonly timestampChecks: boolean;
+  readonly performanceCounters: boolean;
+  readonly delayedExecution: boolean;
+}
+
+export interface InteractionEvasionConfig {
+  readonly enabled: boolean;
+  readonly mouseMovement: boolean;
+  readonly keyboardInput: boolean;
+  readonly windowInteraction: boolean;
+  readonly clipboardActivity: boolean;
+}
+
+export interface ResourceCheckConfig {
+  readonly enabled: boolean;
+  readonly cpuCores: boolean;
+  readonly memorySize: boolean;
+  readonly diskSize: boolean;
+  readonly screenResolution: boolean;
+  readonly networkAdapters: boolean;
+}
+
+export interface ArtifactCheckConfig {
+  readonly enabled: boolean;
+  readonly recentFiles: boolean;
+  readonly browserHistory: boolean;
+  readonly installedPrograms: boolean;
+  readonly userDocuments: boolean;
+}
+
+export interface DebuggingEvasionConfig {
+  readonly enabled: boolean;
+  readonly apiChecks: APIDebugCheckConfig;
+  readonly timingChecks: TimingDebugCheckConfig;
+  readonly hardwareChecks: HardwareDebugCheckConfig;
+  readonly exceptionChecks: ExceptionDebugCheckConfig;
+  readonly selfDebugging: SelfDebuggingConfig;
+}
+
+export interface APIDebugCheckConfig {
+  readonly enabled: boolean;
+  readonly isDebuggerPresent: boolean;
+  readonly checkRemoteDebugger: boolean;
+  readonly ntQueryInformation: boolean;
+  readonly ntSetInformation: boolean;
+}
+
+export interface TimingDebugCheckConfig {
+  readonly enabled: boolean;
+  readonly rdtsc: boolean;
+  readonly queryPerformanceCounter: boolean;
+  readonly getTickCount: boolean;
+  readonly timeGetTime: boolean;
+}
+
+export interface HardwareDebugCheckConfig {
+  readonly enabled: boolean;
+  readonly dr0_dr7: boolean;
+  readonly contextManipulation: boolean;
+  readonly vectoredExceptions: boolean;
+}
+
+export interface ExceptionDebugCheckConfig {
+  readonly enabled: boolean;
+  readonly int3Detection: boolean;
+  readonly singleStep: boolean;
+  readonly guardPages: boolean;
+  readonly unhandledExceptions: boolean;
+}
+
+export interface SelfDebuggingConfig {
+  readonly enabled: boolean;
+  readonly attachSelf: boolean;
+  readonly parentProcess: boolean;
+  readonly debugObject: boolean;
+}
+
+export interface ForensicsEvasionConfig {
+  readonly enabled: boolean;
+  readonly memory: MemoryForensicsEvasionConfig;
+  readonly disk: DiskForensicsEvasionConfig;
+  readonly network: NetworkForensicsEvasionConfig;
+  readonly logs: LogForensicsEvasionConfig;
+}
+
+export interface MemoryForensicsEvasionConfig {
+  readonly enabled: boolean;
+  readonly memoryClearing: boolean;
+  readonly stringWiping: boolean;
+  readonly heapCleanup: boolean;
+  readonly stackCleanup: boolean;
+}
+
+export interface DiskForensicsEvasionConfig {
+  readonly enabled: boolean;
+  readonly secureDelete: boolean;
+  readonly timestomping: boolean;
+  readonly slackSpaceClearing: boolean;
+  readonly journalClearing: boolean;
+}
+
+export interface NetworkForensicsEvasionConfig {
+  readonly enabled: boolean;
+  readonly connectionClearing: boolean;
+  readonly dnsClearing: boolean;
+  readonly arpClearing: boolean;
+  readonly socketCleanup: boolean;
+}
+
+export interface LogForensicsEvasionConfig {
+  readonly enabled: boolean;
+  readonly eventLogClearing: boolean;
+  readonly syslogClearing: boolean;
+  readonly applicationLogClearing: boolean;
+  readonly auditLogClearing: boolean;
+}
+
+export interface NetworkEvasionConfig {
+  readonly enabled: boolean;
+  readonly traffic: TrafficEvasionConfig;
+  readonly protocol: ProtocolEvasionConfig;
+  readonly detection: DetectionEvasionConfig;
+}
+
+export interface TrafficEvasionConfig {
+  readonly enabled: boolean;
+  readonly encryption: boolean;
+  readonly obfuscation: boolean;
+  readonly fragmentation: boolean;
+  readonly tunneling: boolean;
+}
+
+export interface ProtocolEvasionConfig {
+  readonly enabled: boolean;
+  readonly protocolMimicry: boolean;
+  readonly customProtocols: boolean;
+  readonly covertChannels: boolean;
+  readonly steganography: boolean;
+}
+
+export interface DetectionEvasionConfig {
+  readonly enabled: boolean;
+  readonly idsEvasion: boolean;
+  readonly ipsEvasion: boolean;
+  readonly firewallEvasion: boolean;
+  readonly dlpEvasion: boolean;
+}
+
+export interface BehavioralEvasionConfig {
+  readonly enabled: boolean;
+  readonly patterns: PatternEvasionConfig;
+  readonly timing: TimingBehaviorConfig;
+  readonly context: ContextEvasionConfig;
+}
+
+export interface PatternEvasionConfig {
+  readonly enabled: boolean;
+  readonly apiPatterns: boolean;
+  readonly filePatterns: boolean;
+  readonly networkPatterns: boolean;
+  readonly processPatterns: boolean;
+}
+
+export interface TimingBehaviorConfig {
+  readonly enabled: boolean;
+  readonly randomDelays: boolean;
+  readonly workingHours: boolean;
+  readonly humanLikeTiming: boolean;
+}
+
+export interface ContextEvasionConfig {
+  readonly enabled: boolean;
+  readonly legitimateContext: boolean;
+  readonly processContext: boolean;
+  readonly userContext: boolean;
+}
+
+export interface SignatureEvasionConfig {
+  readonly enabled: boolean;
+  readonly static: StaticSignatureConfig;
+  readonly dynamic: DynamicSignatureConfig;
+  readonly network: NetworkSignatureConfig;
+}
+
+export interface StaticSignatureConfig {
+  readonly enabled: boolean;
+  readonly bytePatterns: boolean;
+  readonly stringPatterns: boolean;
+  readonly structurePatterns: boolean;
+  readonly hashPatterns: boolean;
+}
+
+export interface DynamicSignatureConfig {
+  readonly enabled: boolean;
+  readonly behaviorPatterns: boolean;
+  readonly apiSequences: boolean;
+  readonly memoryPatterns: boolean;
+}
+
+export interface NetworkSignatureConfig {
+  readonly enabled: boolean;
+  readonly packetPatterns: boolean;
+  readonly protocolPatterns: boolean;
+  readonly payloadPatterns: boolean;
+}
+
+export interface TestingConfig {
+  readonly enabled: boolean;
+  readonly environment: TestEnvironmentConfig;
+  readonly validation: ValidationConfig;
+  readonly benchmarking: BenchmarkingConfig;
+}
+
+export interface TestEnvironmentConfig {
+  readonly enabled: boolean;
+  readonly virtualMachines: boolean;
+  readonly sandboxes: boolean;
+  readonly avProducts: boolean;
+  readonly edrProducts: boolean;
+}
+
+export interface ValidationConfig {
+  readonly enabled: boolean;
+  readonly effectivenessTest: boolean;
+  readonly stabilityTest: boolean;
+  readonly performanceTest: boolean;
+  readonly compatibilityTest: boolean;
+}
+
+export interface BenchmarkingConfig {
+  readonly enabled: boolean;
+  readonly detectionRate: boolean;
+  readonly evasionRate: boolean;
+  readonly performanceImpact: boolean;
+}
+
+export interface ReportingConfig {
+  readonly enabled: boolean;
+  readonly formats: readonly ReportFormat[];
+  readonly sections: readonly ReportSection[];
+  readonly automation: ReportAutomationConfig;
+}
+
+export type ReportFormat =
+  | 'PDF'
+  | 'HTML'
+  | 'JSON'
+  | 'MARKDOWN';
+
+export type ReportSection =
+  | 'EXECUTIVE_SUMMARY'
+  | 'TECHNIQUE_DETAILS'
+  | 'EFFECTIVENESS_ANALYSIS'
+  | 'TESTING_RESULTS'
+  | 'RECOMMENDATIONS';
+
+export interface ReportAutomationConfig {
+  readonly enabled: boolean;
+  readonly scheduling: boolean;
+  readonly triggers: readonly string[];
+}
+
+export interface StorageConfig {
+  readonly type: 'DATABASE' | 'FILE_SYSTEM' | 'HYBRID';
+  readonly encryption: StorageEncryptionConfig;
+  readonly retention: RetentionConfig;
+  readonly backup: BackupConfig;
+}
+
+export interface StorageEncryptionConfig {
+  readonly enabled: boolean;
+  readonly algorithm: 'AES_256_GCM' | 'CHACHA20_POLY1305';
+  readonly keyManagement: 'LOCAL' | 'HSM' | 'KMS';
+}
+
+export interface RetentionConfig {
+  readonly enabled: boolean;
+  readonly techniques: number;
+  readonly testResults: number;
+  readonly logs: number;
+}
+
+export interface BackupConfig {
+  readonly enabled: boolean;
+  readonly frequency: number;
+  readonly encryption: boolean;
+  readonly offsite: boolean;
+}
+
+export interface SecurityConfig {
+  readonly authentication: AuthenticationConfig;
+  readonly authorization: AuthorizationConfig;
+  readonly audit: AuditConfig;
+  readonly classification: ClassificationConfig;
+}
+
+export interface AuthenticationConfig {
+  readonly enabled: boolean;
+  readonly methods: readonly ('PKI' | 'CAC' | 'BIOMETRIC' | 'MFA')[];
+  readonly sessionTimeout: number;
+}
+
+export interface AuthorizationConfig {
+  readonly enabled: boolean;
+  readonly model: 'RBAC' | 'ABAC' | 'MAC';
+  readonly clearanceRequired: boolean;
+}
+
+export interface AuditConfig {
+  readonly enabled: boolean;
+  readonly logAllAccess: boolean;
+  readonly logAllOperations: boolean;
+  readonly retention: number;
+}
+
+export interface ClassificationConfig {
+  readonly enabled: boolean;
+  readonly defaultLevel: SecurityLevel;
+  readonly autoClassification: boolean;
+}
+
+export interface PlatformMetadata {
+  readonly createdAt: number;
+  readonly updatedAt: number;
+  readonly createdBy: string;
+  readonly version: string;
+  readonly tags: readonly string[];
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TECHNIQUE TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface EvasionTechnique {
+  readonly techniqueId: string;
+  readonly name: string;
+  readonly category: EvasionCategory;
+  readonly type: string;
+  readonly platform: TargetPlatform;
+  readonly description: string;
+  readonly implementation: TechniqueImplementation;
+  readonly effectiveness: TechniqueEffectiveness;
+  readonly detection: DetectionInfo;
+  readonly status: TechniqueStatus;
+  readonly metadata: TechniqueMetadata;
+}
+
+export interface TechniqueImplementation {
+  readonly method: string;
+  readonly requirements: readonly string[];
+  readonly dependencies: readonly string[];
+  readonly complexity: 'LOW' | 'MEDIUM' | 'HIGH';
+  readonly reliability: 'LOW' | 'MEDIUM' | 'HIGH';
+}
+
+export interface TechniqueEffectiveness {
+  readonly overall: number;
+  readonly byProduct: readonly ProductEffectiveness[];
+  readonly byVersion: readonly VersionEffectiveness[];
+}
+
+export interface ProductEffectiveness {
+  readonly product: string;
+  readonly vendor: string;
+  readonly effectiveness: number;
+  readonly lastTested: number;
+}
+
+export interface VersionEffectiveness {
+  readonly version: string;
+  readonly effectiveness: number;
+  readonly notes: string | null;
+}
+
+export interface DetectionInfo {
+  readonly detectable: boolean;
+  readonly detectionMethods: readonly string[];
+  readonly indicators: readonly string[];
+  readonly mitigations: readonly string[];
+}
+
+export type TechniqueStatus =
+  | 'RESEARCH'
+  | 'DEVELOPMENT'
+  | 'TESTING'
+  | 'OPERATIONAL'
+  | 'DEPRECATED'
+  | 'BURNED';
+
+export interface TechniqueMetadata {
+  readonly createdAt: number;
+  readonly updatedAt: number;
+  readonly createdBy: string;
+  readonly classification: SecurityLevel;
+  readonly references: readonly string[];
+  readonly tags: readonly string[];
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TEST RESULT TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface EvasionTestResult {
+  readonly testId: string;
+  readonly techniqueId: string;
+  readonly environment: TestEnvironment;
+  readonly results: readonly ProductTestResult[];
+  readonly summary: TestSummary;
+  readonly timestamp: number;
+  readonly metadata: TestMetadata;
+}
+
+export interface TestEnvironment {
+  readonly platform: TargetPlatform;
+  readonly osVersion: string;
+  readonly architecture: string;
+  readonly configuration: Readonly<Record<string, unknown>>;
+}
+
+export interface ProductTestResult {
+  readonly product: string;
+  readonly vendor: string;
+  readonly version: string;
+  readonly detected: boolean;
+  readonly detectionType: DetectionType | null;
+  readonly detectionTime: number | null;
+  readonly details: string | null;
+}
+
+export type DetectionType =
+  | 'SIGNATURE'
+  | 'HEURISTIC'
+  | 'BEHAVIORAL'
+  | 'CLOUD'
+  | 'MANUAL';
+
+export interface TestSummary {
+  readonly totalProducts: number;
+  readonly detected: number;
+  readonly evaded: number;
+  readonly evasionRate: number;
+  readonly averageDetectionTime: number | null;
+}
+
+export interface TestMetadata {
+  readonly testedBy: string;
+  readonly classification: SecurityLevel;
+  readonly notes: string | null;
+  readonly tags: readonly string[];
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SESSION TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface EvasionSession {
+  readonly sessionId: string;
+  readonly platformId: string;
+  readonly state: SessionState;
+  readonly config: SessionConfig;
+  readonly progress: SessionProgress;
+  readonly techniques: readonly EvasionTechnique[];
+  readonly testResults: readonly EvasionTestResult[];
+  readonly alerts: readonly SessionAlert[];
+  readonly errors: readonly SessionError[];
+  readonly startTime: number;
+  readonly endTime: number | null;
+  readonly metadata: SessionMetadata;
+}
+
+export type SessionState =
+  | 'PENDING'
+  | 'INITIALIZING'
+  | 'RESEARCHING'
+  | 'DEVELOPING'
+  | 'TESTING'
+  | 'COMPLETED'
+  | 'FAILED';
+
+export interface SessionConfig {
+  readonly mode: OperationalMode;
+  readonly categories: readonly EvasionCategory[];
+  readonly options: Readonly<Record<string, unknown>>;
+}
+
+export interface SessionProgress {
+  readonly phase: SessionPhase;
+  readonly percentage: number;
+  readonly currentTask: string | null;
+  readonly estimatedTimeRemaining: number | null;
+}
+
+export type SessionPhase =
+  | 'INITIALIZING'
+  | 'TECHNIQUE_RESEARCH'
+  | 'IMPLEMENTATION'
+  | 'TESTING'
+  | 'VALIDATION'
+  | 'DOCUMENTATION'
+  | 'FINALIZING';
+
+export interface SessionAlert {
+  readonly alertId: string;
+  readonly timestamp: number;
+  readonly type: AlertType;
+  readonly severity: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
+  readonly source: string;
+  readonly description: string;
+  readonly status: AlertStatus;
+}
+
+export type AlertType =
+  | 'DETECTION_OCCURRED'
+  | 'TECHNIQUE_BURNED'
+  | 'TEST_FAILURE'
+  | 'SECURITY_VIOLATION'
+  | 'ENVIRONMENT_ISSUE';
+
+export type AlertStatus =
+  | 'NEW'
+  | 'ACKNOWLEDGED'
+  | 'INVESTIGATING'
+  | 'RESOLVED'
+  | 'ESCALATED';
+
+export interface SessionError {
+  readonly errorId: string;
+  readonly timestamp: number;
+  readonly type: SessionErrorType;
+  readonly message: string;
+  readonly details: string | null;
+  readonly recoverable: boolean;
+}
+
+export type SessionErrorType =
+  | 'IMPLEMENTATION_ERROR'
+  | 'TESTING_ERROR'
+  | 'ENVIRONMENT_ERROR'
+  | 'CONFIGURATION_ERROR'
+  | 'TIMEOUT'
+  | 'INTERNAL_ERROR';
+
+export interface SessionMetadata {
+  readonly platformVersion: string;
+  readonly startedBy: string;
+  readonly classification: SecurityLevel;
+  readonly authorization: string;
+  readonly tags: readonly string[];
+}

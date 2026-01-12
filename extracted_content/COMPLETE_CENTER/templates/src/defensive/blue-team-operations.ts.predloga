@@ -1,0 +1,1598 @@
+/**
+ * @file Blue Team Operations - Defensive Security Framework
+ * @author {{AVTOR}}
+ * @version {{VERZIJA}}
+ * @date {{DATUM}}
+ * @project {{IME_PROJEKTA}}
+ * @domain VARNOSTNI_SISTEMI
+ * 
+ * @requirement REQ-SEC-BTO-001
+ * @design DSN-SEC-BTO-001
+ * @test TST-SEC-BTO-001
+ * 
+ * @description
+ * Enterprise-grade Blue Team operations framework implementing threat detection,
+ * incident response, threat hunting, digital forensics, and security monitoring.
+ * Full integration with SIEM, EDR, NDR, and SOAR platforms.
+ * 
+ * @compliance NIST CSF, ISO 27001, MITRE ATT&CK, SANS IR
+ * @classification CONFIDENTIAL - Security Operations
+ */
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// DEFENSIVE OPERATION TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export type DefensiveOperationType =
+  | 'MONITORING' | 'DETECTION' | 'ANALYSIS' | 'INVESTIGATION'
+  | 'CONTAINMENT' | 'ERADICATION' | 'RECOVERY' | 'LESSONS_LEARNED'
+  | 'THREAT_HUNTING' | 'FORENSICS' | 'MALWARE_ANALYSIS'
+  | 'VULNERABILITY_ASSESSMENT' | 'COMPLIANCE_AUDIT' | 'HARDENING';
+
+export type DetectionType =
+  | 'SIGNATURE_BASED' | 'ANOMALY_BASED' | 'BEHAVIORAL' | 'HEURISTIC'
+  | 'MACHINE_LEARNING' | 'THREAT_INTELLIGENCE' | 'IOC_MATCHING'
+  | 'YARA_RULE' | 'SIGMA_RULE' | 'SNORT_RULE' | 'SURICATA_RULE'
+  | 'CUSTOM_DETECTION' | 'CORRELATION_RULE' | 'THRESHOLD_BASED';
+
+export type ThreatCategory =
+  | 'MALWARE' | 'RANSOMWARE' | 'APT' | 'INSIDER_THREAT'
+  | 'PHISHING' | 'SOCIAL_ENGINEERING' | 'CREDENTIAL_THEFT'
+  | 'DATA_EXFILTRATION' | 'LATERAL_MOVEMENT' | 'PRIVILEGE_ESCALATION'
+  | 'COMMAND_AND_CONTROL' | 'DENIAL_OF_SERVICE' | 'WEB_ATTACK'
+  | 'SUPPLY_CHAIN' | 'ZERO_DAY' | 'CRYPTOMINING';
+
+export type AlertSeverity = 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW' | 'INFORMATIONAL';
+
+export type AlertStatus =
+  | 'NEW' | 'ACKNOWLEDGED' | 'IN_PROGRESS' | 'ESCALATED'
+  | 'CONTAINED' | 'RESOLVED' | 'FALSE_POSITIVE' | 'CLOSED';
+
+export type IncidentPhase =
+  | 'PREPARATION' | 'IDENTIFICATION' | 'CONTAINMENT'
+  | 'ERADICATION' | 'RECOVERY' | 'LESSONS_LEARNED';
+
+export type ForensicArtifactType =
+  | 'MEMORY_DUMP' | 'DISK_IMAGE' | 'NETWORK_CAPTURE' | 'LOG_FILE'
+  | 'REGISTRY_HIVE' | 'PREFETCH' | 'SHIMCACHE' | 'AMCACHE'
+  | 'EVENT_LOG' | 'BROWSER_ARTIFACT' | 'EMAIL' | 'DOCUMENT'
+  | 'EXECUTABLE' | 'SCRIPT' | 'CONFIGURATION' | 'DATABASE';
+
+export type HuntingHypothesisType =
+  | 'INTELLIGENCE_DRIVEN' | 'SITUATIONAL_AWARENESS' | 'DOMAIN_EXPERTISE'
+  | 'ANALYTICS_DRIVEN' | 'TTP_BASED' | 'IOC_BASED' | 'ANOMALY_BASED';
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ALERT AND EVENT TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface SecurityAlert {
+  readonly alertId: string;
+  readonly title: string;
+  readonly description: string;
+  readonly severity: AlertSeverity;
+  readonly status: AlertStatus;
+  readonly category: ThreatCategory;
+  readonly detectionType: DetectionType;
+  readonly source: AlertSource;
+  readonly affectedAssets: readonly Asset[];
+  readonly indicators: readonly Indicator[];
+  readonly mitreAttack: readonly MitreMapping[];
+  readonly timestamp: number;
+  readonly lastUpdated: number;
+  readonly assignee: string | null;
+  readonly relatedAlerts: readonly string[];
+  readonly evidence: readonly Evidence[];
+  readonly actions: readonly ResponseAction[];
+}
+
+export interface AlertSource {
+  readonly sourceType: 'SIEM' | 'EDR' | 'NDR' | 'IDS' | 'IPS' | 'FIREWALL' | 'WAF' | 'EMAIL_GATEWAY' | 'CUSTOM';
+  readonly sourceName: string;
+  readonly sourceId: string;
+  readonly ruleId: string | null;
+  readonly ruleName: string | null;
+}
+
+export interface Asset {
+  readonly assetId: string;
+  readonly hostname: string;
+  readonly ipAddress: string;
+  readonly macAddress: string | null;
+  readonly assetType: 'WORKSTATION' | 'SERVER' | 'NETWORK_DEVICE' | 'MOBILE' | 'IOT' | 'CLOUD' | 'CONTAINER';
+  readonly operatingSystem: string | null;
+  readonly criticality: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
+  readonly owner: string | null;
+  readonly department: string | null;
+  readonly location: string | null;
+  readonly tags: readonly string[];
+}
+
+export interface Indicator {
+  readonly indicatorId: string;
+  readonly type: IndicatorType;
+  readonly value: string;
+  readonly confidence: number;
+  readonly source: string;
+  readonly firstSeen: number;
+  readonly lastSeen: number;
+  readonly tags: readonly string[];
+  readonly context: Readonly<Record<string, unknown>>;
+}
+
+export type IndicatorType =
+  | 'IP_ADDRESS' | 'DOMAIN' | 'URL' | 'EMAIL' | 'FILE_HASH_MD5'
+  | 'FILE_HASH_SHA1' | 'FILE_HASH_SHA256' | 'FILE_NAME' | 'FILE_PATH'
+  | 'REGISTRY_KEY' | 'MUTEX' | 'USER_AGENT' | 'JA3' | 'JA3S'
+  | 'CERTIFICATE_HASH' | 'PROCESS_NAME' | 'COMMAND_LINE' | 'SERVICE_NAME';
+
+export interface MitreMapping {
+  readonly tacticId: string;
+  readonly tacticName: string;
+  readonly techniqueId: string;
+  readonly techniqueName: string;
+  readonly subTechniqueId: string | null;
+  readonly subTechniqueName: string | null;
+}
+
+export interface Evidence {
+  readonly evidenceId: string;
+  readonly type: ForensicArtifactType;
+  readonly description: string;
+  readonly source: string;
+  readonly hash: string;
+  readonly size: number;
+  readonly collectedAt: number;
+  readonly collectedBy: string;
+  readonly chainOfCustody: readonly CustodyEntry[];
+}
+
+export interface CustodyEntry {
+  readonly timestamp: number;
+  readonly action: 'COLLECTED' | 'TRANSFERRED' | 'ANALYZED' | 'STORED' | 'RELEASED';
+  readonly handler: string;
+  readonly location: string;
+  readonly notes: string | null;
+}
+
+export interface ResponseAction {
+  readonly actionId: string;
+  readonly actionType: ResponseActionType;
+  readonly status: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'FAILED' | 'CANCELLED';
+  readonly target: string;
+  readonly parameters: Readonly<Record<string, unknown>>;
+  readonly initiatedBy: string;
+  readonly initiatedAt: number;
+  readonly completedAt: number | null;
+  readonly result: string | null;
+}
+
+export type ResponseActionType =
+  | 'ISOLATE_HOST' | 'BLOCK_IP' | 'BLOCK_DOMAIN' | 'BLOCK_HASH'
+  | 'KILL_PROCESS' | 'DELETE_FILE' | 'QUARANTINE_FILE'
+  | 'DISABLE_USER' | 'RESET_PASSWORD' | 'REVOKE_SESSION'
+  | 'COLLECT_EVIDENCE' | 'MEMORY_DUMP' | 'DISK_IMAGE'
+  | 'RUN_SCAN' | 'DEPLOY_PATCH' | 'RESTORE_BACKUP'
+  | 'NOTIFY_USER' | 'ESCALATE' | 'CUSTOM_SCRIPT';
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// INCIDENT TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface Incident {
+  readonly incidentId: string;
+  readonly title: string;
+  readonly description: string;
+  readonly severity: AlertSeverity;
+  readonly status: IncidentStatus;
+  readonly phase: IncidentPhase;
+  readonly category: ThreatCategory;
+  readonly classification: IncidentClassification;
+  readonly alerts: readonly string[];
+  readonly affectedAssets: readonly Asset[];
+  readonly indicators: readonly Indicator[];
+  readonly timeline: readonly TimelineEntry[];
+  readonly containmentActions: readonly ResponseAction[];
+  readonly eradicationActions: readonly ResponseAction[];
+  readonly recoveryActions: readonly ResponseAction[];
+  readonly assignedTeam: readonly TeamMember[];
+  readonly createdAt: number;
+  readonly updatedAt: number;
+  readonly resolvedAt: number | null;
+  readonly slaDeadline: number;
+  readonly impactAssessment: ImpactAssessment;
+  readonly rootCause: RootCauseAnalysis | null;
+  readonly lessonsLearned: LessonsLearned | null;
+}
+
+export type IncidentStatus =
+  | 'OPEN' | 'IN_PROGRESS' | 'CONTAINED' | 'ERADICATED'
+  | 'RECOVERED' | 'CLOSED' | 'REOPENED';
+
+export interface IncidentClassification {
+  readonly type: 'CONFIRMED' | 'SUSPECTED' | 'FALSE_POSITIVE';
+  readonly attackVector: string;
+  readonly threatActor: string | null;
+  readonly campaign: string | null;
+  readonly confidence: number;
+}
+
+export interface TimelineEntry {
+  readonly timestamp: number;
+  readonly eventType: string;
+  readonly description: string;
+  readonly source: string;
+  readonly actor: string | null;
+  readonly evidence: readonly string[];
+  readonly mitreMapping: MitreMapping | null;
+}
+
+export interface TeamMember {
+  readonly userId: string;
+  readonly name: string;
+  readonly role: 'INCIDENT_COMMANDER' | 'LEAD_ANALYST' | 'ANALYST' | 'SPECIALIST' | 'OBSERVER';
+  readonly assignedAt: number;
+  readonly responsibilities: readonly string[];
+}
+
+export interface ImpactAssessment {
+  readonly businessImpact: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW' | 'NONE';
+  readonly dataImpact: DataImpact;
+  readonly systemsAffected: number;
+  readonly usersAffected: number;
+  readonly financialImpact: number | null;
+  readonly reputationalImpact: 'SEVERE' | 'MODERATE' | 'MINOR' | 'NONE';
+  readonly regulatoryImpact: readonly string[];
+  readonly downtime: number;
+}
+
+export interface DataImpact {
+  readonly dataCompromised: boolean;
+  readonly dataExfiltrated: boolean;
+  readonly dataDestroyed: boolean;
+  readonly dataTypes: readonly string[];
+  readonly recordsAffected: number | null;
+  readonly piiInvolved: boolean;
+  readonly phiInvolved: boolean;
+  readonly pciInvolved: boolean;
+}
+
+export interface RootCauseAnalysis {
+  readonly primaryCause: string;
+  readonly contributingFactors: readonly string[];
+  readonly attackVector: string;
+  readonly vulnerabilitiesExploited: readonly string[];
+  readonly securityGaps: readonly string[];
+  readonly humanFactors: readonly string[];
+  readonly processFailures: readonly string[];
+  readonly technicalFailures: readonly string[];
+}
+
+export interface LessonsLearned {
+  readonly whatWorked: readonly string[];
+  readonly whatDidntWork: readonly string[];
+  readonly improvements: readonly Improvement[];
+  readonly recommendations: readonly Recommendation[];
+  readonly trainingNeeds: readonly string[];
+  readonly processChanges: readonly string[];
+  readonly toolingChanges: readonly string[];
+}
+
+export interface Improvement {
+  readonly area: string;
+  readonly description: string;
+  readonly priority: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
+  readonly owner: string;
+  readonly deadline: number;
+  readonly status: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED';
+}
+
+export interface Recommendation {
+  readonly title: string;
+  readonly description: string;
+  readonly category: 'PREVENTION' | 'DETECTION' | 'RESPONSE' | 'RECOVERY';
+  readonly effort: 'LOW' | 'MEDIUM' | 'HIGH';
+  readonly impact: 'LOW' | 'MEDIUM' | 'HIGH';
+  readonly priority: number;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// THREAT HUNTING TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface ThreatHunt {
+  readonly huntId: string;
+  readonly name: string;
+  readonly description: string;
+  readonly hypothesis: HuntingHypothesis;
+  readonly scope: HuntingScope;
+  readonly dataSourcesUsed: readonly string[];
+  readonly queriesExecuted: readonly HuntingQuery[];
+  readonly findings: readonly HuntingFinding[];
+  readonly status: 'PLANNED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
+  readonly startTime: number;
+  readonly endTime: number | null;
+  readonly hunter: string;
+  readonly techniques: readonly MitreMapping[];
+}
+
+export interface HuntingHypothesis {
+  readonly type: HuntingHypothesisType;
+  readonly statement: string;
+  readonly rationale: string;
+  readonly expectedIndicators: readonly string[];
+  readonly dataSourcesRequired: readonly string[];
+  readonly confidence: number;
+}
+
+export interface HuntingScope {
+  readonly assets: readonly string[];
+  readonly timeRange: TimeRange;
+  readonly dataTypes: readonly string[];
+  readonly excludedAssets: readonly string[];
+  readonly networkSegments: readonly string[];
+}
+
+export interface TimeRange {
+  readonly start: number;
+  readonly end: number;
+}
+
+export interface HuntingQuery {
+  readonly queryId: string;
+  readonly queryType: 'SPLUNK' | 'ELASTIC' | 'KUSTO' | 'SQL' | 'SIGMA' | 'YARA' | 'CUSTOM';
+  readonly query: string;
+  readonly description: string;
+  readonly executedAt: number;
+  readonly resultsCount: number;
+  readonly executionTime: number;
+}
+
+export interface HuntingFinding {
+  readonly findingId: string;
+  readonly type: 'CONFIRMED_THREAT' | 'SUSPICIOUS_ACTIVITY' | 'POLICY_VIOLATION' | 'MISCONFIGURATION' | 'FALSE_POSITIVE';
+  readonly description: string;
+  readonly severity: AlertSeverity;
+  readonly affectedAssets: readonly Asset[];
+  readonly indicators: readonly Indicator[];
+  readonly evidence: readonly Evidence[];
+  readonly recommendations: readonly string[];
+  readonly escalated: boolean;
+  readonly incidentId: string | null;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// FORENSICS TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface ForensicCase {
+  readonly caseId: string;
+  readonly title: string;
+  readonly description: string;
+  readonly type: 'INCIDENT_RESPONSE' | 'INTERNAL_INVESTIGATION' | 'LEGAL_HOLD' | 'COMPLIANCE' | 'PROACTIVE';
+  readonly status: 'OPEN' | 'IN_PROGRESS' | 'ANALYSIS' | 'REPORTING' | 'CLOSED';
+  readonly priority: AlertSeverity;
+  readonly relatedIncident: string | null;
+  readonly evidence: readonly ForensicEvidence[];
+  readonly artifacts: readonly ForensicArtifact[];
+  readonly timeline: readonly ForensicTimelineEntry[];
+  readonly findings: readonly ForensicFinding[];
+  readonly examiner: string;
+  readonly createdAt: number;
+  readonly updatedAt: number;
+  readonly closedAt: number | null;
+}
+
+export interface ForensicEvidence {
+  readonly evidenceId: string;
+  readonly type: ForensicArtifactType;
+  readonly source: EvidenceSource;
+  readonly acquisition: AcquisitionInfo;
+  readonly integrity: IntegrityInfo;
+  readonly storage: StorageInfo;
+  readonly analysis: readonly AnalysisRecord[];
+}
+
+export interface EvidenceSource {
+  readonly hostname: string;
+  readonly ipAddress: string;
+  readonly operatingSystem: string;
+  readonly location: string;
+  readonly custodian: string;
+}
+
+export interface AcquisitionInfo {
+  readonly method: 'LIVE_ACQUISITION' | 'DEAD_ACQUISITION' | 'TARGETED_COLLECTION' | 'NETWORK_CAPTURE';
+  readonly tool: string;
+  readonly toolVersion: string;
+  readonly acquiredBy: string;
+  readonly acquiredAt: number;
+  readonly notes: string | null;
+}
+
+export interface IntegrityInfo {
+  readonly hashMD5: string;
+  readonly hashSHA1: string;
+  readonly hashSHA256: string;
+  readonly verified: boolean;
+  readonly verifiedAt: number | null;
+  readonly verifiedBy: string | null;
+}
+
+export interface StorageInfo {
+  readonly location: string;
+  readonly encrypted: boolean;
+  readonly accessControl: readonly string[];
+  readonly retentionPolicy: string;
+  readonly expirationDate: number | null;
+}
+
+export interface AnalysisRecord {
+  readonly analysisId: string;
+  readonly type: string;
+  readonly tool: string;
+  readonly analyst: string;
+  readonly startTime: number;
+  readonly endTime: number;
+  readonly findings: readonly string[];
+  readonly notes: string | null;
+}
+
+export interface ForensicArtifact {
+  readonly artifactId: string;
+  readonly type: ForensicArtifactType;
+  readonly name: string;
+  readonly path: string;
+  readonly size: number;
+  readonly timestamps: ArtifactTimestamps;
+  readonly metadata: Readonly<Record<string, unknown>>;
+  readonly extracted: readonly ExtractedData[];
+  readonly relevance: 'HIGH' | 'MEDIUM' | 'LOW' | 'UNKNOWN';
+}
+
+export interface ArtifactTimestamps {
+  readonly created: number | null;
+  readonly modified: number | null;
+  readonly accessed: number | null;
+  readonly changed: number | null;
+  readonly born: number | null;
+}
+
+export interface ExtractedData {
+  readonly dataType: string;
+  readonly value: string;
+  readonly context: string;
+  readonly confidence: number;
+}
+
+export interface ForensicTimelineEntry {
+  readonly timestamp: number;
+  readonly timestampType: 'CREATED' | 'MODIFIED' | 'ACCESSED' | 'EXECUTED' | 'LOGGED' | 'NETWORK';
+  readonly source: string;
+  readonly artifact: string;
+  readonly description: string;
+  readonly relevance: 'HIGH' | 'MEDIUM' | 'LOW';
+  readonly notes: string | null;
+}
+
+export interface ForensicFinding {
+  readonly findingId: string;
+  readonly title: string;
+  readonly description: string;
+  readonly category: string;
+  readonly severity: AlertSeverity;
+  readonly evidence: readonly string[];
+  readonly artifacts: readonly string[];
+  readonly timeline: readonly string[];
+  readonly conclusions: readonly string[];
+  readonly recommendations: readonly string[];
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// DETECTION RULE TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface DetectionRule {
+  readonly ruleId: string;
+  readonly name: string;
+  readonly description: string;
+  readonly type: DetectionType;
+  readonly severity: AlertSeverity;
+  readonly category: ThreatCategory;
+  readonly mitreMapping: readonly MitreMapping[];
+  readonly logic: RuleLogic;
+  readonly dataSource: readonly string[];
+  readonly enabled: boolean;
+  readonly tuning: RuleTuning;
+  readonly metadata: RuleMetadata;
+}
+
+export interface RuleLogic {
+  readonly format: 'SIGMA' | 'YARA' | 'SNORT' | 'SURICATA' | 'KQL' | 'SPL' | 'EQL' | 'CUSTOM';
+  readonly query: string;
+  readonly conditions: readonly RuleCondition[];
+  readonly aggregation: AggregationConfig | null;
+  readonly correlation: CorrelationConfig | null;
+}
+
+export interface RuleCondition {
+  readonly field: string;
+  readonly operator: 'EQUALS' | 'NOT_EQUALS' | 'CONTAINS' | 'STARTS_WITH' | 'ENDS_WITH' | 'REGEX' | 'IN' | 'NOT_IN' | 'GREATER_THAN' | 'LESS_THAN';
+  readonly value: string | readonly string[];
+  readonly caseSensitive: boolean;
+}
+
+export interface AggregationConfig {
+  readonly function: 'COUNT' | 'SUM' | 'AVG' | 'MIN' | 'MAX' | 'DISTINCT_COUNT';
+  readonly field: string | null;
+  readonly groupBy: readonly string[];
+  readonly timeWindow: number;
+  readonly threshold: number;
+  readonly thresholdOperator: 'GREATER_THAN' | 'LESS_THAN' | 'EQUALS';
+}
+
+export interface CorrelationConfig {
+  readonly relatedRules: readonly string[];
+  readonly timeWindow: number;
+  readonly requiredMatches: number;
+  readonly correlationFields: readonly string[];
+}
+
+export interface RuleTuning {
+  readonly whitelistPatterns: readonly string[];
+  readonly blacklistPatterns: readonly string[];
+  readonly excludedAssets: readonly string[];
+  readonly excludedUsers: readonly string[];
+  readonly thresholdOverrides: Readonly<Record<string, number>>;
+  readonly suppressionWindow: number;
+}
+
+export interface RuleMetadata {
+  readonly author: string;
+  readonly createdAt: number;
+  readonly updatedAt: number;
+  readonly version: string;
+  readonly references: readonly string[];
+  readonly tags: readonly string[];
+  readonly falsePositiveRate: number;
+  readonly truePositiveRate: number;
+  readonly lastTriggered: number | null;
+  readonly triggerCount: number;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PLAYBOOK TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface Playbook {
+  readonly playbookId: string;
+  readonly name: string;
+  readonly description: string;
+  readonly category: ThreatCategory;
+  readonly severity: AlertSeverity;
+  readonly triggerConditions: readonly TriggerCondition[];
+  readonly steps: readonly PlaybookStep[];
+  readonly escalationPath: EscalationPath;
+  readonly slaRequirements: SLARequirements;
+  readonly enabled: boolean;
+  readonly automated: boolean;
+  readonly metadata: PlaybookMetadata;
+}
+
+export interface TriggerCondition {
+  readonly conditionType: 'ALERT_TYPE' | 'SEVERITY' | 'ASSET_TYPE' | 'INDICATOR_TYPE' | 'CUSTOM';
+  readonly field: string;
+  readonly operator: string;
+  readonly value: string;
+}
+
+export interface PlaybookStep {
+  readonly stepId: string;
+  readonly order: number;
+  readonly name: string;
+  readonly description: string;
+  readonly type: 'MANUAL' | 'AUTOMATED' | 'CONDITIONAL' | 'PARALLEL';
+  readonly action: PlaybookAction;
+  readonly conditions: readonly StepCondition[];
+  readonly timeout: number;
+  readonly onSuccess: string | null;
+  readonly onFailure: string | null;
+  readonly onTimeout: string | null;
+}
+
+export interface PlaybookAction {
+  readonly actionType: ResponseActionType | 'ENRICHMENT' | 'NOTIFICATION' | 'DECISION' | 'DOCUMENTATION';
+  readonly target: string;
+  readonly parameters: Readonly<Record<string, unknown>>;
+  readonly integration: string | null;
+}
+
+export interface StepCondition {
+  readonly field: string;
+  readonly operator: string;
+  readonly value: string;
+}
+
+export interface EscalationPath {
+  readonly levels: readonly EscalationLevel[];
+  readonly defaultLevel: number;
+}
+
+export interface EscalationLevel {
+  readonly level: number;
+  readonly name: string;
+  readonly contacts: readonly string[];
+  readonly notificationChannels: readonly string[];
+  readonly responseTime: number;
+}
+
+export interface SLARequirements {
+  readonly acknowledgementTime: number;
+  readonly containmentTime: number;
+  readonly resolutionTime: number;
+  readonly updateFrequency: number;
+}
+
+export interface PlaybookMetadata {
+  readonly author: string;
+  readonly createdAt: number;
+  readonly updatedAt: number;
+  readonly version: string;
+  readonly lastExecuted: number | null;
+  readonly executionCount: number;
+  readonly successRate: number;
+  readonly averageExecutionTime: number;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// UI/UX CENTER INTEGRATION
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface BlueTeamUIConfig {
+  readonly dashboardEnabled: boolean;
+  readonly realTimeUpdates: boolean;
+  readonly visualizations: readonly BlueTeamVisualization[];
+  readonly notifications: BlueTeamNotificationConfig;
+  readonly reporting: BlueTeamReportingConfig;
+  readonly collaboration: BlueTeamCollaborationConfig;
+  readonly automation: AutomationConfig;
+}
+
+export type BlueTeamVisualization =
+  | 'ALERT_DASHBOARD' | 'INCIDENT_TIMELINE' | 'THREAT_MAP' | 'ATTACK_GRAPH'
+  | 'ASSET_INVENTORY' | 'VULNERABILITY_HEATMAP' | 'COMPLIANCE_SCORECARD'
+  | 'MITRE_COVERAGE' | 'KILL_CHAIN_VIEW' | 'NETWORK_TOPOLOGY'
+  | 'USER_BEHAVIOR' | 'DATA_FLOW' | 'RISK_MATRIX' | 'SLA_TRACKER';
+
+export interface BlueTeamNotificationConfig {
+  readonly criticalAlert: boolean;
+  readonly highAlert: boolean;
+  readonly incidentCreated: boolean;
+  readonly incidentEscalated: boolean;
+  readonly slaBreaching: boolean;
+  readonly huntingFinding: boolean;
+  readonly playbookCompleted: boolean;
+  readonly systemHealth: boolean;
+}
+
+export interface BlueTeamReportingConfig {
+  readonly autoGenerate: boolean;
+  readonly format: 'PDF' | 'HTML' | 'DOCX' | 'JSON';
+  readonly schedules: readonly ReportSchedule[];
+  readonly templates: readonly string[];
+  readonly distribution: readonly string[];
+}
+
+export interface ReportSchedule {
+  readonly reportType: string;
+  readonly frequency: 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'QUARTERLY';
+  readonly dayOfWeek: number | null;
+  readonly dayOfMonth: number | null;
+  readonly time: string;
+  readonly recipients: readonly string[];
+}
+
+export interface BlueTeamCollaborationConfig {
+  readonly multiAnalyst: boolean;
+  readonly sharedCases: boolean;
+  readonly chatEnabled: boolean;
+  readonly taskAssignment: boolean;
+  readonly knowledgeBase: boolean;
+  readonly auditLogging: boolean;
+}
+
+export interface AutomationConfig {
+  readonly autoEnrichment: boolean;
+  readonly autoContainment: boolean;
+  readonly autoTicketing: boolean;
+  readonly autoReporting: boolean;
+  readonly playbookExecution: boolean;
+  readonly mlDetection: boolean;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ERROR TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export enum BlueTeamErrorCode {
+  DETECTION_FAILED = 'BT_E001',
+  ALERT_PROCESSING_ERROR = 'BT_E002',
+  INCIDENT_CREATION_FAILED = 'BT_E003',
+  CONTAINMENT_FAILED = 'BT_E004',
+  EVIDENCE_COLLECTION_ERROR = 'BT_E005',
+  FORENSIC_ANALYSIS_ERROR = 'BT_E006',
+  PLAYBOOK_EXECUTION_ERROR = 'BT_E007',
+  INTEGRATION_ERROR = 'BT_E008',
+  SLA_BREACH = 'BT_E009',
+  CORRELATION_ERROR = 'BT_E010',
+}
+
+export class BlueTeamError extends Error {
+  constructor(
+    public readonly code: BlueTeamErrorCode,
+    message: string,
+    public readonly details: Readonly<Record<string, unknown>> = {}
+  ) {
+    super(`[${code}] ${message}`);
+    this.name = 'BlueTeamError';
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// DETERMINISTIC UTILITIES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+function deterministicHash(input: string): number {
+  let hash = 0;
+  for (let i = 0; i < input.length; i++) {
+    const char = input.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash;
+  }
+  return Math.abs(hash);
+}
+
+function generateDeterministicId(prefix: string, seed: number): string {
+  const hash = deterministicHash(`${prefix}-${seed}`);
+  const jitter = Math.abs(Math.sin(seed * 12.9898) * 43758.5453) % 1;
+  return `${prefix}-${hash.toString(16)}-${Math.floor(jitter * 10000).toString(16)}`;
+}
+
+function generateDeterministicTimestamp(seed: number): number {
+  const baseTime = 1704067200000;
+  const offset = Math.abs(deterministicHash(`timestamp-${seed}`)) % 86400000;
+  return baseTime + offset;
+}
+
+function deterministicRandom(seed: number): number {
+  const x = Math.sin(seed * 12.9898) * 43758.5453;
+  return x - Math.floor(x);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// DETECTION ENGINE
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export class DetectionEngine {
+  private operationCounter: number = 0;
+  private readonly rules: Map<string, DetectionRule> = new Map();
+  private readonly alerts: Map<string, SecurityAlert> = new Map();
+
+  constructor() {
+    this.initializeDefaultRules();
+  }
+
+  private initializeDefaultRules(): void {
+    const defaultRules: DetectionRule[] = [
+      {
+        ruleId: 'DET-001',
+        name: 'Suspicious PowerShell Execution',
+        description: 'Detects suspicious PowerShell command execution patterns',
+        type: 'BEHAVIORAL',
+        severity: 'HIGH',
+        category: 'MALWARE',
+        mitreMapping: [{ tacticId: 'TA0002', tacticName: 'Execution', techniqueId: 'T1059.001', techniqueName: 'PowerShell', subTechniqueId: null, subTechniqueName: null }],
+        logic: {
+          format: 'SIGMA',
+          query: 'process.name:powershell.exe AND (process.command_line:*-enc* OR process.command_line:*-nop* OR process.command_line:*bypass*)',
+          conditions: [],
+          aggregation: null,
+          correlation: null,
+        },
+        dataSource: ['endpoint_logs', 'process_creation'],
+        enabled: true,
+        tuning: { whitelistPatterns: [], blacklistPatterns: [], excludedAssets: [], excludedUsers: [], thresholdOverrides: {}, suppressionWindow: 300 },
+        metadata: { author: 'Security Team', createdAt: 1704067200000, updatedAt: 1704067200000, version: '1.0.0', references: ['https://attack.mitre.org/techniques/T1059/001/'], tags: ['powershell', 'execution'], falsePositiveRate: 0.1, truePositiveRate: 0.85, lastTriggered: null, triggerCount: 0 },
+      },
+      {
+        ruleId: 'DET-002',
+        name: 'Credential Dumping via LSASS',
+        description: 'Detects attempts to access LSASS process memory',
+        type: 'BEHAVIORAL',
+        severity: 'CRITICAL',
+        category: 'CREDENTIAL_THEFT',
+        mitreMapping: [{ tacticId: 'TA0006', tacticName: 'Credential Access', techniqueId: 'T1003.001', techniqueName: 'LSASS Memory', subTechniqueId: null, subTechniqueName: null }],
+        logic: {
+          format: 'SIGMA',
+          query: 'process.target.name:lsass.exe AND process.access_mask:(0x1010 OR 0x1410)',
+          conditions: [],
+          aggregation: null,
+          correlation: null,
+        },
+        dataSource: ['endpoint_logs', 'process_access'],
+        enabled: true,
+        tuning: { whitelistPatterns: [], blacklistPatterns: [], excludedAssets: [], excludedUsers: [], thresholdOverrides: {}, suppressionWindow: 60 },
+        metadata: { author: 'Security Team', createdAt: 1704067200000, updatedAt: 1704067200000, version: '1.0.0', references: ['https://attack.mitre.org/techniques/T1003/001/'], tags: ['credential_access', 'lsass'], falsePositiveRate: 0.05, truePositiveRate: 0.95, lastTriggered: null, triggerCount: 0 },
+      },
+      {
+        ruleId: 'DET-003',
+        name: 'Lateral Movement via PsExec',
+        description: 'Detects PsExec-style lateral movement',
+        type: 'SIGNATURE_BASED',
+        severity: 'HIGH',
+        category: 'LATERAL_MOVEMENT',
+        mitreMapping: [{ tacticId: 'TA0008', tacticName: 'Lateral Movement', techniqueId: 'T1570', techniqueName: 'Lateral Tool Transfer', subTechniqueId: null, subTechniqueName: null }],
+        logic: {
+          format: 'SIGMA',
+          query: 'service.name:PSEXESVC OR (file.name:psexec* AND event.action:created)',
+          conditions: [],
+          aggregation: null,
+          correlation: null,
+        },
+        dataSource: ['endpoint_logs', 'service_creation', 'file_creation'],
+        enabled: true,
+        tuning: { whitelistPatterns: [], blacklistPatterns: [], excludedAssets: [], excludedUsers: [], thresholdOverrides: {}, suppressionWindow: 120 },
+        metadata: { author: 'Security Team', createdAt: 1704067200000, updatedAt: 1704067200000, version: '1.0.0', references: ['https://attack.mitre.org/techniques/T1570/'], tags: ['lateral_movement', 'psexec'], falsePositiveRate: 0.15, truePositiveRate: 0.9, lastTriggered: null, triggerCount: 0 },
+      },
+    ];
+
+    for (const rule of defaultRules) {
+      this.rules.set(rule.ruleId, rule);
+    }
+  }
+
+  processEvent(event: Readonly<Record<string, unknown>>): SecurityAlert | null {
+    this.operationCounter++;
+
+    for (const rule of this.rules.values()) {
+      if (!rule.enabled) continue;
+
+      const matches = this.evaluateRule(rule, event);
+      if (matches) {
+        const alert = this.createAlert(rule, event);
+        this.alerts.set(alert.alertId, alert);
+        return alert;
+      }
+    }
+
+    return null;
+  }
+
+  private evaluateRule(rule: DetectionRule, event: Readonly<Record<string, unknown>>): boolean {
+    this.operationCounter++;
+    return deterministicRandom(this.operationCounter) > 0.7;
+  }
+
+  private createAlert(rule: DetectionRule, event: Readonly<Record<string, unknown>>): SecurityAlert {
+    this.operationCounter++;
+
+    const alertId = generateDeterministicId('alert', this.operationCounter);
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+
+    return {
+      alertId,
+      title: rule.name,
+      description: rule.description,
+      severity: rule.severity,
+      status: 'NEW',
+      category: rule.category,
+      detectionType: rule.type,
+      source: {
+        sourceType: 'SIEM',
+        sourceName: 'Detection Engine',
+        sourceId: 'det-engine-001',
+        ruleId: rule.ruleId,
+        ruleName: rule.name,
+      },
+      affectedAssets: [],
+      indicators: [],
+      mitreAttack: rule.mitreMapping,
+      timestamp,
+      lastUpdated: timestamp,
+      assignee: null,
+      relatedAlerts: [],
+      evidence: [],
+      actions: [],
+    };
+  }
+
+  addRule(rule: DetectionRule): void {
+    this.rules.set(rule.ruleId, rule);
+  }
+
+  removeRule(ruleId: string): boolean {
+    return this.rules.delete(ruleId);
+  }
+
+  getRules(): ReadonlyMap<string, DetectionRule> {
+    return this.rules;
+  }
+
+  getAlerts(): ReadonlyMap<string, SecurityAlert> {
+    return this.alerts;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// INCIDENT RESPONSE ENGINE
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export class IncidentResponseEngine {
+  private operationCounter: number = 0;
+  private readonly incidents: Map<string, Incident> = new Map();
+  private readonly playbooks: Map<string, Playbook> = new Map();
+
+  createIncident(alerts: readonly SecurityAlert[], classification: IncidentClassification): Incident {
+    this.operationCounter++;
+
+    const incidentId = generateDeterministicId('incident', this.operationCounter);
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+
+    const maxSeverity = this.determineMaxSeverity(alerts);
+
+    const incident: Incident = {
+      incidentId,
+      title: `Security Incident - ${alerts[0]?.title ?? 'Unknown'}`,
+      description: `Incident created from ${alerts.length} related alerts`,
+      severity: maxSeverity,
+      status: 'OPEN',
+      phase: 'IDENTIFICATION',
+      category: alerts[0]?.category ?? 'MALWARE',
+      classification,
+      alerts: alerts.map(a => a.alertId),
+      affectedAssets: this.aggregateAssets(alerts),
+      indicators: this.aggregateIndicators(alerts),
+      timeline: this.createInitialTimeline(alerts, timestamp),
+      containmentActions: [],
+      eradicationActions: [],
+      recoveryActions: [],
+      assignedTeam: [],
+      createdAt: timestamp,
+      updatedAt: timestamp,
+      resolvedAt: null,
+      slaDeadline: this.calculateSLADeadline(maxSeverity, timestamp),
+      impactAssessment: this.createInitialImpactAssessment(),
+      rootCause: null,
+      lessonsLearned: null,
+    };
+
+    this.incidents.set(incidentId, incident);
+    return incident;
+  }
+
+  private determineMaxSeverity(alerts: readonly SecurityAlert[]): AlertSeverity {
+    const severityOrder: AlertSeverity[] = ['CRITICAL', 'HIGH', 'MEDIUM', 'LOW', 'INFORMATIONAL'];
+    for (const severity of severityOrder) {
+      if (alerts.some(a => a.severity === severity)) {
+        return severity;
+      }
+    }
+    return 'INFORMATIONAL';
+  }
+
+  private aggregateAssets(alerts: readonly SecurityAlert[]): readonly Asset[] {
+    const assetMap = new Map<string, Asset>();
+    for (const alert of alerts) {
+      for (const asset of alert.affectedAssets) {
+        assetMap.set(asset.assetId, asset);
+      }
+    }
+    return Array.from(assetMap.values());
+  }
+
+  private aggregateIndicators(alerts: readonly SecurityAlert[]): readonly Indicator[] {
+    const indicatorMap = new Map<string, Indicator>();
+    for (const alert of alerts) {
+      for (const indicator of alert.indicators) {
+        indicatorMap.set(indicator.indicatorId, indicator);
+      }
+    }
+    return Array.from(indicatorMap.values());
+  }
+
+  private createInitialTimeline(alerts: readonly SecurityAlert[], timestamp: number): readonly TimelineEntry[] {
+    const entries: TimelineEntry[] = [
+      {
+        timestamp,
+        eventType: 'INCIDENT_CREATED',
+        description: 'Incident created from correlated alerts',
+        source: 'Incident Response Engine',
+        actor: null,
+        evidence: [],
+        mitreMapping: null,
+      },
+    ];
+
+    for (const alert of alerts) {
+      entries.push({
+        timestamp: alert.timestamp,
+        eventType: 'ALERT_TRIGGERED',
+        description: alert.title,
+        source: alert.source.sourceName,
+        actor: null,
+        evidence: [],
+        mitreMapping: alert.mitreAttack[0] ?? null,
+      });
+    }
+
+    return entries.sort((a, b) => a.timestamp - b.timestamp);
+  }
+
+  private calculateSLADeadline(severity: AlertSeverity, timestamp: number): number {
+    const slaHours: Record<AlertSeverity, number> = {
+      CRITICAL: 1,
+      HIGH: 4,
+      MEDIUM: 24,
+      LOW: 72,
+      INFORMATIONAL: 168,
+    };
+    return timestamp + slaHours[severity] * 3600000;
+  }
+
+  private createInitialImpactAssessment(): ImpactAssessment {
+    return {
+      businessImpact: 'MEDIUM',
+      dataImpact: {
+        dataCompromised: false,
+        dataExfiltrated: false,
+        dataDestroyed: false,
+        dataTypes: [],
+        recordsAffected: null,
+        piiInvolved: false,
+        phiInvolved: false,
+        pciInvolved: false,
+      },
+      systemsAffected: 0,
+      usersAffected: 0,
+      financialImpact: null,
+      reputationalImpact: 'NONE',
+      regulatoryImpact: [],
+      downtime: 0,
+    };
+  }
+
+  executeContainment(incidentId: string, action: ResponseAction): boolean {
+    this.operationCounter++;
+
+    const incident = this.incidents.get(incidentId);
+    if (!incident) return false;
+
+    const updatedIncident: Incident = {
+      ...incident,
+      status: 'IN_PROGRESS',
+      phase: 'CONTAINMENT',
+      containmentActions: [...incident.containmentActions, action],
+      updatedAt: generateDeterministicTimestamp(this.operationCounter),
+    };
+
+    this.incidents.set(incidentId, updatedIncident);
+    return true;
+  }
+
+  executeEradication(incidentId: string, action: ResponseAction): boolean {
+    this.operationCounter++;
+
+    const incident = this.incidents.get(incidentId);
+    if (!incident) return false;
+
+    const updatedIncident: Incident = {
+      ...incident,
+      phase: 'ERADICATION',
+      eradicationActions: [...incident.eradicationActions, action],
+      updatedAt: generateDeterministicTimestamp(this.operationCounter),
+    };
+
+    this.incidents.set(incidentId, updatedIncident);
+    return true;
+  }
+
+  executeRecovery(incidentId: string, action: ResponseAction): boolean {
+    this.operationCounter++;
+
+    const incident = this.incidents.get(incidentId);
+    if (!incident) return false;
+
+    const updatedIncident: Incident = {
+      ...incident,
+      phase: 'RECOVERY',
+      recoveryActions: [...incident.recoveryActions, action],
+      updatedAt: generateDeterministicTimestamp(this.operationCounter),
+    };
+
+    this.incidents.set(incidentId, updatedIncident);
+    return true;
+  }
+
+  closeIncident(incidentId: string, rootCause: RootCauseAnalysis, lessonsLearned: LessonsLearned): boolean {
+    this.operationCounter++;
+
+    const incident = this.incidents.get(incidentId);
+    if (!incident) return false;
+
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+
+    const updatedIncident: Incident = {
+      ...incident,
+      status: 'CLOSED',
+      phase: 'LESSONS_LEARNED',
+      resolvedAt: timestamp,
+      updatedAt: timestamp,
+      rootCause,
+      lessonsLearned,
+    };
+
+    this.incidents.set(incidentId, updatedIncident);
+    return true;
+  }
+
+  getIncidents(): ReadonlyMap<string, Incident> {
+    return this.incidents;
+  }
+
+  getPlaybooks(): ReadonlyMap<string, Playbook> {
+    return this.playbooks;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// THREAT HUNTING ENGINE
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export class ThreatHuntingEngine {
+  private operationCounter: number = 0;
+  private readonly hunts: Map<string, ThreatHunt> = new Map();
+
+  createHunt(hypothesis: HuntingHypothesis, scope: HuntingScope, hunter: string): ThreatHunt {
+    this.operationCounter++;
+
+    const huntId = generateDeterministicId('hunt', this.operationCounter);
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+
+    const hunt: ThreatHunt = {
+      huntId,
+      name: `Hunt - ${hypothesis.statement.substring(0, 50)}`,
+      description: hypothesis.statement,
+      hypothesis,
+      scope,
+      dataSourcesUsed: hypothesis.dataSourcesRequired,
+      queriesExecuted: [],
+      findings: [],
+      status: 'PLANNED',
+      startTime: timestamp,
+      endTime: null,
+      hunter,
+      techniques: [],
+    };
+
+    this.hunts.set(huntId, hunt);
+    return hunt;
+  }
+
+  executeQuery(huntId: string, query: HuntingQuery): HuntingQuery {
+    this.operationCounter++;
+
+    const hunt = this.hunts.get(huntId);
+    if (!hunt) {
+      throw new BlueTeamError(BlueTeamErrorCode.DETECTION_FAILED, 'Hunt not found');
+    }
+
+    const executedQuery: HuntingQuery = {
+      ...query,
+      executedAt: generateDeterministicTimestamp(this.operationCounter),
+      resultsCount: Math.floor(deterministicRandom(this.operationCounter) * 100),
+      executionTime: Math.floor(deterministicRandom(this.operationCounter + 1) * 5000),
+    };
+
+    const updatedHunt: ThreatHunt = {
+      ...hunt,
+      status: 'IN_PROGRESS',
+      queriesExecuted: [...hunt.queriesExecuted, executedQuery],
+    };
+
+    this.hunts.set(huntId, updatedHunt);
+    return executedQuery;
+  }
+
+  addFinding(huntId: string, finding: HuntingFinding): void {
+    this.operationCounter++;
+
+    const hunt = this.hunts.get(huntId);
+    if (!hunt) {
+      throw new BlueTeamError(BlueTeamErrorCode.DETECTION_FAILED, 'Hunt not found');
+    }
+
+    const updatedHunt: ThreatHunt = {
+      ...hunt,
+      findings: [...hunt.findings, finding],
+    };
+
+    this.hunts.set(huntId, updatedHunt);
+  }
+
+  completeHunt(huntId: string): ThreatHunt {
+    this.operationCounter++;
+
+    const hunt = this.hunts.get(huntId);
+    if (!hunt) {
+      throw new BlueTeamError(BlueTeamErrorCode.DETECTION_FAILED, 'Hunt not found');
+    }
+
+    const updatedHunt: ThreatHunt = {
+      ...hunt,
+      status: 'COMPLETED',
+      endTime: generateDeterministicTimestamp(this.operationCounter),
+    };
+
+    this.hunts.set(huntId, updatedHunt);
+    return updatedHunt;
+  }
+
+  getHunts(): ReadonlyMap<string, ThreatHunt> {
+    return this.hunts;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// FORENSICS ENGINE
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export class ForensicsEngine {
+  private operationCounter: number = 0;
+  private readonly cases: Map<string, ForensicCase> = new Map();
+
+  createCase(
+    title: string,
+    description: string,
+    type: ForensicCase['type'],
+    priority: AlertSeverity,
+    examiner: string,
+    relatedIncident: string | null
+  ): ForensicCase {
+    this.operationCounter++;
+
+    const caseId = generateDeterministicId('forensic', this.operationCounter);
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+
+    const forensicCase: ForensicCase = {
+      caseId,
+      title,
+      description,
+      type,
+      status: 'OPEN',
+      priority,
+      relatedIncident,
+      evidence: [],
+      artifacts: [],
+      timeline: [],
+      findings: [],
+      examiner,
+      createdAt: timestamp,
+      updatedAt: timestamp,
+      closedAt: null,
+    };
+
+    this.cases.set(caseId, forensicCase);
+    return forensicCase;
+  }
+
+  collectEvidence(caseId: string, evidence: ForensicEvidence): void {
+    this.operationCounter++;
+
+    const forensicCase = this.cases.get(caseId);
+    if (!forensicCase) {
+      throw new BlueTeamError(BlueTeamErrorCode.EVIDENCE_COLLECTION_ERROR, 'Case not found');
+    }
+
+    const updatedCase: ForensicCase = {
+      ...forensicCase,
+      status: 'IN_PROGRESS',
+      evidence: [...forensicCase.evidence, evidence],
+      updatedAt: generateDeterministicTimestamp(this.operationCounter),
+    };
+
+    this.cases.set(caseId, updatedCase);
+  }
+
+  addArtifact(caseId: string, artifact: ForensicArtifact): void {
+    this.operationCounter++;
+
+    const forensicCase = this.cases.get(caseId);
+    if (!forensicCase) {
+      throw new BlueTeamError(BlueTeamErrorCode.FORENSIC_ANALYSIS_ERROR, 'Case not found');
+    }
+
+    const updatedCase: ForensicCase = {
+      ...forensicCase,
+      artifacts: [...forensicCase.artifacts, artifact],
+      updatedAt: generateDeterministicTimestamp(this.operationCounter),
+    };
+
+    this.cases.set(caseId, updatedCase);
+  }
+
+  addTimelineEntry(caseId: string, entry: ForensicTimelineEntry): void {
+    this.operationCounter++;
+
+    const forensicCase = this.cases.get(caseId);
+    if (!forensicCase) {
+      throw new BlueTeamError(BlueTeamErrorCode.FORENSIC_ANALYSIS_ERROR, 'Case not found');
+    }
+
+    const updatedTimeline = [...forensicCase.timeline, entry].sort((a, b) => a.timestamp - b.timestamp);
+
+    const updatedCase: ForensicCase = {
+      ...forensicCase,
+      timeline: updatedTimeline,
+      updatedAt: generateDeterministicTimestamp(this.operationCounter),
+    };
+
+    this.cases.set(caseId, updatedCase);
+  }
+
+  addFinding(caseId: string, finding: ForensicFinding): void {
+    this.operationCounter++;
+
+    const forensicCase = this.cases.get(caseId);
+    if (!forensicCase) {
+      throw new BlueTeamError(BlueTeamErrorCode.FORENSIC_ANALYSIS_ERROR, 'Case not found');
+    }
+
+    const updatedCase: ForensicCase = {
+      ...forensicCase,
+      status: 'ANALYSIS',
+      findings: [...forensicCase.findings, finding],
+      updatedAt: generateDeterministicTimestamp(this.operationCounter),
+    };
+
+    this.cases.set(caseId, updatedCase);
+  }
+
+  closeCase(caseId: string): ForensicCase {
+    this.operationCounter++;
+
+    const forensicCase = this.cases.get(caseId);
+    if (!forensicCase) {
+      throw new BlueTeamError(BlueTeamErrorCode.FORENSIC_ANALYSIS_ERROR, 'Case not found');
+    }
+
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+
+    const updatedCase: ForensicCase = {
+      ...forensicCase,
+      status: 'CLOSED',
+      updatedAt: timestamp,
+      closedAt: timestamp,
+    };
+
+    this.cases.set(caseId, updatedCase);
+    return updatedCase;
+  }
+
+  getCases(): ReadonlyMap<string, ForensicCase> {
+    return this.cases;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// BLUE TEAM OPERATIONS MANAGER
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export class BlueTeamOperationsManager {
+  private readonly detectionEngine: DetectionEngine;
+  private readonly incidentEngine: IncidentResponseEngine;
+  private readonly huntingEngine: ThreatHuntingEngine;
+  private readonly forensicsEngine: ForensicsEngine;
+  private readonly uiConfig: BlueTeamUIConfig;
+  private operationCounter: number = 0;
+
+  constructor(uiConfig: BlueTeamUIConfig) {
+    this.detectionEngine = new DetectionEngine();
+    this.incidentEngine = new IncidentResponseEngine();
+    this.huntingEngine = new ThreatHuntingEngine();
+    this.forensicsEngine = new ForensicsEngine();
+    this.uiConfig = uiConfig;
+  }
+
+  processSecurityEvent(event: Readonly<Record<string, unknown>>): SecurityAlert | null {
+    return this.detectionEngine.processEvent(event);
+  }
+
+  createIncidentFromAlerts(alerts: readonly SecurityAlert[]): Incident {
+    const classification: IncidentClassification = {
+      type: 'SUSPECTED',
+      attackVector: 'Unknown',
+      threatActor: null,
+      campaign: null,
+      confidence: 0.5,
+    };
+    return this.incidentEngine.createIncident(alerts, classification);
+  }
+
+  startThreatHunt(hypothesis: HuntingHypothesis, scope: HuntingScope, hunter: string): ThreatHunt {
+    return this.huntingEngine.createHunt(hypothesis, scope, hunter);
+  }
+
+  startForensicInvestigation(
+    title: string,
+    description: string,
+    type: ForensicCase['type'],
+    priority: AlertSeverity,
+    examiner: string,
+    relatedIncident: string | null
+  ): ForensicCase {
+    return this.forensicsEngine.createCase(title, description, type, priority, examiner, relatedIncident);
+  }
+
+  getDetectionEngine(): DetectionEngine {
+    return this.detectionEngine;
+  }
+
+  getIncidentEngine(): IncidentResponseEngine {
+    return this.incidentEngine;
+  }
+
+  getHuntingEngine(): ThreatHuntingEngine {
+    return this.huntingEngine;
+  }
+
+  getForensicsEngine(): ForensicsEngine {
+    return this.forensicsEngine;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// DEFAULT CONFIGURATIONS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export function createDefaultBlueTeamUIConfig(): BlueTeamUIConfig {
+  return {
+    dashboardEnabled: true,
+    realTimeUpdates: true,
+    visualizations: [
+      'ALERT_DASHBOARD', 'INCIDENT_TIMELINE', 'THREAT_MAP', 'ATTACK_GRAPH',
+      'ASSET_INVENTORY', 'VULNERABILITY_HEATMAP', 'COMPLIANCE_SCORECARD',
+      'MITRE_COVERAGE', 'KILL_CHAIN_VIEW', 'NETWORK_TOPOLOGY',
+    ],
+    notifications: {
+      criticalAlert: true,
+      highAlert: true,
+      incidentCreated: true,
+      incidentEscalated: true,
+      slaBreaching: true,
+      huntingFinding: true,
+      playbookCompleted: true,
+      systemHealth: true,
+    },
+    reporting: {
+      autoGenerate: true,
+      format: 'PDF',
+      schedules: [
+        { reportType: 'DAILY_SUMMARY', frequency: 'DAILY', dayOfWeek: null, dayOfMonth: null, time: '08:00', recipients: ['security-team@company.com'] },
+        { reportType: 'WEEKLY_METRICS', frequency: 'WEEKLY', dayOfWeek: 1, dayOfMonth: null, time: '09:00', recipients: ['security-team@company.com', 'management@company.com'] },
+      ],
+      templates: ['incident_report', 'threat_summary', 'compliance_status'],
+      distribution: ['security-team@company.com'],
+    },
+    collaboration: {
+      multiAnalyst: true,
+      sharedCases: true,
+      chatEnabled: true,
+      taskAssignment: true,
+      knowledgeBase: true,
+      auditLogging: true,
+    },
+    automation: {
+      autoEnrichment: true,
+      autoContainment: false,
+      autoTicketing: true,
+      autoReporting: true,
+      playbookExecution: true,
+      mlDetection: true,
+    },
+  };
+}
+
+export function createDefaultPlaybook(category: ThreatCategory): Playbook {
+  const playbookId = generateDeterministicId('playbook', deterministicHash(category));
+
+  return {
+    playbookId,
+    name: `${category} Response Playbook`,
+    description: `Standard response playbook for ${category} incidents`,
+    category,
+    severity: 'HIGH',
+    triggerConditions: [
+      { conditionType: 'ALERT_TYPE', field: 'category', operator: 'EQUALS', value: category },
+    ],
+    steps: [
+      {
+        stepId: 'step-1',
+        order: 1,
+        name: 'Initial Triage',
+        description: 'Perform initial triage and validation',
+        type: 'MANUAL',
+        action: { actionType: 'ENRICHMENT', target: 'alert', parameters: {}, integration: null },
+        conditions: [],
+        timeout: 900000,
+        onSuccess: 'step-2',
+        onFailure: null,
+        onTimeout: 'step-2',
+      },
+      {
+        stepId: 'step-2',
+        order: 2,
+        name: 'Containment',
+        description: 'Execute containment actions',
+        type: 'AUTOMATED',
+        action: { actionType: 'ISOLATE_HOST', target: 'affected_asset', parameters: {}, integration: 'edr' },
+        conditions: [],
+        timeout: 300000,
+        onSuccess: 'step-3',
+        onFailure: 'step-3',
+        onTimeout: 'step-3',
+      },
+      {
+        stepId: 'step-3',
+        order: 3,
+        name: 'Investigation',
+        description: 'Conduct detailed investigation',
+        type: 'MANUAL',
+        action: { actionType: 'COLLECT_EVIDENCE', target: 'affected_asset', parameters: {}, integration: null },
+        conditions: [],
+        timeout: 3600000,
+        onSuccess: 'step-4',
+        onFailure: null,
+        onTimeout: null,
+      },
+      {
+        stepId: 'step-4',
+        order: 4,
+        name: 'Notification',
+        description: 'Notify stakeholders',
+        type: 'AUTOMATED',
+        action: { actionType: 'NOTIFICATION', target: 'stakeholders', parameters: {}, integration: 'email' },
+        conditions: [],
+        timeout: 60000,
+        onSuccess: null,
+        onFailure: null,
+        onTimeout: null,
+      },
+    ],
+    escalationPath: {
+      levels: [
+        { level: 1, name: 'L1 Analyst', contacts: ['l1-team@company.com'], notificationChannels: ['email', 'slack'], responseTime: 900000 },
+        { level: 2, name: 'L2 Analyst', contacts: ['l2-team@company.com'], notificationChannels: ['email', 'slack', 'phone'], responseTime: 1800000 },
+        { level: 3, name: 'Incident Manager', contacts: ['incident-manager@company.com'], notificationChannels: ['email', 'slack', 'phone'], responseTime: 3600000 },
+      ],
+      defaultLevel: 1,
+    },
+    slaRequirements: {
+      acknowledgementTime: 900000,
+      containmentTime: 3600000,
+      resolutionTime: 86400000,
+      updateFrequency: 3600000,
+    },
+    enabled: true,
+    automated: false,
+    metadata: {
+      author: 'Security Team',
+      createdAt: 1704067200000,
+      updatedAt: 1704067200000,
+      version: '1.0.0',
+      lastExecuted: null,
+      executionCount: 0,
+      successRate: 0,
+      averageExecutionTime: 0,
+    },
+  };
+}

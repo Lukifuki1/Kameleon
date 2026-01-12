@@ -1,0 +1,1783 @@
+/**
+ * @file Offensive Operations Center - APT-Level Command & Control Framework
+ * @author {{AVTOR}}
+ * @version {{VERZIJA}}
+ * @date {{DATUM}}
+ * @project {{IME_PROJEKTA}}
+ * @domain VARNOSTNI_SISTEMI
+ * 
+ * @requirement REQ-SEC-OOC-001
+ * @design DSN-SEC-OOC-001
+ * @test TST-SEC-OOC-001
+ * 
+ * @description
+ * Enterprise-grade APT/Nation-State level Offensive Operations Center implementing
+ * centralized command and control, campaign management, target tracking, asset
+ * management, operational security, and full UI/UX dashboard for all offensive
+ * capabilities with real-time monitoring and control.
+ * 
+ * @classification TOP SECRET - Offensive Security Operations
+ * @authorization Required: Level 5 Security Clearance
+ */
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// OPERATION TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export type OperationType =
+  | 'RECONNAISSANCE' | 'INITIAL_ACCESS' | 'EXECUTION' | 'PERSISTENCE'
+  | 'PRIVILEGE_ESCALATION' | 'DEFENSE_EVASION' | 'CREDENTIAL_ACCESS'
+  | 'DISCOVERY' | 'LATERAL_MOVEMENT' | 'COLLECTION' | 'COMMAND_AND_CONTROL'
+  | 'EXFILTRATION' | 'IMPACT' | 'RESOURCE_DEVELOPMENT';
+
+export type CampaignStatus =
+  | 'PLANNING' | 'PREPARATION' | 'ACTIVE' | 'PAUSED' | 'COMPLETED'
+  | 'ABORTED' | 'COMPROMISED' | 'ARCHIVED';
+
+export type TargetStatus =
+  | 'IDENTIFIED' | 'PROFILED' | 'ENGAGED' | 'COMPROMISED' | 'CONTROLLED'
+  | 'EXFILTRATED' | 'CLEANED' | 'LOST';
+
+export type AssetType =
+  | 'IMPLANT' | 'BEACON' | 'RAT' | 'BACKDOOR' | 'ROOTKIT'
+  | 'WEBSHELL' | 'PROXY' | 'RELAY' | 'REDIRECTOR' | 'C2_SERVER'
+  | 'STAGING_SERVER' | 'EXFIL_SERVER' | 'PHISHING_SERVER' | 'PAYLOAD_SERVER';
+
+export type ImplantStatus =
+  | 'DEPLOYED' | 'ACTIVE' | 'DORMANT' | 'CHECKING_IN' | 'TASKED'
+  | 'EXECUTING' | 'COMPLETED' | 'LOST' | 'BURNED' | 'REMOVED';
+
+export type TaskType =
+  | 'SHELL_COMMAND' | 'FILE_DOWNLOAD' | 'FILE_UPLOAD' | 'SCREENSHOT'
+  | 'KEYLOGGER' | 'PROCESS_LIST' | 'NETWORK_SCAN' | 'CREDENTIAL_DUMP'
+  | 'LATERAL_MOVE' | 'PERSISTENCE_INSTALL' | 'PRIVILEGE_ESCALATE'
+  | 'DATA_COLLECT' | 'EXFILTRATE' | 'CLEANUP' | 'SELF_DESTRUCT';
+
+export type TaskStatus =
+  | 'QUEUED' | 'SENT' | 'RECEIVED' | 'EXECUTING' | 'COMPLETED'
+  | 'FAILED' | 'TIMEOUT' | 'CANCELLED';
+
+export type ThreatLevel =
+  | 'MINIMAL' | 'LOW' | 'MODERATE' | 'ELEVATED' | 'HIGH' | 'SEVERE' | 'CRITICAL';
+
+export type OperationalSecurityLevel =
+  | 'STANDARD' | 'ENHANCED' | 'HIGH' | 'MAXIMUM' | 'PARANOID';
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// CAMPAIGN TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface Campaign {
+  readonly campaignId: string;
+  readonly name: string;
+  readonly codename: string;
+  readonly description: string;
+  readonly objectives: readonly CampaignObjective[];
+  readonly targets: readonly Target[];
+  readonly assets: readonly OperationalAsset[];
+  readonly operations: readonly Operation[];
+  readonly timeline: CampaignTimeline;
+  readonly status: CampaignStatus;
+  readonly metrics: CampaignMetrics;
+  readonly opsec: OperationalSecurityConfig;
+  readonly authorization: CampaignAuthorization;
+  readonly metadata: CampaignMetadata;
+}
+
+export interface CampaignObjective {
+  readonly objectiveId: string;
+  readonly name: string;
+  readonly description: string;
+  readonly type: 'PRIMARY' | 'SECONDARY' | 'OPPORTUNISTIC';
+  readonly priority: number;
+  readonly status: 'PENDING' | 'IN_PROGRESS' | 'ACHIEVED' | 'FAILED' | 'ABANDONED';
+  readonly successCriteria: readonly string[];
+  readonly progress: number;
+  readonly dependencies: readonly string[];
+}
+
+export interface CampaignTimeline {
+  readonly plannedStart: number;
+  readonly plannedEnd: number;
+  readonly actualStart: number | null;
+  readonly actualEnd: number | null;
+  readonly phases: readonly CampaignPhase[];
+  readonly milestones: readonly Milestone[];
+}
+
+export interface CampaignPhase {
+  readonly phaseId: string;
+  readonly name: string;
+  readonly description: string;
+  readonly order: number;
+  readonly status: 'PENDING' | 'ACTIVE' | 'COMPLETED' | 'SKIPPED';
+  readonly startDate: number | null;
+  readonly endDate: number | null;
+  readonly operations: readonly string[];
+}
+
+export interface Milestone {
+  readonly milestoneId: string;
+  readonly name: string;
+  readonly description: string;
+  readonly targetDate: number;
+  readonly achievedDate: number | null;
+  readonly status: 'PENDING' | 'ACHIEVED' | 'MISSED' | 'CANCELLED';
+}
+
+export interface CampaignMetrics {
+  readonly totalTargets: number;
+  readonly compromisedTargets: number;
+  readonly activeImplants: number;
+  readonly totalOperations: number;
+  readonly successfulOperations: number;
+  readonly failedOperations: number;
+  readonly dataCollected: number;
+  readonly dataExfiltrated: number;
+  readonly detectionEvents: number;
+  readonly averageDetectionRisk: number;
+  readonly operationalDuration: number;
+}
+
+export interface CampaignAuthorization {
+  readonly authorizationId: string;
+  readonly authorizedBy: string;
+  readonly authorizationDate: number;
+  readonly expirationDate: number;
+  readonly scope: AuthorizationScope;
+  readonly restrictions: readonly string[];
+  readonly legalFramework: string;
+  readonly classification: 'UNCLASSIFIED' | 'CONFIDENTIAL' | 'SECRET' | 'TOP_SECRET';
+}
+
+export interface AuthorizationScope {
+  readonly targetTypes: readonly string[];
+  readonly geographicScope: readonly string[];
+  readonly techniqueRestrictions: readonly string[];
+  readonly dataCollectionScope: readonly string[];
+  readonly impactLimitations: readonly string[];
+}
+
+export interface CampaignMetadata {
+  readonly createdAt: number;
+  readonly createdBy: string;
+  readonly updatedAt: number;
+  readonly updatedBy: string;
+  readonly version: number;
+  readonly tags: readonly string[];
+  readonly relatedCampaigns: readonly string[];
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TARGET TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface Target {
+  readonly targetId: string;
+  readonly name: string;
+  readonly type: TargetType;
+  readonly status: TargetStatus;
+  readonly profile: TargetProfile;
+  readonly infrastructure: TargetInfrastructure;
+  readonly personnel: readonly TargetPersonnel[];
+  readonly vulnerabilities: readonly TargetVulnerability[];
+  readonly accessPoints: readonly AccessPoint[];
+  readonly implants: readonly string[];
+  readonly intelligence: TargetIntelligence;
+  readonly riskAssessment: TargetRiskAssessment;
+  readonly timeline: readonly TargetEvent[];
+}
+
+export type TargetType =
+  | 'ORGANIZATION' | 'NETWORK' | 'SYSTEM' | 'APPLICATION'
+  | 'DATABASE' | 'INDIVIDUAL' | 'INFRASTRUCTURE' | 'SUPPLY_CHAIN';
+
+export interface TargetProfile {
+  readonly industry: string;
+  readonly sector: string;
+  readonly size: 'SMALL' | 'MEDIUM' | 'LARGE' | 'ENTERPRISE';
+  readonly location: TargetLocation;
+  readonly businessHours: BusinessHours;
+  readonly securityPosture: SecurityPosture;
+  readonly technologyStack: readonly string[];
+  readonly vendors: readonly string[];
+  readonly partners: readonly string[];
+}
+
+export interface TargetLocation {
+  readonly country: string;
+  readonly region: string;
+  readonly city: string;
+  readonly timezone: string;
+  readonly coordinates: { latitude: number; longitude: number } | null;
+}
+
+export interface BusinessHours {
+  readonly timezone: string;
+  readonly workdays: readonly number[];
+  readonly startHour: number;
+  readonly endHour: number;
+  readonly holidays: readonly number[];
+}
+
+export interface SecurityPosture {
+  readonly maturityLevel: 'INITIAL' | 'DEVELOPING' | 'DEFINED' | 'MANAGED' | 'OPTIMIZING';
+  readonly securityTeamSize: number;
+  readonly hasSOC: boolean;
+  readonly hasSIEM: boolean;
+  readonly hasEDR: boolean;
+  readonly hasNDR: boolean;
+  readonly incidentResponseCapability: 'NONE' | 'BASIC' | 'INTERMEDIATE' | 'ADVANCED';
+  readonly knownSecurityProducts: readonly string[];
+  readonly complianceFrameworks: readonly string[];
+}
+
+export interface TargetInfrastructure {
+  readonly domains: readonly DomainInfo[];
+  readonly ipRanges: readonly IPRange[];
+  readonly systems: readonly SystemInfo[];
+  readonly applications: readonly ApplicationInfo[];
+  readonly cloudPresence: CloudPresence;
+  readonly networkTopology: NetworkTopology | null;
+}
+
+export interface DomainInfo {
+  readonly domain: string;
+  readonly registrar: string;
+  readonly registrationDate: number;
+  readonly expirationDate: number;
+  readonly nameservers: readonly string[];
+  readonly mxRecords: readonly string[];
+  readonly subdomains: readonly string[];
+}
+
+export interface IPRange {
+  readonly cidr: string;
+  readonly asn: string;
+  readonly organization: string;
+  readonly country: string;
+  readonly usage: 'CORPORATE' | 'DATACENTER' | 'CLOUD' | 'RESIDENTIAL';
+}
+
+export interface SystemInfo {
+  readonly systemId: string;
+  readonly hostname: string;
+  readonly ipAddress: string;
+  readonly operatingSystem: string;
+  readonly version: string;
+  readonly role: 'WORKSTATION' | 'SERVER' | 'DOMAIN_CONTROLLER' | 'DATABASE' | 'WEB' | 'MAIL' | 'FILE' | 'OTHER';
+  readonly services: readonly ServiceInfo[];
+  readonly lastSeen: number;
+  readonly compromised: boolean;
+}
+
+export interface ServiceInfo {
+  readonly port: number;
+  readonly protocol: 'TCP' | 'UDP';
+  readonly service: string;
+  readonly version: string | null;
+  readonly banner: string | null;
+}
+
+export interface ApplicationInfo {
+  readonly applicationId: string;
+  readonly name: string;
+  readonly type: 'WEB' | 'API' | 'MOBILE' | 'DESKTOP' | 'SERVICE';
+  readonly url: string | null;
+  readonly technology: readonly string[];
+  readonly authentication: 'NONE' | 'BASIC' | 'FORM' | 'SSO' | 'MFA';
+  readonly vulnerabilities: readonly string[];
+}
+
+export interface CloudPresence {
+  readonly providers: readonly CloudProvider[];
+  readonly services: readonly CloudService[];
+  readonly regions: readonly string[];
+}
+
+export interface CloudProvider {
+  readonly provider: 'AWS' | 'AZURE' | 'GCP' | 'ORACLE' | 'IBM' | 'ALIBABA' | 'OTHER';
+  readonly accountIds: readonly string[];
+  readonly services: readonly string[];
+}
+
+export interface CloudService {
+  readonly serviceId: string;
+  readonly provider: string;
+  readonly type: string;
+  readonly region: string;
+  readonly publiclyAccessible: boolean;
+}
+
+export interface NetworkTopology {
+  readonly segments: readonly NetworkSegment[];
+  readonly firewalls: readonly FirewallInfo[];
+  readonly vpnGateways: readonly VPNGateway[];
+  readonly loadBalancers: readonly LoadBalancer[];
+}
+
+export interface NetworkSegment {
+  readonly segmentId: string;
+  readonly name: string;
+  readonly cidr: string;
+  readonly vlan: number | null;
+  readonly purpose: string;
+  readonly securityLevel: 'DMZ' | 'PUBLIC' | 'INTERNAL' | 'RESTRICTED' | 'CRITICAL';
+}
+
+export interface FirewallInfo {
+  readonly firewallId: string;
+  readonly vendor: string;
+  readonly model: string;
+  readonly managementIp: string;
+  readonly rules: number;
+}
+
+export interface VPNGateway {
+  readonly gatewayId: string;
+  readonly type: 'SITE_TO_SITE' | 'CLIENT' | 'SSL';
+  readonly endpoint: string;
+  readonly protocol: string;
+}
+
+export interface LoadBalancer {
+  readonly loadBalancerId: string;
+  readonly type: 'L4' | 'L7';
+  readonly vip: string;
+  readonly backends: readonly string[];
+}
+
+export interface TargetPersonnel {
+  readonly personnelId: string;
+  readonly name: string;
+  readonly role: string;
+  readonly department: string;
+  readonly email: string;
+  readonly phone: string | null;
+  readonly socialMedia: readonly SocialMediaProfile[];
+  readonly accessLevel: 'STANDARD' | 'PRIVILEGED' | 'ADMIN' | 'EXECUTIVE';
+  readonly vulnerabilityScore: number;
+  readonly phishingHistory: readonly PhishingAttempt[];
+}
+
+export interface SocialMediaProfile {
+  readonly platform: string;
+  readonly username: string;
+  readonly url: string;
+  readonly followers: number;
+  readonly activityLevel: 'LOW' | 'MEDIUM' | 'HIGH';
+}
+
+export interface PhishingAttempt {
+  readonly attemptId: string;
+  readonly date: number;
+  readonly type: 'EMAIL' | 'SMS' | 'VOICE' | 'SOCIAL';
+  readonly success: boolean;
+  readonly credentialsCaptured: boolean;
+  readonly payloadExecuted: boolean;
+}
+
+export interface TargetVulnerability {
+  readonly vulnerabilityId: string;
+  readonly cve: string | null;
+  readonly type: string;
+  readonly severity: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
+  readonly affectedAsset: string;
+  readonly exploitAvailable: boolean;
+  readonly exploited: boolean;
+  readonly discoveredAt: number;
+}
+
+export interface AccessPoint {
+  readonly accessPointId: string;
+  readonly type: 'NETWORK' | 'APPLICATION' | 'PHYSICAL' | 'SOCIAL' | 'SUPPLY_CHAIN';
+  readonly description: string;
+  readonly difficulty: 'TRIVIAL' | 'EASY' | 'MODERATE' | 'HARD' | 'VERY_HARD';
+  readonly detectionRisk: number;
+  readonly status: 'IDENTIFIED' | 'VALIDATED' | 'EXPLOITED' | 'CLOSED';
+  readonly techniques: readonly string[];
+}
+
+export interface TargetIntelligence {
+  readonly sources: readonly IntelligenceSource[];
+  readonly lastUpdated: number;
+  readonly confidence: number;
+  readonly gaps: readonly string[];
+}
+
+export interface IntelligenceSource {
+  readonly sourceId: string;
+  readonly type: 'OSINT' | 'HUMINT' | 'SIGINT' | 'TECHINT' | 'INTERNAL';
+  readonly reliability: 'A' | 'B' | 'C' | 'D' | 'E' | 'F';
+  readonly lastAccessed: number;
+}
+
+export interface TargetRiskAssessment {
+  readonly overallRisk: ThreatLevel;
+  readonly detectionProbability: number;
+  readonly attributionRisk: number;
+  readonly collateralDamageRisk: number;
+  readonly politicalSensitivity: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+  readonly mitigations: readonly string[];
+}
+
+export interface TargetEvent {
+  readonly eventId: string;
+  readonly timestamp: number;
+  readonly type: string;
+  readonly description: string;
+  readonly operator: string;
+  readonly success: boolean;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// OPERATIONAL ASSET TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface OperationalAsset {
+  readonly assetId: string;
+  readonly name: string;
+  readonly type: AssetType;
+  readonly status: ImplantStatus;
+  readonly target: string;
+  readonly config: AssetConfig;
+  readonly capabilities: readonly AssetCapability[];
+  readonly communication: CommunicationConfig;
+  readonly tasks: readonly Task[];
+  readonly telemetry: AssetTelemetry;
+  readonly security: AssetSecurity;
+  readonly metadata: AssetMetadata;
+}
+
+export interface AssetConfig {
+  readonly version: string;
+  readonly architecture: 'X86' | 'X64' | 'ARM' | 'ARM64';
+  readonly platform: 'WINDOWS' | 'LINUX' | 'MACOS' | 'IOS' | 'ANDROID';
+  readonly persistence: PersistenceConfig | null;
+  readonly evasion: EvasionConfig;
+  readonly modules: readonly string[];
+}
+
+export interface PersistenceConfig {
+  readonly method: string;
+  readonly location: string;
+  readonly trigger: 'BOOT' | 'LOGON' | 'SCHEDULED' | 'EVENT' | 'MANUAL';
+  readonly surviveReboot: boolean;
+  readonly surviveUpdate: boolean;
+}
+
+export interface EvasionConfig {
+  readonly level: OperationalSecurityLevel;
+  readonly techniques: readonly string[];
+  readonly antiAnalysis: boolean;
+  readonly antiForensics: boolean;
+  readonly sleepObfuscation: boolean;
+  readonly memoryEncryption: boolean;
+}
+
+export interface AssetCapability {
+  readonly capabilityId: string;
+  readonly name: string;
+  readonly description: string;
+  readonly category: 'RECON' | 'ACCESS' | 'EXECUTION' | 'PERSISTENCE' | 'EVASION' | 'COLLECTION' | 'EXFIL' | 'IMPACT';
+  readonly enabled: boolean;
+  readonly requiresPrivilege: boolean;
+}
+
+export interface CommunicationConfig {
+  readonly primaryChannel: ChannelConfig;
+  readonly fallbackChannels: readonly ChannelConfig[];
+  readonly checkInInterval: number;
+  readonly jitter: number;
+  readonly maxRetries: number;
+  readonly killDate: number | null;
+}
+
+export interface ChannelConfig {
+  readonly channelId: string;
+  readonly type: 'HTTP' | 'HTTPS' | 'DNS' | 'ICMP' | 'SMB' | 'WEBSOCKET' | 'CUSTOM';
+  readonly server: string;
+  readonly port: number;
+  readonly encryption: 'AES_256' | 'CHACHA20' | 'CUSTOM';
+  readonly authentication: 'CERTIFICATE' | 'PSK' | 'TOKEN';
+  readonly profile: string | null;
+}
+
+export interface Task {
+  readonly taskId: string;
+  readonly type: TaskType;
+  readonly status: TaskStatus;
+  readonly command: string;
+  readonly parameters: Readonly<Record<string, unknown>>;
+  readonly createdAt: number;
+  readonly sentAt: number | null;
+  readonly completedAt: number | null;
+  readonly result: TaskResult | null;
+  readonly operator: string;
+}
+
+export interface TaskResult {
+  readonly success: boolean;
+  readonly output: string;
+  readonly error: string | null;
+  readonly artifacts: readonly string[];
+  readonly executionTime: number;
+}
+
+export interface AssetTelemetry {
+  readonly lastCheckIn: number;
+  readonly checkInCount: number;
+  readonly averageLatency: number;
+  readonly dataTransferred: number;
+  readonly tasksExecuted: number;
+  readonly tasksFailed: number;
+  readonly uptime: number;
+  readonly systemInfo: SystemTelemetry;
+}
+
+export interface SystemTelemetry {
+  readonly hostname: string;
+  readonly username: string;
+  readonly domain: string | null;
+  readonly ipAddresses: readonly string[];
+  readonly operatingSystem: string;
+  readonly architecture: string;
+  readonly privileges: 'USER' | 'ADMIN' | 'SYSTEM';
+  readonly processes: number;
+  readonly memory: { total: number; available: number };
+  readonly disk: { total: number; available: number };
+}
+
+export interface AssetSecurity {
+  readonly detectionRisk: number;
+  readonly lastSecurityEvent: number | null;
+  readonly securityEvents: readonly SecurityEvent[];
+  readonly burnProbability: number;
+  readonly recommendedActions: readonly string[];
+}
+
+export interface SecurityEvent {
+  readonly eventId: string;
+  readonly timestamp: number;
+  readonly type: 'DETECTION' | 'INVESTIGATION' | 'CONTAINMENT' | 'ERADICATION';
+  readonly severity: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+  readonly description: string;
+  readonly mitigated: boolean;
+}
+
+export interface AssetMetadata {
+  readonly deployedAt: number;
+  readonly deployedBy: string;
+  readonly campaign: string;
+  readonly target: string;
+  readonly notes: string;
+  readonly tags: readonly string[];
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// OPERATION TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface Operation {
+  readonly operationId: string;
+  readonly name: string;
+  readonly type: OperationType;
+  readonly status: OperationStatus;
+  readonly campaign: string;
+  readonly target: string;
+  readonly objectives: readonly string[];
+  readonly techniques: readonly TechniqueExecution[];
+  readonly timeline: OperationTimeline;
+  readonly resources: OperationResources;
+  readonly results: OperationResults;
+  readonly opsec: OperationOpsec;
+  readonly metadata: OperationMetadata;
+}
+
+export type OperationStatus =
+  | 'PLANNING' | 'APPROVED' | 'EXECUTING' | 'PAUSED'
+  | 'COMPLETED' | 'FAILED' | 'ABORTED';
+
+export interface TechniqueExecution {
+  readonly executionId: string;
+  readonly techniqueId: string;
+  readonly name: string;
+  readonly mitreTechnique: string;
+  readonly status: 'PENDING' | 'EXECUTING' | 'COMPLETED' | 'FAILED';
+  readonly startTime: number | null;
+  readonly endTime: number | null;
+  readonly result: TechniqueResult | null;
+  readonly artifacts: readonly string[];
+}
+
+export interface TechniqueResult {
+  readonly success: boolean;
+  readonly output: string;
+  readonly detectionRisk: number;
+  readonly forensicArtifacts: readonly string[];
+  readonly cleanupRequired: boolean;
+}
+
+export interface OperationTimeline {
+  readonly plannedStart: number;
+  readonly plannedEnd: number;
+  readonly actualStart: number | null;
+  readonly actualEnd: number | null;
+  readonly events: readonly OperationEvent[];
+}
+
+export interface OperationEvent {
+  readonly eventId: string;
+  readonly timestamp: number;
+  readonly type: string;
+  readonly description: string;
+  readonly operator: string;
+  readonly success: boolean;
+  readonly detectionRisk: number;
+}
+
+export interface OperationResources {
+  readonly operators: readonly string[];
+  readonly assets: readonly string[];
+  readonly infrastructure: readonly string[];
+  readonly tools: readonly string[];
+}
+
+export interface OperationResults {
+  readonly objectivesAchieved: readonly string[];
+  readonly objectivesFailed: readonly string[];
+  readonly dataCollected: number;
+  readonly credentialsObtained: number;
+  readonly systemsCompromised: number;
+  readonly persistenceEstablished: number;
+  readonly detectionEvents: number;
+}
+
+export interface OperationOpsec {
+  readonly level: OperationalSecurityLevel;
+  readonly detectionRisk: number;
+  readonly attributionRisk: number;
+  readonly mitigations: readonly string[];
+  readonly incidents: readonly OpsecIncident[];
+}
+
+export interface OpsecIncident {
+  readonly incidentId: string;
+  readonly timestamp: number;
+  readonly type: 'DETECTION' | 'INVESTIGATION' | 'ATTRIBUTION' | 'COMPROMISE';
+  readonly severity: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+  readonly description: string;
+  readonly response: string;
+  readonly resolved: boolean;
+}
+
+export interface OperationMetadata {
+  readonly createdAt: number;
+  readonly createdBy: string;
+  readonly approvedBy: string | null;
+  readonly approvedAt: number | null;
+  readonly classification: 'UNCLASSIFIED' | 'CONFIDENTIAL' | 'SECRET' | 'TOP_SECRET';
+  readonly tags: readonly string[];
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// OPERATIONAL SECURITY TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface OperationalSecurityConfig {
+  readonly level: OperationalSecurityLevel;
+  readonly infrastructure: InfrastructureOpsec;
+  readonly communication: CommunicationOpsec;
+  readonly personnel: PersonnelOpsec;
+  readonly monitoring: OpsecMonitoring;
+  readonly contingency: ContingencyPlan;
+}
+
+export interface InfrastructureOpsec {
+  readonly separationLevel: 'NONE' | 'LOGICAL' | 'PHYSICAL' | 'AIR_GAPPED';
+  readonly redirectors: boolean;
+  readonly domainFronting: boolean;
+  readonly cdnUsage: boolean;
+  readonly anonymousRegistration: boolean;
+  readonly cryptoCurrencyPayment: boolean;
+  readonly burnerInfrastructure: boolean;
+  readonly rotationPolicy: RotationPolicy;
+}
+
+export interface RotationPolicy {
+  readonly enabled: boolean;
+  readonly intervalDays: number;
+  readonly triggerOnDetection: boolean;
+  readonly automaticRotation: boolean;
+}
+
+export interface CommunicationOpsec {
+  readonly encryptionRequired: boolean;
+  readonly minimumEncryption: 'AES_128' | 'AES_256' | 'CHACHA20';
+  readonly perfectForwardSecrecy: boolean;
+  readonly trafficObfuscation: boolean;
+  readonly covertChannels: boolean;
+  readonly deadDrops: boolean;
+  readonly communicationWindows: readonly TimeWindow[];
+}
+
+export interface TimeWindow {
+  readonly dayOfWeek: number;
+  readonly startHour: number;
+  readonly endHour: number;
+  readonly timezone: string;
+}
+
+export interface PersonnelOpsec {
+  readonly needToKnow: boolean;
+  readonly compartmentalization: boolean;
+  readonly secureCommsRequired: boolean;
+  readonly physicalSecurityRequired: boolean;
+  readonly backgroundCheckRequired: boolean;
+  readonly accessControl: AccessControlConfig;
+}
+
+export interface AccessControlConfig {
+  readonly mfaRequired: boolean;
+  readonly sessionTimeout: number;
+  readonly maxConcurrentSessions: number;
+  readonly ipWhitelist: readonly string[];
+  readonly geoRestrictions: readonly string[];
+}
+
+export interface OpsecMonitoring {
+  readonly enabled: boolean;
+  readonly detectionSources: readonly DetectionSource[];
+  readonly alertThresholds: AlertThresholds;
+  readonly automaticResponse: boolean;
+  readonly responseActions: readonly string[];
+}
+
+export interface DetectionSource {
+  readonly sourceId: string;
+  readonly type: 'THREAT_INTEL' | 'SOCIAL_MEDIA' | 'DARK_WEB' | 'VENDOR_ADVISORY' | 'INTERNAL';
+  readonly enabled: boolean;
+  readonly checkInterval: number;
+}
+
+export interface AlertThresholds {
+  readonly detectionRisk: number;
+  readonly attributionRisk: number;
+  readonly assetCompromise: number;
+  readonly communicationFailure: number;
+}
+
+export interface ContingencyPlan {
+  readonly enabled: boolean;
+  readonly triggers: readonly ContingencyTrigger[];
+  readonly actions: readonly ContingencyAction[];
+  readonly communicationPlan: EmergencyCommunication;
+}
+
+export interface ContingencyTrigger {
+  readonly triggerId: string;
+  readonly type: 'DETECTION' | 'COMPROMISE' | 'ATTRIBUTION' | 'LEGAL' | 'MANUAL';
+  readonly condition: Readonly<Record<string, unknown>>;
+  readonly severity: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+}
+
+export interface ContingencyAction {
+  readonly actionId: string;
+  readonly name: string;
+  readonly type: 'PAUSE' | 'ABORT' | 'CLEANUP' | 'DESTROY' | 'EVACUATE';
+  readonly automatic: boolean;
+  readonly delay: number;
+  readonly targets: readonly string[];
+}
+
+export interface EmergencyCommunication {
+  readonly primaryChannel: string;
+  readonly backupChannels: readonly string[];
+  readonly codeWords: Readonly<Record<string, string>>;
+  readonly checkInSchedule: string;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// UI/UX CENTER INTEGRATION
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface OffensiveOperationsCenterUI {
+  readonly dashboardConfig: DashboardConfig;
+  readonly campaignView: CampaignViewConfig;
+  readonly targetView: TargetViewConfig;
+  readonly assetView: AssetViewConfig;
+  readonly operationView: OperationViewConfig;
+  readonly taskingView: TaskingViewConfig;
+  readonly intelligenceView: IntelligenceViewConfig;
+  readonly opsecView: OpsecViewConfig;
+  readonly reportingView: ReportingViewConfig;
+  readonly notifications: NotificationConfig;
+  readonly accessControl: UIAccessControl;
+}
+
+export interface DashboardConfig {
+  readonly enabled: boolean;
+  readonly refreshInterval: number;
+  readonly widgets: readonly DashboardWidget[];
+  readonly layouts: readonly DashboardLayout[];
+  readonly defaultLayout: string;
+}
+
+export interface DashboardWidget {
+  readonly widgetId: string;
+  readonly type: WidgetType;
+  readonly title: string;
+  readonly position: WidgetPosition;
+  readonly size: WidgetSize;
+  readonly dataSource: string;
+  readonly refreshInterval: number;
+  readonly config: Readonly<Record<string, unknown>>;
+}
+
+export type WidgetType =
+  | 'CAMPAIGN_STATUS' | 'TARGET_MAP' | 'ASSET_STATUS' | 'OPERATION_TIMELINE'
+  | 'TASK_QUEUE' | 'DETECTION_RISK' | 'DATA_FLOW' | 'NETWORK_GRAPH'
+  | 'IMPLANT_CHECKINS' | 'CREDENTIAL_VAULT' | 'ALERT_FEED' | 'METRICS_CHART'
+  | 'KILL_CHAIN_PROGRESS' | 'MITRE_HEATMAP' | 'OPSEC_SCORE' | 'ACTIVITY_LOG';
+
+export interface WidgetPosition {
+  readonly x: number;
+  readonly y: number;
+}
+
+export interface WidgetSize {
+  readonly width: number;
+  readonly height: number;
+}
+
+export interface DashboardLayout {
+  readonly layoutId: string;
+  readonly name: string;
+  readonly description: string;
+  readonly widgets: readonly string[];
+  readonly gridColumns: number;
+  readonly gridRows: number;
+}
+
+export interface CampaignViewConfig {
+  readonly enabled: boolean;
+  readonly features: CampaignFeatures;
+  readonly visualizations: readonly CampaignVisualization[];
+}
+
+export interface CampaignFeatures {
+  readonly createCampaign: boolean;
+  readonly editCampaign: boolean;
+  readonly deleteCampaign: boolean;
+  readonly archiveCampaign: boolean;
+  readonly exportCampaign: boolean;
+  readonly importCampaign: boolean;
+  readonly cloneCampaign: boolean;
+}
+
+export type CampaignVisualization =
+  | 'TIMELINE' | 'GANTT_CHART' | 'OBJECTIVE_TREE' | 'TARGET_GRAPH'
+  | 'PROGRESS_DASHBOARD' | 'RISK_MATRIX' | 'RESOURCE_ALLOCATION';
+
+export interface TargetViewConfig {
+  readonly enabled: boolean;
+  readonly features: TargetFeatures;
+  readonly visualizations: readonly TargetVisualization[];
+}
+
+export interface TargetFeatures {
+  readonly addTarget: boolean;
+  readonly editTarget: boolean;
+  readonly deleteTarget: boolean;
+  readonly profileTarget: boolean;
+  readonly scanTarget: boolean;
+  readonly importTargets: boolean;
+  readonly exportTargets: boolean;
+}
+
+export type TargetVisualization =
+  | 'NETWORK_MAP' | 'INFRASTRUCTURE_DIAGRAM' | 'ATTACK_SURFACE'
+  | 'VULNERABILITY_CHART' | 'PERSONNEL_ORG_CHART' | 'ACCESS_PATH_GRAPH'
+  | 'TIMELINE' | 'RISK_ASSESSMENT';
+
+export interface AssetViewConfig {
+  readonly enabled: boolean;
+  readonly features: AssetFeatures;
+  readonly visualizations: readonly AssetVisualization[];
+}
+
+export interface AssetFeatures {
+  readonly deployAsset: boolean;
+  readonly configureAsset: boolean;
+  readonly taskAsset: boolean;
+  readonly removeAsset: boolean;
+  readonly migrateAsset: boolean;
+  readonly updateAsset: boolean;
+  readonly killAsset: boolean;
+}
+
+export type AssetVisualization =
+  | 'ASSET_MAP' | 'CHECKIN_TIMELINE' | 'TASK_QUEUE' | 'CAPABILITY_MATRIX'
+  | 'COMMUNICATION_GRAPH' | 'HEALTH_DASHBOARD' | 'DETECTION_RISK_GAUGE';
+
+export interface OperationViewConfig {
+  readonly enabled: boolean;
+  readonly features: OperationFeatures;
+  readonly visualizations: readonly OperationVisualization[];
+}
+
+export interface OperationFeatures {
+  readonly createOperation: boolean;
+  readonly editOperation: boolean;
+  readonly executeOperation: boolean;
+  readonly pauseOperation: boolean;
+  readonly abortOperation: boolean;
+  readonly approveOperation: boolean;
+  readonly reviewOperation: boolean;
+}
+
+export type OperationVisualization =
+  | 'KILL_CHAIN' | 'MITRE_ATTACK_NAVIGATOR' | 'TECHNIQUE_TIMELINE'
+  | 'EXECUTION_GRAPH' | 'RESULT_DASHBOARD' | 'ARTIFACT_TRACKER';
+
+export interface TaskingViewConfig {
+  readonly enabled: boolean;
+  readonly features: TaskingFeatures;
+  readonly templates: readonly TaskTemplate[];
+}
+
+export interface TaskingFeatures {
+  readonly createTask: boolean;
+  readonly editTask: boolean;
+  readonly cancelTask: boolean;
+  readonly prioritizeTask: boolean;
+  readonly batchTasking: boolean;
+  readonly scheduledTasking: boolean;
+  readonly conditionalTasking: boolean;
+}
+
+export interface TaskTemplate {
+  readonly templateId: string;
+  readonly name: string;
+  readonly description: string;
+  readonly taskType: TaskType;
+  readonly parameters: readonly TaskParameter[];
+  readonly defaultValues: Readonly<Record<string, unknown>>;
+}
+
+export interface TaskParameter {
+  readonly name: string;
+  readonly type: 'STRING' | 'NUMBER' | 'BOOLEAN' | 'FILE' | 'SELECT' | 'MULTISELECT';
+  readonly required: boolean;
+  readonly defaultValue: unknown;
+  readonly options: readonly string[] | null;
+  readonly validation: string | null;
+}
+
+export interface IntelligenceViewConfig {
+  readonly enabled: boolean;
+  readonly features: IntelligenceFeatures;
+  readonly sources: readonly IntelligenceSourceConfig[];
+}
+
+export interface IntelligenceFeatures {
+  readonly collectIntelligence: boolean;
+  readonly analyzeIntelligence: boolean;
+  readonly correlateIntelligence: boolean;
+  readonly shareIntelligence: boolean;
+  readonly exportIntelligence: boolean;
+}
+
+export interface IntelligenceSourceConfig {
+  readonly sourceId: string;
+  readonly name: string;
+  readonly type: string;
+  readonly enabled: boolean;
+  readonly autoCollection: boolean;
+  readonly collectionInterval: number;
+}
+
+export interface OpsecViewConfig {
+  readonly enabled: boolean;
+  readonly features: OpsecFeatures;
+  readonly monitoring: OpsecMonitoringConfig;
+}
+
+export interface OpsecFeatures {
+  readonly viewRiskAssessment: boolean;
+  readonly configureOpsec: boolean;
+  readonly triggerContingency: boolean;
+  readonly reviewIncidents: boolean;
+  readonly manageInfrastructure: boolean;
+}
+
+export interface OpsecMonitoringConfig {
+  readonly realTimeAlerts: boolean;
+  readonly detectionFeedEnabled: boolean;
+  readonly attributionMonitoring: boolean;
+  readonly infrastructureHealth: boolean;
+}
+
+export interface ReportingViewConfig {
+  readonly enabled: boolean;
+  readonly features: ReportingFeatures;
+  readonly templates: readonly ReportTemplate[];
+  readonly schedules: readonly ReportSchedule[];
+}
+
+export interface ReportingFeatures {
+  readonly generateReport: boolean;
+  readonly scheduleReport: boolean;
+  readonly exportReport: boolean;
+  readonly shareReport: boolean;
+  readonly customizeTemplate: boolean;
+}
+
+export interface ReportTemplate {
+  readonly templateId: string;
+  readonly name: string;
+  readonly description: string;
+  readonly type: 'CAMPAIGN' | 'OPERATION' | 'TARGET' | 'ASSET' | 'OPSEC' | 'EXECUTIVE';
+  readonly sections: readonly string[];
+  readonly format: 'PDF' | 'DOCX' | 'HTML' | 'JSON';
+}
+
+export interface ReportSchedule {
+  readonly scheduleId: string;
+  readonly templateId: string;
+  readonly frequency: 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'ON_DEMAND';
+  readonly recipients: readonly string[];
+  readonly enabled: boolean;
+}
+
+export interface NotificationConfig {
+  readonly enabled: boolean;
+  readonly channels: readonly NotificationChannel[];
+  readonly rules: readonly NotificationRule[];
+}
+
+export interface NotificationChannel {
+  readonly channelId: string;
+  readonly type: 'UI' | 'EMAIL' | 'SMS' | 'WEBHOOK' | 'SLACK' | 'TEAMS';
+  readonly config: Readonly<Record<string, unknown>>;
+  readonly enabled: boolean;
+}
+
+export interface NotificationRule {
+  readonly ruleId: string;
+  readonly name: string;
+  readonly event: string;
+  readonly condition: Readonly<Record<string, unknown>>;
+  readonly channels: readonly string[];
+  readonly priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+  readonly enabled: boolean;
+}
+
+export interface UIAccessControl {
+  readonly roles: readonly UIRole[];
+  readonly permissions: readonly UIPermission[];
+  readonly auditLogging: boolean;
+  readonly sessionManagement: SessionManagement;
+}
+
+export interface UIRole {
+  readonly roleId: string;
+  readonly name: string;
+  readonly description: string;
+  readonly permissions: readonly string[];
+  readonly inheritsFrom: readonly string[];
+}
+
+export interface UIPermission {
+  readonly permissionId: string;
+  readonly name: string;
+  readonly resource: string;
+  readonly actions: readonly string[];
+}
+
+export interface SessionManagement {
+  readonly maxSessionDuration: number;
+  readonly idleTimeout: number;
+  readonly maxConcurrentSessions: number;
+  readonly requireReauth: readonly string[];
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ERROR TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export enum OffensiveOpsErrorCode {
+  CAMPAIGN_NOT_FOUND = 'OPS_E001',
+  TARGET_NOT_FOUND = 'OPS_E002',
+  ASSET_NOT_FOUND = 'OPS_E003',
+  OPERATION_NOT_FOUND = 'OPS_E004',
+  TASK_FAILED = 'OPS_E005',
+  AUTHORIZATION_DENIED = 'OPS_E006',
+  OPSEC_VIOLATION = 'OPS_E007',
+  COMMUNICATION_FAILED = 'OPS_E008',
+  DETECTION_ALERT = 'OPS_E009',
+}
+
+export class OffensiveOpsError extends Error {
+  constructor(
+    public readonly code: OffensiveOpsErrorCode,
+    message: string,
+    public readonly details: Readonly<Record<string, unknown>> = {}
+  ) {
+    super(`[${code}] ${message}`);
+    this.name = 'OffensiveOpsError';
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// DETERMINISTIC UTILITIES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+function deterministicHash(input: string): number {
+  let hash = 0;
+  for (let i = 0; i < input.length; i++) {
+    const char = input.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash;
+  }
+  return Math.abs(hash);
+}
+
+function generateDeterministicId(prefix: string, seed: number): string {
+  const hash = deterministicHash(`${prefix}-${seed}`);
+  const jitter = Math.abs(Math.sin(seed * 12.9898) * 43758.5453) % 1;
+  return `${prefix}-${hash.toString(16)}-${Math.floor(jitter * 10000).toString(16)}`;
+}
+
+function generateDeterministicTimestamp(seed: number): number {
+  const baseTime = 1704067200000;
+  const offset = Math.abs(deterministicHash(`timestamp-${seed}`)) % 86400000;
+  return baseTime + offset;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// CAMPAIGN MANAGER
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export class CampaignManager {
+  private operationCounter: number = 0;
+  private readonly campaigns: Map<string, Campaign> = new Map();
+
+  createCampaign(
+    name: string,
+    codename: string,
+    description: string,
+    objectives: readonly CampaignObjective[],
+    authorization: CampaignAuthorization
+  ): Campaign {
+    this.operationCounter++;
+
+    const campaignId = generateDeterministicId('campaign', this.operationCounter);
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+
+    const campaign: Campaign = {
+      campaignId,
+      name,
+      codename,
+      description,
+      objectives,
+      targets: [],
+      assets: [],
+      operations: [],
+      timeline: {
+        plannedStart: timestamp,
+        plannedEnd: timestamp + 30 * 24 * 60 * 60 * 1000,
+        actualStart: null,
+        actualEnd: null,
+        phases: [],
+        milestones: [],
+      },
+      status: 'PLANNING',
+      metrics: {
+        totalTargets: 0,
+        compromisedTargets: 0,
+        activeImplants: 0,
+        totalOperations: 0,
+        successfulOperations: 0,
+        failedOperations: 0,
+        dataCollected: 0,
+        dataExfiltrated: 0,
+        detectionEvents: 0,
+        averageDetectionRisk: 0,
+        operationalDuration: 0,
+      },
+      opsec: createDefaultOpsecConfig(),
+      authorization,
+      metadata: {
+        createdAt: timestamp,
+        createdBy: 'operator',
+        updatedAt: timestamp,
+        updatedBy: 'operator',
+        version: 1,
+        tags: [],
+        relatedCampaigns: [],
+      },
+    };
+
+    this.campaigns.set(campaignId, campaign);
+    return campaign;
+  }
+
+  getCampaigns(): ReadonlyMap<string, Campaign> {
+    return this.campaigns;
+  }
+
+  getCampaign(campaignId: string): Campaign {
+    const campaign = this.campaigns.get(campaignId);
+    if (!campaign) {
+      throw new OffensiveOpsError(OffensiveOpsErrorCode.CAMPAIGN_NOT_FOUND, 'Campaign not found');
+    }
+    return campaign;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TARGET MANAGER
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export class TargetManager {
+  private operationCounter: number = 0;
+  private readonly targets: Map<string, Target> = new Map();
+
+  addTarget(
+    name: string,
+    type: TargetType,
+    profile: TargetProfile
+  ): Target {
+    this.operationCounter++;
+
+    const targetId = generateDeterministicId('target', this.operationCounter);
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+
+    const target: Target = {
+      targetId,
+      name,
+      type,
+      status: 'IDENTIFIED',
+      profile,
+      infrastructure: {
+        domains: [],
+        ipRanges: [],
+        systems: [],
+        applications: [],
+        cloudPresence: { providers: [], services: [], regions: [] },
+        networkTopology: null,
+      },
+      personnel: [],
+      vulnerabilities: [],
+      accessPoints: [],
+      implants: [],
+      intelligence: {
+        sources: [],
+        lastUpdated: timestamp,
+        confidence: 0.5,
+        gaps: [],
+      },
+      riskAssessment: {
+        overallRisk: 'MODERATE',
+        detectionProbability: 0.3,
+        attributionRisk: 0.2,
+        collateralDamageRisk: 0.1,
+        politicalSensitivity: 'MEDIUM',
+        mitigations: [],
+      },
+      timeline: [],
+    };
+
+    this.targets.set(targetId, target);
+    return target;
+  }
+
+  getTargets(): ReadonlyMap<string, Target> {
+    return this.targets;
+  }
+
+  getTarget(targetId: string): Target {
+    const target = this.targets.get(targetId);
+    if (!target) {
+      throw new OffensiveOpsError(OffensiveOpsErrorCode.TARGET_NOT_FOUND, 'Target not found');
+    }
+    return target;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ASSET MANAGER
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export class AssetManager {
+  private operationCounter: number = 0;
+  private readonly assets: Map<string, OperationalAsset> = new Map();
+
+  deployAsset(
+    name: string,
+    type: AssetType,
+    target: string,
+    config: AssetConfig,
+    communication: CommunicationConfig
+  ): OperationalAsset {
+    this.operationCounter++;
+
+    const assetId = generateDeterministicId('asset', this.operationCounter);
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+
+    const asset: OperationalAsset = {
+      assetId,
+      name,
+      type,
+      status: 'DEPLOYED',
+      target,
+      config,
+      capabilities: [],
+      communication,
+      tasks: [],
+      telemetry: {
+        lastCheckIn: timestamp,
+        checkInCount: 1,
+        averageLatency: 100,
+        dataTransferred: 0,
+        tasksExecuted: 0,
+        tasksFailed: 0,
+        uptime: 0,
+        systemInfo: {
+          hostname: 'WORKSTATION-001',
+          username: 'user',
+          domain: 'CORP',
+          ipAddresses: ['192.168.1.100'],
+          operatingSystem: 'Windows 10 Enterprise',
+          architecture: 'x64',
+          privileges: 'USER',
+          processes: 150,
+          memory: { total: 17179869184, available: 8589934592 },
+          disk: { total: 512110190592, available: 256055095296 },
+        },
+      },
+      security: {
+        detectionRisk: 0.1,
+        lastSecurityEvent: null,
+        securityEvents: [],
+        burnProbability: 0.05,
+        recommendedActions: [],
+      },
+      metadata: {
+        deployedAt: timestamp,
+        deployedBy: 'operator',
+        campaign: '',
+        target,
+        notes: '',
+        tags: [],
+      },
+    };
+
+    this.assets.set(assetId, asset);
+    return asset;
+  }
+
+  taskAsset(assetId: string, taskType: TaskType, command: string, parameters: Readonly<Record<string, unknown>>): Task {
+    const asset = this.assets.get(assetId);
+    if (!asset) {
+      throw new OffensiveOpsError(OffensiveOpsErrorCode.ASSET_NOT_FOUND, 'Asset not found');
+    }
+
+    this.operationCounter++;
+    const taskId = generateDeterministicId('task', this.operationCounter);
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+
+    const task: Task = {
+      taskId,
+      type: taskType,
+      status: 'QUEUED',
+      command,
+      parameters,
+      createdAt: timestamp,
+      sentAt: null,
+      completedAt: null,
+      result: null,
+      operator: 'operator',
+    };
+
+    return task;
+  }
+
+  getAssets(): ReadonlyMap<string, OperationalAsset> {
+    return this.assets;
+  }
+
+  getAsset(assetId: string): OperationalAsset {
+    const asset = this.assets.get(assetId);
+    if (!asset) {
+      throw new OffensiveOpsError(OffensiveOpsErrorCode.ASSET_NOT_FOUND, 'Asset not found');
+    }
+    return asset;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// OPERATION MANAGER
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export class OperationManager {
+  private operationCounter: number = 0;
+  private readonly operations: Map<string, Operation> = new Map();
+
+  createOperation(
+    name: string,
+    type: OperationType,
+    campaign: string,
+    target: string,
+    objectives: readonly string[]
+  ): Operation {
+    this.operationCounter++;
+
+    const operationId = generateDeterministicId('operation', this.operationCounter);
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+
+    const operation: Operation = {
+      operationId,
+      name,
+      type,
+      status: 'PLANNING',
+      campaign,
+      target,
+      objectives,
+      techniques: [],
+      timeline: {
+        plannedStart: timestamp,
+        plannedEnd: timestamp + 24 * 60 * 60 * 1000,
+        actualStart: null,
+        actualEnd: null,
+        events: [],
+      },
+      resources: {
+        operators: [],
+        assets: [],
+        infrastructure: [],
+        tools: [],
+      },
+      results: {
+        objectivesAchieved: [],
+        objectivesFailed: [],
+        dataCollected: 0,
+        credentialsObtained: 0,
+        systemsCompromised: 0,
+        persistenceEstablished: 0,
+        detectionEvents: 0,
+      },
+      opsec: {
+        level: 'HIGH',
+        detectionRisk: 0.1,
+        attributionRisk: 0.1,
+        mitigations: [],
+        incidents: [],
+      },
+      metadata: {
+        createdAt: timestamp,
+        createdBy: 'operator',
+        approvedBy: null,
+        approvedAt: null,
+        classification: 'SECRET',
+        tags: [],
+      },
+    };
+
+    this.operations.set(operationId, operation);
+    return operation;
+  }
+
+  getOperations(): ReadonlyMap<string, Operation> {
+    return this.operations;
+  }
+
+  getOperation(operationId: string): Operation {
+    const operation = this.operations.get(operationId);
+    if (!operation) {
+      throw new OffensiveOpsError(OffensiveOpsErrorCode.OPERATION_NOT_FOUND, 'Operation not found');
+    }
+    return operation;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// OFFENSIVE OPERATIONS CENTER
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export class OffensiveOperationsCenter {
+  private readonly campaignManager: CampaignManager;
+  private readonly targetManager: TargetManager;
+  private readonly assetManager: AssetManager;
+  private readonly operationManager: OperationManager;
+  private readonly uiConfig: OffensiveOperationsCenterUI;
+
+  constructor(uiConfig: OffensiveOperationsCenterUI) {
+    this.campaignManager = new CampaignManager();
+    this.targetManager = new TargetManager();
+    this.assetManager = new AssetManager();
+    this.operationManager = new OperationManager();
+    this.uiConfig = uiConfig;
+  }
+
+  getCampaignManager(): CampaignManager {
+    return this.campaignManager;
+  }
+
+  getTargetManager(): TargetManager {
+    return this.targetManager;
+  }
+
+  getAssetManager(): AssetManager {
+    return this.assetManager;
+  }
+
+  getOperationManager(): OperationManager {
+    return this.operationManager;
+  }
+
+  getUIConfig(): OffensiveOperationsCenterUI {
+    return this.uiConfig;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// DEFAULT CONFIGURATIONS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export function createDefaultOpsecConfig(): OperationalSecurityConfig {
+  return {
+    level: 'HIGH',
+    infrastructure: {
+      separationLevel: 'LOGICAL',
+      redirectors: true,
+      domainFronting: true,
+      cdnUsage: true,
+      anonymousRegistration: true,
+      cryptoCurrencyPayment: true,
+      burnerInfrastructure: true,
+      rotationPolicy: {
+        enabled: true,
+        intervalDays: 7,
+        triggerOnDetection: true,
+        automaticRotation: false,
+      },
+    },
+    communication: {
+      encryptionRequired: true,
+      minimumEncryption: 'AES_256',
+      perfectForwardSecrecy: true,
+      trafficObfuscation: true,
+      covertChannels: true,
+      deadDrops: false,
+      communicationWindows: [],
+    },
+    personnel: {
+      needToKnow: true,
+      compartmentalization: true,
+      secureCommsRequired: true,
+      physicalSecurityRequired: false,
+      backgroundCheckRequired: true,
+      accessControl: {
+        mfaRequired: true,
+        sessionTimeout: 3600000,
+        maxConcurrentSessions: 1,
+        ipWhitelist: [],
+        geoRestrictions: [],
+      },
+    },
+    monitoring: {
+      enabled: true,
+      detectionSources: [],
+      alertThresholds: {
+        detectionRisk: 0.5,
+        attributionRisk: 0.3,
+        assetCompromise: 0.7,
+        communicationFailure: 0.8,
+      },
+      automaticResponse: true,
+      responseActions: ['PAUSE', 'ALERT', 'ROTATE'],
+    },
+    contingency: {
+      enabled: true,
+      triggers: [],
+      actions: [],
+      communicationPlan: {
+        primaryChannel: 'secure-channel',
+        backupChannels: [],
+        codeWords: {},
+        checkInSchedule: '0 */4 * * *',
+      },
+    },
+  };
+}
+
+export function createDefaultOffensiveOperationsCenterUI(): OffensiveOperationsCenterUI {
+  return {
+    dashboardConfig: {
+      enabled: true,
+      refreshInterval: 5000,
+      widgets: [
+        { widgetId: 'w1', type: 'CAMPAIGN_STATUS', title: 'Campaign Status', position: { x: 0, y: 0 }, size: { width: 4, height: 2 }, dataSource: 'campaigns', refreshInterval: 10000, config: {} },
+        { widgetId: 'w2', type: 'ASSET_STATUS', title: 'Active Implants', position: { x: 4, y: 0 }, size: { width: 4, height: 2 }, dataSource: 'assets', refreshInterval: 5000, config: {} },
+        { widgetId: 'w3', type: 'DETECTION_RISK', title: 'Detection Risk', position: { x: 8, y: 0 }, size: { width: 4, height: 2 }, dataSource: 'opsec', refreshInterval: 5000, config: {} },
+        { widgetId: 'w4', type: 'IMPLANT_CHECKINS', title: 'Recent Check-ins', position: { x: 0, y: 2 }, size: { width: 6, height: 3 }, dataSource: 'assets', refreshInterval: 5000, config: {} },
+        { widgetId: 'w5', type: 'TASK_QUEUE', title: 'Task Queue', position: { x: 6, y: 2 }, size: { width: 6, height: 3 }, dataSource: 'tasks', refreshInterval: 5000, config: {} },
+        { widgetId: 'w6', type: 'KILL_CHAIN_PROGRESS', title: 'Kill Chain Progress', position: { x: 0, y: 5 }, size: { width: 12, height: 2 }, dataSource: 'operations', refreshInterval: 30000, config: {} },
+      ],
+      layouts: [
+        { layoutId: 'default', name: 'Default', description: 'Default dashboard layout', widgets: ['w1', 'w2', 'w3', 'w4', 'w5', 'w6'], gridColumns: 12, gridRows: 7 },
+      ],
+      defaultLayout: 'default',
+    },
+    campaignView: {
+      enabled: true,
+      features: {
+        createCampaign: true,
+        editCampaign: true,
+        deleteCampaign: true,
+        archiveCampaign: true,
+        exportCampaign: true,
+        importCampaign: true,
+        cloneCampaign: true,
+      },
+      visualizations: ['TIMELINE', 'GANTT_CHART', 'OBJECTIVE_TREE', 'TARGET_GRAPH', 'PROGRESS_DASHBOARD', 'RISK_MATRIX'],
+    },
+    targetView: {
+      enabled: true,
+      features: {
+        addTarget: true,
+        editTarget: true,
+        deleteTarget: true,
+        profileTarget: true,
+        scanTarget: true,
+        importTargets: true,
+        exportTargets: true,
+      },
+      visualizations: ['NETWORK_MAP', 'INFRASTRUCTURE_DIAGRAM', 'ATTACK_SURFACE', 'VULNERABILITY_CHART', 'PERSONNEL_ORG_CHART', 'ACCESS_PATH_GRAPH'],
+    },
+    assetView: {
+      enabled: true,
+      features: {
+        deployAsset: true,
+        configureAsset: true,
+        taskAsset: true,
+        removeAsset: true,
+        migrateAsset: true,
+        updateAsset: true,
+        killAsset: true,
+      },
+      visualizations: ['ASSET_MAP', 'CHECKIN_TIMELINE', 'TASK_QUEUE', 'CAPABILITY_MATRIX', 'COMMUNICATION_GRAPH', 'HEALTH_DASHBOARD', 'DETECTION_RISK_GAUGE'],
+    },
+    operationView: {
+      enabled: true,
+      features: {
+        createOperation: true,
+        editOperation: true,
+        executeOperation: true,
+        pauseOperation: true,
+        abortOperation: true,
+        approveOperation: true,
+        reviewOperation: true,
+      },
+      visualizations: ['KILL_CHAIN', 'MITRE_ATTACK_NAVIGATOR', 'TECHNIQUE_TIMELINE', 'EXECUTION_GRAPH', 'RESULT_DASHBOARD', 'ARTIFACT_TRACKER'],
+    },
+    taskingView: {
+      enabled: true,
+      features: {
+        createTask: true,
+        editTask: true,
+        cancelTask: true,
+        prioritizeTask: true,
+        batchTasking: true,
+        scheduledTasking: true,
+        conditionalTasking: true,
+      },
+      templates: [
+        { templateId: 't1', name: 'Shell Command', description: 'Execute shell command', taskType: 'SHELL_COMMAND', parameters: [{ name: 'command', type: 'STRING', required: true, defaultValue: '', options: null, validation: null }], defaultValues: {} },
+        { templateId: 't2', name: 'File Download', description: 'Download file from target', taskType: 'FILE_DOWNLOAD', parameters: [{ name: 'path', type: 'STRING', required: true, defaultValue: '', options: null, validation: null }], defaultValues: {} },
+        { templateId: 't3', name: 'Screenshot', description: 'Capture screenshot', taskType: 'SCREENSHOT', parameters: [], defaultValues: {} },
+        { templateId: 't4', name: 'Credential Dump', description: 'Dump credentials', taskType: 'CREDENTIAL_DUMP', parameters: [{ name: 'method', type: 'SELECT', required: true, defaultValue: 'LSASS', options: ['LSASS', 'SAM', 'NTDS', 'BROWSER'], validation: null }], defaultValues: {} },
+      ],
+    },
+    intelligenceView: {
+      enabled: true,
+      features: {
+        collectIntelligence: true,
+        analyzeIntelligence: true,
+        correlateIntelligence: true,
+        shareIntelligence: true,
+        exportIntelligence: true,
+      },
+      sources: [],
+    },
+    opsecView: {
+      enabled: true,
+      features: {
+        viewRiskAssessment: true,
+        configureOpsec: true,
+        triggerContingency: true,
+        reviewIncidents: true,
+        manageInfrastructure: true,
+      },
+      monitoring: {
+        realTimeAlerts: true,
+        detectionFeedEnabled: true,
+        attributionMonitoring: true,
+        infrastructureHealth: true,
+      },
+    },
+    reportingView: {
+      enabled: true,
+      features: {
+        generateReport: true,
+        scheduleReport: true,
+        exportReport: true,
+        shareReport: true,
+        customizeTemplate: true,
+      },
+      templates: [
+        { templateId: 'r1', name: 'Campaign Summary', description: 'Campaign summary report', type: 'CAMPAIGN', sections: ['overview', 'objectives', 'targets', 'operations', 'metrics'], format: 'PDF' },
+        { templateId: 'r2', name: 'Operation Report', description: 'Detailed operation report', type: 'OPERATION', sections: ['overview', 'techniques', 'results', 'artifacts', 'opsec'], format: 'PDF' },
+        { templateId: 'r3', name: 'Executive Brief', description: 'Executive summary', type: 'EXECUTIVE', sections: ['summary', 'key_findings', 'recommendations'], format: 'PDF' },
+      ],
+      schedules: [],
+    },
+    notifications: {
+      enabled: true,
+      channels: [
+        { channelId: 'ui', type: 'UI', config: {}, enabled: true },
+      ],
+      rules: [
+        { ruleId: 'n1', name: 'Asset Check-in', event: 'ASSET_CHECKIN', condition: {}, channels: ['ui'], priority: 'LOW', enabled: true },
+        { ruleId: 'n2', name: 'Task Completed', event: 'TASK_COMPLETED', condition: {}, channels: ['ui'], priority: 'MEDIUM', enabled: true },
+        { ruleId: 'n3', name: 'Detection Alert', event: 'DETECTION_ALERT', condition: {}, channels: ['ui'], priority: 'CRITICAL', enabled: true },
+        { ruleId: 'n4', name: 'Asset Lost', event: 'ASSET_LOST', condition: {}, channels: ['ui'], priority: 'HIGH', enabled: true },
+      ],
+    },
+    accessControl: {
+      roles: [
+        { roleId: 'admin', name: 'Administrator', description: 'Full access', permissions: ['*'], inheritsFrom: [] },
+        { roleId: 'operator', name: 'Operator', description: 'Operational access', permissions: ['campaigns:read', 'targets:*', 'assets:*', 'operations:*', 'tasks:*'], inheritsFrom: [] },
+        { roleId: 'analyst', name: 'Analyst', description: 'Read-only access', permissions: ['campaigns:read', 'targets:read', 'assets:read', 'operations:read', 'intelligence:*'], inheritsFrom: [] },
+      ],
+      permissions: [
+        { permissionId: 'campaigns:read', name: 'Read Campaigns', resource: 'campaigns', actions: ['read'] },
+        { permissionId: 'campaigns:write', name: 'Write Campaigns', resource: 'campaigns', actions: ['create', 'update', 'delete'] },
+        { permissionId: 'targets:*', name: 'Full Target Access', resource: 'targets', actions: ['*'] },
+        { permissionId: 'assets:*', name: 'Full Asset Access', resource: 'assets', actions: ['*'] },
+        { permissionId: 'operations:*', name: 'Full Operation Access', resource: 'operations', actions: ['*'] },
+        { permissionId: 'tasks:*', name: 'Full Task Access', resource: 'tasks', actions: ['*'] },
+        { permissionId: 'intelligence:*', name: 'Full Intelligence Access', resource: 'intelligence', actions: ['*'] },
+      ],
+      auditLogging: true,
+      sessionManagement: {
+        maxSessionDuration: 28800000,
+        idleTimeout: 1800000,
+        maxConcurrentSessions: 1,
+        requireReauth: ['contingency:trigger', 'assets:kill'],
+      },
+    },
+  };
+}

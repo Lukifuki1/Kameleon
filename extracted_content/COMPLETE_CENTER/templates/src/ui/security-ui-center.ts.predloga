@@ -1,0 +1,1426 @@
+/**
+ * @file Security UI/UX Center - Unified Security Operations Dashboard
+ * @author {{AVTOR}}
+ * @version {{VERZIJA}}
+ * @date {{DATUM}}
+ * @project {{IME_PROJEKTA}}
+ * @domain VARNOSTNI_SISTEMI
+ * 
+ * @requirement REQ-SEC-UIC-001
+ * @design DSN-SEC-UIC-001
+ * @test TST-SEC-UIC-001
+ * 
+ * @description
+ * Enterprise-grade Unified Security Operations UI/UX Center implementing
+ * centralized dashboard for all security operations including Red Team,
+ * Blue Team, APT Detection, Threat Intelligence, Incident Response,
+ * Vulnerability Management, SIEM/SOC, Cryptography, Network Security,
+ * Malware Analysis, Stealth/Anti-Forensics, and Offensive Operations
+ * with real-time monitoring, visualizations, and control capabilities.
+ * 
+ * @classification TOP SECRET - Security Operations Center
+ * @authorization Required: Level 5 Security Clearance
+ */
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// UI/UX CENTER TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export type SecurityDomain =
+  | 'RED_TEAM' | 'BLUE_TEAM' | 'APT_DETECTION' | 'THREAT_INTELLIGENCE'
+  | 'INCIDENT_RESPONSE' | 'VULNERABILITY_MANAGEMENT' | 'SIEM_SOC'
+  | 'CRYPTOGRAPHY' | 'NETWORK_SECURITY' | 'MALWARE_ANALYSIS'
+  | 'STEALTH_ANTIFORENSICS' | 'OFFENSIVE_OPERATIONS' | 'CRYPTO_GAMBLING_DARKWEB';
+
+export type WidgetCategory =
+  | 'OVERVIEW' | 'MONITORING' | 'ALERTS' | 'METRICS' | 'TIMELINE'
+  | 'GRAPH' | 'MAP' | 'TABLE' | 'CHART' | 'STATUS' | 'CONTROL';
+
+export type ChartType =
+  | 'LINE' | 'BAR' | 'PIE' | 'DONUT' | 'AREA' | 'SCATTER' | 'HEATMAP'
+  | 'TREEMAP' | 'SANKEY' | 'RADAR' | 'GAUGE' | 'FUNNEL' | 'CANDLESTICK';
+
+export type GraphType =
+  | 'NETWORK' | 'TREE' | 'FORCE_DIRECTED' | 'HIERARCHICAL' | 'CIRCULAR'
+  | 'RADIAL' | 'DAGRE' | 'COLA' | 'COSE' | 'BREADTHFIRST';
+
+export type MapType =
+  | 'WORLD' | 'REGION' | 'COUNTRY' | 'NETWORK_TOPOLOGY' | 'ATTACK_SURFACE'
+  | 'INFRASTRUCTURE' | 'THREAT_LANDSCAPE' | 'ASSET_MAP';
+
+export type AlertSeverity = 'INFO' | 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+
+export type ThemeMode = 'LIGHT' | 'DARK' | 'SYSTEM' | 'HIGH_CONTRAST';
+
+export type LayoutMode = 'GRID' | 'FREEFORM' | 'TABBED' | 'SPLIT' | 'FULLSCREEN';
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// DASHBOARD CONFIGURATION
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface SecurityUICenterConfig {
+  readonly centerId: string;
+  readonly name: string;
+  readonly description: string;
+  readonly version: string;
+  readonly theme: ThemeConfig;
+  readonly layout: LayoutConfig;
+  readonly domains: readonly DomainConfig[];
+  readonly dashboards: readonly DashboardConfig[];
+  readonly widgets: readonly WidgetConfig[];
+  readonly alerts: AlertSystemConfig;
+  readonly notifications: NotificationSystemConfig;
+  readonly realTime: RealTimeConfig;
+  readonly search: SearchConfig;
+  readonly reporting: ReportingConfig;
+  readonly accessControl: AccessControlConfig;
+  readonly customization: CustomizationConfig;
+  readonly integrations: readonly IntegrationConfig[];
+  readonly metadata: CenterMetadata;
+}
+
+export interface ThemeConfig {
+  readonly mode: ThemeMode;
+  readonly primaryColor: string;
+  readonly secondaryColor: string;
+  readonly accentColor: string;
+  readonly backgroundColor: string;
+  readonly textColor: string;
+  readonly borderColor: string;
+  readonly successColor: string;
+  readonly warningColor: string;
+  readonly errorColor: string;
+  readonly infoColor: string;
+  readonly fontFamily: string;
+  readonly fontSize: number;
+  readonly borderRadius: number;
+  readonly spacing: number;
+  readonly customCSS: string | null;
+}
+
+export interface LayoutConfig {
+  readonly mode: LayoutMode;
+  readonly gridColumns: number;
+  readonly gridRows: number;
+  readonly gridGap: number;
+  readonly sidebarWidth: number;
+  readonly headerHeight: number;
+  readonly footerHeight: number;
+  readonly responsive: ResponsiveConfig;
+  readonly breakpoints: readonly Breakpoint[];
+}
+
+export interface ResponsiveConfig {
+  readonly enabled: boolean;
+  readonly mobileLayout: string;
+  readonly tabletLayout: string;
+  readonly desktopLayout: string;
+  readonly largeDesktopLayout: string;
+}
+
+export interface Breakpoint {
+  readonly name: string;
+  readonly minWidth: number;
+  readonly maxWidth: number;
+  readonly columns: number;
+}
+
+export interface DomainConfig {
+  readonly domainId: string;
+  readonly domain: SecurityDomain;
+  readonly name: string;
+  readonly description: string;
+  readonly icon: string;
+  readonly color: string;
+  readonly enabled: boolean;
+  readonly defaultDashboard: string;
+  readonly widgets: readonly string[];
+  readonly permissions: readonly string[];
+}
+
+export interface DashboardConfig {
+  readonly dashboardId: string;
+  readonly name: string;
+  readonly description: string;
+  readonly domain: SecurityDomain | 'UNIFIED';
+  readonly layout: DashboardLayout;
+  readonly widgets: readonly DashboardWidget[];
+  readonly filters: readonly DashboardFilter[];
+  readonly timeRange: TimeRangeConfig;
+  readonly refreshInterval: number;
+  readonly autoRefresh: boolean;
+  readonly isDefault: boolean;
+  readonly isPublic: boolean;
+  readonly owner: string;
+  readonly sharedWith: readonly string[];
+  readonly tags: readonly string[];
+}
+
+export interface DashboardLayout {
+  readonly type: LayoutMode;
+  readonly columns: number;
+  readonly rows: number;
+  readonly gap: number;
+  readonly padding: number;
+}
+
+export interface DashboardWidget {
+  readonly instanceId: string;
+  readonly widgetId: string;
+  readonly position: WidgetPosition;
+  readonly size: WidgetSize;
+  readonly config: Readonly<Record<string, unknown>>;
+  readonly visible: boolean;
+  readonly locked: boolean;
+}
+
+export interface WidgetPosition {
+  readonly x: number;
+  readonly y: number;
+  readonly z: number;
+}
+
+export interface WidgetSize {
+  readonly width: number;
+  readonly height: number;
+  readonly minWidth: number;
+  readonly minHeight: number;
+  readonly maxWidth: number;
+  readonly maxHeight: number;
+}
+
+export interface DashboardFilter {
+  readonly filterId: string;
+  readonly name: string;
+  readonly type: 'SELECT' | 'MULTISELECT' | 'DATE_RANGE' | 'TEXT' | 'NUMBER_RANGE' | 'BOOLEAN';
+  readonly field: string;
+  readonly defaultValue: unknown;
+  readonly options: readonly FilterOption[] | null;
+  readonly affectsWidgets: readonly string[];
+}
+
+export interface FilterOption {
+  readonly value: string;
+  readonly label: string;
+  readonly count: number | null;
+}
+
+export interface TimeRangeConfig {
+  readonly defaultRange: string;
+  readonly customRangeEnabled: boolean;
+  readonly presets: readonly TimeRangePreset[];
+  readonly timezone: string;
+}
+
+export interface TimeRangePreset {
+  readonly name: string;
+  readonly label: string;
+  readonly duration: number;
+  readonly unit: 'MINUTES' | 'HOURS' | 'DAYS' | 'WEEKS' | 'MONTHS';
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// WIDGET CONFIGURATION
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface WidgetConfig {
+  readonly widgetId: string;
+  readonly name: string;
+  readonly description: string;
+  readonly category: WidgetCategory;
+  readonly domain: SecurityDomain | 'UNIFIED';
+  readonly type: WidgetType;
+  readonly dataSource: DataSourceConfig;
+  readonly visualization: VisualizationConfig;
+  readonly interactions: InteractionConfig;
+  readonly refresh: RefreshConfig;
+  readonly permissions: readonly string[];
+  readonly defaultConfig: Readonly<Record<string, unknown>>;
+}
+
+export type WidgetType =
+  | 'METRIC_CARD' | 'CHART' | 'TABLE' | 'GRAPH' | 'MAP' | 'TIMELINE'
+  | 'ALERT_LIST' | 'STATUS_BOARD' | 'ACTIVITY_FEED' | 'CONTROL_PANEL'
+  | 'SEARCH_BOX' | 'FILTER_PANEL' | 'DETAIL_VIEW' | 'FORM' | 'CUSTOM';
+
+export interface DataSourceConfig {
+  readonly sourceId: string;
+  readonly type: 'API' | 'WEBSOCKET' | 'GRAPHQL' | 'STATIC' | 'COMPUTED';
+  readonly endpoint: string;
+  readonly method: 'GET' | 'POST' | 'SUBSCRIPTION';
+  readonly parameters: readonly DataParameter[];
+  readonly transform: DataTransform | null;
+  readonly cache: CacheConfig;
+}
+
+export interface DataParameter {
+  readonly name: string;
+  readonly type: 'PATH' | 'QUERY' | 'BODY' | 'HEADER';
+  readonly required: boolean;
+  readonly defaultValue: unknown;
+  readonly source: 'STATIC' | 'FILTER' | 'CONTEXT' | 'USER';
+}
+
+export interface DataTransform {
+  readonly type: 'MAP' | 'FILTER' | 'AGGREGATE' | 'SORT' | 'CUSTOM';
+  readonly config: Readonly<Record<string, unknown>>;
+}
+
+export interface CacheConfig {
+  readonly enabled: boolean;
+  readonly ttl: number;
+  readonly invalidateOn: readonly string[];
+}
+
+export interface VisualizationConfig {
+  readonly type: ChartType | GraphType | MapType | 'TABLE' | 'LIST' | 'CUSTOM';
+  readonly options: Readonly<Record<string, unknown>>;
+  readonly colors: readonly string[];
+  readonly animations: AnimationConfig;
+  readonly tooltips: TooltipConfig;
+  readonly legends: LegendConfig;
+  readonly axes: AxesConfig | null;
+}
+
+export interface AnimationConfig {
+  readonly enabled: boolean;
+  readonly duration: number;
+  readonly easing: string;
+  readonly onLoad: boolean;
+  readonly onUpdate: boolean;
+}
+
+export interface TooltipConfig {
+  readonly enabled: boolean;
+  readonly format: string;
+  readonly position: 'TOP' | 'BOTTOM' | 'LEFT' | 'RIGHT' | 'AUTO';
+  readonly showDelay: number;
+  readonly hideDelay: number;
+}
+
+export interface LegendConfig {
+  readonly enabled: boolean;
+  readonly position: 'TOP' | 'BOTTOM' | 'LEFT' | 'RIGHT';
+  readonly orientation: 'HORIZONTAL' | 'VERTICAL';
+  readonly interactive: boolean;
+}
+
+export interface AxesConfig {
+  readonly xAxis: AxisConfig;
+  readonly yAxis: AxisConfig;
+  readonly y2Axis: AxisConfig | null;
+}
+
+export interface AxisConfig {
+  readonly enabled: boolean;
+  readonly label: string;
+  readonly type: 'LINEAR' | 'LOG' | 'TIME' | 'CATEGORY';
+  readonly min: number | null;
+  readonly max: number | null;
+  readonly gridLines: boolean;
+  readonly tickFormat: string | null;
+}
+
+export interface InteractionConfig {
+  readonly clickable: boolean;
+  readonly hoverable: boolean;
+  readonly selectable: boolean;
+  readonly draggable: boolean;
+  readonly zoomable: boolean;
+  readonly pannable: boolean;
+  readonly drillDown: DrillDownConfig | null;
+  readonly contextMenu: ContextMenuConfig | null;
+}
+
+export interface DrillDownConfig {
+  readonly enabled: boolean;
+  readonly levels: readonly DrillDownLevel[];
+}
+
+export interface DrillDownLevel {
+  readonly levelId: string;
+  readonly name: string;
+  readonly dataSource: string;
+  readonly visualization: string;
+}
+
+export interface ContextMenuConfig {
+  readonly enabled: boolean;
+  readonly items: readonly ContextMenuItem[];
+}
+
+export interface ContextMenuItem {
+  readonly itemId: string;
+  readonly label: string;
+  readonly icon: string;
+  readonly action: string;
+  readonly enabled: boolean;
+  readonly separator: boolean;
+}
+
+export interface RefreshConfig {
+  readonly autoRefresh: boolean;
+  readonly interval: number;
+  readonly onFocus: boolean;
+  readonly onVisibilityChange: boolean;
+  readonly manual: boolean;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ALERT SYSTEM
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface AlertSystemConfig {
+  readonly enabled: boolean;
+  readonly maxAlerts: number;
+  readonly retentionDays: number;
+  readonly severityLevels: readonly SeverityLevelConfig[];
+  readonly categories: readonly AlertCategoryConfig[];
+  readonly rules: readonly AlertRuleConfig[];
+  readonly escalation: EscalationConfig;
+  readonly suppression: SuppressionConfig;
+  readonly correlation: CorrelationConfig;
+}
+
+export interface SeverityLevelConfig {
+  readonly level: AlertSeverity;
+  readonly name: string;
+  readonly color: string;
+  readonly icon: string;
+  readonly sound: string | null;
+  readonly autoAcknowledge: boolean;
+  readonly autoAcknowledgeDelay: number;
+}
+
+export interface AlertCategoryConfig {
+  readonly categoryId: string;
+  readonly name: string;
+  readonly description: string;
+  readonly domain: SecurityDomain;
+  readonly icon: string;
+  readonly color: string;
+  readonly defaultSeverity: AlertSeverity;
+}
+
+export interface AlertRuleConfig {
+  readonly ruleId: string;
+  readonly name: string;
+  readonly description: string;
+  readonly category: string;
+  readonly condition: AlertCondition;
+  readonly severity: AlertSeverity;
+  readonly actions: readonly AlertAction[];
+  readonly enabled: boolean;
+  readonly cooldown: number;
+}
+
+export interface AlertCondition {
+  readonly type: 'THRESHOLD' | 'ANOMALY' | 'PATTERN' | 'ABSENCE' | 'COMPOSITE';
+  readonly config: Readonly<Record<string, unknown>>;
+}
+
+export interface AlertAction {
+  readonly actionId: string;
+  readonly type: 'NOTIFY' | 'ESCALATE' | 'REMEDIATE' | 'LOG' | 'WEBHOOK' | 'CUSTOM';
+  readonly config: Readonly<Record<string, unknown>>;
+  readonly delay: number;
+}
+
+export interface EscalationConfig {
+  readonly enabled: boolean;
+  readonly levels: readonly EscalationLevel[];
+  readonly defaultTimeout: number;
+}
+
+export interface EscalationLevel {
+  readonly levelId: string;
+  readonly name: string;
+  readonly timeout: number;
+  readonly recipients: readonly string[];
+  readonly actions: readonly string[];
+}
+
+export interface SuppressionConfig {
+  readonly enabled: boolean;
+  readonly rules: readonly SuppressionRule[];
+}
+
+export interface SuppressionRule {
+  readonly ruleId: string;
+  readonly name: string;
+  readonly condition: Readonly<Record<string, unknown>>;
+  readonly duration: number;
+  readonly reason: string;
+}
+
+export interface CorrelationConfig {
+  readonly enabled: boolean;
+  readonly timeWindow: number;
+  readonly rules: readonly CorrelationRule[];
+}
+
+export interface CorrelationRule {
+  readonly ruleId: string;
+  readonly name: string;
+  readonly patterns: readonly string[];
+  readonly minMatches: number;
+  readonly timeWindow: number;
+  readonly outputSeverity: AlertSeverity;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// NOTIFICATION SYSTEM
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface NotificationSystemConfig {
+  readonly enabled: boolean;
+  readonly channels: readonly NotificationChannelConfig[];
+  readonly templates: readonly NotificationTemplateConfig[];
+  readonly preferences: NotificationPreferencesConfig;
+  readonly scheduling: NotificationSchedulingConfig;
+}
+
+export interface NotificationChannelConfig {
+  readonly channelId: string;
+  readonly type: NotificationChannelType;
+  readonly name: string;
+  readonly enabled: boolean;
+  readonly config: Readonly<Record<string, unknown>>;
+  readonly rateLimits: RateLimitConfig;
+}
+
+export type NotificationChannelType =
+  | 'UI' | 'EMAIL' | 'SMS' | 'PUSH' | 'WEBHOOK' | 'SLACK' | 'TEAMS'
+  | 'TELEGRAM' | 'PAGERDUTY' | 'OPSGENIE' | 'CUSTOM';
+
+export interface RateLimitConfig {
+  readonly enabled: boolean;
+  readonly maxPerMinute: number;
+  readonly maxPerHour: number;
+  readonly maxPerDay: number;
+  readonly burstLimit: number;
+}
+
+export interface NotificationTemplateConfig {
+  readonly templateId: string;
+  readonly name: string;
+  readonly channel: NotificationChannelType;
+  readonly subject: string;
+  readonly body: string;
+  readonly format: 'TEXT' | 'HTML' | 'MARKDOWN';
+  readonly variables: readonly string[];
+}
+
+export interface NotificationPreferencesConfig {
+  readonly allowUserOverride: boolean;
+  readonly defaultChannels: readonly string[];
+  readonly quietHours: QuietHoursConfig;
+  readonly digest: DigestConfig;
+}
+
+export interface QuietHoursConfig {
+  readonly enabled: boolean;
+  readonly startHour: number;
+  readonly endHour: number;
+  readonly timezone: string;
+  readonly exceptSeverities: readonly AlertSeverity[];
+}
+
+export interface DigestConfig {
+  readonly enabled: boolean;
+  readonly frequency: 'HOURLY' | 'DAILY' | 'WEEKLY';
+  readonly time: string;
+  readonly minAlerts: number;
+}
+
+export interface NotificationSchedulingConfig {
+  readonly enabled: boolean;
+  readonly schedules: readonly NotificationSchedule[];
+}
+
+export interface NotificationSchedule {
+  readonly scheduleId: string;
+  readonly name: string;
+  readonly cron: string;
+  readonly timezone: string;
+  readonly channels: readonly string[];
+  readonly enabled: boolean;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// REAL-TIME SYSTEM
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface RealTimeConfig {
+  readonly enabled: boolean;
+  readonly transport: TransportConfig;
+  readonly subscriptions: readonly SubscriptionConfig[];
+  readonly heartbeat: HeartbeatConfig;
+  readonly reconnection: ReconnectionConfig;
+}
+
+export interface TransportConfig {
+  readonly type: 'WEBSOCKET' | 'SSE' | 'POLLING' | 'GRPC';
+  readonly url: string;
+  readonly protocols: readonly string[];
+  readonly compression: boolean;
+  readonly binaryType: 'BLOB' | 'ARRAYBUFFER';
+}
+
+export interface SubscriptionConfig {
+  readonly subscriptionId: string;
+  readonly topic: string;
+  readonly filter: Readonly<Record<string, unknown>> | null;
+  readonly transform: DataTransform | null;
+  readonly widgets: readonly string[];
+}
+
+export interface HeartbeatConfig {
+  readonly enabled: boolean;
+  readonly interval: number;
+  readonly timeout: number;
+}
+
+export interface ReconnectionConfig {
+  readonly enabled: boolean;
+  readonly maxAttempts: number;
+  readonly initialDelay: number;
+  readonly maxDelay: number;
+  readonly backoffMultiplier: number;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SEARCH SYSTEM
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface SearchConfig {
+  readonly enabled: boolean;
+  readonly globalSearch: GlobalSearchConfig;
+  readonly domainSearch: readonly DomainSearchConfig[];
+  readonly savedSearches: SavedSearchConfig;
+  readonly history: SearchHistoryConfig;
+}
+
+export interface GlobalSearchConfig {
+  readonly enabled: boolean;
+  readonly placeholder: string;
+  readonly hotkey: string;
+  readonly maxResults: number;
+  readonly debounceMs: number;
+  readonly minQueryLength: number;
+  readonly searchableFields: readonly string[];
+  readonly highlightMatches: boolean;
+}
+
+export interface DomainSearchConfig {
+  readonly domain: SecurityDomain;
+  readonly enabled: boolean;
+  readonly endpoint: string;
+  readonly fields: readonly SearchField[];
+  readonly filters: readonly SearchFilter[];
+  readonly sorting: readonly SortOption[];
+}
+
+export interface SearchField {
+  readonly fieldId: string;
+  readonly name: string;
+  readonly type: 'TEXT' | 'KEYWORD' | 'NUMBER' | 'DATE' | 'BOOLEAN';
+  readonly searchable: boolean;
+  readonly filterable: boolean;
+  readonly sortable: boolean;
+  readonly aggregatable: boolean;
+  readonly boost: number;
+}
+
+export interface SearchFilter {
+  readonly filterId: string;
+  readonly field: string;
+  readonly type: 'TERM' | 'RANGE' | 'EXISTS' | 'PREFIX' | 'WILDCARD' | 'REGEX';
+  readonly label: string;
+  readonly defaultValue: unknown;
+}
+
+export interface SortOption {
+  readonly field: string;
+  readonly label: string;
+  readonly direction: 'ASC' | 'DESC';
+  readonly isDefault: boolean;
+}
+
+export interface SavedSearchConfig {
+  readonly enabled: boolean;
+  readonly maxSavedSearches: number;
+  readonly sharing: boolean;
+}
+
+export interface SearchHistoryConfig {
+  readonly enabled: boolean;
+  readonly maxHistory: number;
+  readonly clearOnLogout: boolean;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// REPORTING SYSTEM
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface ReportingConfig {
+  readonly enabled: boolean;
+  readonly templates: readonly ReportTemplateConfig[];
+  readonly schedules: readonly ReportScheduleConfig[];
+  readonly exports: ExportConfig;
+  readonly branding: BrandingConfig;
+}
+
+export interface ReportTemplateConfig {
+  readonly templateId: string;
+  readonly name: string;
+  readonly description: string;
+  readonly domain: SecurityDomain | 'UNIFIED';
+  readonly type: ReportType;
+  readonly sections: readonly ReportSection[];
+  readonly parameters: readonly ReportParameter[];
+  readonly format: ReportFormat;
+  readonly orientation: 'PORTRAIT' | 'LANDSCAPE';
+  readonly pageSize: 'A4' | 'LETTER' | 'LEGAL';
+}
+
+export type ReportType =
+  | 'EXECUTIVE_SUMMARY' | 'DETAILED_ANALYSIS' | 'COMPLIANCE' | 'INCIDENT'
+  | 'THREAT_ASSESSMENT' | 'VULNERABILITY' | 'AUDIT' | 'CUSTOM';
+
+export type ReportFormat = 'PDF' | 'DOCX' | 'XLSX' | 'HTML' | 'JSON' | 'CSV';
+
+export interface ReportSection {
+  readonly sectionId: string;
+  readonly name: string;
+  readonly type: 'TEXT' | 'TABLE' | 'CHART' | 'IMAGE' | 'WIDGET' | 'CUSTOM';
+  readonly content: Readonly<Record<string, unknown>>;
+  readonly pageBreakBefore: boolean;
+  readonly pageBreakAfter: boolean;
+}
+
+export interface ReportParameter {
+  readonly parameterId: string;
+  readonly name: string;
+  readonly type: 'STRING' | 'NUMBER' | 'DATE' | 'BOOLEAN' | 'SELECT' | 'MULTISELECT';
+  readonly required: boolean;
+  readonly defaultValue: unknown;
+  readonly options: readonly string[] | null;
+}
+
+export interface ReportScheduleConfig {
+  readonly scheduleId: string;
+  readonly templateId: string;
+  readonly name: string;
+  readonly cron: string;
+  readonly timezone: string;
+  readonly recipients: readonly string[];
+  readonly parameters: Readonly<Record<string, unknown>>;
+  readonly enabled: boolean;
+}
+
+export interface ExportConfig {
+  readonly enabled: boolean;
+  readonly formats: readonly ReportFormat[];
+  readonly maxRows: number;
+  readonly includeMetadata: boolean;
+  readonly watermark: boolean;
+}
+
+export interface BrandingConfig {
+  readonly enabled: boolean;
+  readonly logo: string | null;
+  readonly companyName: string;
+  readonly headerText: string;
+  readonly footerText: string;
+  readonly colors: Readonly<Record<string, string>>;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ACCESS CONTROL
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface AccessControlConfig {
+  readonly enabled: boolean;
+  readonly authentication: AuthenticationConfig;
+  readonly authorization: AuthorizationConfig;
+  readonly audit: AuditConfig;
+  readonly session: SessionConfig;
+}
+
+export interface AuthenticationConfig {
+  readonly methods: readonly AuthMethod[];
+  readonly mfaRequired: boolean;
+  readonly mfaMethods: readonly MFAMethod[];
+  readonly passwordPolicy: PasswordPolicy;
+  readonly lockout: LockoutConfig;
+}
+
+export type AuthMethod = 'LOCAL' | 'LDAP' | 'SAML' | 'OIDC' | 'CERTIFICATE' | 'API_KEY';
+
+export type MFAMethod = 'TOTP' | 'SMS' | 'EMAIL' | 'PUSH' | 'HARDWARE_TOKEN' | 'BIOMETRIC';
+
+export interface PasswordPolicy {
+  readonly minLength: number;
+  readonly maxLength: number;
+  readonly requireUppercase: boolean;
+  readonly requireLowercase: boolean;
+  readonly requireNumbers: boolean;
+  readonly requireSpecial: boolean;
+  readonly preventReuse: number;
+  readonly maxAge: number;
+}
+
+export interface LockoutConfig {
+  readonly enabled: boolean;
+  readonly maxAttempts: number;
+  readonly lockoutDuration: number;
+  readonly resetAfter: number;
+}
+
+export interface AuthorizationConfig {
+  readonly model: 'RBAC' | 'ABAC' | 'HYBRID';
+  readonly roles: readonly RoleConfig[];
+  readonly permissions: readonly PermissionConfig[];
+  readonly policies: readonly PolicyConfig[];
+}
+
+export interface RoleConfig {
+  readonly roleId: string;
+  readonly name: string;
+  readonly description: string;
+  readonly permissions: readonly string[];
+  readonly inheritsFrom: readonly string[];
+  readonly isDefault: boolean;
+  readonly isAdmin: boolean;
+}
+
+export interface PermissionConfig {
+  readonly permissionId: string;
+  readonly name: string;
+  readonly resource: string;
+  readonly actions: readonly string[];
+  readonly conditions: Readonly<Record<string, unknown>> | null;
+}
+
+export interface PolicyConfig {
+  readonly policyId: string;
+  readonly name: string;
+  readonly effect: 'ALLOW' | 'DENY';
+  readonly subjects: readonly string[];
+  readonly resources: readonly string[];
+  readonly actions: readonly string[];
+  readonly conditions: Readonly<Record<string, unknown>> | null;
+}
+
+export interface AuditConfig {
+  readonly enabled: boolean;
+  readonly events: readonly AuditEventType[];
+  readonly retention: number;
+  readonly realTimeAlerts: boolean;
+  readonly exportEnabled: boolean;
+}
+
+export type AuditEventType =
+  | 'LOGIN' | 'LOGOUT' | 'LOGIN_FAILED' | 'PASSWORD_CHANGE' | 'MFA_SETUP'
+  | 'PERMISSION_CHANGE' | 'DATA_ACCESS' | 'DATA_EXPORT' | 'CONFIG_CHANGE'
+  | 'ALERT_ACTION' | 'REPORT_GENERATED' | 'SEARCH_QUERY';
+
+export interface SessionConfig {
+  readonly maxDuration: number;
+  readonly idleTimeout: number;
+  readonly maxConcurrent: number;
+  readonly extendOnActivity: boolean;
+  readonly requireReauthFor: readonly string[];
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// CUSTOMIZATION
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface CustomizationConfig {
+  readonly enabled: boolean;
+  readonly userPreferences: UserPreferencesConfig;
+  readonly dashboardCustomization: DashboardCustomizationConfig;
+  readonly widgetCustomization: WidgetCustomizationConfig;
+  readonly shortcuts: ShortcutsConfig;
+}
+
+export interface UserPreferencesConfig {
+  readonly allowThemeChange: boolean;
+  readonly allowLayoutChange: boolean;
+  readonly allowNotificationSettings: boolean;
+  readonly allowTimezoneChange: boolean;
+  readonly allowLanguageChange: boolean;
+  readonly persistPreferences: boolean;
+}
+
+export interface DashboardCustomizationConfig {
+  readonly allowCreate: boolean;
+  readonly allowEdit: boolean;
+  readonly allowDelete: boolean;
+  readonly allowShare: boolean;
+  readonly allowClone: boolean;
+  readonly maxDashboards: number;
+}
+
+export interface WidgetCustomizationConfig {
+  readonly allowResize: boolean;
+  readonly allowMove: boolean;
+  readonly allowRemove: boolean;
+  readonly allowConfigure: boolean;
+  readonly allowDuplicate: boolean;
+}
+
+export interface ShortcutsConfig {
+  readonly enabled: boolean;
+  readonly shortcuts: readonly KeyboardShortcut[];
+  readonly allowCustomization: boolean;
+}
+
+export interface KeyboardShortcut {
+  readonly shortcutId: string;
+  readonly name: string;
+  readonly keys: string;
+  readonly action: string;
+  readonly scope: 'GLOBAL' | 'DASHBOARD' | 'WIDGET';
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// INTEGRATIONS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface IntegrationConfig {
+  readonly integrationId: string;
+  readonly name: string;
+  readonly type: IntegrationType;
+  readonly enabled: boolean;
+  readonly config: Readonly<Record<string, unknown>>;
+  readonly authentication: IntegrationAuth;
+  readonly endpoints: readonly IntegrationEndpoint[];
+  readonly mappings: readonly DataMapping[];
+}
+
+export type IntegrationType =
+  | 'SIEM' | 'SOAR' | 'TICKETING' | 'CMDB' | 'THREAT_INTEL' | 'VULNERABILITY_SCANNER'
+  | 'EDR' | 'NDR' | 'FIREWALL' | 'IAM' | 'CLOUD' | 'CUSTOM';
+
+export interface IntegrationAuth {
+  readonly type: 'API_KEY' | 'OAUTH2' | 'BASIC' | 'CERTIFICATE' | 'NONE';
+  readonly config: Readonly<Record<string, unknown>>;
+}
+
+export interface IntegrationEndpoint {
+  readonly endpointId: string;
+  readonly name: string;
+  readonly method: 'GET' | 'POST' | 'PUT' | 'DELETE';
+  readonly path: string;
+  readonly parameters: readonly DataParameter[];
+}
+
+export interface DataMapping {
+  readonly mappingId: string;
+  readonly sourceField: string;
+  readonly targetField: string;
+  readonly transform: string | null;
+}
+
+export interface CenterMetadata {
+  readonly createdAt: number;
+  readonly createdBy: string;
+  readonly updatedAt: number;
+  readonly updatedBy: string;
+  readonly version: string;
+  readonly environment: 'DEVELOPMENT' | 'STAGING' | 'PRODUCTION';
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ALERT TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface SecurityAlert {
+  readonly alertId: string;
+  readonly title: string;
+  readonly description: string;
+  readonly severity: AlertSeverity;
+  readonly category: string;
+  readonly domain: SecurityDomain;
+  readonly source: string;
+  readonly timestamp: number;
+  readonly status: AlertStatus;
+  readonly assignee: string | null;
+  readonly tags: readonly string[];
+  readonly relatedEntities: readonly RelatedEntity[];
+  readonly timeline: readonly AlertEvent[];
+  readonly metadata: Readonly<Record<string, unknown>>;
+}
+
+export type AlertStatus =
+  | 'NEW' | 'ACKNOWLEDGED' | 'INVESTIGATING' | 'ESCALATED'
+  | 'RESOLVED' | 'CLOSED' | 'FALSE_POSITIVE';
+
+export interface RelatedEntity {
+  readonly entityId: string;
+  readonly type: string;
+  readonly name: string;
+  readonly relationship: string;
+}
+
+export interface AlertEvent {
+  readonly eventId: string;
+  readonly timestamp: number;
+  readonly type: string;
+  readonly description: string;
+  readonly actor: string;
+  readonly data: Readonly<Record<string, unknown>>;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ERROR TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export enum SecurityUICenterErrorCode {
+  CONFIG_INVALID = 'UI_E001',
+  DASHBOARD_NOT_FOUND = 'UI_E002',
+  WIDGET_NOT_FOUND = 'UI_E003',
+  DATA_SOURCE_ERROR = 'UI_E004',
+  PERMISSION_DENIED = 'UI_E005',
+  AUTHENTICATION_FAILED = 'UI_E006',
+  REAL_TIME_CONNECTION_FAILED = 'UI_E007',
+  REPORT_GENERATION_FAILED = 'UI_E008',
+  SEARCH_FAILED = 'UI_E009',
+  INTEGRATION_ERROR = 'UI_E010',
+}
+
+export class SecurityUICenterError extends Error {
+  constructor(
+    public readonly code: SecurityUICenterErrorCode,
+    message: string,
+    public readonly details: Readonly<Record<string, unknown>> = {}
+  ) {
+    super(`[${code}] ${message}`);
+    this.name = 'SecurityUICenterError';
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// DETERMINISTIC UTILITIES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+function deterministicHash(input: string): number {
+  let hash = 0;
+  for (let i = 0; i < input.length; i++) {
+    const char = input.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash;
+  }
+  return Math.abs(hash);
+}
+
+function generateDeterministicId(prefix: string, seed: number): string {
+  const hash = deterministicHash(`${prefix}-${seed}`);
+  const jitter = Math.abs(Math.sin(seed * 12.9898) * 43758.5453) % 1;
+  return `${prefix}-${hash.toString(16)}-${Math.floor(jitter * 10000).toString(16)}`;
+}
+
+function generateDeterministicTimestamp(seed: number): number {
+  const baseTime = 1704067200000;
+  const offset = Math.abs(deterministicHash(`timestamp-${seed}`)) % 86400000;
+  return baseTime + offset;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SECURITY UI CENTER MANAGER
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export class SecurityUICenterManager {
+  private operationCounter: number = 0;
+  private readonly config: SecurityUICenterConfig;
+  private readonly alerts: Map<string, SecurityAlert> = new Map();
+  private readonly dashboards: Map<string, DashboardConfig> = new Map();
+
+  constructor(config: SecurityUICenterConfig) {
+    this.config = config;
+    for (const dashboard of config.dashboards) {
+      this.dashboards.set(dashboard.dashboardId, dashboard);
+    }
+  }
+
+  getConfig(): SecurityUICenterConfig {
+    return this.config;
+  }
+
+  getDashboard(dashboardId: string): DashboardConfig {
+    const dashboard = this.dashboards.get(dashboardId);
+    if (!dashboard) {
+      throw new SecurityUICenterError(
+        SecurityUICenterErrorCode.DASHBOARD_NOT_FOUND,
+        `Dashboard ${dashboardId} not found`
+      );
+    }
+    return dashboard;
+  }
+
+  getDashboards(): ReadonlyMap<string, DashboardConfig> {
+    return this.dashboards;
+  }
+
+  createAlert(
+    title: string,
+    description: string,
+    severity: AlertSeverity,
+    category: string,
+    domain: SecurityDomain
+  ): SecurityAlert {
+    this.operationCounter++;
+    const alertId = generateDeterministicId('alert', this.operationCounter);
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+
+    const alert: SecurityAlert = {
+      alertId,
+      title,
+      description,
+      severity,
+      category,
+      domain,
+      source: 'security-ui-center',
+      timestamp,
+      status: 'NEW',
+      assignee: null,
+      tags: [],
+      relatedEntities: [],
+      timeline: [
+        {
+          eventId: generateDeterministicId('event', this.operationCounter),
+          timestamp,
+          type: 'CREATED',
+          description: 'Alert created',
+          actor: 'system',
+          data: {},
+        },
+      ],
+      metadata: {},
+    };
+
+    this.alerts.set(alertId, alert);
+    return alert;
+  }
+
+  getAlerts(): ReadonlyMap<string, SecurityAlert> {
+    return this.alerts;
+  }
+
+  getAlert(alertId: string): SecurityAlert {
+    const alert = this.alerts.get(alertId);
+    if (!alert) {
+      throw new SecurityUICenterError(
+        SecurityUICenterErrorCode.WIDGET_NOT_FOUND,
+        `Alert ${alertId} not found`
+      );
+    }
+    return alert;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// DEFAULT CONFIGURATIONS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export function createDefaultSecurityUICenterConfig(): SecurityUICenterConfig {
+  const timestamp = Date.now();
+
+  return {
+    centerId: 'security-ui-center-001',
+    name: 'Security Operations Center',
+    description: 'Unified Security Operations UI/UX Center',
+    version: '1.0.0',
+    theme: {
+      mode: 'DARK',
+      primaryColor: '#1976D2',
+      secondaryColor: '#424242',
+      accentColor: '#FF4081',
+      backgroundColor: '#121212',
+      textColor: '#FFFFFF',
+      borderColor: '#333333',
+      successColor: '#4CAF50',
+      warningColor: '#FF9800',
+      errorColor: '#F44336',
+      infoColor: '#2196F3',
+      fontFamily: 'Inter, system-ui, sans-serif',
+      fontSize: 14,
+      borderRadius: 8,
+      spacing: 8,
+      customCSS: null,
+    },
+    layout: {
+      mode: 'GRID',
+      gridColumns: 12,
+      gridRows: 8,
+      gridGap: 16,
+      sidebarWidth: 280,
+      headerHeight: 64,
+      footerHeight: 48,
+      responsive: {
+        enabled: true,
+        mobileLayout: 'single-column',
+        tabletLayout: 'two-column',
+        desktopLayout: 'default',
+        largeDesktopLayout: 'expanded',
+      },
+      breakpoints: [
+        { name: 'mobile', minWidth: 0, maxWidth: 767, columns: 1 },
+        { name: 'tablet', minWidth: 768, maxWidth: 1023, columns: 2 },
+        { name: 'desktop', minWidth: 1024, maxWidth: 1439, columns: 12 },
+        { name: 'large', minWidth: 1440, maxWidth: 9999, columns: 12 },
+      ],
+    },
+    domains: [
+      { domainId: 'd1', domain: 'RED_TEAM', name: 'Red Team Operations', description: 'Offensive security operations', icon: 'target', color: '#F44336', enabled: true, defaultDashboard: 'red-team-dashboard', widgets: [], permissions: ['red_team:*'] },
+      { domainId: 'd2', domain: 'BLUE_TEAM', name: 'Blue Team Operations', description: 'Defensive security operations', icon: 'shield', color: '#2196F3', enabled: true, defaultDashboard: 'blue-team-dashboard', widgets: [], permissions: ['blue_team:*'] },
+      { domainId: 'd3', domain: 'APT_DETECTION', name: 'APT Detection', description: 'Advanced persistent threat detection', icon: 'radar', color: '#9C27B0', enabled: true, defaultDashboard: 'apt-dashboard', widgets: [], permissions: ['apt:*'] },
+      { domainId: 'd4', domain: 'THREAT_INTELLIGENCE', name: 'Threat Intelligence', description: 'Threat intelligence operations', icon: 'brain', color: '#FF9800', enabled: true, defaultDashboard: 'threat-intel-dashboard', widgets: [], permissions: ['threat_intel:*'] },
+      { domainId: 'd5', domain: 'INCIDENT_RESPONSE', name: 'Incident Response', description: 'Incident response operations', icon: 'alert-triangle', color: '#E91E63', enabled: true, defaultDashboard: 'ir-dashboard', widgets: [], permissions: ['incident_response:*'] },
+      { domainId: 'd6', domain: 'VULNERABILITY_MANAGEMENT', name: 'Vulnerability Management', description: 'Vulnerability management operations', icon: 'bug', color: '#795548', enabled: true, defaultDashboard: 'vuln-dashboard', widgets: [], permissions: ['vulnerability:*'] },
+      { domainId: 'd7', domain: 'SIEM_SOC', name: 'SIEM/SOC', description: 'Security information and event management', icon: 'activity', color: '#607D8B', enabled: true, defaultDashboard: 'siem-dashboard', widgets: [], permissions: ['siem:*'] },
+      { domainId: 'd8', domain: 'CRYPTOGRAPHY', name: 'Cryptography', description: 'Cryptographic operations', icon: 'lock', color: '#009688', enabled: true, defaultDashboard: 'crypto-dashboard', widgets: [], permissions: ['cryptography:*'] },
+      { domainId: 'd9', domain: 'NETWORK_SECURITY', name: 'Network Security', description: 'Network security operations', icon: 'globe', color: '#3F51B5', enabled: true, defaultDashboard: 'network-dashboard', widgets: [], permissions: ['network:*'] },
+      { domainId: 'd10', domain: 'MALWARE_ANALYSIS', name: 'Malware Analysis', description: 'Malware analysis operations', icon: 'file-code', color: '#FF5722', enabled: true, defaultDashboard: 'malware-dashboard', widgets: [], permissions: ['malware:*'] },
+      { domainId: 'd11', domain: 'STEALTH_ANTIFORENSICS', name: 'Stealth & Anti-Forensics', description: 'Stealth and anti-forensics operations', icon: 'eye-off', color: '#212121', enabled: true, defaultDashboard: 'stealth-dashboard', widgets: [], permissions: ['stealth:*'] },
+      { domainId: 'd12', domain: 'OFFENSIVE_OPERATIONS', name: 'Offensive Operations', description: 'Offensive operations center', icon: 'crosshair', color: '#B71C1C', enabled: true, defaultDashboard: 'offensive-dashboard', widgets: [], permissions: ['offensive:*'] },
+      { domainId: 'd13', domain: 'CRYPTO_GAMBLING_DARKWEB', name: 'Crypto/Gambling/Dark Web', description: 'Cryptocurrency, gambling, and dark web operations', icon: 'database', color: '#4A148C', enabled: true, defaultDashboard: 'cgd-dashboard', widgets: [], permissions: ['cgd:*'] },
+    ],
+    dashboards: [
+      {
+        dashboardId: 'unified-dashboard',
+        name: 'Unified Security Dashboard',
+        description: 'Overview of all security operations',
+        domain: 'UNIFIED',
+        layout: { type: 'GRID', columns: 12, rows: 8, gap: 16, padding: 16 },
+        widgets: [
+          { instanceId: 'w1', widgetId: 'alert-summary', position: { x: 0, y: 0, z: 0 }, size: { width: 4, height: 2, minWidth: 2, minHeight: 1, maxWidth: 12, maxHeight: 4 }, config: {}, visible: true, locked: false },
+          { instanceId: 'w2', widgetId: 'threat-map', position: { x: 4, y: 0, z: 0 }, size: { width: 8, height: 4, minWidth: 4, minHeight: 2, maxWidth: 12, maxHeight: 8 }, config: {}, visible: true, locked: false },
+          { instanceId: 'w3', widgetId: 'incident-timeline', position: { x: 0, y: 2, z: 0 }, size: { width: 4, height: 2, minWidth: 2, minHeight: 1, maxWidth: 12, maxHeight: 4 }, config: {}, visible: true, locked: false },
+          { instanceId: 'w4', widgetId: 'asset-status', position: { x: 0, y: 4, z: 0 }, size: { width: 6, height: 2, minWidth: 3, minHeight: 1, maxWidth: 12, maxHeight: 4 }, config: {}, visible: true, locked: false },
+          { instanceId: 'w5', widgetId: 'vulnerability-chart', position: { x: 6, y: 4, z: 0 }, size: { width: 6, height: 2, minWidth: 3, minHeight: 1, maxWidth: 12, maxHeight: 4 }, config: {}, visible: true, locked: false },
+          { instanceId: 'w6', widgetId: 'activity-feed', position: { x: 0, y: 6, z: 0 }, size: { width: 12, height: 2, minWidth: 6, minHeight: 1, maxWidth: 12, maxHeight: 4 }, config: {}, visible: true, locked: false },
+        ],
+        filters: [
+          { filterId: 'f1', name: 'Severity', type: 'MULTISELECT', field: 'severity', defaultValue: [], options: [{ value: 'CRITICAL', label: 'Critical', count: null }, { value: 'HIGH', label: 'High', count: null }, { value: 'MEDIUM', label: 'Medium', count: null }, { value: 'LOW', label: 'Low', count: null }], affectsWidgets: ['w1', 'w6'] },
+          { filterId: 'f2', name: 'Domain', type: 'MULTISELECT', field: 'domain', defaultValue: [], options: [], affectsWidgets: ['w1', 'w2', 'w3', 'w4', 'w5', 'w6'] },
+        ],
+        timeRange: {
+          defaultRange: '24h',
+          customRangeEnabled: true,
+          presets: [
+            { name: '1h', label: 'Last 1 hour', duration: 1, unit: 'HOURS' },
+            { name: '24h', label: 'Last 24 hours', duration: 24, unit: 'HOURS' },
+            { name: '7d', label: 'Last 7 days', duration: 7, unit: 'DAYS' },
+            { name: '30d', label: 'Last 30 days', duration: 30, unit: 'DAYS' },
+          ],
+          timezone: 'UTC',
+        },
+        refreshInterval: 30000,
+        autoRefresh: true,
+        isDefault: true,
+        isPublic: true,
+        owner: 'system',
+        sharedWith: [],
+        tags: ['unified', 'overview'],
+      },
+    ],
+    widgets: [
+      {
+        widgetId: 'alert-summary',
+        name: 'Alert Summary',
+        description: 'Summary of security alerts by severity',
+        category: 'OVERVIEW',
+        domain: 'UNIFIED',
+        type: 'METRIC_CARD',
+        dataSource: { sourceId: 'ds1', type: 'API', endpoint: '/api/alerts/summary', method: 'GET', parameters: [], transform: null, cache: { enabled: true, ttl: 30000, invalidateOn: ['alert:created', 'alert:updated'] } },
+        visualization: { type: 'PIE', options: {}, colors: ['#F44336', '#FF9800', '#FFC107', '#4CAF50', '#2196F3'], animations: { enabled: true, duration: 300, easing: 'ease-out', onLoad: true, onUpdate: true }, tooltips: { enabled: true, format: '{label}: {value}', position: 'AUTO', showDelay: 100, hideDelay: 100 }, legends: { enabled: true, position: 'BOTTOM', orientation: 'HORIZONTAL', interactive: true }, axes: null },
+        interactions: { clickable: true, hoverable: true, selectable: false, draggable: false, zoomable: false, pannable: false, drillDown: null, contextMenu: null },
+        refresh: { autoRefresh: true, interval: 30000, onFocus: true, onVisibilityChange: true, manual: true },
+        permissions: ['alerts:read'],
+        defaultConfig: {},
+      },
+      {
+        widgetId: 'threat-map',
+        name: 'Global Threat Map',
+        description: 'Geographic visualization of threats',
+        category: 'MAP',
+        domain: 'UNIFIED',
+        type: 'MAP',
+        dataSource: { sourceId: 'ds2', type: 'WEBSOCKET', endpoint: '/ws/threats', method: 'SUBSCRIPTION', parameters: [], transform: null, cache: { enabled: false, ttl: 0, invalidateOn: [] } },
+        visualization: { type: 'WORLD', options: { projection: 'mercator', showCountries: true, showCities: false }, colors: ['#4CAF50', '#FFC107', '#FF9800', '#F44336'], animations: { enabled: true, duration: 500, easing: 'ease-in-out', onLoad: true, onUpdate: true }, tooltips: { enabled: true, format: '{country}: {count} threats', position: 'AUTO', showDelay: 100, hideDelay: 100 }, legends: { enabled: true, position: 'BOTTOM', orientation: 'HORIZONTAL', interactive: true }, axes: null },
+        interactions: { clickable: true, hoverable: true, selectable: true, draggable: false, zoomable: true, pannable: true, drillDown: { enabled: true, levels: [{ levelId: 'country', name: 'Country', dataSource: '/api/threats/country/{id}', visualization: 'table' }] }, contextMenu: null },
+        refresh: { autoRefresh: false, interval: 0, onFocus: false, onVisibilityChange: false, manual: true },
+        permissions: ['threats:read'],
+        defaultConfig: {},
+      },
+      {
+        widgetId: 'incident-timeline',
+        name: 'Incident Timeline',
+        description: 'Timeline of security incidents',
+        category: 'TIMELINE',
+        domain: 'INCIDENT_RESPONSE',
+        type: 'TIMELINE',
+        dataSource: { sourceId: 'ds3', type: 'API', endpoint: '/api/incidents/timeline', method: 'GET', parameters: [], transform: null, cache: { enabled: true, ttl: 60000, invalidateOn: ['incident:created', 'incident:updated'] } },
+        visualization: { type: 'LINE', options: { showPoints: true, showArea: false }, colors: ['#F44336', '#FF9800', '#4CAF50'], animations: { enabled: true, duration: 300, easing: 'ease-out', onLoad: true, onUpdate: true }, tooltips: { enabled: true, format: '{date}: {title}', position: 'TOP', showDelay: 100, hideDelay: 100 }, legends: { enabled: true, position: 'TOP', orientation: 'HORIZONTAL', interactive: true }, axes: { xAxis: { enabled: true, label: 'Time', type: 'TIME', min: null, max: null, gridLines: true, tickFormat: null }, yAxis: { enabled: true, label: 'Incidents', type: 'LINEAR', min: 0, max: null, gridLines: true, tickFormat: null }, y2Axis: null } },
+        interactions: { clickable: true, hoverable: true, selectable: false, draggable: false, zoomable: true, pannable: true, drillDown: null, contextMenu: null },
+        refresh: { autoRefresh: true, interval: 60000, onFocus: true, onVisibilityChange: true, manual: true },
+        permissions: ['incidents:read'],
+        defaultConfig: {},
+      },
+      {
+        widgetId: 'asset-status',
+        name: 'Asset Status',
+        description: 'Status of monitored assets',
+        category: 'STATUS',
+        domain: 'OFFENSIVE_OPERATIONS',
+        type: 'STATUS_BOARD',
+        dataSource: { sourceId: 'ds4', type: 'WEBSOCKET', endpoint: '/ws/assets', method: 'SUBSCRIPTION', parameters: [], transform: null, cache: { enabled: false, ttl: 0, invalidateOn: [] } },
+        visualization: { type: 'TABLE', options: { columns: ['name', 'status', 'lastCheckIn', 'tasks'] }, colors: ['#4CAF50', '#FFC107', '#F44336'], animations: { enabled: true, duration: 200, easing: 'ease-out', onLoad: true, onUpdate: true }, tooltips: { enabled: true, format: '{name}: {status}', position: 'AUTO', showDelay: 100, hideDelay: 100 }, legends: { enabled: false, position: 'BOTTOM', orientation: 'HORIZONTAL', interactive: false }, axes: null },
+        interactions: { clickable: true, hoverable: true, selectable: true, draggable: false, zoomable: false, pannable: false, drillDown: { enabled: true, levels: [{ levelId: 'asset', name: 'Asset Details', dataSource: '/api/assets/{id}', visualization: 'detail' }] }, contextMenu: { enabled: true, items: [{ itemId: 'task', label: 'Send Task', icon: 'send', action: 'taskAsset', enabled: true, separator: false }, { itemId: 'kill', label: 'Kill Asset', icon: 'x', action: 'killAsset', enabled: true, separator: true }] } },
+        refresh: { autoRefresh: false, interval: 0, onFocus: false, onVisibilityChange: false, manual: true },
+        permissions: ['assets:read', 'assets:write'],
+        defaultConfig: {},
+      },
+      {
+        widgetId: 'vulnerability-chart',
+        name: 'Vulnerability Distribution',
+        description: 'Distribution of vulnerabilities by severity',
+        category: 'CHART',
+        domain: 'VULNERABILITY_MANAGEMENT',
+        type: 'CHART',
+        dataSource: { sourceId: 'ds5', type: 'API', endpoint: '/api/vulnerabilities/distribution', method: 'GET', parameters: [], transform: null, cache: { enabled: true, ttl: 300000, invalidateOn: ['vulnerability:created', 'vulnerability:updated'] } },
+        visualization: { type: 'BAR', options: { horizontal: false, stacked: false }, colors: ['#F44336', '#FF9800', '#FFC107', '#4CAF50'], animations: { enabled: true, duration: 300, easing: 'ease-out', onLoad: true, onUpdate: true }, tooltips: { enabled: true, format: '{severity}: {count}', position: 'TOP', showDelay: 100, hideDelay: 100 }, legends: { enabled: true, position: 'TOP', orientation: 'HORIZONTAL', interactive: true }, axes: { xAxis: { enabled: true, label: 'Severity', type: 'CATEGORY', min: null, max: null, gridLines: false, tickFormat: null }, yAxis: { enabled: true, label: 'Count', type: 'LINEAR', min: 0, max: null, gridLines: true, tickFormat: null }, y2Axis: null } },
+        interactions: { clickable: true, hoverable: true, selectable: false, draggable: false, zoomable: false, pannable: false, drillDown: { enabled: true, levels: [{ levelId: 'severity', name: 'Vulnerabilities by Severity', dataSource: '/api/vulnerabilities?severity={severity}', visualization: 'table' }] }, contextMenu: null },
+        refresh: { autoRefresh: true, interval: 300000, onFocus: true, onVisibilityChange: true, manual: true },
+        permissions: ['vulnerabilities:read'],
+        defaultConfig: {},
+      },
+      {
+        widgetId: 'activity-feed',
+        name: 'Activity Feed',
+        description: 'Real-time activity feed',
+        category: 'MONITORING',
+        domain: 'UNIFIED',
+        type: 'ACTIVITY_FEED',
+        dataSource: { sourceId: 'ds6', type: 'WEBSOCKET', endpoint: '/ws/activity', method: 'SUBSCRIPTION', parameters: [], transform: null, cache: { enabled: false, ttl: 0, invalidateOn: [] } },
+        visualization: { type: 'LIST', options: { maxItems: 50, showTimestamp: true, showIcon: true }, colors: [], animations: { enabled: true, duration: 200, easing: 'ease-out', onLoad: true, onUpdate: true }, tooltips: { enabled: true, format: '{description}', position: 'AUTO', showDelay: 100, hideDelay: 100 }, legends: { enabled: false, position: 'BOTTOM', orientation: 'HORIZONTAL', interactive: false }, axes: null },
+        interactions: { clickable: true, hoverable: true, selectable: false, draggable: false, zoomable: false, pannable: false, drillDown: null, contextMenu: null },
+        refresh: { autoRefresh: false, interval: 0, onFocus: false, onVisibilityChange: false, manual: true },
+        permissions: ['activity:read'],
+        defaultConfig: {},
+      },
+    ],
+    alerts: {
+      enabled: true,
+      maxAlerts: 10000,
+      retentionDays: 90,
+      severityLevels: [
+        { level: 'CRITICAL', name: 'Critical', color: '#F44336', icon: 'alert-octagon', sound: 'critical.mp3', autoAcknowledge: false, autoAcknowledgeDelay: 0 },
+        { level: 'HIGH', name: 'High', color: '#FF9800', icon: 'alert-triangle', sound: 'high.mp3', autoAcknowledge: false, autoAcknowledgeDelay: 0 },
+        { level: 'MEDIUM', name: 'Medium', color: '#FFC107', icon: 'alert-circle', sound: null, autoAcknowledge: false, autoAcknowledgeDelay: 0 },
+        { level: 'LOW', name: 'Low', color: '#4CAF50', icon: 'info', sound: null, autoAcknowledge: true, autoAcknowledgeDelay: 3600000 },
+        { level: 'INFO', name: 'Info', color: '#2196F3', icon: 'info', sound: null, autoAcknowledge: true, autoAcknowledgeDelay: 1800000 },
+      ],
+      categories: [],
+      rules: [],
+      escalation: { enabled: true, levels: [], defaultTimeout: 3600000 },
+      suppression: { enabled: true, rules: [] },
+      correlation: { enabled: true, timeWindow: 300000, rules: [] },
+    },
+    notifications: {
+      enabled: true,
+      channels: [
+        { channelId: 'ui', type: 'UI', name: 'UI Notifications', enabled: true, config: {}, rateLimits: { enabled: true, maxPerMinute: 60, maxPerHour: 500, maxPerDay: 5000, burstLimit: 10 } },
+        { channelId: 'email', type: 'EMAIL', name: 'Email', enabled: true, config: {}, rateLimits: { enabled: true, maxPerMinute: 10, maxPerHour: 100, maxPerDay: 500, burstLimit: 5 } },
+      ],
+      templates: [],
+      preferences: {
+        allowUserOverride: true,
+        defaultChannels: ['ui'],
+        quietHours: { enabled: false, startHour: 22, endHour: 7, timezone: 'UTC', exceptSeverities: ['CRITICAL'] },
+        digest: { enabled: false, frequency: 'DAILY', time: '08:00', minAlerts: 5 },
+      },
+      scheduling: { enabled: false, schedules: [] },
+    },
+    realTime: {
+      enabled: true,
+      transport: { type: 'WEBSOCKET', url: '/ws', protocols: ['v1'], compression: true, binaryType: 'ARRAYBUFFER' },
+      subscriptions: [],
+      heartbeat: { enabled: true, interval: 30000, timeout: 10000 },
+      reconnection: { enabled: true, maxAttempts: 10, initialDelay: 1000, maxDelay: 30000, backoffMultiplier: 2 },
+    },
+    search: {
+      enabled: true,
+      globalSearch: { enabled: true, placeholder: 'Search security data...', hotkey: 'Ctrl+K', maxResults: 100, debounceMs: 300, minQueryLength: 2, searchableFields: ['title', 'description', 'tags'], highlightMatches: true },
+      domainSearch: [],
+      savedSearches: { enabled: true, maxSavedSearches: 50, sharing: true },
+      history: { enabled: true, maxHistory: 100, clearOnLogout: false },
+    },
+    reporting: {
+      enabled: true,
+      templates: [
+        { templateId: 'executive', name: 'Executive Summary', description: 'High-level security summary', domain: 'UNIFIED', type: 'EXECUTIVE_SUMMARY', sections: [], parameters: [], format: 'PDF', orientation: 'PORTRAIT', pageSize: 'A4' },
+        { templateId: 'incident', name: 'Incident Report', description: 'Detailed incident report', domain: 'INCIDENT_RESPONSE', type: 'INCIDENT', sections: [], parameters: [], format: 'PDF', orientation: 'PORTRAIT', pageSize: 'A4' },
+        { templateId: 'vulnerability', name: 'Vulnerability Report', description: 'Vulnerability assessment report', domain: 'VULNERABILITY_MANAGEMENT', type: 'VULNERABILITY', sections: [], parameters: [], format: 'PDF', orientation: 'PORTRAIT', pageSize: 'A4' },
+      ],
+      schedules: [],
+      exports: { enabled: true, formats: ['PDF', 'DOCX', 'XLSX', 'HTML', 'JSON', 'CSV'], maxRows: 100000, includeMetadata: true, watermark: true },
+      branding: { enabled: true, logo: null, companyName: 'Security Operations Center', headerText: 'CONFIDENTIAL', footerText: 'Generated by Security UI Center', colors: {} },
+    },
+    accessControl: {
+      enabled: true,
+      authentication: {
+        methods: ['LOCAL', 'LDAP', 'SAML'],
+        mfaRequired: true,
+        mfaMethods: ['TOTP', 'PUSH'],
+        passwordPolicy: { minLength: 12, maxLength: 128, requireUppercase: true, requireLowercase: true, requireNumbers: true, requireSpecial: true, preventReuse: 12, maxAge: 90 },
+        lockout: { enabled: true, maxAttempts: 5, lockoutDuration: 1800000, resetAfter: 900000 },
+      },
+      authorization: {
+        model: 'RBAC',
+        roles: [
+          { roleId: 'admin', name: 'Administrator', description: 'Full access', permissions: ['*'], inheritsFrom: [], isDefault: false, isAdmin: true },
+          { roleId: 'analyst', name: 'Security Analyst', description: 'Read and analyze', permissions: ['alerts:read', 'incidents:read', 'threats:read', 'vulnerabilities:read'], inheritsFrom: [], isDefault: true, isAdmin: false },
+          { roleId: 'operator', name: 'Security Operator', description: 'Operational access', permissions: ['alerts:*', 'incidents:*', 'assets:*'], inheritsFrom: ['analyst'], isDefault: false, isAdmin: false },
+        ],
+        permissions: [],
+        policies: [],
+      },
+      audit: { enabled: true, events: ['LOGIN', 'LOGOUT', 'LOGIN_FAILED', 'DATA_ACCESS', 'DATA_EXPORT', 'CONFIG_CHANGE', 'ALERT_ACTION'], retention: 365, realTimeAlerts: true, exportEnabled: true },
+      session: { maxDuration: 28800000, idleTimeout: 1800000, maxConcurrent: 3, extendOnActivity: true, requireReauthFor: ['config:write', 'users:write'] },
+    },
+    customization: {
+      enabled: true,
+      userPreferences: { allowThemeChange: true, allowLayoutChange: true, allowNotificationSettings: true, allowTimezoneChange: true, allowLanguageChange: true, persistPreferences: true },
+      dashboardCustomization: { allowCreate: true, allowEdit: true, allowDelete: true, allowShare: true, allowClone: true, maxDashboards: 20 },
+      widgetCustomization: { allowResize: true, allowMove: true, allowRemove: true, allowConfigure: true, allowDuplicate: true },
+      shortcuts: {
+        enabled: true,
+        shortcuts: [
+          { shortcutId: 's1', name: 'Global Search', keys: 'Ctrl+K', action: 'openSearch', scope: 'GLOBAL' },
+          { shortcutId: 's2', name: 'New Alert', keys: 'Ctrl+Shift+A', action: 'createAlert', scope: 'GLOBAL' },
+          { shortcutId: 's3', name: 'Refresh Dashboard', keys: 'F5', action: 'refreshDashboard', scope: 'DASHBOARD' },
+          { shortcutId: 's4', name: 'Toggle Fullscreen', keys: 'F11', action: 'toggleFullscreen', scope: 'GLOBAL' },
+        ],
+        allowCustomization: true,
+      },
+    },
+    integrations: [
+      { integrationId: 'siem', name: 'SIEM Integration', type: 'SIEM', enabled: true, config: {}, authentication: { type: 'API_KEY', config: {} }, endpoints: [], mappings: [] },
+      { integrationId: 'soar', name: 'SOAR Integration', type: 'SOAR', enabled: true, config: {}, authentication: { type: 'OAUTH2', config: {} }, endpoints: [], mappings: [] },
+      { integrationId: 'ticketing', name: 'Ticketing Integration', type: 'TICKETING', enabled: true, config: {}, authentication: { type: 'BASIC', config: {} }, endpoints: [], mappings: [] },
+    ],
+    metadata: {
+      createdAt: timestamp,
+      createdBy: 'system',
+      updatedAt: timestamp,
+      updatedBy: 'system',
+      version: '1.0.0',
+      environment: 'PRODUCTION',
+    },
+  };
+}

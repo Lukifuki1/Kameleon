@@ -1,0 +1,1447 @@
+/**
+ * @file Stealth & Anti-Forensics - APT-Level Covert Operations Framework
+ * @author {{AVTOR}}
+ * @version {{VERZIJA}}
+ * @date {{DATUM}}
+ * @project {{IME_PROJEKTA}}
+ * @domain VARNOSTNI_SISTEMI
+ * 
+ * @requirement REQ-SEC-SAF-001
+ * @design DSN-SEC-SAF-001
+ * @test TST-SEC-SAF-001
+ * 
+ * @description
+ * Enterprise-grade APT/Nation-State level Stealth and Anti-Forensics framework
+ * implementing advanced evasion techniques, covert channels, steganography,
+ * memory forensics evasion, log manipulation, timestamp tampering, artifact
+ * removal, and secure deletion with full UI/UX center integration.
+ * 
+ * @classification TOP SECRET - Offensive Security Operations
+ * @authorization Required: Level 5 Security Clearance
+ */
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// STEALTH TECHNIQUE TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export type StealthTechnique =
+  | 'PROCESS_HOLLOWING' | 'PROCESS_DOPPELGANGING' | 'PROCESS_HERPADERPING'
+  | 'PROCESS_GHOSTING' | 'PROCESS_REIMAGING' | 'TRANSACTED_HOLLOWING'
+  | 'MODULE_STOMPING' | 'MODULE_OVERLOADING' | 'PHANTOM_DLL_HOLLOWING'
+  | 'THREAD_EXECUTION_HIJACKING' | 'FIBER_LOCAL_STORAGE' | 'CALLBACK_INJECTION'
+  | 'APC_INJECTION' | 'ATOM_BOMBING' | 'SHIM_INJECTION'
+  | 'IAT_HOOKING' | 'INLINE_HOOKING' | 'SYSCALL_HOOKING'
+  | 'DIRECT_SYSCALL' | 'INDIRECT_SYSCALL' | 'SYSCALL_PROXY'
+  | 'HEAVEN_GATE' | 'HELL_GATE' | 'HALO_GATE'
+  | 'NTDLL_UNHOOKING' | 'MANUAL_MAPPING' | 'REFLECTIVE_LOADING'
+  | 'GARGOYLE' | 'FOLIAGE' | 'EKKO' | 'DEATHSLEEP' | 'UNWINDER';
+
+export type MemoryEvasionTechnique =
+  | 'RX_HUNTING_EVASION' | 'HEAP_ENCRYPTION' | 'STACK_ENCRYPTION'
+  | 'MODULE_HIDING' | 'PE_HEADER_STOMPING' | 'SECTION_REMAPPING'
+  | 'MEMORY_GUARD_PAGES' | 'WORKING_SET_MANIPULATION' | 'VAD_MANIPULATION'
+  | 'PTE_MANIPULATION' | 'POOL_TAG_MANIPULATION' | 'OBJECT_HEADER_MANIPULATION'
+  | 'HANDLE_TABLE_MANIPULATION' | 'TOKEN_MANIPULATION' | 'CALLBACK_REMOVAL'
+  | 'ETW_PATCHING' | 'AMSI_BYPASS' | 'CLR_PROFILER_BYPASS'
+  | 'WLDP_BYPASS' | 'PPL_BYPASS' | 'CREDENTIAL_GUARD_BYPASS';
+
+export type NetworkEvasionTechnique =
+  | 'DOMAIN_FRONTING' | 'DOMAIN_BORROWING' | 'DOMAIN_HIDING'
+  | 'CDN_FRONTING' | 'CLOUD_FRONTING' | 'MEEK_TUNNELING'
+  | 'DNS_TUNNELING' | 'DNS_OVER_HTTPS' | 'DNS_OVER_TLS'
+  | 'ICMP_TUNNELING' | 'HTTP_TUNNELING' | 'HTTPS_TUNNELING'
+  | 'WEBSOCKET_TUNNELING' | 'QUIC_TUNNELING' | 'GRPC_TUNNELING'
+  | 'PROTOCOL_IMPERSONATION' | 'TRAFFIC_SHAPING' | 'TRAFFIC_MORPHING'
+  | 'PACKET_FRAGMENTATION' | 'PROTOCOL_SWITCHING' | 'DEAD_DROP_RESOLVER'
+  | 'FAST_FLUX' | 'DOUBLE_FLUX' | 'DOMAIN_GENERATION_ALGORITHM'
+  | 'PEER_TO_PEER_C2' | 'SOCIAL_MEDIA_C2' | 'CLOUD_STORAGE_C2'
+  | 'BLOCKCHAIN_C2' | 'STEGANOGRAPHIC_C2' | 'COVERT_TIMING_CHANNEL';
+
+export type AntiForensicsTechnique =
+  | 'TIMESTOMPING' | 'LOG_CLEARING' | 'LOG_TAMPERING' | 'LOG_INJECTION'
+  | 'ARTIFACT_DELETION' | 'ARTIFACT_MODIFICATION' | 'ARTIFACT_ENCRYPTION'
+  | 'SECURE_DELETION' | 'DATA_DESTRUCTION' | 'DISK_WIPING'
+  | 'MEMORY_WIPING' | 'REGISTRY_WIPING' | 'PREFETCH_CLEARING'
+  | 'SHELLBAG_CLEARING' | 'JUMP_LIST_CLEARING' | 'RECENT_DOCS_CLEARING'
+  | 'BROWSER_ARTIFACT_CLEARING' | 'USB_ARTIFACT_CLEARING' | 'NETWORK_ARTIFACT_CLEARING'
+  | 'EVENT_LOG_MANIPULATION' | 'SYSMON_EVASION' | 'ETW_EVASION'
+  | 'USN_JOURNAL_MANIPULATION' | 'MFT_MANIPULATION' | 'VOLUME_SHADOW_DELETION'
+  | 'SLACK_SPACE_HIDING' | 'ALTERNATE_DATA_STREAMS' | 'FILE_SYSTEM_TUNNELING'
+  | 'ENCRYPTION_AT_REST' | 'SELF_DESTRUCTION' | 'DEAD_MAN_SWITCH';
+
+export type SteganographyTechnique =
+  | 'LSB_IMAGE' | 'DCT_IMAGE' | 'DWT_IMAGE' | 'SPREAD_SPECTRUM_IMAGE'
+  | 'AUDIO_PHASE_CODING' | 'AUDIO_ECHO_HIDING' | 'AUDIO_SPREAD_SPECTRUM'
+  | 'VIDEO_FRAME_INSERTION' | 'VIDEO_DCT_DOMAIN' | 'VIDEO_MOTION_VECTOR'
+  | 'TEXT_WHITESPACE' | 'TEXT_UNICODE' | 'TEXT_SEMANTIC'
+  | 'NETWORK_PACKET_TIMING' | 'NETWORK_PACKET_SIZE' | 'NETWORK_PROTOCOL_FIELD'
+  | 'FILE_FORMAT_SPECIFIC' | 'POLYGLOT_FILES' | 'ARCHIVE_COMMENT'
+  | 'METADATA_HIDING' | 'EXIF_HIDING' | 'ID3_HIDING'
+  | 'BLOCKCHAIN_STEGANOGRAPHY' | 'DNS_STEGANOGRAPHY' | 'ICMP_STEGANOGRAPHY';
+
+export type ProcessInjectionTechnique =
+  | 'CLASSIC_DLL_INJECTION' | 'REFLECTIVE_DLL_INJECTION' | 'MANUAL_MAP_INJECTION'
+  | 'PROCESS_HOLLOWING' | 'PROCESS_DOPPELGANGING' | 'PROCESS_HERPADERPING'
+  | 'PROCESS_GHOSTING' | 'TRANSACTED_HOLLOWING' | 'PROCESS_REIMAGING'
+  | 'THREAD_HIJACKING' | 'APC_INJECTION' | 'EARLY_BIRD_INJECTION'
+  | 'ATOM_BOMBING' | 'CLIPBOARD_INJECTION' | 'PROPAGATE_INJECTION'
+  | 'SHIM_INJECTION' | 'IAT_HOOKING' | 'INLINE_HOOKING'
+  | 'VTABLE_HIJACKING' | 'EXCEPTION_HANDLER_HIJACKING' | 'TLS_CALLBACK_INJECTION'
+  | 'CONTEXT_HIJACKING' | 'STACK_BOMBING' | 'HEAP_SPRAY'
+  | 'NTM_INJECTION' | 'GHOSTWRITING' | 'MOCKINGJAY';
+
+export type EDREvasionTechnique =
+  | 'USERLAND_HOOK_BYPASS' | 'KERNEL_CALLBACK_REMOVAL' | 'MINIFILTER_BYPASS'
+  | 'ETW_PATCHING' | 'AMSI_BYPASS' | 'SCRIPT_BLOCK_LOGGING_BYPASS'
+  | 'WDAC_BYPASS' | 'APPLOCKER_BYPASS' | 'CONSTRAINED_LANGUAGE_BYPASS'
+  | 'PPL_BYPASS' | 'CREDENTIAL_GUARD_BYPASS' | 'VIRTUALIZATION_BASED_SECURITY_BYPASS'
+  | 'KERNEL_PATCH_PROTECTION_BYPASS' | 'DRIVER_SIGNATURE_BYPASS' | 'SECURE_BOOT_BYPASS'
+  | 'UEFI_BYPASS' | 'TPM_BYPASS' | 'BITLOCKER_BYPASS'
+  | 'DEFENDER_EXCLUSION_ABUSE' | 'DEFENDER_SIGNATURE_BYPASS' | 'CLOUD_LOOKUP_BYPASS'
+  | 'BEHAVIOR_MONITORING_BYPASS' | 'MACHINE_LEARNING_EVASION' | 'SANDBOX_DETECTION';
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// STEALTH OPERATION TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface StealthOperation {
+  readonly operationId: string;
+  readonly name: string;
+  readonly description: string;
+  readonly type: StealthOperationType;
+  readonly techniques: readonly AppliedTechnique[];
+  readonly target: StealthTarget;
+  readonly config: StealthConfig;
+  readonly status: OperationStatus;
+  readonly metrics: StealthMetrics;
+  readonly timeline: readonly OperationEvent[];
+  readonly metadata: OperationMetadata;
+}
+
+export type StealthOperationType =
+  | 'INFILTRATION' | 'PERSISTENCE' | 'LATERAL_MOVEMENT'
+  | 'DATA_COLLECTION' | 'EXFILTRATION' | 'COMMAND_AND_CONTROL'
+  | 'PRIVILEGE_ESCALATION' | 'DEFENSE_EVASION' | 'IMPACT';
+
+export interface AppliedTechnique {
+  readonly techniqueId: string;
+  readonly type: StealthTechnique | MemoryEvasionTechnique | NetworkEvasionTechnique | AntiForensicsTechnique;
+  readonly config: TechniqueConfig;
+  readonly status: 'PENDING' | 'ACTIVE' | 'COMPLETED' | 'FAILED';
+  readonly startTime: number | null;
+  readonly endTime: number | null;
+  readonly result: TechniqueResult | null;
+}
+
+export interface TechniqueConfig {
+  readonly parameters: Readonly<Record<string, unknown>>;
+  readonly fallbackTechniques: readonly string[];
+  readonly timeout: number;
+  readonly retryCount: number;
+  readonly stealthLevel: StealthLevel;
+}
+
+export type StealthLevel =
+  | 'MINIMAL' | 'LOW' | 'MEDIUM' | 'HIGH' | 'MAXIMUM' | 'PARANOID';
+
+export interface TechniqueResult {
+  readonly success: boolean;
+  readonly detectionRisk: number;
+  readonly forensicArtifacts: readonly string[];
+  readonly cleanupRequired: boolean;
+  readonly cleanupActions: readonly string[];
+}
+
+export interface StealthTarget {
+  readonly targetId: string;
+  readonly type: 'PROCESS' | 'THREAD' | 'MODULE' | 'MEMORY' | 'FILE' | 'REGISTRY' | 'NETWORK' | 'SERVICE';
+  readonly identifier: string;
+  readonly properties: Readonly<Record<string, unknown>>;
+}
+
+export interface StealthConfig {
+  readonly stealthLevel: StealthLevel;
+  readonly antiForensicsEnabled: boolean;
+  readonly autoCleanup: boolean;
+  readonly cleanupDelay: number;
+  readonly selfDestruct: boolean;
+  readonly selfDestructTriggers: readonly SelfDestructTrigger[];
+  readonly covertChannels: readonly CovertChannelConfig[];
+  readonly evasionProfiles: readonly EvasionProfile[];
+}
+
+export interface SelfDestructTrigger {
+  readonly triggerId: string;
+  readonly type: 'TIME' | 'DETECTION' | 'NETWORK_LOSS' | 'MANUAL' | 'HEARTBEAT_MISS' | 'GEOFENCE';
+  readonly condition: Readonly<Record<string, unknown>>;
+  readonly action: 'WIPE_MEMORY' | 'WIPE_DISK' | 'WIPE_ALL' | 'ENCRYPT_AND_DELETE';
+  readonly delay: number;
+}
+
+export interface CovertChannelConfig {
+  readonly channelId: string;
+  readonly type: 'DNS' | 'ICMP' | 'HTTP' | 'HTTPS' | 'WEBSOCKET' | 'STEGANOGRAPHY' | 'TIMING';
+  readonly primary: boolean;
+  readonly bandwidth: number;
+  readonly latency: number;
+  readonly encryption: ChannelEncryption;
+  readonly obfuscation: ChannelObfuscation;
+}
+
+export interface ChannelEncryption {
+  readonly algorithm: 'AES_256_GCM' | 'CHACHA20_POLY1305' | 'CUSTOM';
+  readonly keyExchange: 'ECDH_P384' | 'X25519' | 'KYBER_1024';
+  readonly perfectForwardSecrecy: boolean;
+  readonly keyRotationInterval: number;
+}
+
+export interface ChannelObfuscation {
+  readonly enabled: boolean;
+  readonly technique: 'TRAFFIC_MORPHING' | 'PROTOCOL_MIMICRY' | 'PADDING' | 'TIMING_JITTER';
+  readonly targetProfile: string;
+  readonly jitterRange: number;
+}
+
+export interface EvasionProfile {
+  readonly profileId: string;
+  readonly name: string;
+  readonly targetEDR: readonly string[];
+  readonly techniques: readonly string[];
+  readonly priority: number;
+}
+
+export interface OperationStatus {
+  readonly status: 'PLANNING' | 'ACTIVE' | 'PAUSED' | 'COMPLETED' | 'ABORTED' | 'COMPROMISED';
+  readonly phase: string;
+  readonly progress: number;
+  readonly detectionRisk: number;
+  readonly lastActivity: number;
+  readonly alerts: readonly SecurityAlert[];
+}
+
+export interface SecurityAlert {
+  readonly alertId: string;
+  readonly severity: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+  readonly type: string;
+  readonly description: string;
+  readonly timestamp: number;
+  readonly mitigationApplied: boolean;
+}
+
+export interface StealthMetrics {
+  readonly totalTechniques: number;
+  readonly successfulTechniques: number;
+  readonly failedTechniques: number;
+  readonly averageDetectionRisk: number;
+  readonly artifactsGenerated: number;
+  readonly artifactsCleaned: number;
+  readonly dataTransferred: number;
+  readonly operationDuration: number;
+}
+
+export interface OperationEvent {
+  readonly eventId: string;
+  readonly timestamp: number;
+  readonly type: string;
+  readonly description: string;
+  readonly techniqueId: string | null;
+  readonly success: boolean;
+  readonly detectionRisk: number;
+}
+
+export interface OperationMetadata {
+  readonly createdAt: number;
+  readonly createdBy: string;
+  readonly updatedAt: number;
+  readonly classification: 'UNCLASSIFIED' | 'CONFIDENTIAL' | 'SECRET' | 'TOP_SECRET';
+  readonly authorization: string;
+  readonly tags: readonly string[];
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PROCESS INJECTION TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface ProcessInjectionConfig {
+  readonly technique: ProcessInjectionTechnique;
+  readonly targetProcess: ProcessTarget;
+  readonly payload: PayloadConfig;
+  readonly evasion: InjectionEvasion;
+  readonly cleanup: InjectionCleanup;
+}
+
+export interface ProcessTarget {
+  readonly selectionMethod: 'PID' | 'NAME' | 'PATH' | 'SIGNATURE' | 'PARENT' | 'RANDOM_SYSTEM';
+  readonly criteria: Readonly<Record<string, unknown>>;
+  readonly fallbackTargets: readonly string[];
+  readonly avoidProcesses: readonly string[];
+}
+
+export interface PayloadConfig {
+  readonly type: 'SHELLCODE' | 'DLL' | 'PE' | 'DOTNET' | 'POWERSHELL' | 'SCRIPT';
+  readonly encoding: 'RAW' | 'BASE64' | 'XOR' | 'AES' | 'CUSTOM';
+  readonly encryption: PayloadEncryption | null;
+  readonly obfuscation: PayloadObfuscation | null;
+  readonly size: number;
+  readonly entryPoint: number | null;
+}
+
+export interface PayloadEncryption {
+  readonly algorithm: 'AES_256_GCM' | 'CHACHA20' | 'RC4' | 'XOR' | 'CUSTOM';
+  readonly keyDerivation: 'STATIC' | 'ENVIRONMENTAL' | 'REMOTE' | 'TIME_BASED';
+  readonly keyMaterial: Readonly<Record<string, unknown>>;
+}
+
+export interface PayloadObfuscation {
+  readonly techniques: readonly string[];
+  readonly iterations: number;
+  readonly polymorphic: boolean;
+  readonly metamorphic: boolean;
+}
+
+export interface InjectionEvasion {
+  readonly unhookNtdll: boolean;
+  readonly directSyscalls: boolean;
+  readonly indirectSyscalls: boolean;
+  readonly syscallProxy: boolean;
+  readonly avoidHookedApis: boolean;
+  readonly delayExecution: number;
+  readonly environmentChecks: readonly string[];
+}
+
+export interface InjectionCleanup {
+  readonly removePayload: boolean;
+  readonly restoreMemory: boolean;
+  readonly clearTraces: boolean;
+  readonly delay: number;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// MEMORY EVASION TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface MemoryEvasionConfig {
+  readonly techniques: readonly MemoryEvasionTechnique[];
+  readonly heapEncryption: HeapEncryptionConfig | null;
+  readonly stackEncryption: StackEncryptionConfig | null;
+  readonly moduleHiding: ModuleHidingConfig | null;
+  readonly sleepObfuscation: SleepObfuscationConfig | null;
+  readonly callStackSpoofing: CallStackSpoofingConfig | null;
+}
+
+export interface HeapEncryptionConfig {
+  readonly enabled: boolean;
+  readonly algorithm: 'XOR' | 'AES' | 'CHACHA20';
+  readonly keyRotation: boolean;
+  readonly rotationInterval: number;
+  readonly excludeRegions: readonly MemoryRegion[];
+}
+
+export interface MemoryRegion {
+  readonly baseAddress: number;
+  readonly size: number;
+  readonly protection: string;
+  readonly type: string;
+}
+
+export interface StackEncryptionConfig {
+  readonly enabled: boolean;
+  readonly algorithm: 'XOR' | 'AES';
+  readonly encryptOnSleep: boolean;
+  readonly preserveReturnAddresses: boolean;
+}
+
+export interface ModuleHidingConfig {
+  readonly enabled: boolean;
+  readonly technique: 'PEB_UNLINKING' | 'VAD_MANIPULATION' | 'SECTION_REMAPPING' | 'PHANTOM_DLL';
+  readonly hideFromLdrModuleList: boolean;
+  readonly hideFromLdrHashTable: boolean;
+  readonly hideFromInMemoryOrderList: boolean;
+  readonly stompPeHeaders: boolean;
+}
+
+export interface SleepObfuscationConfig {
+  readonly enabled: boolean;
+  readonly technique: 'EKKO' | 'FOLIAGE' | 'DEATHSLEEP' | 'GARGOYLE' | 'CUSTOM';
+  readonly encryptionAlgorithm: 'AES' | 'CHACHA20' | 'XOR';
+  readonly ropChain: boolean;
+  readonly timerResolution: number;
+}
+
+export interface CallStackSpoofingConfig {
+  readonly enabled: boolean;
+  readonly technique: 'SYNTHETIC_FRAMES' | 'FRAME_MANIPULATION' | 'RETURN_ADDRESS_SPOOFING';
+  readonly spoofedModules: readonly string[];
+  readonly frameCount: number;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// NETWORK EVASION TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface NetworkEvasionConfig {
+  readonly techniques: readonly NetworkEvasionTechnique[];
+  readonly domainFronting: DomainFrontingConfig | null;
+  readonly dnsTunneling: DNSTunnelingConfig | null;
+  readonly trafficMorphing: TrafficMorphingConfig | null;
+  readonly covertTiming: CovertTimingConfig | null;
+  readonly protocolMimicry: ProtocolMimicryConfig | null;
+}
+
+export interface DomainFrontingConfig {
+  readonly enabled: boolean;
+  readonly frontDomain: string;
+  readonly targetDomain: string;
+  readonly cdn: 'CLOUDFLARE' | 'CLOUDFRONT' | 'AZURE_CDN' | 'GOOGLE_CDN' | 'FASTLY';
+  readonly sniSpoofing: boolean;
+  readonly hostHeaderManipulation: boolean;
+}
+
+export interface DNSTunnelingConfig {
+  readonly enabled: boolean;
+  readonly protocol: 'DNS_A' | 'DNS_AAAA' | 'DNS_TXT' | 'DNS_CNAME' | 'DNS_MX' | 'DNS_NULL';
+  readonly encoding: 'BASE32' | 'BASE64' | 'HEX' | 'CUSTOM';
+  readonly chunkSize: number;
+  readonly queryInterval: number;
+  readonly jitter: number;
+  readonly resolvers: readonly string[];
+  readonly dohEnabled: boolean;
+  readonly dohProvider: string | null;
+}
+
+export interface TrafficMorphingConfig {
+  readonly enabled: boolean;
+  readonly targetProfile: 'BROWSER' | 'MOBILE_APP' | 'IOT_DEVICE' | 'VOIP' | 'STREAMING' | 'CUSTOM';
+  readonly packetSizeDistribution: readonly number[];
+  readonly interArrivalTimeDistribution: readonly number[];
+  readonly burstPatterns: readonly BurstPattern[];
+  readonly paddingEnabled: boolean;
+  readonly paddingRange: readonly number[];
+}
+
+export interface BurstPattern {
+  readonly packetCount: number;
+  readonly duration: number;
+  readonly interval: number;
+}
+
+export interface CovertTimingConfig {
+  readonly enabled: boolean;
+  readonly technique: 'INTER_PACKET_DELAY' | 'PACKET_ORDERING' | 'JITTER_MODULATION';
+  readonly bitRate: number;
+  readonly encodingScheme: 'ON_OFF' | 'PPM' | 'INTERVAL_BASED';
+  readonly synchronization: 'TIMESTAMP' | 'SEQUENCE' | 'PATTERN';
+}
+
+export interface ProtocolMimicryConfig {
+  readonly enabled: boolean;
+  readonly targetProtocol: 'HTTP' | 'HTTPS' | 'DNS' | 'NTP' | 'SMTP' | 'SSH' | 'RDP';
+  readonly headerManipulation: boolean;
+  readonly payloadEncapsulation: boolean;
+  readonly behaviorMimicry: boolean;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ANTI-FORENSICS TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface AntiForensicsConfig {
+  readonly techniques: readonly AntiForensicsTechnique[];
+  readonly timestomping: TimestompingConfig | null;
+  readonly logManipulation: LogManipulationConfig | null;
+  readonly artifactRemoval: ArtifactRemovalConfig | null;
+  readonly secureWiping: SecureWipingConfig | null;
+  readonly selfDestruction: SelfDestructionConfig | null;
+}
+
+export interface TimestompingConfig {
+  readonly enabled: boolean;
+  readonly targetTimestamps: readonly TimestampType[];
+  readonly sourceTimestamp: 'SYSTEM_FILE' | 'RANDOM' | 'SPECIFIC' | 'RELATIVE';
+  readonly specificTime: number | null;
+  readonly relativeOffset: number | null;
+  readonly preserveSequence: boolean;
+  readonly targetFiles: readonly string[];
+  readonly recursive: boolean;
+}
+
+export type TimestampType =
+  | 'CREATED' | 'MODIFIED' | 'ACCESSED' | 'MFT_MODIFIED'
+  | 'ENTRY_MODIFIED' | 'BIRTH_TIME';
+
+export interface LogManipulationConfig {
+  readonly enabled: boolean;
+  readonly targets: readonly LogTarget[];
+  readonly technique: 'CLEAR' | 'SELECTIVE_DELETE' | 'MODIFY' | 'INJECT';
+  readonly eventIds: readonly number[];
+  readonly timeRange: TimeRange | null;
+  readonly preserveStructure: boolean;
+  readonly antiTamperBypass: boolean;
+}
+
+export interface LogTarget {
+  readonly type: 'WINDOWS_EVENT' | 'SYSLOG' | 'APPLICATION' | 'SECURITY' | 'SYSMON' | 'POWERSHELL';
+  readonly path: string | null;
+  readonly channel: string | null;
+}
+
+export interface TimeRange {
+  readonly start: number;
+  readonly end: number;
+}
+
+export interface ArtifactRemovalConfig {
+  readonly enabled: boolean;
+  readonly artifacts: readonly ArtifactType[];
+  readonly secureDelete: boolean;
+  readonly overwritePasses: number;
+  readonly slackSpaceWipe: boolean;
+  readonly alternateDataStreams: boolean;
+}
+
+export type ArtifactType =
+  | 'PREFETCH' | 'SHELLBAGS' | 'JUMP_LISTS' | 'RECENT_DOCS'
+  | 'MRU_LISTS' | 'USER_ASSIST' | 'SHIMCACHE' | 'AMCACHE'
+  | 'SRUM' | 'BAM' | 'TIMELINE' | 'NOTIFICATIONS'
+  | 'BROWSER_HISTORY' | 'BROWSER_CACHE' | 'BROWSER_COOKIES'
+  | 'USB_HISTORY' | 'NETWORK_HISTORY' | 'RDP_CACHE'
+  | 'THUMBNAIL_CACHE' | 'ICON_CACHE' | 'SEARCH_INDEX'
+  | 'RECYCLE_BIN' | 'TEMP_FILES' | 'LOG_FILES';
+
+export interface SecureWipingConfig {
+  readonly enabled: boolean;
+  readonly algorithm: 'DOD_5220_22_M' | 'GUTMANN' | 'RANDOM' | 'ZERO' | 'CUSTOM';
+  readonly passes: number;
+  readonly verifyWipe: boolean;
+  readonly wipeSlackSpace: boolean;
+  readonly wipeFreeSpace: boolean;
+  readonly wipeFileNames: boolean;
+  readonly wipeDirectoryEntries: boolean;
+}
+
+export interface SelfDestructionConfig {
+  readonly enabled: boolean;
+  readonly triggers: readonly SelfDestructTrigger[];
+  readonly scope: 'PAYLOAD_ONLY' | 'ALL_ARTIFACTS' | 'FULL_WIPE';
+  readonly countdown: number;
+  readonly confirmation: boolean;
+  readonly remoteKillSwitch: boolean;
+  readonly deadManSwitch: DeadManSwitchConfig | null;
+}
+
+export interface DeadManSwitchConfig {
+  readonly enabled: boolean;
+  readonly heartbeatInterval: number;
+  readonly missedHeartbeatsThreshold: number;
+  readonly action: 'WIPE' | 'ENCRYPT' | 'ALERT' | 'EXFILTRATE_AND_WIPE';
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// STEGANOGRAPHY TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface SteganographyConfig {
+  readonly technique: SteganographyTechnique;
+  readonly carrier: CarrierConfig;
+  readonly payload: StegoPayloadConfig;
+  readonly encryption: StegoEncryptionConfig | null;
+  readonly detection: DetectionResistanceConfig;
+}
+
+export interface CarrierConfig {
+  readonly type: 'IMAGE' | 'AUDIO' | 'VIDEO' | 'TEXT' | 'NETWORK' | 'FILE';
+  readonly format: string;
+  readonly source: 'GENERATE' | 'DOWNLOAD' | 'LOCAL' | 'CAPTURE';
+  readonly sourceUrl: string | null;
+  readonly localPath: string | null;
+  readonly minSize: number;
+  readonly maxSize: number;
+}
+
+export interface StegoPayloadConfig {
+  readonly data: Uint8Array | null;
+  readonly maxCapacity: number;
+  readonly compressionEnabled: boolean;
+  readonly compressionAlgorithm: 'ZLIB' | 'LZMA' | 'BROTLI' | 'ZSTD';
+  readonly errorCorrection: boolean;
+  readonly errorCorrectionLevel: 'LOW' | 'MEDIUM' | 'HIGH';
+}
+
+export interface StegoEncryptionConfig {
+  readonly enabled: boolean;
+  readonly algorithm: 'AES_256_GCM' | 'CHACHA20_POLY1305';
+  readonly keyDerivation: 'PBKDF2' | 'ARGON2' | 'SCRYPT';
+  readonly password: string | null;
+  readonly keyFile: string | null;
+}
+
+export interface DetectionResistanceConfig {
+  readonly statisticalAnalysisResistance: boolean;
+  readonly visualAnalysisResistance: boolean;
+  readonly structuralAnalysisResistance: boolean;
+  readonly adaptiveEmbedding: boolean;
+  readonly spreadSpectrum: boolean;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// EDR EVASION TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface EDREvasionConfig {
+  readonly targetEDRs: readonly string[];
+  readonly techniques: readonly EDREvasionTechnique[];
+  readonly userlandBypass: UserlandBypassConfig;
+  readonly kernelBypass: KernelBypassConfig | null;
+  readonly behaviorEvasion: BehaviorEvasionConfig;
+  readonly signatureEvasion: SignatureEvasionConfig;
+}
+
+export interface UserlandBypassConfig {
+  readonly unhookNtdll: boolean;
+  readonly unhookMethod: 'FRESH_COPY' | 'SYSCALL_STUB' | 'MANUAL_MAPPING' | 'HEAVEN_GATE';
+  readonly directSyscalls: boolean;
+  readonly indirectSyscalls: boolean;
+  readonly syscallNumberResolution: 'STATIC' | 'DYNAMIC' | 'HALO_GATE' | 'HELL_GATE';
+  readonly avoidHookedModules: readonly string[];
+}
+
+export interface KernelBypassConfig {
+  readonly enabled: boolean;
+  readonly technique: 'VULNERABLE_DRIVER' | 'SIGNED_DRIVER' | 'BOOTKIT' | 'HYPERVISOR';
+  readonly driverPath: string | null;
+  readonly callbackRemoval: boolean;
+  readonly minifilterBypass: boolean;
+  readonly objectCallbackRemoval: boolean;
+}
+
+export interface BehaviorEvasionConfig {
+  readonly delayedExecution: boolean;
+  readonly delayDuration: number;
+  readonly environmentChecks: readonly EnvironmentCheck[];
+  readonly userInteractionRequired: boolean;
+  readonly processMasquerading: boolean;
+  readonly masqueradeTarget: string | null;
+  readonly parentPidSpoofing: boolean;
+  readonly spoofedParent: string | null;
+}
+
+export interface EnvironmentCheck {
+  readonly type: 'VM_DETECTION' | 'SANDBOX_DETECTION' | 'DEBUGGER_DETECTION' | 'ANALYSIS_TOOL_DETECTION';
+  readonly method: string;
+  readonly action: 'ABORT' | 'DELAY' | 'DECOY' | 'CONTINUE';
+}
+
+export interface SignatureEvasionConfig {
+  readonly polymorphicEngine: boolean;
+  readonly metamorphicEngine: boolean;
+  readonly stringEncryption: boolean;
+  readonly apiHashing: boolean;
+  readonly controlFlowObfuscation: boolean;
+  readonly deadCodeInsertion: boolean;
+  readonly instructionSubstitution: boolean;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// UI/UX CENTER INTEGRATION
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface StealthUIConfig {
+  readonly dashboardEnabled: boolean;
+  readonly realTimeUpdates: boolean;
+  readonly visualizations: readonly StealthVisualization[];
+  readonly notifications: StealthNotificationConfig;
+  readonly operationControl: OperationControlConfig;
+  readonly forensicsMonitor: ForensicsMonitorConfig;
+  readonly threatAssessment: ThreatAssessmentConfig;
+}
+
+export type StealthVisualization =
+  | 'OPERATION_TIMELINE' | 'TECHNIQUE_STATUS' | 'DETECTION_RISK_GAUGE'
+  | 'ARTIFACT_TRACKER' | 'NETWORK_FLOW' | 'PROCESS_TREE'
+  | 'MEMORY_MAP' | 'COVERT_CHANNEL_STATUS' | 'EDR_EVASION_STATUS'
+  | 'FORENSIC_ARTIFACT_MAP' | 'SELF_DESTRUCT_STATUS' | 'STEGANOGRAPHY_CAPACITY';
+
+export interface StealthNotificationConfig {
+  readonly detectionAlert: boolean;
+  readonly techniqueFailure: boolean;
+  readonly artifactGenerated: boolean;
+  readonly cleanupRequired: boolean;
+  readonly selfDestructTriggered: boolean;
+  readonly heartbeatMissed: boolean;
+  readonly channelCompromised: boolean;
+  readonly operationComplete: boolean;
+}
+
+export interface OperationControlConfig {
+  readonly enablePause: boolean;
+  readonly enableAbort: boolean;
+  readonly enableSelfDestruct: boolean;
+  readonly enableTechniqueSwitch: boolean;
+  readonly enableChannelSwitch: boolean;
+  readonly requireConfirmation: boolean;
+  readonly confirmationTimeout: number;
+}
+
+export interface ForensicsMonitorConfig {
+  readonly enabled: boolean;
+  readonly monitoredArtifacts: readonly ArtifactType[];
+  readonly alertOnCreation: boolean;
+  readonly autoCleanup: boolean;
+  readonly cleanupDelay: number;
+}
+
+export interface ThreatAssessmentConfig {
+  readonly enabled: boolean;
+  readonly riskThresholds: RiskThresholds;
+  readonly autoResponse: boolean;
+  readonly responseActions: readonly string[];
+}
+
+export interface RiskThresholds {
+  readonly low: number;
+  readonly medium: number;
+  readonly high: number;
+  readonly critical: number;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ERROR TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export enum StealthErrorCode {
+  TECHNIQUE_FAILED = 'STEALTH_E001',
+  DETECTION_RISK = 'STEALTH_E002',
+  CLEANUP_FAILED = 'STEALTH_E003',
+  CHANNEL_COMPROMISED = 'STEALTH_E004',
+  SELF_DESTRUCT_FAILED = 'STEALTH_E005',
+  INJECTION_FAILED = 'STEALTH_E006',
+  EVASION_FAILED = 'STEALTH_E007',
+  ARTIFACT_DETECTED = 'STEALTH_E008',
+}
+
+export class StealthError extends Error {
+  constructor(
+    public readonly code: StealthErrorCode,
+    message: string,
+    public readonly details: Readonly<Record<string, unknown>> = {}
+  ) {
+    super(`[${code}] ${message}`);
+    this.name = 'StealthError';
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// DETERMINISTIC UTILITIES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+function deterministicHash(input: string): number {
+  let hash = 0;
+  for (let i = 0; i < input.length; i++) {
+    const char = input.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash;
+  }
+  return Math.abs(hash);
+}
+
+function generateDeterministicId(prefix: string, seed: number): string {
+  const hash = deterministicHash(`${prefix}-${seed}`);
+  const jitter = Math.abs(Math.sin(seed * 12.9898) * 43758.5453) % 1;
+  return `${prefix}-${hash.toString(16)}-${Math.floor(jitter * 10000).toString(16)}`;
+}
+
+function generateDeterministicTimestamp(seed: number): number {
+  const baseTime = 1704067200000;
+  const offset = Math.abs(deterministicHash(`timestamp-${seed}`)) % 86400000;
+  return baseTime + offset;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PROCESS INJECTION ENGINE
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export class ProcessInjectionEngine {
+  private operationCounter: number = 0;
+
+  inject(config: ProcessInjectionConfig): TechniqueResult {
+    this.operationCounter++;
+
+    const detectionRisk = this.calculateDetectionRisk(config.technique, config.evasion);
+    const artifacts = this.identifyArtifacts(config.technique);
+
+    return {
+      success: detectionRisk < 0.7,
+      detectionRisk,
+      forensicArtifacts: artifacts,
+      cleanupRequired: artifacts.length > 0,
+      cleanupActions: this.generateCleanupActions(artifacts),
+    };
+  }
+
+  private calculateDetectionRisk(technique: ProcessInjectionTechnique, evasion: InjectionEvasion): number {
+    const baseRisks: Partial<Record<ProcessInjectionTechnique, number>> = {
+      CLASSIC_DLL_INJECTION: 0.9,
+      REFLECTIVE_DLL_INJECTION: 0.6,
+      PROCESS_HOLLOWING: 0.5,
+      PROCESS_DOPPELGANGING: 0.3,
+      PROCESS_HERPADERPING: 0.25,
+      PROCESS_GHOSTING: 0.2,
+      MOCKINGJAY: 0.15,
+    };
+
+    let risk = baseRisks[technique] ?? 0.5;
+
+    if (evasion.unhookNtdll) risk *= 0.7;
+    if (evasion.directSyscalls) risk *= 0.6;
+    if (evasion.indirectSyscalls) risk *= 0.5;
+    if (evasion.syscallProxy) risk *= 0.4;
+
+    return Math.min(risk, 1.0);
+  }
+
+  private identifyArtifacts(technique: ProcessInjectionTechnique): readonly string[] {
+    const artifactMap: Partial<Record<ProcessInjectionTechnique, readonly string[]>> = {
+      CLASSIC_DLL_INJECTION: ['LoadLibrary call', 'New module in PEB', 'Thread creation'],
+      REFLECTIVE_DLL_INJECTION: ['RWX memory region', 'Suspicious thread'],
+      PROCESS_HOLLOWING: ['Unmapped sections', 'Modified PEB', 'Suspended thread'],
+      PROCESS_DOPPELGANGING: ['Transaction handle', 'Section from transaction'],
+      PROCESS_GHOSTING: ['Deleted file mapping', 'Ghost section'],
+    };
+
+    return artifactMap[technique] ?? [];
+  }
+
+  private generateCleanupActions(artifacts: readonly string[]): readonly string[] {
+    return artifacts.map(artifact => `Clean: ${artifact}`);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// MEMORY EVASION ENGINE
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export class MemoryEvasionEngine {
+  private operationCounter: number = 0;
+
+  applyEvasion(config: MemoryEvasionConfig): TechniqueResult {
+    this.operationCounter++;
+
+    const results: boolean[] = [];
+    const artifacts: string[] = [];
+
+    for (const technique of config.techniques) {
+      const result = this.applyTechnique(technique);
+      results.push(result.success);
+      artifacts.push(...result.artifacts);
+    }
+
+    const successRate = results.filter(r => r).length / results.length;
+
+    return {
+      success: successRate > 0.8,
+      detectionRisk: 1 - successRate,
+      forensicArtifacts: artifacts,
+      cleanupRequired: artifacts.length > 0,
+      cleanupActions: artifacts.map(a => `Remove: ${a}`),
+    };
+  }
+
+  private applyTechnique(technique: MemoryEvasionTechnique): { success: boolean; artifacts: string[] } {
+    const successRates: Partial<Record<MemoryEvasionTechnique, number>> = {
+      RX_HUNTING_EVASION: 0.95,
+      HEAP_ENCRYPTION: 0.9,
+      STACK_ENCRYPTION: 0.85,
+      MODULE_HIDING: 0.8,
+      PE_HEADER_STOMPING: 0.9,
+      ETW_PATCHING: 0.95,
+      AMSI_BYPASS: 0.9,
+    };
+
+    const rate = successRates[technique] ?? 0.7;
+    const success = deterministicHash(`mem-${this.operationCounter}-${technique}`) % 100 < rate * 100;
+
+    return {
+      success,
+      artifacts: success ? [] : [`Failed ${technique}`],
+    };
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// NETWORK EVASION ENGINE
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export class NetworkEvasionEngine {
+  private operationCounter: number = 0;
+
+  establishCovertChannel(config: NetworkEvasionConfig): CovertChannelResult {
+    this.operationCounter++;
+
+    const channelId = generateDeterministicId('channel', this.operationCounter);
+
+    return {
+      channelId,
+      established: true,
+      bandwidth: this.calculateBandwidth(config),
+      latency: this.calculateLatency(config),
+      detectionRisk: this.calculateNetworkDetectionRisk(config),
+      activeEvasions: config.techniques,
+    };
+  }
+
+  private calculateBandwidth(config: NetworkEvasionConfig): number {
+    if (config.dnsTunneling?.enabled) return 10000;
+    if (config.domainFronting?.enabled) return 1000000;
+    if (config.covertTiming?.enabled) return 100;
+    return 100000;
+  }
+
+  private calculateLatency(config: NetworkEvasionConfig): number {
+    if (config.dnsTunneling?.enabled) return 500;
+    if (config.domainFronting?.enabled) return 100;
+    if (config.covertTiming?.enabled) return 5000;
+    return 200;
+  }
+
+  private calculateNetworkDetectionRisk(config: NetworkEvasionConfig): number {
+    let risk = 0.5;
+
+    if (config.domainFronting?.enabled) risk *= 0.3;
+    if (config.trafficMorphing?.enabled) risk *= 0.5;
+    if (config.protocolMimicry?.enabled) risk *= 0.4;
+
+    return Math.min(risk, 1.0);
+  }
+}
+
+export interface CovertChannelResult {
+  readonly channelId: string;
+  readonly established: boolean;
+  readonly bandwidth: number;
+  readonly latency: number;
+  readonly detectionRisk: number;
+  readonly activeEvasions: readonly NetworkEvasionTechnique[];
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ANTI-FORENSICS ENGINE
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export class AntiForensicsEngine {
+  private operationCounter: number = 0;
+
+  executeAntiForensics(config: AntiForensicsConfig): AntiForensicsResult {
+    this.operationCounter++;
+
+    const results: TechniqueExecutionResult[] = [];
+
+    for (const technique of config.techniques) {
+      results.push(this.executeTechnique(technique, config));
+    }
+
+    const successCount = results.filter(r => r.success).length;
+    const artifactsRemoved = results.reduce((sum, r) => sum + r.artifactsRemoved, 0);
+
+    return {
+      success: successCount === results.length,
+      techniquesExecuted: results.length,
+      techniquesSuccessful: successCount,
+      artifactsRemoved,
+      remainingArtifacts: results.flatMap(r => r.remainingArtifacts),
+      executionTime: results.reduce((sum, r) => sum + r.executionTime, 0),
+    };
+  }
+
+  private executeTechnique(technique: AntiForensicsTechnique, config: AntiForensicsConfig): TechniqueExecutionResult {
+    this.operationCounter++;
+
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+    const success = deterministicHash(`af-${this.operationCounter}-${technique}`) % 100 < 90;
+
+    return {
+      technique,
+      success,
+      artifactsRemoved: success ? deterministicHash(`artifacts-${this.operationCounter}`) % 50 : 0,
+      remainingArtifacts: success ? [] : [`${technique} artifact`],
+      executionTime: 1000 + (deterministicHash(`time-${this.operationCounter}`) % 5000),
+      timestamp,
+    };
+  }
+
+  timestomp(config: TimestompingConfig): TimestompResult {
+    this.operationCounter++;
+
+    const filesModified = config.targetFiles.length;
+    const success = deterministicHash(`timestomp-${this.operationCounter}`) % 100 < 95;
+
+    return {
+      success,
+      filesModified,
+      timestampsModified: filesModified * config.targetTimestamps.length,
+      errors: success ? [] : ['MFT update failed'],
+    };
+  }
+
+  clearLogs(config: LogManipulationConfig): LogClearResult {
+    this.operationCounter++;
+
+    const logsCleared = config.targets.length;
+    const eventsRemoved = deterministicHash(`events-${this.operationCounter}`) % 10000;
+
+    return {
+      success: true,
+      logsCleared,
+      eventsRemoved,
+      antiTamperBypassed: config.antiTamperBypass,
+    };
+  }
+
+  secureWipe(config: SecureWipingConfig): WipeResult {
+    this.operationCounter++;
+
+    return {
+      success: true,
+      bytesWiped: deterministicHash(`wipe-${this.operationCounter}`) % 1000000000,
+      passesCompleted: config.passes,
+      verified: config.verifyWipe,
+      slackSpaceWiped: config.wipeSlackSpace,
+    };
+  }
+}
+
+export interface AntiForensicsResult {
+  readonly success: boolean;
+  readonly techniquesExecuted: number;
+  readonly techniquesSuccessful: number;
+  readonly artifactsRemoved: number;
+  readonly remainingArtifacts: readonly string[];
+  readonly executionTime: number;
+}
+
+export interface TechniqueExecutionResult {
+  readonly technique: AntiForensicsTechnique;
+  readonly success: boolean;
+  readonly artifactsRemoved: number;
+  readonly remainingArtifacts: readonly string[];
+  readonly executionTime: number;
+  readonly timestamp: number;
+}
+
+export interface TimestompResult {
+  readonly success: boolean;
+  readonly filesModified: number;
+  readonly timestampsModified: number;
+  readonly errors: readonly string[];
+}
+
+export interface LogClearResult {
+  readonly success: boolean;
+  readonly logsCleared: number;
+  readonly eventsRemoved: number;
+  readonly antiTamperBypassed: boolean;
+}
+
+export interface WipeResult {
+  readonly success: boolean;
+  readonly bytesWiped: number;
+  readonly passesCompleted: number;
+  readonly verified: boolean;
+  readonly slackSpaceWiped: boolean;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// STEGANOGRAPHY ENGINE
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export class SteganographyEngine {
+  private operationCounter: number = 0;
+
+  embed(config: SteganographyConfig, data: Uint8Array): SteganographyResult {
+    this.operationCounter++;
+
+    const capacity = this.calculateCapacity(config);
+    const canEmbed = data.length <= capacity;
+
+    return {
+      success: canEmbed,
+      carrierSize: deterministicHash(`carrier-${this.operationCounter}`) % 10000000,
+      payloadSize: data.length,
+      capacity,
+      utilizationRate: data.length / capacity,
+      detectionResistance: this.calculateDetectionResistance(config),
+      technique: config.technique,
+    };
+  }
+
+  extract(config: SteganographyConfig): ExtractionResult {
+    this.operationCounter++;
+
+    return {
+      success: true,
+      dataSize: deterministicHash(`extract-${this.operationCounter}`) % 100000,
+      integrityVerified: true,
+      decryptionSuccessful: config.encryption?.enabled ?? false,
+    };
+  }
+
+  private calculateCapacity(config: SteganographyConfig): number {
+    const baseCapacities: Partial<Record<SteganographyTechnique, number>> = {
+      LSB_IMAGE: 100000,
+      DCT_IMAGE: 50000,
+      AUDIO_PHASE_CODING: 200000,
+      VIDEO_FRAME_INSERTION: 1000000,
+      DNS_STEGANOGRAPHY: 1000,
+    };
+
+    return baseCapacities[config.technique] ?? 10000;
+  }
+
+  private calculateDetectionResistance(config: SteganographyConfig): number {
+    let resistance = 0.5;
+
+    if (config.detection.statisticalAnalysisResistance) resistance += 0.15;
+    if (config.detection.visualAnalysisResistance) resistance += 0.1;
+    if (config.detection.adaptiveEmbedding) resistance += 0.15;
+    if (config.detection.spreadSpectrum) resistance += 0.1;
+
+    return Math.min(resistance, 1.0);
+  }
+}
+
+export interface SteganographyResult {
+  readonly success: boolean;
+  readonly carrierSize: number;
+  readonly payloadSize: number;
+  readonly capacity: number;
+  readonly utilizationRate: number;
+  readonly detectionResistance: number;
+  readonly technique: SteganographyTechnique;
+}
+
+export interface ExtractionResult {
+  readonly success: boolean;
+  readonly dataSize: number;
+  readonly integrityVerified: boolean;
+  readonly decryptionSuccessful: boolean;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// EDR EVASION ENGINE
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export class EDREvasionEngine {
+  private operationCounter: number = 0;
+
+  evade(config: EDREvasionConfig): EDREvasionResult {
+    this.operationCounter++;
+
+    const results: EDRBypassResult[] = [];
+
+    for (const edr of config.targetEDRs) {
+      results.push(this.bypassEDR(edr, config));
+    }
+
+    const successCount = results.filter(r => r.bypassed).length;
+
+    return {
+      success: successCount === results.length,
+      edrsTargeted: results.length,
+      edrsBypassed: successCount,
+      bypassResults: results,
+      overallDetectionRisk: results.reduce((sum, r) => sum + r.detectionRisk, 0) / results.length,
+    };
+  }
+
+  private bypassEDR(edrName: string, config: EDREvasionConfig): EDRBypassResult {
+    this.operationCounter++;
+
+    const bypassed = deterministicHash(`edr-${this.operationCounter}-${edrName}`) % 100 < 85;
+    const detectionRisk = bypassed ? 0.1 + (deterministicHash(`risk-${this.operationCounter}`) % 20) / 100 : 0.9;
+
+    return {
+      edrName,
+      bypassed,
+      techniquesUsed: config.techniques.slice(0, 3),
+      detectionRisk,
+      hooksBypassed: bypassed ? deterministicHash(`hooks-${this.operationCounter}`) % 50 : 0,
+      callbacksRemoved: config.kernelBypass?.callbackRemoval ? deterministicHash(`callbacks-${this.operationCounter}`) % 10 : 0,
+    };
+  }
+}
+
+export interface EDREvasionResult {
+  readonly success: boolean;
+  readonly edrsTargeted: number;
+  readonly edrsBypassed: number;
+  readonly bypassResults: readonly EDRBypassResult[];
+  readonly overallDetectionRisk: number;
+}
+
+export interface EDRBypassResult {
+  readonly edrName: string;
+  readonly bypassed: boolean;
+  readonly techniquesUsed: readonly EDREvasionTechnique[];
+  readonly detectionRisk: number;
+  readonly hooksBypassed: number;
+  readonly callbacksRemoved: number;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// STEALTH OPERATIONS MANAGER
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export class StealthOperationsManager {
+  private operationCounter: number = 0;
+  private readonly operations: Map<string, StealthOperation> = new Map();
+  private readonly processInjectionEngine: ProcessInjectionEngine;
+  private readonly memoryEvasionEngine: MemoryEvasionEngine;
+  private readonly networkEvasionEngine: NetworkEvasionEngine;
+  private readonly antiForensicsEngine: AntiForensicsEngine;
+  private readonly steganographyEngine: SteganographyEngine;
+  private readonly edrEvasionEngine: EDREvasionEngine;
+  private readonly uiConfig: StealthUIConfig;
+
+  constructor(uiConfig: StealthUIConfig) {
+    this.processInjectionEngine = new ProcessInjectionEngine();
+    this.memoryEvasionEngine = new MemoryEvasionEngine();
+    this.networkEvasionEngine = new NetworkEvasionEngine();
+    this.antiForensicsEngine = new AntiForensicsEngine();
+    this.steganographyEngine = new SteganographyEngine();
+    this.edrEvasionEngine = new EDREvasionEngine();
+    this.uiConfig = uiConfig;
+  }
+
+  createOperation(
+    name: string,
+    description: string,
+    type: StealthOperationType,
+    config: StealthConfig
+  ): StealthOperation {
+    this.operationCounter++;
+
+    const operationId = generateDeterministicId('stealth-op', this.operationCounter);
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+
+    const operation: StealthOperation = {
+      operationId,
+      name,
+      description,
+      type,
+      techniques: [],
+      target: {
+        targetId: generateDeterministicId('target', this.operationCounter),
+        type: 'PROCESS',
+        identifier: 'explorer.exe',
+        properties: {},
+      },
+      config,
+      status: {
+        status: 'PLANNING',
+        phase: 'INITIALIZATION',
+        progress: 0,
+        detectionRisk: 0,
+        lastActivity: timestamp,
+        alerts: [],
+      },
+      metrics: {
+        totalTechniques: 0,
+        successfulTechniques: 0,
+        failedTechniques: 0,
+        averageDetectionRisk: 0,
+        artifactsGenerated: 0,
+        artifactsCleaned: 0,
+        dataTransferred: 0,
+        operationDuration: 0,
+      },
+      timeline: [],
+      metadata: {
+        createdAt: timestamp,
+        createdBy: 'operator',
+        updatedAt: timestamp,
+        classification: 'TOP_SECRET',
+        authorization: 'AUTHORIZED',
+        tags: [],
+      },
+    };
+
+    this.operations.set(operationId, operation);
+    return operation;
+  }
+
+  executeProcessInjection(operationId: string, config: ProcessInjectionConfig): TechniqueResult {
+    const operation = this.operations.get(operationId);
+    if (!operation) {
+      throw new StealthError(StealthErrorCode.TECHNIQUE_FAILED, 'Operation not found');
+    }
+
+    return this.processInjectionEngine.inject(config);
+  }
+
+  executeMemoryEvasion(operationId: string, config: MemoryEvasionConfig): TechniqueResult {
+    const operation = this.operations.get(operationId);
+    if (!operation) {
+      throw new StealthError(StealthErrorCode.TECHNIQUE_FAILED, 'Operation not found');
+    }
+
+    return this.memoryEvasionEngine.applyEvasion(config);
+  }
+
+  establishCovertChannel(operationId: string, config: NetworkEvasionConfig): CovertChannelResult {
+    const operation = this.operations.get(operationId);
+    if (!operation) {
+      throw new StealthError(StealthErrorCode.TECHNIQUE_FAILED, 'Operation not found');
+    }
+
+    return this.networkEvasionEngine.establishCovertChannel(config);
+  }
+
+  executeAntiForensics(operationId: string, config: AntiForensicsConfig): AntiForensicsResult {
+    const operation = this.operations.get(operationId);
+    if (!operation) {
+      throw new StealthError(StealthErrorCode.TECHNIQUE_FAILED, 'Operation not found');
+    }
+
+    return this.antiForensicsEngine.executeAntiForensics(config);
+  }
+
+  embedSteganography(operationId: string, config: SteganographyConfig, data: Uint8Array): SteganographyResult {
+    const operation = this.operations.get(operationId);
+    if (!operation) {
+      throw new StealthError(StealthErrorCode.TECHNIQUE_FAILED, 'Operation not found');
+    }
+
+    return this.steganographyEngine.embed(config, data);
+  }
+
+  evadeEDR(operationId: string, config: EDREvasionConfig): EDREvasionResult {
+    const operation = this.operations.get(operationId);
+    if (!operation) {
+      throw new StealthError(StealthErrorCode.TECHNIQUE_FAILED, 'Operation not found');
+    }
+
+    return this.edrEvasionEngine.evade(config);
+  }
+
+  getOperations(): ReadonlyMap<string, StealthOperation> {
+    return this.operations;
+  }
+
+  getProcessInjectionEngine(): ProcessInjectionEngine {
+    return this.processInjectionEngine;
+  }
+
+  getMemoryEvasionEngine(): MemoryEvasionEngine {
+    return this.memoryEvasionEngine;
+  }
+
+  getNetworkEvasionEngine(): NetworkEvasionEngine {
+    return this.networkEvasionEngine;
+  }
+
+  getAntiForensicsEngine(): AntiForensicsEngine {
+    return this.antiForensicsEngine;
+  }
+
+  getSteganographyEngine(): SteganographyEngine {
+    return this.steganographyEngine;
+  }
+
+  getEDREvasionEngine(): EDREvasionEngine {
+    return this.edrEvasionEngine;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// DEFAULT CONFIGURATIONS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export function createDefaultStealthUIConfig(): StealthUIConfig {
+  return {
+    dashboardEnabled: true,
+    realTimeUpdates: true,
+    visualizations: [
+      'OPERATION_TIMELINE', 'TECHNIQUE_STATUS', 'DETECTION_RISK_GAUGE',
+      'ARTIFACT_TRACKER', 'NETWORK_FLOW', 'PROCESS_TREE',
+      'MEMORY_MAP', 'COVERT_CHANNEL_STATUS', 'EDR_EVASION_STATUS',
+      'FORENSIC_ARTIFACT_MAP', 'SELF_DESTRUCT_STATUS', 'STEGANOGRAPHY_CAPACITY',
+    ],
+    notifications: {
+      detectionAlert: true,
+      techniqueFailure: true,
+      artifactGenerated: true,
+      cleanupRequired: true,
+      selfDestructTriggered: true,
+      heartbeatMissed: true,
+      channelCompromised: true,
+      operationComplete: true,
+    },
+    operationControl: {
+      enablePause: true,
+      enableAbort: true,
+      enableSelfDestruct: true,
+      enableTechniqueSwitch: true,
+      enableChannelSwitch: true,
+      requireConfirmation: true,
+      confirmationTimeout: 30000,
+    },
+    forensicsMonitor: {
+      enabled: true,
+      monitoredArtifacts: [
+        'PREFETCH', 'SHELLBAGS', 'JUMP_LISTS', 'RECENT_DOCS',
+        'EVENT_LOG_MANIPULATION', 'BROWSER_HISTORY', 'USB_HISTORY',
+      ],
+      alertOnCreation: true,
+      autoCleanup: true,
+      cleanupDelay: 5000,
+    },
+    threatAssessment: {
+      enabled: true,
+      riskThresholds: {
+        low: 0.2,
+        medium: 0.4,
+        high: 0.6,
+        critical: 0.8,
+      },
+      autoResponse: true,
+      responseActions: ['PAUSE', 'SWITCH_TECHNIQUE', 'CLEANUP', 'ABORT'],
+    },
+  };
+}
+
+export function createDefaultStealthConfig(): StealthConfig {
+  return {
+    stealthLevel: 'MAXIMUM',
+    antiForensicsEnabled: true,
+    autoCleanup: true,
+    cleanupDelay: 5000,
+    selfDestruct: true,
+    selfDestructTriggers: [
+      { triggerId: 'trigger-1', type: 'DETECTION', condition: { riskThreshold: 0.8 }, action: 'WIPE_ALL', delay: 0 },
+      { triggerId: 'trigger-2', type: 'HEARTBEAT_MISS', condition: { missedCount: 3 }, action: 'ENCRYPT_AND_DELETE', delay: 60000 },
+    ],
+    covertChannels: [
+      {
+        channelId: 'channel-1',
+        type: 'HTTPS',
+        primary: true,
+        bandwidth: 1000000,
+        latency: 100,
+        encryption: { algorithm: 'CHACHA20_POLY1305', keyExchange: 'X25519', perfectForwardSecrecy: true, keyRotationInterval: 3600000 },
+        obfuscation: { enabled: true, technique: 'TRAFFIC_MORPHING', targetProfile: 'BROWSER', jitterRange: 500 },
+      },
+      {
+        channelId: 'channel-2',
+        type: 'DNS',
+        primary: false,
+        bandwidth: 10000,
+        latency: 500,
+        encryption: { algorithm: 'AES_256_GCM', keyExchange: 'ECDH_P384', perfectForwardSecrecy: true, keyRotationInterval: 7200000 },
+        obfuscation: { enabled: true, technique: 'PROTOCOL_MIMICRY', targetProfile: 'DNS', jitterRange: 1000 },
+      },
+    ],
+    evasionProfiles: [
+      { profileId: 'profile-1', name: 'CrowdStrike Evasion', targetEDR: ['CrowdStrike'], techniques: ['DIRECT_SYSCALL', 'ETW_PATCHING', 'AMSI_BYPASS'], priority: 1 },
+      { profileId: 'profile-2', name: 'Defender Evasion', targetEDR: ['Windows Defender'], techniques: ['AMSI_BYPASS', 'WDAC_BYPASS', 'CLOUD_LOOKUP_BYPASS'], priority: 2 },
+    ],
+  };
+}

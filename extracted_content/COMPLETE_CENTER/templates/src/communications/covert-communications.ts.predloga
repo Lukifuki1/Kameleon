@@ -1,0 +1,974 @@
+/**
+ * @file Covert Communications - Self-Contained Covert Communications Platform
+ * @author {{AVTOR}}
+ * @version {{VERZIJA}}
+ * @date {{DATUM}}
+ * @project {{IME_PROJEKTA}}
+ * @domain VARNOSTNI_SISTEMI
+ * 
+ * @requirement REQ-SEC-COV-001
+ * @design DSN-SEC-COV-001
+ * @test TST-SEC-COV-001
+ * 
+ * @description
+ * Enterprise-grade self-contained covert communications platform implementing
+ * comprehensive steganography, covert channels, encrypted communications,
+ * dead drops, and secure messaging. All communication algorithms are natively
+ * implemented without external dependencies.
+ * 
+ * @classification TOP SECRET - Covert Communications
+ * @authorization Required: Level 5 Security Clearance
+ * @dependencies NONE - Fully self-contained implementation
+ */
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// COVERT COMMUNICATIONS TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export type CommunicationType =
+  | 'STEGANOGRAPHY'
+  | 'COVERT_CHANNEL'
+  | 'ENCRYPTED'
+  | 'DEAD_DROP'
+  | 'BURST_TRANSMISSION'
+  | 'SPREAD_SPECTRUM';
+
+export type SteganographyType =
+  | 'IMAGE'
+  | 'AUDIO'
+  | 'VIDEO'
+  | 'TEXT'
+  | 'DOCUMENT'
+  | 'NETWORK'
+  | 'FILESYSTEM';
+
+export type CovertChannelType =
+  | 'TIMING'
+  | 'STORAGE'
+  | 'NETWORK'
+  | 'ACOUSTIC'
+  | 'ELECTROMAGNETIC'
+  | 'OPTICAL';
+
+export type EncryptionType =
+  | 'SYMMETRIC'
+  | 'ASYMMETRIC'
+  | 'HYBRID'
+  | 'POST_QUANTUM'
+  | 'ONE_TIME_PAD';
+
+export type ProtocolType =
+  | 'DNS'
+  | 'HTTP'
+  | 'HTTPS'
+  | 'ICMP'
+  | 'TCP'
+  | 'UDP'
+  | 'SMTP'
+  | 'CUSTOM';
+
+export type SecurityLevel =
+  | 'TOP_SECRET'
+  | 'SECRET'
+  | 'CONFIDENTIAL'
+  | 'UNCLASSIFIED';
+
+export type OperationalMode =
+  | 'ACTIVE'
+  | 'PASSIVE'
+  | 'BURST'
+  | 'SCHEDULED';
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// COVERT COMMUNICATIONS CONFIGURATION
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface CovertCommunicationsConfig {
+  readonly platformId: string;
+  readonly name: string;
+  readonly version: string;
+  readonly mode: OperationalMode;
+  readonly steganography: SteganographyConfig;
+  readonly covertChannels: CovertChannelsConfig;
+  readonly encryption: EncryptionConfig;
+  readonly deadDrops: DeadDropConfig;
+  readonly burstTransmission: BurstTransmissionConfig;
+  readonly protocols: ProtocolsConfig;
+  readonly keyManagement: KeyManagementConfig;
+  readonly detection: DetectionAvoidanceConfig;
+  readonly reporting: ReportingConfig;
+  readonly storage: StorageConfig;
+  readonly security: SecurityConfig;
+  readonly metadata: PlatformMetadata;
+}
+
+export interface SteganographyConfig {
+  readonly enabled: boolean;
+  readonly image: ImageSteganographyConfig;
+  readonly audio: AudioSteganographyConfig;
+  readonly video: VideoSteganographyConfig;
+  readonly text: TextSteganographyConfig;
+  readonly document: DocumentSteganographyConfig;
+  readonly network: NetworkSteganographyConfig;
+}
+
+export interface ImageSteganographyConfig {
+  readonly enabled: boolean;
+  readonly techniques: ImageTechniqueConfig;
+  readonly formats: readonly ImageFormat[];
+  readonly capacity: CapacityConfig;
+  readonly detection: StegDetectionConfig;
+}
+
+export interface ImageTechniqueConfig {
+  readonly enabled: boolean;
+  readonly lsb: LSBConfig;
+  readonly dct: DCTConfig;
+  readonly dwt: DWTConfig;
+  readonly spread: SpreadSpectrumConfig;
+}
+
+export interface LSBConfig {
+  readonly enabled: boolean;
+  readonly bitPlanes: readonly number[];
+  readonly randomization: boolean;
+  readonly encryption: boolean;
+}
+
+export interface DCTConfig {
+  readonly enabled: boolean;
+  readonly coefficients: readonly string[];
+  readonly quantization: boolean;
+  readonly robustness: 'LOW' | 'MEDIUM' | 'HIGH';
+}
+
+export interface DWTConfig {
+  readonly enabled: boolean;
+  readonly levels: number;
+  readonly subbands: readonly string[];
+  readonly embedding: 'ADDITIVE' | 'MULTIPLICATIVE';
+}
+
+export interface SpreadSpectrumConfig {
+  readonly enabled: boolean;
+  readonly chipRate: number;
+  readonly spreading: 'DIRECT' | 'FREQUENCY_HOPPING';
+  readonly synchronization: boolean;
+}
+
+export type ImageFormat =
+  | 'PNG'
+  | 'JPEG'
+  | 'BMP'
+  | 'TIFF'
+  | 'GIF'
+  | 'WEBP';
+
+export interface CapacityConfig {
+  readonly maximum: number;
+  readonly optimal: number;
+  readonly adaptive: boolean;
+}
+
+export interface StegDetectionConfig {
+  readonly enabled: boolean;
+  readonly statistical: boolean;
+  readonly visual: boolean;
+  readonly machinelearning: boolean;
+}
+
+export interface AudioSteganographyConfig {
+  readonly enabled: boolean;
+  readonly techniques: AudioTechniqueConfig;
+  readonly formats: readonly AudioFormat[];
+  readonly capacity: CapacityConfig;
+}
+
+export interface AudioTechniqueConfig {
+  readonly enabled: boolean;
+  readonly lsb: boolean;
+  readonly phaseEncoding: boolean;
+  readonly echoHiding: boolean;
+  readonly spreadSpectrum: boolean;
+}
+
+export type AudioFormat =
+  | 'WAV'
+  | 'MP3'
+  | 'FLAC'
+  | 'OGG'
+  | 'AAC';
+
+export interface VideoSteganographyConfig {
+  readonly enabled: boolean;
+  readonly techniques: VideoTechniqueConfig;
+  readonly formats: readonly VideoFormat[];
+  readonly capacity: CapacityConfig;
+}
+
+export interface VideoTechniqueConfig {
+  readonly enabled: boolean;
+  readonly frameBased: boolean;
+  readonly motionVector: boolean;
+  readonly dctBased: boolean;
+  readonly audioBased: boolean;
+}
+
+export type VideoFormat =
+  | 'MP4'
+  | 'AVI'
+  | 'MKV'
+  | 'MOV'
+  | 'WEBM';
+
+export interface TextSteganographyConfig {
+  readonly enabled: boolean;
+  readonly techniques: TextTechniqueConfig;
+  readonly languages: readonly string[];
+}
+
+export interface TextTechniqueConfig {
+  readonly enabled: boolean;
+  readonly whitespace: boolean;
+  readonly unicode: boolean;
+  readonly syntactic: boolean;
+  readonly semantic: boolean;
+  readonly formatting: boolean;
+}
+
+export interface DocumentSteganographyConfig {
+  readonly enabled: boolean;
+  readonly techniques: DocumentTechniqueConfig;
+  readonly formats: readonly DocumentFormat[];
+}
+
+export interface DocumentTechniqueConfig {
+  readonly enabled: boolean;
+  readonly metadata: boolean;
+  readonly formatting: boolean;
+  readonly embedded: boolean;
+  readonly structural: boolean;
+}
+
+export type DocumentFormat =
+  | 'PDF'
+  | 'DOCX'
+  | 'XLSX'
+  | 'PPTX'
+  | 'ODT';
+
+export interface NetworkSteganographyConfig {
+  readonly enabled: boolean;
+  readonly techniques: NetworkStegTechniqueConfig;
+  readonly protocols: readonly ProtocolType[];
+}
+
+export interface NetworkStegTechniqueConfig {
+  readonly enabled: boolean;
+  readonly headerFields: boolean;
+  readonly timing: boolean;
+  readonly payload: boolean;
+  readonly sequencing: boolean;
+}
+
+export interface CovertChannelsConfig {
+  readonly enabled: boolean;
+  readonly timing: TimingChannelConfig;
+  readonly storage: StorageChannelConfig;
+  readonly network: NetworkChannelConfig;
+  readonly acoustic: AcousticChannelConfig;
+  readonly electromagnetic: ElectromagneticChannelConfig;
+}
+
+export interface TimingChannelConfig {
+  readonly enabled: boolean;
+  readonly techniques: TimingTechniqueConfig;
+  readonly synchronization: SynchronizationConfig;
+  readonly bandwidth: BandwidthConfig;
+}
+
+export interface TimingTechniqueConfig {
+  readonly enabled: boolean;
+  readonly interPacketDelay: boolean;
+  readonly burstTiming: boolean;
+  readonly jitterModulation: boolean;
+  readonly timestampManipulation: boolean;
+}
+
+export interface SynchronizationConfig {
+  readonly enabled: boolean;
+  readonly method: 'CLOCK' | 'MARKER' | 'PATTERN';
+  readonly tolerance: number;
+}
+
+export interface BandwidthConfig {
+  readonly minimum: number;
+  readonly maximum: number;
+  readonly adaptive: boolean;
+}
+
+export interface StorageChannelConfig {
+  readonly enabled: boolean;
+  readonly techniques: StorageTechniqueConfig;
+  readonly locations: readonly StorageLocation[];
+}
+
+export interface StorageTechniqueConfig {
+  readonly enabled: boolean;
+  readonly fileAttributes: boolean;
+  readonly slackSpace: boolean;
+  readonly alternateStreams: boolean;
+  readonly hiddenPartitions: boolean;
+}
+
+export type StorageLocation =
+  | 'FILESYSTEM'
+  | 'REGISTRY'
+  | 'DATABASE'
+  | 'MEMORY'
+  | 'CLOUD';
+
+export interface NetworkChannelConfig {
+  readonly enabled: boolean;
+  readonly techniques: NetworkChannelTechniqueConfig;
+  readonly protocols: readonly ProtocolType[];
+}
+
+export interface NetworkChannelTechniqueConfig {
+  readonly enabled: boolean;
+  readonly dns: DNSChannelConfig;
+  readonly icmp: ICMPChannelConfig;
+  readonly http: HTTPChannelConfig;
+  readonly tcp: TCPChannelConfig;
+}
+
+export interface DNSChannelConfig {
+  readonly enabled: boolean;
+  readonly queryTypes: readonly DNSQueryType[];
+  readonly encoding: 'BASE32' | 'BASE64' | 'HEX';
+  readonly tunneling: boolean;
+}
+
+export type DNSQueryType =
+  | 'A'
+  | 'AAAA'
+  | 'TXT'
+  | 'MX'
+  | 'CNAME'
+  | 'NULL';
+
+export interface ICMPChannelConfig {
+  readonly enabled: boolean;
+  readonly types: readonly number[];
+  readonly payloadEncoding: boolean;
+  readonly sequenceModulation: boolean;
+}
+
+export interface HTTPChannelConfig {
+  readonly enabled: boolean;
+  readonly headers: boolean;
+  readonly cookies: boolean;
+  readonly parameters: boolean;
+  readonly body: boolean;
+}
+
+export interface TCPChannelConfig {
+  readonly enabled: boolean;
+  readonly options: boolean;
+  readonly sequenceNumbers: boolean;
+  readonly urgentPointer: boolean;
+  readonly windowSize: boolean;
+}
+
+export interface AcousticChannelConfig {
+  readonly enabled: boolean;
+  readonly ultrasonic: boolean;
+  readonly infrasonic: boolean;
+  readonly audible: boolean;
+  readonly modulation: AcousticModulationConfig;
+}
+
+export interface AcousticModulationConfig {
+  readonly enabled: boolean;
+  readonly type: 'FSK' | 'PSK' | 'ASK' | 'OFDM';
+  readonly frequency: number;
+  readonly bandwidth: number;
+}
+
+export interface ElectromagneticChannelConfig {
+  readonly enabled: boolean;
+  readonly rf: RFChannelConfig;
+  readonly optical: OpticalChannelConfig;
+  readonly powerLine: PowerLineChannelConfig;
+}
+
+export interface RFChannelConfig {
+  readonly enabled: boolean;
+  readonly frequency: number;
+  readonly bandwidth: number;
+  readonly modulation: 'AM' | 'FM' | 'PM' | 'SPREAD';
+  readonly power: number;
+}
+
+export interface OpticalChannelConfig {
+  readonly enabled: boolean;
+  readonly infrared: boolean;
+  readonly visible: boolean;
+  readonly ultraviolet: boolean;
+  readonly modulation: 'OOK' | 'PPM' | 'PWM';
+}
+
+export interface PowerLineChannelConfig {
+  readonly enabled: boolean;
+  readonly frequency: number;
+  readonly modulation: 'FSK' | 'OFDM';
+  readonly coupling: 'CAPACITIVE' | 'INDUCTIVE';
+}
+
+export interface EncryptionConfig {
+  readonly enabled: boolean;
+  readonly symmetric: SymmetricEncryptionConfig;
+  readonly asymmetric: AsymmetricEncryptionConfig;
+  readonly hybrid: HybridEncryptionConfig;
+  readonly postQuantum: PostQuantumConfig;
+  readonly oneTimePad: OneTimePadConfig;
+}
+
+export interface SymmetricEncryptionConfig {
+  readonly enabled: boolean;
+  readonly algorithms: readonly SymmetricAlgorithm[];
+  readonly keySize: number;
+  readonly mode: CipherMode;
+}
+
+export type SymmetricAlgorithm =
+  | 'AES_256_GCM'
+  | 'CHACHA20_POLY1305'
+  | 'SERPENT'
+  | 'TWOFISH'
+  | 'CAMELLIA';
+
+export type CipherMode =
+  | 'GCM'
+  | 'CCM'
+  | 'CTR'
+  | 'CBC';
+
+export interface AsymmetricEncryptionConfig {
+  readonly enabled: boolean;
+  readonly algorithms: readonly AsymmetricAlgorithm[];
+  readonly keySize: number;
+}
+
+export type AsymmetricAlgorithm =
+  | 'RSA'
+  | 'ECDH'
+  | 'ECDSA'
+  | 'ED25519'
+  | 'X25519';
+
+export interface HybridEncryptionConfig {
+  readonly enabled: boolean;
+  readonly keyEncapsulation: string;
+  readonly dataEncryption: string;
+}
+
+export interface PostQuantumConfig {
+  readonly enabled: boolean;
+  readonly algorithms: readonly PostQuantumAlgorithm[];
+  readonly hybridMode: boolean;
+}
+
+export type PostQuantumAlgorithm =
+  | 'KYBER'
+  | 'DILITHIUM'
+  | 'SPHINCS'
+  | 'NTRU'
+  | 'SABER';
+
+export interface OneTimePadConfig {
+  readonly enabled: boolean;
+  readonly keyGeneration: 'HARDWARE_RNG' | 'QUANTUM_RNG';
+  readonly keyDistribution: 'PHYSICAL' | 'QKD';
+  readonly keyDestruction: boolean;
+}
+
+export interface DeadDropConfig {
+  readonly enabled: boolean;
+  readonly digital: DigitalDeadDropConfig;
+  readonly physical: PhysicalDeadDropConfig;
+  readonly scheduling: SchedulingConfig;
+}
+
+export interface DigitalDeadDropConfig {
+  readonly enabled: boolean;
+  readonly locations: readonly DigitalLocation[];
+  readonly encryption: boolean;
+  readonly steganography: boolean;
+  readonly expiration: boolean;
+}
+
+export type DigitalLocation =
+  | 'CLOUD_STORAGE'
+  | 'PASTE_SITE'
+  | 'SOCIAL_MEDIA'
+  | 'FORUM'
+  | 'EMAIL'
+  | 'BLOCKCHAIN';
+
+export interface PhysicalDeadDropConfig {
+  readonly enabled: boolean;
+  readonly types: readonly PhysicalDropType[];
+  readonly verification: boolean;
+  readonly surveillance: boolean;
+}
+
+export type PhysicalDropType =
+  | 'USB_DEVICE'
+  | 'SD_CARD'
+  | 'PRINTED_MATERIAL'
+  | 'CONCEALMENT_DEVICE';
+
+export interface SchedulingConfig {
+  readonly enabled: boolean;
+  readonly windows: readonly TimeWindow[];
+  readonly randomization: boolean;
+  readonly fallback: boolean;
+}
+
+export interface TimeWindow {
+  readonly start: number;
+  readonly end: number;
+  readonly timezone: string;
+  readonly days: readonly number[];
+}
+
+export interface BurstTransmissionConfig {
+  readonly enabled: boolean;
+  readonly compression: CompressionConfig;
+  readonly encoding: BurstEncodingConfig;
+  readonly timing: BurstTimingConfig;
+  readonly error: ErrorCorrectionConfig;
+}
+
+export interface CompressionConfig {
+  readonly enabled: boolean;
+  readonly algorithm: 'ZLIB' | 'LZ4' | 'ZSTD' | 'BROTLI';
+  readonly level: number;
+}
+
+export interface BurstEncodingConfig {
+  readonly enabled: boolean;
+  readonly method: 'BASE64' | 'BASE32' | 'HEX' | 'CUSTOM';
+  readonly padding: boolean;
+}
+
+export interface BurstTimingConfig {
+  readonly enabled: boolean;
+  readonly duration: number;
+  readonly interval: number;
+  readonly jitter: number;
+}
+
+export interface ErrorCorrectionConfig {
+  readonly enabled: boolean;
+  readonly algorithm: 'REED_SOLOMON' | 'LDPC' | 'TURBO';
+  readonly redundancy: number;
+}
+
+export interface ProtocolsConfig {
+  readonly enabled: boolean;
+  readonly primary: readonly ProtocolType[];
+  readonly fallback: readonly ProtocolType[];
+  readonly custom: CustomProtocolConfig;
+}
+
+export interface CustomProtocolConfig {
+  readonly enabled: boolean;
+  readonly specification: string | null;
+  readonly obfuscation: boolean;
+  readonly mimicry: boolean;
+}
+
+export interface KeyManagementConfig {
+  readonly enabled: boolean;
+  readonly generation: KeyGenerationConfig;
+  readonly distribution: KeyDistributionConfig;
+  readonly rotation: KeyRotationConfig;
+  readonly destruction: KeyDestructionConfig;
+}
+
+export interface KeyGenerationConfig {
+  readonly enabled: boolean;
+  readonly source: 'SOFTWARE' | 'HARDWARE' | 'QUANTUM';
+  readonly entropy: number;
+}
+
+export interface KeyDistributionConfig {
+  readonly enabled: boolean;
+  readonly method: 'PRE_SHARED' | 'KEY_EXCHANGE' | 'QKD';
+  readonly verification: boolean;
+}
+
+export interface KeyRotationConfig {
+  readonly enabled: boolean;
+  readonly interval: number;
+  readonly automatic: boolean;
+  readonly triggered: boolean;
+}
+
+export interface KeyDestructionConfig {
+  readonly enabled: boolean;
+  readonly method: 'OVERWRITE' | 'ZEROIZE' | 'CRYPTO_SHRED';
+  readonly verification: boolean;
+}
+
+export interface DetectionAvoidanceConfig {
+  readonly enabled: boolean;
+  readonly traffic: TrafficAnalysisConfig;
+  readonly pattern: PatternAvoidanceConfig;
+  readonly timing: TimingAvoidanceConfig;
+}
+
+export interface TrafficAnalysisConfig {
+  readonly enabled: boolean;
+  readonly padding: boolean;
+  readonly cover: boolean;
+  readonly mixing: boolean;
+}
+
+export interface PatternAvoidanceConfig {
+  readonly enabled: boolean;
+  readonly randomization: boolean;
+  readonly mimicry: boolean;
+  readonly variation: boolean;
+}
+
+export interface TimingAvoidanceConfig {
+  readonly enabled: boolean;
+  readonly jitter: boolean;
+  readonly delays: boolean;
+  readonly scheduling: boolean;
+}
+
+export interface ReportingConfig {
+  readonly enabled: boolean;
+  readonly formats: readonly ReportFormat[];
+  readonly sections: readonly ReportSection[];
+  readonly automation: ReportAutomationConfig;
+}
+
+export type ReportFormat =
+  | 'PDF'
+  | 'HTML'
+  | 'JSON'
+  | 'ENCRYPTED';
+
+export type ReportSection =
+  | 'EXECUTIVE_SUMMARY'
+  | 'CHANNEL_STATUS'
+  | 'TRANSMISSION_LOG'
+  | 'SECURITY_ANALYSIS'
+  | 'RECOMMENDATIONS';
+
+export interface ReportAutomationConfig {
+  readonly enabled: boolean;
+  readonly scheduling: boolean;
+  readonly triggers: readonly string[];
+}
+
+export interface StorageConfig {
+  readonly type: 'DATABASE' | 'FILE_SYSTEM' | 'HYBRID';
+  readonly encryption: StorageEncryptionConfig;
+  readonly retention: RetentionConfig;
+  readonly backup: BackupConfig;
+}
+
+export interface StorageEncryptionConfig {
+  readonly enabled: boolean;
+  readonly algorithm: 'AES_256_GCM' | 'CHACHA20_POLY1305';
+  readonly keyManagement: 'LOCAL' | 'HSM' | 'KMS';
+}
+
+export interface RetentionConfig {
+  readonly enabled: boolean;
+  readonly messages: number;
+  readonly keys: number;
+  readonly logs: number;
+}
+
+export interface BackupConfig {
+  readonly enabled: boolean;
+  readonly frequency: number;
+  readonly encryption: boolean;
+  readonly offsite: boolean;
+}
+
+export interface SecurityConfig {
+  readonly authentication: AuthenticationConfig;
+  readonly authorization: AuthorizationConfig;
+  readonly audit: AuditConfig;
+  readonly classification: ClassificationConfig;
+}
+
+export interface AuthenticationConfig {
+  readonly enabled: boolean;
+  readonly methods: readonly ('PKI' | 'CAC' | 'BIOMETRIC' | 'MFA')[];
+  readonly sessionTimeout: number;
+}
+
+export interface AuthorizationConfig {
+  readonly enabled: boolean;
+  readonly model: 'RBAC' | 'ABAC' | 'MAC';
+  readonly clearanceRequired: boolean;
+}
+
+export interface AuditConfig {
+  readonly enabled: boolean;
+  readonly logAllAccess: boolean;
+  readonly logAllTransmissions: boolean;
+  readonly retention: number;
+}
+
+export interface ClassificationConfig {
+  readonly enabled: boolean;
+  readonly defaultLevel: SecurityLevel;
+  readonly autoClassification: boolean;
+}
+
+export interface PlatformMetadata {
+  readonly createdAt: number;
+  readonly updatedAt: number;
+  readonly createdBy: string;
+  readonly version: string;
+  readonly tags: readonly string[];
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// CHANNEL TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface CommunicationChannel {
+  readonly channelId: string;
+  readonly name: string;
+  readonly type: CommunicationType;
+  readonly status: ChannelStatus;
+  readonly configuration: ChannelConfiguration;
+  readonly endpoints: readonly ChannelEndpoint[];
+  readonly statistics: ChannelStatistics;
+  readonly security: ChannelSecurity;
+  readonly metadata: ChannelMetadata;
+}
+
+export type ChannelStatus =
+  | 'ACTIVE'
+  | 'INACTIVE'
+  | 'COMPROMISED'
+  | 'MAINTENANCE'
+  | 'RETIRED';
+
+export interface ChannelConfiguration {
+  readonly protocol: ProtocolType;
+  readonly encryption: EncryptionType;
+  readonly steganography: SteganographyType | null;
+  readonly bandwidth: number;
+  readonly latency: number;
+}
+
+export interface ChannelEndpoint {
+  readonly endpointId: string;
+  readonly type: 'SOURCE' | 'DESTINATION' | 'RELAY';
+  readonly address: string;
+  readonly port: number | null;
+  readonly status: EndpointStatus;
+}
+
+export type EndpointStatus =
+  | 'ONLINE'
+  | 'OFFLINE'
+  | 'UNKNOWN'
+  | 'COMPROMISED';
+
+export interface ChannelStatistics {
+  readonly messagesTransmitted: number;
+  readonly bytesTransmitted: number;
+  readonly messagesReceived: number;
+  readonly bytesReceived: number;
+  readonly errorRate: number;
+  readonly uptime: number;
+}
+
+export interface ChannelSecurity {
+  readonly encryptionAlgorithm: string;
+  readonly keySize: number;
+  readonly lastKeyRotation: number;
+  readonly integrityVerification: boolean;
+}
+
+export interface ChannelMetadata {
+  readonly createdAt: number;
+  readonly updatedAt: number;
+  readonly createdBy: string;
+  readonly classification: SecurityLevel;
+  readonly tags: readonly string[];
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// MESSAGE TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface CovertMessage {
+  readonly messageId: string;
+  readonly channelId: string;
+  readonly direction: 'OUTBOUND' | 'INBOUND';
+  readonly status: MessageStatus;
+  readonly content: MessageContent;
+  readonly encryption: MessageEncryption;
+  readonly steganography: MessageSteganography | null;
+  readonly transmission: TransmissionInfo;
+  readonly metadata: MessageMetadata;
+}
+
+export type MessageStatus =
+  | 'PENDING'
+  | 'TRANSMITTING'
+  | 'TRANSMITTED'
+  | 'RECEIVED'
+  | 'ACKNOWLEDGED'
+  | 'FAILED';
+
+export interface MessageContent {
+  readonly type: 'TEXT' | 'BINARY' | 'FILE';
+  readonly size: number;
+  readonly hash: string;
+  readonly compressed: boolean;
+}
+
+export interface MessageEncryption {
+  readonly algorithm: string;
+  readonly keyId: string;
+  readonly iv: string;
+  readonly tag: string | null;
+}
+
+export interface MessageSteganography {
+  readonly type: SteganographyType;
+  readonly carrier: string;
+  readonly capacity: number;
+  readonly utilization: number;
+}
+
+export interface TransmissionInfo {
+  readonly startTime: number;
+  readonly endTime: number | null;
+  readonly attempts: number;
+  readonly bytesTransmitted: number;
+  readonly errorCount: number;
+}
+
+export interface MessageMetadata {
+  readonly createdAt: number;
+  readonly createdBy: string;
+  readonly classification: SecurityLevel;
+  readonly priority: 'CRITICAL' | 'HIGH' | 'NORMAL' | 'LOW';
+  readonly expiration: number | null;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SESSION TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface CommunicationSession {
+  readonly sessionId: string;
+  readonly platformId: string;
+  readonly state: SessionState;
+  readonly config: SessionConfig;
+  readonly progress: SessionProgress;
+  readonly channels: readonly CommunicationChannel[];
+  readonly messages: readonly CovertMessage[];
+  readonly alerts: readonly SessionAlert[];
+  readonly errors: readonly SessionError[];
+  readonly startTime: number;
+  readonly endTime: number | null;
+  readonly metadata: SessionMetadata;
+}
+
+export type SessionState =
+  | 'PENDING'
+  | 'INITIALIZING'
+  | 'ACTIVE'
+  | 'TRANSMITTING'
+  | 'RECEIVING'
+  | 'COMPLETED'
+  | 'FAILED';
+
+export interface SessionConfig {
+  readonly mode: OperationalMode;
+  readonly channels: readonly string[];
+  readonly options: Readonly<Record<string, unknown>>;
+}
+
+export interface SessionProgress {
+  readonly phase: SessionPhase;
+  readonly percentage: number;
+  readonly currentTask: string | null;
+  readonly estimatedTimeRemaining: number | null;
+}
+
+export type SessionPhase =
+  | 'INITIALIZING'
+  | 'CHANNEL_SETUP'
+  | 'KEY_EXCHANGE'
+  | 'TRANSMISSION'
+  | 'RECEPTION'
+  | 'VERIFICATION'
+  | 'FINALIZING';
+
+export interface SessionAlert {
+  readonly alertId: string;
+  readonly timestamp: number;
+  readonly type: AlertType;
+  readonly severity: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
+  readonly source: string;
+  readonly description: string;
+  readonly status: AlertStatus;
+}
+
+export type AlertType =
+  | 'CHANNEL_COMPROMISED'
+  | 'DETECTION_RISK'
+  | 'TRANSMISSION_FAILURE'
+  | 'KEY_EXPIRATION'
+  | 'SECURITY_VIOLATION';
+
+export type AlertStatus =
+  | 'NEW'
+  | 'ACKNOWLEDGED'
+  | 'INVESTIGATING'
+  | 'RESOLVED'
+  | 'ESCALATED';
+
+export interface SessionError {
+  readonly errorId: string;
+  readonly timestamp: number;
+  readonly type: SessionErrorType;
+  readonly message: string;
+  readonly details: string | null;
+  readonly recoverable: boolean;
+}
+
+export type SessionErrorType =
+  | 'CHANNEL_ERROR'
+  | 'ENCRYPTION_ERROR'
+  | 'TRANSMISSION_ERROR'
+  | 'STEGANOGRAPHY_ERROR'
+  | 'TIMEOUT'
+  | 'INTERNAL_ERROR';
+
+export interface SessionMetadata {
+  readonly platformVersion: string;
+  readonly startedBy: string;
+  readonly classification: SecurityLevel;
+  readonly authorization: string;
+  readonly tags: readonly string[];
+}

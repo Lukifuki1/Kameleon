@@ -1,0 +1,277 @@
+/**
+ * @file Unit testi za jedro varnostnega sistema {{IME_PROJEKTA}}
+ * @author {{AVTOR}}
+ * @version {{VERZIJA}}
+ * @date {{DATUM}}
+ * @domain {{DOMENA_SL}}
+ * 
+ * @description
+ * Unit testi za jedro varnostnega sistema:
+ * - Testi inicializacije varnostnega jedra
+ * - Testi konfiguracije varnostnih modulov
+ * - Testi validacije varnostnih parametrov
+ * - Testi deterministicnega obnasanja
+ * 
+ * @compliance DO-178C, IEC-61508, ISO-26262, MIL-STD-882E
+ * @security ISO-27001, NIST-800-53, SOC-2
+ * @meta_atom TST_001 - Unit Testing
+ * @requirement REQ-GEN-TST-JEDRO-001
+ * @design DSN-GEN-TST-JEDRO-001
+ * @test TST-GEN-TST-JEDRO-001
+ */
+
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import {
+    inicializirajJedro,
+    izvediOperacijo,
+    pridobiStanje,
+    PRIVZETA_KONFIGURACIJA,
+    KonfiguracijaJedra,
+} from '../../src/jedro';
+
+// ============================================================================
+// TESTNI PODATKI
+// ============================================================================
+
+const VELJAVNA_KONFIGURACIJA: KonfiguracijaJedra = {
+    imeProjekta: 'TestniVarnostniSistem',
+    verzija: '1.0.0',
+    domena: 'VARNOSTNI_SISTEMI',
+    moduli: ['avtentikacija', 'avtorizacija', 'kriptografija'],
+    funkcije: ['prijava', 'odjava', 'preveriDovoljenja'],
+    deterministicniNacin: true,
+};
+
+const NEVELJAVNA_KONFIGURACIJA_BREZ_IMENA: KonfiguracijaJedra = {
+    imeProjekta: '',
+    verzija: '1.0.0',
+    domena: 'VARNOSTNI_SISTEMI',
+    moduli: [],
+    funkcije: [],
+    deterministicniNacin: true,
+};
+
+const NEVELJAVNA_KONFIGURACIJA_BREZ_VERZIJE: KonfiguracijaJedra = {
+    imeProjekta: 'TestniSistem',
+    verzija: '',
+    domena: 'VARNOSTNI_SISTEMI',
+    moduli: [],
+    funkcije: [],
+    deterministicniNacin: true,
+};
+
+// ============================================================================
+// TESTI INICIALIZACIJE
+// ============================================================================
+
+describe('Jedro varnostnega sistema - Inicializacija', () => {
+    describe('inicializirajJedro', () => {
+        it('naj uspesno inicializira jedro z veljavno konfiguracijo', () => {
+            // Arrange
+            const konfiguracija = VELJAVNA_KONFIGURACIJA;
+            
+            // Act
+            const rezultat = inicializirajJedro(konfiguracija);
+            
+            // Assert
+            expect(rezultat.uspesno).toBe(true);
+            expect(rezultat.sporocilo).toContain('uspesno inicializirano');
+            expect(rezultat.podatki.verzija).toBe('1.0.0');
+            expect(rezultat.podatki.domena).toBe('VARNOSTNI_SISTEMI');
+            expect(rezultat.casIzvajanja).toBeGreaterThanOrEqual(0);
+        });
+        
+        it('naj vrne napako pri manjkajocem imenu projekta', () => {
+            // Arrange
+            const konfiguracija = NEVELJAVNA_KONFIGURACIJA_BREZ_IMENA;
+            
+            // Act
+            const rezultat = inicializirajJedro(konfiguracija);
+            
+            // Assert
+            expect(rezultat.uspesno).toBe(false);
+            expect(rezultat.sporocilo).toBe('Ime projekta je obvezno');
+        });
+        
+        it('naj vrne napako pri manjkajoci verziji', () => {
+            // Arrange
+            const konfiguracija = NEVELJAVNA_KONFIGURACIJA_BREZ_VERZIJE;
+            
+            // Act
+            const rezultat = inicializirajJedro(konfiguracija);
+            
+            // Assert
+            expect(rezultat.uspesno).toBe(false);
+            expect(rezultat.sporocilo).toBe('Verzija je obvezna');
+        });
+        
+        it('naj uporabi privzeto konfiguracijo ce ni podana', () => {
+            // Arrange & Act
+            const rezultat = inicializirajJedro();
+            
+            // Assert
+            expect(rezultat.uspesno).toBe(true);
+            expect(rezultat.podatki.verzija).toBe(PRIVZETA_KONFIGURACIJA.verzija);
+        });
+        
+        it('naj pravilno steje module in funkcije', () => {
+            // Arrange
+            const konfiguracija = VELJAVNA_KONFIGURACIJA;
+            
+            // Act
+            const rezultat = inicializirajJedro(konfiguracija);
+            
+            // Assert
+            expect(rezultat.podatki.steviloModulov).toBe(3);
+            expect(rezultat.podatki.steviloFunkcij).toBe(3);
+        });
+    });
+});
+
+// ============================================================================
+// TESTI OPERACIJ
+// ============================================================================
+
+describe('Jedro varnostnega sistema - Operacije', () => {
+    describe('izvediOperacijo', () => {
+        it('naj uspesno izvede veljavno operacijo', () => {
+            // Arrange
+            const operacija = 'preveriAvtentikacijo';
+            const parametri = { uporabnikId: 'user123', token: process.env.TEST_AUTH_TOKEN };
+            
+            // Act
+            const rezultat = izvediOperacijo(operacija, parametri);
+            
+            // Assert
+            expect(rezultat.uspesno).toBe(true);
+            expect(rezultat.sporocilo).toContain('uspesno izvedena');
+            expect(rezultat.podatki.operacija).toBe('preveriAvtentikacijo');
+            expect(rezultat.podatki.parametri).toEqual(parametri);
+        });
+        
+        it('naj vrne napako pri praznem imenu operacije', () => {
+            // Arrange
+            const operacija = '';
+            
+            // Act
+            const rezultat = izvediOperacijo(operacija);
+            
+            // Assert
+            expect(rezultat.uspesno).toBe(false);
+            expect(rezultat.sporocilo).toBe('Ime operacije je obvezno');
+        });
+        
+        it('naj pravilno obravnava prazne parametre', () => {
+            // Arrange
+            const operacija = 'pridobiStatus';
+            
+            // Act
+            const rezultat = izvediOperacijo(operacija);
+            
+            // Assert
+            expect(rezultat.uspesno).toBe(true);
+            expect(rezultat.podatki.parametri).toEqual({});
+        });
+        
+        it('naj izmeri cas izvajanja', () => {
+            // Arrange
+            const operacija = 'testnaOperacija';
+            
+            // Act
+            const rezultat = izvediOperacijo(operacija);
+            
+            // Assert
+            expect(rezultat.casIzvajanja).toBeGreaterThanOrEqual(0);
+            expect(typeof rezultat.casIzvajanja).toBe('number');
+        });
+    });
+});
+
+// ============================================================================
+// TESTI STANJA
+// ============================================================================
+
+describe('Jedro varnostnega sistema - Stanje', () => {
+    describe('pridobiStanje', () => {
+        it('naj vrne trenutno stanje jedra', () => {
+            // Arrange & Act
+            const rezultat = pridobiStanje();
+            
+            // Assert
+            expect(rezultat.uspesno).toBe(true);
+            expect(rezultat.sporocilo).toBe('Stanje jedra pridobljeno');
+            expect(rezultat.podatki).toHaveProperty('projekt');
+            expect(rezultat.podatki).toHaveProperty('verzija');
+            expect(rezultat.podatki).toHaveProperty('domena');
+        });
+        
+        it('naj vkljuci casovni zig', () => {
+            // Arrange & Act
+            const rezultat = pridobiStanje();
+            
+            // Assert
+            expect(rezultat.casIzvajanja).toBeGreaterThanOrEqual(0);
+        });
+    });
+});
+
+// ============================================================================
+// TESTI DETERMINIZMA
+// ============================================================================
+
+describe('Jedro varnostnega sistema - Determinizem', () => {
+    it('naj vrne enake rezultate za enake vhode', () => {
+        // Arrange
+        const konfiguracija = VELJAVNA_KONFIGURACIJA;
+        
+        // Act
+        const rezultat1 = inicializirajJedro(konfiguracija);
+        const rezultat2 = inicializirajJedro(konfiguracija);
+        
+        // Assert
+        expect(rezultat1.uspesno).toBe(rezultat2.uspesno);
+        expect(rezultat1.sporocilo).toBe(rezultat2.sporocilo);
+        expect(rezultat1.podatki.verzija).toBe(rezultat2.podatki.verzija);
+        expect(rezultat1.podatki.domena).toBe(rezultat2.podatki.domena);
+    });
+    
+    it('naj operacije vrnejo konsistentne rezultate', () => {
+        // Arrange
+        const operacija = 'testnaOperacija';
+        const parametri = { kljuc: 'vrednost' };
+        
+        // Act
+        const rezultat1 = izvediOperacijo(operacija, parametri);
+        const rezultat2 = izvediOperacijo(operacija, parametri);
+        
+        // Assert
+        expect(rezultat1.uspesno).toBe(rezultat2.uspesno);
+        expect(rezultat1.podatki.operacija).toBe(rezultat2.podatki.operacija);
+    });
+});
+
+// ============================================================================
+// TESTI PRIVZETE KONFIGURACIJE
+// ============================================================================
+
+describe('Jedro varnostnega sistema - Privzeta konfiguracija', () => {
+    it('naj ima privzeta konfiguracija vse obvezne lastnosti', () => {
+        // Assert
+        expect(PRIVZETA_KONFIGURACIJA).toHaveProperty('imeProjekta');
+        expect(PRIVZETA_KONFIGURACIJA).toHaveProperty('verzija');
+        expect(PRIVZETA_KONFIGURACIJA).toHaveProperty('domena');
+        expect(PRIVZETA_KONFIGURACIJA).toHaveProperty('moduli');
+        expect(PRIVZETA_KONFIGURACIJA).toHaveProperty('funkcije');
+        expect(PRIVZETA_KONFIGURACIJA).toHaveProperty('deterministicniNacin');
+    });
+    
+    it('naj ima privzeta konfiguracija omogocen deterministicni nacin', () => {
+        // Assert
+        expect(PRIVZETA_KONFIGURACIJA.deterministicniNacin).toBe(true);
+    });
+    
+    it('naj ima privzeta konfiguracija veljavno domeno', () => {
+        // Assert
+        expect(PRIVZETA_KONFIGURACIJA.domena).toBe('{{DOMENA_SL}}');
+    });
+});

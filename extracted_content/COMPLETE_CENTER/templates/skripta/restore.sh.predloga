@@ -1,0 +1,537 @@
+#!/bin/bash
+# {{IME_PROJEKTA}} - Restore Script
+# Domain: {{DOMENA_SL}}
+# Compliance: DO-178C, IEC-61508, ISO-26262, MIL-STD-882E
+
+set -euo pipefail
+
+# Configuration
+readonly SCRIPT_NAME="$(basename "$0")"
+readonly SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+readonly TIMESTAMP="$(date -u +%Y%m%d%H%M%S)"
+readonly LOG_FILE="/var/log/{{IME_PROJEKTA_SLUG}}/restore-${TIMESTAMP}.log"
+
+# Default values
+RESTORE_TYPE="full"
+SOURCE=""
+BACKUP_DIR="/var/backups/{{IME_PROJEKTA_SLUG}}"
+S3_BUCKET="{{S3_BACKUP_BUCKET}}"
+VERIFY=true
+DRY_RUN=false
+CONFIRM=false
+NOTIFY=true
+
+# Database configuration
+DB_HOST="${DB_HOST:-localhost}"
+DB_PORT="${DB_PORT:-5432}"
+DB_NAME="${DB_NAME:-{{IME_PROJEKTA_SLUG}}}"
+DB_USER="${DB_USER:-{{IME_PROJEKTA_SLUG}}}"
+
+# Logging functions
+log() {
+    local level="$1"
+    shift
+    local message="$*"
+    local timestamp
+    timestamp="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+    echo "[${timestamp}] [${level}] ${message}" | tee -a "${LOG_FILE}"
+}
+
+log_info() { log "INFO" "$@"; }
+log_warn() { log "WARN" "$@"; }
+log_error() { log "ERROR" "$@"; }
+
+# Error handling
+error_exit() {
+    log_error "$1"
+    send_notification "FAILED" "$1"
+    exit 1
+}
+
+# Usage
+usage() {
+    cat << EOF
+Usage: ${SCRIPT_NAME} [OPTIONS]
+
+Restore script for {{IME_PROJEKTA}} security system.
+
+Options:
+    -t, --type TYPE         Restore type: full, database, config, secrets (default: full)
+    -s, --source SOURCE     Backup source (timestamp or S3 path)
+    -d, --dir DIR           Local backup directory (default: ${BACKUP_DIR})
+    -b, --bucket BUCKET     S3 bucket (default: ${S3_BUCKET})
+    -v, --no-verify         Skip verification
+    -D, --dry-run           Show what would be restored without making changes
+    -c, --confirm           Confirm restore (required for actual restore)
+    -n, --no-notify         Disable notifications
+    -h, --help              Show this help message
+
+Examples:
+    ${SCRIPT_NAME} --source 20240115120000 --type database --confirm
+    ${SCRIPT_NAME} --source s3://bucket/backup.tar.gz --type full --confirm
+    ${SCRIPT_NAME} --source 20240115120000 --dry-run
+
+IMPORTANT: Restore operations can cause data loss. Always verify backups before restoring.
+
+EOF
+    exit 0
+}
+
+# Parse arguments
+parse_args() {
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            -t|--type)
+                RESTORE_TYPE="$2"
+                shift 2
+                ;;
+            -s|--source)
+                SOURCE="$2"
+                shift 2
+                ;;
+            -d|--dir)
+                BACKUP_DIR="$2"
+                shift 2
+                ;;
+            -b|--bucket)
+                S3_BUCKET="$2"
+                shift 2
+                ;;
+            -v|--no-verify)
+                VERIFY=false
+                shift
+                ;;
+            -D|--dry-run)
+                DRY_RUN=true
+                shift
+                ;;
+            -c|--confirm)
+                CONFIRM=true
+                shift
+                ;;
+            -n|--no-notify)
+                NOTIFY=false
+                shift
+                ;;
+            -h|--help)
+                usage
+                ;;
+            *)
+                error_exit "Unknown option: $1"
+                ;;
+        esac
+    done
+    
+    if [[ -z "${SOURCE}" ]]; then
+        error_exit "Source is required. Use --source to specify backup source."
+    fi
+    
+    if [[ "${DRY_RUN}" != true && "${CONFIRM}" != true ]]; then
+        error_exit "Restore requires confirmation. Use --confirm to proceed or --dry-run to preview."
+    fi
+}
+
+# Validate environment
+validate_environment() {
+    log_info "Validating environment..."
+    
+    # Check required tools
+    local required_tools=("psql" "aws" "gpg" "sha256sum" "tar" "gzip")
+    for tool in "${required_tools[@]}"; do
+        if ! command -v "${tool}" &> /dev/null; then
+            error_exit "Required tool not found: ${tool}"
+        fi
+    done
+    
+    # Check backup directory
+    if [[ ! -d "${BACKUP_DIR}" ]]; then
+        mkdir -p "${BACKUP_DIR}" || error_exit "Failed to create backup directory: ${BACKUP_DIR}"
+    fi
+    
+    log_info "Environment validation passed"
+}
+
+# Download from S3
+download_from_s3() {
+    local s3_path="$1"
+    local local_path="$2"
+    
+    log_info "Downloading from S3: ${s3_path}"
+    
+    aws s3 cp "${s3_path}" "${local_path}" || error_exit "S3 download failed: ${s3_path}"
+    
+    log_info "Download completed: ${local_path}"
+}
+
+# List available backups
+list_backups() {
+    log_info "Available backups in S3:"
+    aws s3 ls "s3://${S3_BUCKET}/{{IME_PROJEKTA_SLUG}}/" | while read -r line; do
+        echo "  ${line}"
+    done
+    
+    log_info "Available local backups:"
+    ls -la "${BACKUP_DIR}" | while read -r line; do
+        echo "  ${line}"
+    done
+}
+
+# Resolve backup source
+resolve_source() {
+    local source="$1"
+    local type="$2"
+    
+    # Check if source is S3 path
+    if [[ "${source}" == s3://* ]]; then
+        local local_file="${BACKUP_DIR}/$(basename "${source}")"
+        download_from_s3 "${source}" "${local_file}"
+        echo "${local_file}"
+        return
+    fi
+    
+    # Check if source is timestamp
+    if [[ "${source}" =~ ^[0-9]{14}$ ]]; then
+        local s3_prefix="s3://${S3_BUCKET}/{{IME_PROJEKTA_SLUG}}/${source}/"
+        local files
+        files="$(aws s3 ls "${s3_prefix}" 2>/dev/null || true)"
+        
+        if [[ -n "${files}" ]]; then
+            # Download all files for this timestamp
+            local download_dir="${BACKUP_DIR}/${source}"
+            mkdir -p "${download_dir}"
+            aws s3 sync "${s3_prefix}" "${download_dir}/"
+            echo "${download_dir}"
+            return
+        fi
+        
+        # Check local directory
+        if [[ -d "${BACKUP_DIR}/${source}" ]]; then
+            echo "${BACKUP_DIR}/${source}"
+            return
+        fi
+    fi
+    
+    # Check if source is local file/directory
+    if [[ -e "${source}" ]]; then
+        echo "${source}"
+        return
+    fi
+    
+    error_exit "Cannot resolve backup source: ${source}"
+}
+
+# Decrypt file
+decrypt_file() {
+    local file="$1"
+    local decrypted_file="${file%.gpg}"
+    
+    log_info "Decrypting: ${file}"
+    
+    gpg --batch --yes \
+        --decrypt \
+        --passphrase-file /etc/{{IME_PROJEKTA_SLUG}}/backup-key \
+        --output "${decrypted_file}" \
+        "${file}" || error_exit "Decryption failed for: ${file}"
+    
+    echo "${decrypted_file}"
+}
+
+# Verify backup
+verify_backup() {
+    local file="$1"
+    
+    log_info "Verifying backup: ${file}"
+    
+    # Verify checksum if available
+    local checksum_file="${file}.sha256"
+    if [[ -f "${checksum_file}" ]]; then
+        if ! sha256sum -c "${checksum_file}" &> /dev/null; then
+            error_exit "Checksum verification failed: ${file}"
+        fi
+        log_info "Checksum verification passed"
+    fi
+    
+    log_info "Backup verification completed: ${file}"
+}
+
+# Restore database
+restore_database() {
+    local source_dir="$1"
+    
+    log_info "Starting database restore..."
+    
+    # Find database backup file
+    local db_file
+    db_file="$(find "${source_dir}" -name "*-database-*.sql.gz*" | head -1)"
+    
+    if [[ -z "${db_file}" ]]; then
+        error_exit "Database backup not found in: ${source_dir}"
+    fi
+    
+    log_info "Found database backup: ${db_file}"
+    
+    # Decrypt if needed
+    if [[ "${db_file}" == *.gpg ]]; then
+        db_file="$(decrypt_file "${db_file}")"
+    fi
+    
+    # Verify
+    if [[ "${VERIFY}" == true ]]; then
+        verify_backup "${db_file}"
+    fi
+    
+    if [[ "${DRY_RUN}" == true ]]; then
+        log_info "[DRY RUN] Would restore database from: ${db_file}"
+        return
+    fi
+    
+    # Create pre-restore backup
+    log_info "Creating pre-restore backup..."
+    local pre_restore_backup="${BACKUP_DIR}/pre-restore-${TIMESTAMP}.sql.gz"
+    PGPASSWORD="${DB_PASSWORD}" pg_dump \
+        -h "${DB_HOST}" \
+        -p "${DB_PORT}" \
+        -U "${DB_USER}" \
+        -d "${DB_NAME}" \
+        -F p | gzip > "${pre_restore_backup}"
+    
+    # Decompress
+    local sql_file="${db_file%.gz}"
+    gunzip -k "${db_file}"
+    
+    # Restore database
+    log_info "Restoring database..."
+    PGPASSWORD="${DB_PASSWORD}" psql \
+        -h "${DB_HOST}" \
+        -p "${DB_PORT}" \
+        -U "${DB_USER}" \
+        -d "${DB_NAME}" \
+        -f "${sql_file}" || error_exit "Database restore failed"
+    
+    # Cleanup
+    rm -f "${sql_file}"
+    
+    log_info "Database restore completed"
+}
+
+# Restore configuration
+restore_config() {
+    local source_dir="$1"
+    
+    log_info "Starting configuration restore..."
+    
+    # Find config backup file
+    local config_file
+    config_file="$(find "${source_dir}" -name "*-config-*.tar.gz*" | head -1)"
+    
+    if [[ -z "${config_file}" ]]; then
+        error_exit "Configuration backup not found in: ${source_dir}"
+    fi
+    
+    log_info "Found configuration backup: ${config_file}"
+    
+    # Decrypt if needed
+    if [[ "${config_file}" == *.gpg ]]; then
+        config_file="$(decrypt_file "${config_file}")"
+    fi
+    
+    # Verify
+    if [[ "${VERIFY}" == true ]]; then
+        verify_backup "${config_file}"
+    fi
+    
+    if [[ "${DRY_RUN}" == true ]]; then
+        log_info "[DRY RUN] Would restore configuration from: ${config_file}"
+        tar -tzf "${config_file}" | head -20
+        return
+    fi
+    
+    # Create pre-restore backup
+    log_info "Creating pre-restore backup..."
+    local pre_restore_backup="${BACKUP_DIR}/pre-restore-config-${TIMESTAMP}.tar.gz"
+    tar -czf "${pre_restore_backup}" -C /app config .env.example package.json tsconfig.json 2>/dev/null || true
+    
+    # Restore configuration
+    log_info "Restoring configuration..."
+    tar -xzf "${config_file}" -C /app || error_exit "Configuration restore failed"
+    
+    log_info "Configuration restore completed"
+}
+
+# Restore secrets
+restore_secrets() {
+    local source_dir="$1"
+    
+    log_info "Starting secrets restore..."
+    
+    # Find secrets backup file
+    local secrets_file
+    secrets_file="$(find "${source_dir}" -name "*-secrets-*.json*" | head -1)"
+    
+    if [[ -z "${secrets_file}" ]]; then
+        error_exit "Secrets backup not found in: ${source_dir}"
+    fi
+    
+    log_info "Found secrets backup: ${secrets_file}"
+    
+    # Decrypt (secrets are always encrypted)
+    if [[ "${secrets_file}" == *.gpg ]]; then
+        secrets_file="$(decrypt_file "${secrets_file}")"
+    fi
+    
+    if [[ "${DRY_RUN}" == true ]]; then
+        log_info "[DRY RUN] Would restore secrets from: ${secrets_file}"
+        return
+    fi
+    
+    # Restore to Vault
+    log_info "Restoring secrets to Vault..."
+    vault kv put "secret/{{IME_PROJEKTA_SLUG}}" @"${secrets_file}" || error_exit "Secrets restore failed"
+    
+    # Cleanup decrypted file
+    rm -f "${secrets_file}"
+    
+    log_info "Secrets restore completed"
+}
+
+# Full restore
+restore_full() {
+    local source_dir="$1"
+    
+    log_info "Starting full restore..."
+    
+    # Stop application
+    if [[ "${DRY_RUN}" != true ]]; then
+        log_info "Stopping application..."
+        kubectl scale deployment {{IME_PROJEKTA_SLUG}} -n {{IME_PROJEKTA_SLUG}} --replicas=0 || log_warn "Failed to stop application"
+        sleep 10
+    fi
+    
+    # Restore all components
+    restore_database "${source_dir}"
+    restore_config "${source_dir}"
+    restore_secrets "${source_dir}"
+    
+    # Start application
+    if [[ "${DRY_RUN}" != true ]]; then
+        log_info "Starting application..."
+        kubectl scale deployment {{IME_PROJEKTA_SLUG}} -n {{IME_PROJEKTA_SLUG}} --replicas=3 || log_warn "Failed to start application"
+    fi
+    
+    log_info "Full restore completed"
+}
+
+# Post-restore verification
+post_restore_verification() {
+    log_info "Running post-restore verification..."
+    
+    if [[ "${DRY_RUN}" == true ]]; then
+        log_info "[DRY RUN] Would run post-restore verification"
+        return
+    fi
+    
+    # Wait for application to start
+    log_info "Waiting for application to start..."
+    sleep 30
+    
+    # Check health endpoint
+    local health_status
+    health_status="$(curl -s -o /dev/null -w "%{http_code}" "http://localhost:8080/health" || echo "000")"
+    
+    if [[ "${health_status}" != "200" ]]; then
+        log_warn "Health check failed with status: ${health_status}"
+    else
+        log_info "Health check passed"
+    fi
+    
+    # Check database connectivity
+    if PGPASSWORD="${DB_PASSWORD}" psql -h "${DB_HOST}" -p "${DB_PORT}" -U "${DB_USER}" -d "${DB_NAME}" -c "SELECT 1" &> /dev/null; then
+        log_info "Database connectivity check passed"
+    else
+        log_warn "Database connectivity check failed"
+    fi
+    
+    log_info "Post-restore verification completed"
+}
+
+# Send notification
+send_notification() {
+    local status="$1"
+    local message="$2"
+    
+    if [[ "${NOTIFY}" != true ]]; then
+        return
+    fi
+    
+    local payload
+    payload=$(cat << EOF
+{
+    "project": "{{IME_PROJEKTA}}",
+    "operation": "restore",
+    "type": "${RESTORE_TYPE}",
+    "source": "${SOURCE}",
+    "status": "${status}",
+    "message": "${message}",
+    "timestamp": "${TIMESTAMP}",
+    "dryRun": ${DRY_RUN}
+}
+EOF
+)
+    
+    # Send to webhook
+    curl -s -X POST \
+        -H "Content-Type: application/json" \
+        -d "${payload}" \
+        "{{WEBHOOK_URL}}/restore-notification" || log_warn "Failed to send notification"
+}
+
+# Main function
+main() {
+    parse_args "$@"
+    
+    log_info "Starting restore process..."
+    log_info "Type: ${RESTORE_TYPE}"
+    log_info "Source: ${SOURCE}"
+    log_info "Dry run: ${DRY_RUN}"
+    
+    # Create log directory
+    mkdir -p "$(dirname "${LOG_FILE}")"
+    
+    # Validate environment
+    validate_environment
+    
+    # Resolve backup source
+    local source_dir
+    source_dir="$(resolve_source "${SOURCE}" "${RESTORE_TYPE}")"
+    log_info "Resolved source: ${source_dir}"
+    
+    # Perform restore based on type
+    case "${RESTORE_TYPE}" in
+        full)
+            restore_full "${source_dir}"
+            ;;
+        database)
+            restore_database "${source_dir}"
+            ;;
+        config)
+            restore_config "${source_dir}"
+            ;;
+        secrets)
+            restore_secrets "${source_dir}"
+            ;;
+        *)
+            error_exit "Unknown restore type: ${RESTORE_TYPE}"
+            ;;
+    esac
+    
+    # Post-restore verification
+    post_restore_verification
+    
+    # Send success notification
+    send_notification "SUCCESS" "Restore completed successfully"
+    
+    log_info "Restore process completed successfully"
+}
+
+# Run main
+main "$@"

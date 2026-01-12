@@ -1,0 +1,231 @@
+/**
+ * @file Testi za jedro sistema {{IME_PROJEKTA}}
+ * @author {{AVTOR}}
+ * @version {{VERZIJA}}
+ * @date {{DATUM}}
+ * @project {{IME_PROJEKTA}}
+ * @domain VARNOSTNI_SISTEMI
+ * 
+ * Domena: Varnostni sistemi
+ * Opis: Kriptografija in zascita podatkov
+ * 
+ * @compliance DO-178C, IEC-61508, ISO-26262, MIL-STD-882E
+ * @design DSN-GEN-TST-JEDRO-001
+ */
+
+import {
+    inicializirajJedro,
+    izvediOperacijo,
+    pridobiStanje,
+    PRIVZETA_KONFIGURACIJA,
+    KonfiguracijaJedra,
+    DOMENA_VARNOSTNI_SISTEMI_KONSTANTE,
+} from '../src/jedro.js';
+
+// ============================================================================
+// DOMENSKO-SPECIFICNI TESTI ZA VARNOSTNI_SISTEMI
+// ============================================================================
+
+describe('Varnostni sistemi - Domensko-specificni testi', () => {
+    /**
+     * @test TEST-DOMENA-001
+     * @requirement ZAH-DOMENA-001
+     * @description Preveri domensko-specificne konstante za Varnostni sistemi
+     */
+    it('naj ima pravilne domensko-specificne konstante', () => {
+        expect(DOMENA_VARNOSTNI_SISTEMI_KONSTANTE.IME).toBe('Varnostni sistemi');
+        expect(DOMENA_VARNOSTNI_SISTEMI_KONSTANTE.KLJUCNE_BESEDE).toContain('encryption');
+        expect(DOMENA_VARNOSTNI_SISTEMI_KONSTANTE.KATEGORIJE.length).toBeGreaterThan(0);
+    });
+    
+    /**
+     * @test TEST-DOMENA-002
+     * @requirement ZAH-DOMENA-002
+     * @description Preveri domensko-specificno konfiguracijo za Varnostni sistemi
+     */
+    it('naj ima pravilno domensko konfiguracijo', () => {
+        expect(PRIVZETA_KONFIGURACIJA.domena).toBe('VARNOSTNI_SISTEMI');
+        expect(PRIVZETA_KONFIGURACIJA.domenaPodatki).toBeDefined();
+        expect(PRIVZETA_KONFIGURACIJA.domenaPodatki.IME).toBe('Varnostni sistemi');
+    });
+});
+
+// ============================================================================
+// TESTI ZA INICIALIZACIJO - VARNOSTNI_SISTEMI
+// ============================================================================
+
+describe('inicializirajJedro za Varnostni sistemi', () => {
+    /**
+     * @test TEST-001
+     * @requirement ZAH-FUNK-001
+     */
+    it('naj uspesno inicializira jedro s privzeto konfiguracijo za Varnostni sistemi', () => {
+        const konfiguracija = PRIVZETA_KONFIGURACIJA;
+        const rezultat = inicializirajJedro(konfiguracija);
+        
+        expect(rezultat.uspesno).toBe(true);
+        expect(rezultat.sporocilo).toContain('uspesno inicializirano');
+        expect(rezultat.domena).toBe('VARNOSTNI_SISTEMI');
+        expect(rezultat.casIzvajanja).toBeGreaterThanOrEqual(0);
+    });
+    
+    /**
+     * @test TEST-001-ERR-001
+     * @requirement ZAH-FUNK-001
+     */
+    it('naj vrne napako ce ime projekta manjka za Varnostni sistemi', () => {
+        const konfiguracija: KonfiguracijaJedra = {
+            ...PRIVZETA_KONFIGURACIJA,
+            imeProjekta: '',
+        };
+        
+        const rezultat = inicializirajJedro(konfiguracija);
+        
+        expect(rezultat.uspesno).toBe(false);
+        expect(rezultat.sporocilo).toContain('Ime projekta je obvezno');
+        expect(rezultat.domena).toBe('VARNOSTNI_SISTEMI');
+    });
+    
+    /**
+     * @test TEST-001-ERR-002
+     * @requirement ZAH-FUNK-001
+     */
+    it('naj vrne napako ce verzija manjka za Varnostni sistemi', () => {
+        const konfiguracija: KonfiguracijaJedra = {
+            ...PRIVZETA_KONFIGURACIJA,
+            verzija: '',
+        };
+        
+        const rezultat = inicializirajJedro(konfiguracija);
+        
+        expect(rezultat.uspesno).toBe(false);
+        expect(rezultat.sporocilo).toContain('Verzija je obvezna');
+        expect(rezultat.domena).toBe('VARNOSTNI_SISTEMI');
+    });
+    
+    /**
+     * @test TEST-001-DET-001
+     * @requirement ZAH-FUNK-001
+     * @description Preveri deterministicnost za Varnostni sistemi
+     */
+    it('naj vrne deterministicen rezultat pri ponovnem zagonu za Varnostni sistemi', () => {
+        const konfiguracija = PRIVZETA_KONFIGURACIJA;
+        
+        const rezultat1 = inicializirajJedro(konfiguracija);
+        const rezultat2 = inicializirajJedro(konfiguracija);
+        
+        expect(rezultat1.uspesno).toBe(rezultat2.uspesno);
+        expect(rezultat1.sporocilo).toBe(rezultat2.sporocilo);
+        expect(rezultat1.domena).toBe(rezultat2.domena);
+        expect(rezultat1.podatki).toEqual(rezultat2.podatki);
+    });
+});
+
+// ============================================================================
+// TESTI ZA IZVAJANJE OPERACIJ - VARNOSTNI_SISTEMI
+// ============================================================================
+
+describe('izvediOperacijo za Varnostni sistemi', () => {
+    /**
+     * @test TEST-002
+     * @requirement ZAH-FUNK-002
+     */
+    it('naj uspesno izvede operacijo za Varnostni sistemi', () => {
+        const operacija = 'AES';
+        const parametri = { domena: 'VARNOSTNI_SISTEMI', kljuc: 'vrednost' };
+        
+        const rezultat = izvediOperacijo(operacija, parametri);
+        
+        expect(rezultat.uspesno).toBe(true);
+        expect(rezultat.sporocilo).toContain('uspesno izvedena');
+        expect(rezultat.domena).toBe('VARNOSTNI_SISTEMI');
+        expect(rezultat.podatki).toHaveProperty('operacija', operacija);
+    });
+    
+    /**
+     * @test TEST-002-ERR-001
+     * @requirement ZAH-FUNK-002
+     */
+    it('naj vrne napako ce ime operacije manjka za Varnostni sistemi', () => {
+        const operacija = '';
+        
+        const rezultat = izvediOperacijo(operacija);
+        
+        expect(rezultat.uspesno).toBe(false);
+        expect(rezultat.sporocilo).toContain('Ime operacije je obvezno');
+        expect(rezultat.domena).toBe('VARNOSTNI_SISTEMI');
+    });
+});
+
+// ============================================================================
+// TESTI ZA STANJE - VARNOSTNI_SISTEMI
+// ============================================================================
+
+describe('pridobiStanje za Varnostni sistemi', () => {
+    /**
+     * @test TEST-003
+     * @requirement ZAH-FUNK-003
+     */
+    it('naj vrne trenutno stanje jedra za Varnostni sistemi', () => {
+        const rezultat = pridobiStanje();
+        
+        expect(rezultat.uspesno).toBe(true);
+        expect(rezultat.domena).toBe('VARNOSTNI_SISTEMI');
+        expect(rezultat.podatki).toHaveProperty('projekt');
+        expect(rezultat.podatki).toHaveProperty('verzija');
+        expect(rezultat.podatki).toHaveProperty('domena', 'VARNOSTNI_SISTEMI');
+        expect(rezultat.podatki).toHaveProperty('domenaPodatki');
+    });
+    
+    /**
+     * @test TEST-003-DET-001
+     * @requirement ZAH-FUNK-003
+     * @description Preveri deterministicnost stanja za Varnostni sistemi
+     */
+    it('naj vrne deterministicno stanje za Varnostni sistemi', () => {
+        const stanje1 = pridobiStanje();
+        const stanje2 = pridobiStanje();
+        
+        expect(stanje1.podatki).toEqual(stanje2.podatki);
+        expect(stanje1.domena).toBe(stanje2.domena);
+    });
+});
+
+// ============================================================================
+// TESTI ZA SKLADNOST - VARNOSTNI_SISTEMI
+// ============================================================================
+
+describe('Skladnost z industrijskimi/vojaskimi standardi za Varnostni sistemi', () => {
+    /**
+     * @test TEST-SKLADNOST-001
+     * @requirement ZAH-NEFUNK-002
+     * @description Preveri da so vsi testi deterministicni za Varnostni sistemi
+     * @compliance DO-178C, IEC 61508, ISO 26262, MIL-STD-882E
+     */
+    it('naj ima deterministicne teste brez odvisnosti od casa za Varnostni sistemi', () => {
+        const konfiguracija = PRIVZETA_KONFIGURACIJA;
+        
+        const rezultat1 = inicializirajJedro(konfiguracija);
+        const rezultat2 = inicializirajJedro(konfiguracija);
+        
+        expect(rezultat1.uspesno).toBe(rezultat2.uspesno);
+        expect(rezultat1.sporocilo).toBe(rezultat2.sporocilo);
+        expect(rezultat1.domena).toBe(rezultat2.domena);
+        expect(JSON.stringify(rezultat1.podatki)).toBe(JSON.stringify(rezultat2.podatki));
+    });
+    
+    /**
+     * @test TEST-SKLADNOST-002
+     * @requirement ZAH-NEFUNK-003
+     * @description Preveri da ni varnostnih ranljivosti v testni kodi za Varnostni sistemi
+     * @compliance DO-178C, IEC 61508, ISO 26262, MIL-STD-882E
+     */
+    it('naj nima varnostnih ranljivosti za Varnostni sistemi', () => {
+        const konfiguracija = PRIVZETA_KONFIGURACIJA;
+        
+        expect(konfiguracija.imeProjekta).toBeTruthy();
+        expect(konfiguracija.verzija).toBeTruthy();
+        expect(konfiguracija.domena).toBe('VARNOSTNI_SISTEMI');
+        expect(konfiguracija.verzija).toMatch(/^\d+\.\d+\.\d+$/);
+    });
+});

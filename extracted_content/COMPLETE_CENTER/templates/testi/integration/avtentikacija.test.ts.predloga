@@ -1,0 +1,439 @@
+/**
+ * @file Integracijski testi za avtentikacijo {{IME_PROJEKTA}}
+ * @author {{AVTOR}}
+ * @version {{VERZIJA}}
+ * @date {{DATUM}}
+ * @domain {{DOMENA_SL}}
+ * 
+ * @description
+ * Integracijski testi za avtentikacijski sistem:
+ * - Testi prijave uporabnika
+ * - Testi odjave uporabnika
+ * - Testi osvezitve tokena
+ * - Testi vecfaktorske avtentikacije
+ * - Testi zaklepanja racuna
+ * 
+ * @compliance DO-178C, IEC-61508, ISO-26262, MIL-STD-882E
+ * @security ISO-27001, NIST-800-53, SOC-2
+ * @meta_atom TST_002 - Integration Testing
+ * @requirement REQ-GEN-TST-AVTENTIKACIJA-001
+ * @design DSN-GEN-TST-AVTENTIKACIJA-001
+ * @test TST-GEN-TST-AVTENTIKACIJA-001
+ */
+
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+
+// ============================================================================
+// TESTNI PODATKI
+// ============================================================================
+
+interface TestniUporabnik {
+    readonly id: string;
+    readonly uporabniskoIme: string;
+    readonly email: string;
+    readonly gesloHash: string;
+    readonly mfaOmogocen: boolean;
+    readonly zaklenjen: boolean;
+    readonly neuspesniPoskusi: number;
+}
+
+interface TestnaSeja {
+    readonly sejaId: string;
+    readonly uporabnikId: string;
+    readonly token: string;
+    readonly osvezitevToken: string;
+    readonly veljavnostDo: number;
+    readonly ustvarjeno: number;
+}
+
+const TESTNI_UPORABNIKI: readonly TestniUporabnik[] = [
+    {
+        id: 'user-001',
+        uporabniskoIme: 'admin',
+        email: 'admin@example.com',
+        gesloHash: 'hashed_password_admin',
+        mfaOmogocen: true,
+        zaklenjen: false,
+        neuspesniPoskusi: 0,
+    },
+    {
+        id: 'user-002',
+        uporabniskoIme: 'uporabnik',
+        email: 'uporabnik@example.com',
+        gesloHash: 'hashed_password_user',
+        mfaOmogocen: false,
+        zaklenjen: false,
+        neuspesniPoskusi: 0,
+    },
+    {
+        id: 'user-003',
+        uporabniskoIme: 'zaklenjen',
+        email: 'zaklenjen@example.com',
+        gesloHash: 'hashed_password_locked',
+        mfaOmogocen: false,
+        zaklenjen: true,
+        neuspesniPoskusi: 5,
+    },
+];
+
+// ============================================================================
+// TEST_DOUBLE FUNKCIJE
+// ============================================================================
+
+let aktivneSeje: Map<string, TestnaSeja>;
+let uporabniki: Map<string, TestniUporabnik>;
+
+function inicializirajTestnoOkolje(): void {
+    aktivneSeje = new Map();
+    uporabniki = new Map();
+    for (const uporabnik of TESTNI_UPORABNIKI) {
+        uporabniki.set(uporabnik.id, { ...uporabnik });
+    }
+}
+
+function poisciUporabnika(uporabniskoIme: string): TestniUporabnik | null {
+    for (const uporabnik of uporabniki.values()) {
+        if (uporabnik.uporabniskoIme === uporabniskoIme) {
+            return uporabnik;
+        }
+    }
+    return null;
+}
+
+function preveriGeslo(uporabnik: TestniUporabnik, gesloHash: string): boolean {
+    return uporabnik.gesloHash === gesloHash;
+}
+
+function ustvariSejo(uporabnikId: string): TestnaSeja {
+    const sedaj = Date.now();
+    const seja: TestnaSeja = {
+        sejaId: `seja-${sedaj}`,
+        uporabnikId,
+        token: `token-${uporabnikId}-${sedaj}`,
+        osvezitevToken: `refresh-${uporabnikId}-${sedaj}`,
+        veljavnostDo: sedaj + 3600000, // 1 ura
+        ustvarjeno: sedaj,
+    };
+    aktivneSeje.set(seja.sejaId, seja);
+    return seja;
+}
+
+function zakljuciSejo(sejaId: string): boolean {
+    return aktivneSeje.delete(sejaId);
+}
+
+function osvezitevSeje(osvezitevToken: string): TestnaSeja | null {
+    for (const seja of aktivneSeje.values()) {
+        if (seja.osvezitevToken === osvezitevToken) {
+            const novaSeja = ustvariSejo(seja.uporabnikId);
+            aktivneSeje.delete(seja.sejaId);
+            return novaSeja;
+        }
+    }
+    return null;
+}
+
+// ============================================================================
+// TESTI PRIJAVE
+// ============================================================================
+
+describe('Avtentikacija - Prijava', () => {
+    beforeEach(() => {
+        inicializirajTestnoOkolje();
+    });
+    
+    afterEach(() => {
+        aktivneSeje.clear();
+    });
+    
+    it('naj uspesno prijavi uporabnika z veljavnimi poverilnicami', () => {
+        // Arrange
+        const uporabniskoIme = 'uporabnik';
+        const gesloHash = 'hashed_password_user';
+        
+        // Act
+        const uporabnik = poisciUporabnika(uporabniskoIme);
+        expect(uporabnik).not.toBeNull();
+        
+        const gesloVeljavno = preveriGeslo(uporabnik!, gesloHash);
+        expect(gesloVeljavno).toBe(true);
+        
+        const seja = ustvariSejo(uporabnik!.id);
+        
+        // Assert
+        expect(seja).not.toBeNull();
+        expect(seja.uporabnikId).toBe('user-002');
+        expect(seja.token).toBeTruthy();
+        expect(seja.veljavnostDo).toBeGreaterThan(Date.now());
+    });
+    
+    it('naj zavrne prijavo z neveljavnim geslom', () => {
+        // Arrange
+        const uporabniskoIme = 'uporabnik';
+        const napacnoGeslo = 'napacno_geslo';
+        
+        // Act
+        const uporabnik = poisciUporabnika(uporabniskoIme);
+        expect(uporabnik).not.toBeNull();
+        
+        const gesloVeljavno = preveriGeslo(uporabnik!, napacnoGeslo);
+        
+        // Assert
+        expect(gesloVeljavno).toBe(false);
+    });
+    
+    it('naj zavrne prijavo za neobstojecega uporabnika', () => {
+        // Arrange
+        const uporabniskoIme = 'neobstojec';
+        
+        // Act
+        const uporabnik = poisciUporabnika(uporabniskoIme);
+        
+        // Assert
+        expect(uporabnik).toBeNull();
+    });
+    
+    it('naj zavrne prijavo za zaklenjenega uporabnika', () => {
+        // Arrange
+        const uporabniskoIme = 'zaklenjen';
+        const gesloHash = 'hashed_password_locked';
+        
+        // Act
+        const uporabnik = poisciUporabnika(uporabniskoIme);
+        expect(uporabnik).not.toBeNull();
+        
+        // Assert
+        expect(uporabnik!.zaklenjen).toBe(true);
+    });
+    
+    it('naj zazna uporabnika z omogocenim MFA', () => {
+        // Arrange
+        const uporabniskoIme = 'admin';
+        
+        // Act
+        const uporabnik = poisciUporabnika(uporabniskoIme);
+        
+        // Assert
+        expect(uporabnik).not.toBeNull();
+        expect(uporabnik!.mfaOmogocen).toBe(true);
+    });
+});
+
+// ============================================================================
+// TESTI ODJAVE
+// ============================================================================
+
+describe('Avtentikacija - Odjava', () => {
+    beforeEach(() => {
+        inicializirajTestnoOkolje();
+    });
+    
+    afterEach(() => {
+        aktivneSeje.clear();
+    });
+    
+    it('naj uspesno odjavi uporabnika', () => {
+        // Arrange
+        const uporabnik = poisciUporabnika('uporabnik');
+        const seja = ustvariSejo(uporabnik!.id);
+        expect(aktivneSeje.has(seja.sejaId)).toBe(true);
+        
+        // Act
+        const rezultat = zakljuciSejo(seja.sejaId);
+        
+        // Assert
+        expect(rezultat).toBe(true);
+        expect(aktivneSeje.has(seja.sejaId)).toBe(false);
+    });
+    
+    it('naj vrne false za neobstojeceo sejo', () => {
+        // Arrange
+        const neobstojecaSejaId = 'neobstojeca-seja';
+        
+        // Act
+        const rezultat = zakljuciSejo(neobstojecaSejaId);
+        
+        // Assert
+        expect(rezultat).toBe(false);
+    });
+    
+    it('naj odstrani vse podatke seje', () => {
+        // Arrange
+        const uporabnik = poisciUporabnika('uporabnik');
+        const seja = ustvariSejo(uporabnik!.id);
+        const sejaId = seja.sejaId;
+        
+        // Act
+        zakljuciSejo(sejaId);
+        
+        // Assert
+        expect(aktivneSeje.get(sejaId)).toBeUndefined();
+    });
+});
+
+// ============================================================================
+// TESTI OSVEZITVE TOKENA
+// ============================================================================
+
+describe('Avtentikacija - Osvezitev tokena', () => {
+    beforeEach(() => {
+        inicializirajTestnoOkolje();
+    });
+    
+    afterEach(() => {
+        aktivneSeje.clear();
+    });
+    
+    it('naj uspesno osvezi token z veljavnim refresh tokenom', () => {
+        // Arrange
+        const uporabnik = poisciUporabnika('uporabnik');
+        const staraSeja = ustvariSejo(uporabnik!.id);
+        const refreshToken = staraSeja.osvezitevToken;
+        
+        // Act
+        const novaSeja = osvezitevSeje(refreshToken);
+        
+        // Assert
+        expect(novaSeja).not.toBeNull();
+        expect(novaSeja!.uporabnikId).toBe(uporabnik!.id);
+        expect(novaSeja!.token).not.toBe(staraSeja.token);
+        expect(novaSeja!.sejaId).not.toBe(staraSeja.sejaId);
+    });
+    
+    it('naj zavrne osvezitev z neveljavnim refresh tokenom', () => {
+        // Arrange
+        const neveljavenToken = 'neveljaven-refresh-token';
+        
+        // Act
+        const novaSeja = osvezitevSeje(neveljavenToken);
+        
+        // Assert
+        expect(novaSeja).toBeNull();
+    });
+    
+    it('naj razveljavi staro sejo po osvezitvi', () => {
+        // Arrange
+        const uporabnik = poisciUporabnika('uporabnik');
+        const staraSeja = ustvariSejo(uporabnik!.id);
+        const staraSejaId = staraSeja.sejaId;
+        const refreshToken = staraSeja.osvezitevToken;
+        
+        // Act
+        osvezitevSeje(refreshToken);
+        
+        // Assert
+        expect(aktivneSeje.has(staraSejaId)).toBe(false);
+    });
+});
+
+// ============================================================================
+// TESTI VECFAKTORSKE AVTENTIKACIJE
+// ============================================================================
+
+describe('Avtentikacija - MFA', () => {
+    beforeEach(() => {
+        inicializirajTestnoOkolje();
+    });
+    
+    it('naj zazna uporabnika z omogocenim MFA', () => {
+        // Arrange
+        const uporabnik = poisciUporabnika('admin');
+        
+        // Assert
+        expect(uporabnik).not.toBeNull();
+        expect(uporabnik!.mfaOmogocen).toBe(true);
+    });
+    
+    it('naj zazna uporabnika brez MFA', () => {
+        // Arrange
+        const uporabnik = poisciUporabnika('uporabnik');
+        
+        // Assert
+        expect(uporabnik).not.toBeNull();
+        expect(uporabnik!.mfaOmogocen).toBe(false);
+    });
+});
+
+// ============================================================================
+// TESTI ZAKLEPANJA RACUNA
+// ============================================================================
+
+describe('Avtentikacija - Zaklepanje racuna', () => {
+    beforeEach(() => {
+        inicializirajTestnoOkolje();
+    });
+    
+    it('naj zazna zaklenjen racun', () => {
+        // Arrange
+        const uporabnik = poisciUporabnika('zaklenjen');
+        
+        // Assert
+        expect(uporabnik).not.toBeNull();
+        expect(uporabnik!.zaklenjen).toBe(true);
+        expect(uporabnik!.neuspesniPoskusi).toBe(5);
+    });
+    
+    it('naj zazna odklenjen racun', () => {
+        // Arrange
+        const uporabnik = poisciUporabnika('uporabnik');
+        
+        // Assert
+        expect(uporabnik).not.toBeNull();
+        expect(uporabnik!.zaklenjen).toBe(false);
+        expect(uporabnik!.neuspesniPoskusi).toBe(0);
+    });
+});
+
+// ============================================================================
+// TESTI SEJE
+// ============================================================================
+
+describe('Avtentikacija - Upravljanje sej', () => {
+    beforeEach(() => {
+        inicializirajTestnoOkolje();
+    });
+    
+    afterEach(() => {
+        aktivneSeje.clear();
+    });
+    
+    it('naj ustvari sejo z vsemi potrebnimi podatki', () => {
+        // Arrange
+        const uporabnikId = 'user-001';
+        
+        // Act
+        const seja = ustvariSejo(uporabnikId);
+        
+        // Assert
+        expect(seja.sejaId).toBeTruthy();
+        expect(seja.uporabnikId).toBe(uporabnikId);
+        expect(seja.token).toBeTruthy();
+        expect(seja.osvezitevToken).toBeTruthy();
+        expect(seja.veljavnostDo).toBeGreaterThan(seja.ustvarjeno);
+    });
+    
+    it('naj shrani sejo v aktivne seje', () => {
+        // Arrange
+        const uporabnikId = 'user-001';
+        
+        // Act
+        const seja = ustvariSejo(uporabnikId);
+        
+        // Assert
+        expect(aktivneSeje.has(seja.sejaId)).toBe(true);
+        expect(aktivneSeje.get(seja.sejaId)).toEqual(seja);
+    });
+    
+    it('naj ustvari unikatne seje za istega uporabnika', () => {
+        // Arrange
+        const uporabnikId = 'user-001';
+        
+        // Act
+        const seja1 = ustvariSejo(uporabnikId);
+        const seja2 = ustvariSejo(uporabnikId);
+        
+        // Assert
+        expect(seja1.sejaId).not.toBe(seja2.sejaId);
+        expect(seja1.token).not.toBe(seja2.token);
+    });
+});

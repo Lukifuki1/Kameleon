@@ -1,0 +1,497 @@
+/**
+ * @file Varnostni circuit breaker modul za {{IME_PROJEKTA}}
+ * @author {{AVTOR}}
+ * @version {{VERZIJA}}
+ * @date {{DATUM}}
+ * @domain {{DOMENA_SL}}
+ * 
+ * @requirement REQ-SEC-CB-001
+ * @design DSN-SEC-CB-001
+ * @test TST-SEC-CB-001
+ * 
+ * @description
+ * Specializiran circuit breaker za varnostne sisteme:
+ * - Zascita pred preobremenitvijo varnostnih storitev
+ * - Avtomatsko blokiranje ob zaznavi napadov (DDoS, brute force)
+ * - Graceful degradation varnostnih kontrol
+ * - Izolacija kompromitiranih komponent
+ * - Fail-secure nacin delovanja
+ * 
+ * @compliance DO-178C, IEC-61508, ISO-26262, MIL-STD-882E
+ * @security ISO-27001, NIST-800-53, SOC-2
+ * @meta_atom REL_002 - Circuit Breaker
+ */
+
+import { getClock, Clock } from '@mia/core/clock';
+import { generateDeterministicId } from '@mia/core/deterministic';
+const clock: Clock = getClock();
+
+// ============================================================================
+// TIPI
+// ============================================================================
+
+/**
+ * Stanje circuit breakerja
+ */
+export type CircuitState = 'CLOSED' | 'OPEN' | 'HALF_OPEN';
+
+/**
+ * Tip varnostne storitve
+ */
+export type SecurityServiceType =
+    | 'authentication'
+    | 'authorization'
+    | 'encryption'
+    | 'key_management'
+    | 'threat_detection'
+    | 'audit_logging'
+    | 'certificate_validation'
+    | 'token_service';
+
+/**
+ * Razlog za odprtje circuit breakerja
+ */
+export type CircuitOpenReason =
+    | 'failure_threshold'
+    | 'latency_threshold'
+    | 'attack_detected'
+    | 'manual_override'
+    | 'security_incident';
+
+/**
+ * Konfiguracija circuit breakerja
+ */
+export interface SecurityCircuitBreakerConfig {
+    /** Ime storitve */
+    readonly serviceName: string;
+    /** Tip varnostne storitve */
+    readonly serviceType: SecurityServiceType;
+    /** Prag napak za odprtje */
+    readonly failureThreshold: number;
+    /** Prag latence v ms */
+    readonly latencyThreshold: number;
+    /** Cas odprtja v ms */
+    readonly openDuration: number;
+    /** Stevilo poskusov v half-open stanju */
+    readonly halfOpenAttempts: number;
+    /** Ali je fail-secure nacin */
+    readonly failSecure: boolean;
+    /** Privzeta akcija ob odprtju */
+    readonly defaultAction: 'block' | 'allow_degraded' | 'fallback';
+}
+
+/**
+ * Statistika circuit breakerja
+ */
+export interface CircuitStatistics {
+    /** Skupno stevilo zahtev */
+    readonly totalRequests: number;
+    /** Stevilo uspesnih zahtev */
+    readonly successfulRequests: number;
+    /** Stevilo neuspesnih zahtev */
+    readonly failedRequests: number;
+    /** Stevilo blokiranih zahtev */
+    readonly blockedRequests: number;
+    /** Povprecna latenca v ms */
+    readonly averageLatency: number;
+    /** Stevilo odprtij */
+    readonly openCount: number;
+    /** Zadnji cas odprtja */
+    readonly lastOpenTime: number | null;
+    /** Zadnji razlog odprtja */
+    readonly lastOpenReason: CircuitOpenReason | null;
+}
+
+/**
+ * Circuit breaker instanca
+ */
+export interface SecurityCircuitBreaker {
+    /** Unikatni ID */
+    readonly id: string;
+    /** Konfiguracija */
+    readonly config: SecurityCircuitBreakerConfig;
+    /** Trenutno stanje */
+    readonly state: CircuitState;
+    /** Statistika */
+    readonly statistics: CircuitStatistics;
+    /** Cas zadnje spremembe stanja */
+    readonly lastStateChange: number;
+}
+
+/**
+ * Rezultat izvajanja preko circuit breakerja
+ */
+export interface CircuitExecutionResult<T> {
+    /** Ali je bilo izvajanje uspesno */
+    readonly success: boolean;
+    /** Rezultat (ce je uspesno) */
+    readonly result: T | null;
+    /** Napaka (ce ni uspesno) */
+    readonly error: string | null;
+    /** Ali je bilo blokirano */
+    readonly blocked: boolean;
+    /** Stanje circuit breakerja */
+    readonly circuitState: CircuitState;
+    /** Latenca v ms */
+    readonly latency: number;
+}
+
+// ============================================================================
+// KONSTANTE
+// ============================================================================
+
+const DEFAULT_CONFIG: Omit<SecurityCircuitBreakerConfig, 'serviceName' | 'serviceType'> = {
+    failureThreshold: 5,
+    latencyThreshold: 5000,
+    openDuration: 30000,
+    halfOpenAttempts: 3,
+    failSecure: true,
+    defaultAction: 'block',
+};
+
+// ============================================================================
+// STANJE
+// ============================================================================
+
+const circuitBreakers: Map<string, MutableCircuitBreaker> = new Map();
+let breakerCounter = 0;
+
+interface MutableCircuitBreaker {
+    id: string;
+    config: SecurityCircuitBreakerConfig;
+    state: CircuitState;
+    failureCount: number;
+    successCount: number;
+    totalRequests: number;
+    blockedRequests: number;
+    latencies: number[];
+    openCount: number;
+    lastOpenTime: number | null;
+    lastOpenReason: CircuitOpenReason | null;
+    lastStateChange: number;
+    halfOpenAttempts: number;
+}
+
+// ============================================================================
+// FUNKCIJE
+// ============================================================================
+
+/**
+ * Ustvari nov circuit breaker
+ */
+export function createCircuitBreaker(
+    serviceName: string,
+    serviceType: SecurityServiceType,
+    config: Partial<Omit<SecurityCircuitBreakerConfig, 'serviceName' | 'serviceType'>> = {}
+): SecurityCircuitBreaker {
+    breakerCounter++;
+    const id = generateDeterministicId('circuit', breakerCounter);
+    
+    const fullConfig: SecurityCircuitBreakerConfig = {
+        serviceName,
+        serviceType,
+        ...DEFAULT_CONFIG,
+        ...config,
+    };
+    
+    const breaker: MutableCircuitBreaker = {
+        id,
+        config: fullConfig,
+        state: 'CLOSED',
+        failureCount: 0,
+        successCount: 0,
+        totalRequests: 0,
+        blockedRequests: 0,
+        latencies: [],
+        openCount: 0,
+        lastOpenTime: null,
+        lastOpenReason: null,
+        lastStateChange: clock.nowMs(),
+        halfOpenAttempts: 0,
+    };
+    
+    circuitBreakers.set(id, breaker);
+    return toImmutableBreaker(breaker);
+}
+
+/**
+ * Pretvori v nespremenljiv circuit breaker
+ */
+function toImmutableBreaker(breaker: MutableCircuitBreaker): SecurityCircuitBreaker {
+    const avgLatency = breaker.latencies.length > 0
+        ? breaker.latencies.reduce((a, b) => a + b, 0) / breaker.latencies.length
+        : 0;
+    
+    return {
+        id: breaker.id,
+        config: breaker.config,
+        state: breaker.state,
+        statistics: {
+            totalRequests: breaker.totalRequests,
+            successfulRequests: breaker.successCount,
+            failedRequests: breaker.failureCount,
+            blockedRequests: breaker.blockedRequests,
+            averageLatency: avgLatency,
+            openCount: breaker.openCount,
+            lastOpenTime: breaker.lastOpenTime,
+            lastOpenReason: breaker.lastOpenReason,
+        },
+        lastStateChange: breaker.lastStateChange,
+    };
+}
+
+/**
+ * Odpri circuit breaker
+ */
+function openCircuit(breaker: MutableCircuitBreaker, reason: CircuitOpenReason): void {
+    breaker.state = 'OPEN';
+    breaker.openCount++;
+    breaker.lastOpenTime = clock.nowMs();
+    breaker.lastOpenReason = reason;
+    breaker.lastStateChange = clock.nowMs();
+    breaker.halfOpenAttempts = 0;
+}
+
+/**
+ * Zapri circuit breaker
+ */
+function closeCircuit(breaker: MutableCircuitBreaker): void {
+    breaker.state = 'CLOSED';
+    breaker.failureCount = 0;
+    breaker.lastStateChange = clock.nowMs();
+    breaker.halfOpenAttempts = 0;
+}
+
+/**
+ * Nastavi half-open stanje
+ */
+function halfOpenCircuit(breaker: MutableCircuitBreaker): void {
+    breaker.state = 'HALF_OPEN';
+    breaker.lastStateChange = clock.nowMs();
+    breaker.halfOpenAttempts = 0;
+}
+
+/**
+ * Preveri ali naj se circuit odpre
+ */
+function shouldOpen(breaker: MutableCircuitBreaker): boolean {
+    return breaker.failureCount >= breaker.config.failureThreshold;
+}
+
+/**
+ * Preveri ali naj se circuit zapre (iz half-open)
+ */
+function shouldClose(breaker: MutableCircuitBreaker): boolean {
+    return breaker.halfOpenAttempts >= breaker.config.halfOpenAttempts;
+}
+
+/**
+ * Preveri ali je cas za prehod v half-open
+ */
+function shouldTransitionToHalfOpen(breaker: MutableCircuitBreaker): boolean {
+    if (breaker.state !== 'OPEN' || !breaker.lastOpenTime) {
+        return false;
+    }
+    return clock.nowMs() - breaker.lastOpenTime >= breaker.config.openDuration;
+}
+
+/**
+ * Izvedi operacijo preko circuit breakerja
+ */
+export async function executeWithCircuitBreaker<T>(
+    breakerId: string,
+    operation: () => Promise<T>
+): Promise<CircuitExecutionResult<T>> {
+    const breaker = circuitBreakers.get(breakerId);
+    if (!breaker) {
+        return {
+            success: false,
+            result: null,
+            error: 'Circuit breaker ne obstaja',
+            blocked: false,
+            circuitState: 'CLOSED',
+            latency: 0,
+        };
+    }
+    
+    breaker.totalRequests++;
+    
+    if (shouldTransitionToHalfOpen(breaker)) {
+        halfOpenCircuit(breaker);
+    }
+    
+    if (breaker.state === 'OPEN') {
+        breaker.blockedRequests++;
+        
+        if (breaker.config.failSecure) {
+            return {
+                success: false,
+                result: null,
+                error: 'Circuit je odprt - zahteva blokirana (fail-secure)',
+                blocked: true,
+                circuitState: breaker.state,
+                latency: 0,
+            };
+        }
+    }
+    
+    const startTime = clock.nowMs();
+    
+    try {
+        const result = await operation();
+        const latency = clock.nowMs() - startTime;
+        breaker.latencies.push(latency);
+        
+        if (breaker.latencies.length > 100) {
+            breaker.latencies.shift();
+        }
+        
+        if (latency > breaker.config.latencyThreshold) {
+            breaker.failureCount++;
+            if (shouldOpen(breaker)) {
+                openCircuit(breaker, 'latency_threshold');
+            }
+        } else {
+            breaker.successCount++;
+            
+            if (breaker.state === 'HALF_OPEN') {
+                breaker.halfOpenAttempts++;
+                if (shouldClose(breaker)) {
+                    closeCircuit(breaker);
+                }
+            }
+        }
+        
+        return {
+            success: true,
+            result,
+            error: null,
+            blocked: false,
+            circuitState: breaker.state,
+            latency,
+        };
+        
+    } catch (error) {
+        const latency = clock.nowMs() - startTime;
+        breaker.failureCount++;
+        
+        if (shouldOpen(breaker)) {
+            openCircuit(breaker, 'failure_threshold');
+        }
+        
+        return {
+            success: false,
+            result: null,
+            error: error instanceof Error ? error.message : String(error),
+            blocked: false,
+            circuitState: breaker.state,
+            latency,
+        };
+    }
+}
+
+/**
+ * Rocno odpri circuit breaker (za varnostne incidente)
+ */
+export function manuallyOpenCircuit(
+    breakerId: string,
+    reason: 'manual_override' | 'security_incident' | 'attack_detected'
+): boolean {
+    const breaker = circuitBreakers.get(breakerId);
+    if (!breaker) {
+        return false;
+    }
+    
+    openCircuit(breaker, reason);
+    return true;
+}
+
+/**
+ * Rocno zapri circuit breaker
+ */
+export function manuallyCloseCircuit(breakerId: string): boolean {
+    const breaker = circuitBreakers.get(breakerId);
+    if (!breaker) {
+        return false;
+    }
+    
+    closeCircuit(breaker);
+    return true;
+}
+
+/**
+ * Pridobi circuit breaker
+ */
+export function getCircuitBreaker(breakerId: string): SecurityCircuitBreaker | null {
+    const breaker = circuitBreakers.get(breakerId);
+    return breaker ? toImmutableBreaker(breaker) : null;
+}
+
+/**
+ * Pridobi vse circuit breakerje
+ */
+export function getAllCircuitBreakers(): readonly SecurityCircuitBreaker[] {
+    return Array.from(circuitBreakers.values()).map(toImmutableBreaker);
+}
+
+/**
+ * Pridobi circuit breakerje po stanju
+ */
+export function getCircuitBreakersByState(state: CircuitState): readonly SecurityCircuitBreaker[] {
+    return Array.from(circuitBreakers.values())
+        .filter(b => b.state === state)
+        .map(toImmutableBreaker);
+}
+
+/**
+ * Ponastavi circuit breaker
+ */
+export function resetCircuitBreaker(breakerId: string): boolean {
+    const breaker = circuitBreakers.get(breakerId);
+    if (!breaker) {
+        return false;
+    }
+    
+    breaker.state = 'CLOSED';
+    breaker.failureCount = 0;
+    breaker.successCount = 0;
+    breaker.totalRequests = 0;
+    breaker.blockedRequests = 0;
+    breaker.latencies = [];
+    breaker.halfOpenAttempts = 0;
+    breaker.lastStateChange = clock.nowMs();
+    
+    return true;
+}
+
+/**
+ * Odstrani circuit breaker
+ */
+export function removeCircuitBreaker(breakerId: string): boolean {
+    return circuitBreakers.delete(breakerId);
+}
+
+/**
+ * Ponastavi vse circuit breakerje
+ */
+export function resetAllCircuitBreakers(): void {
+    circuitBreakers.clear();
+    breakerCounter = 0;
+}
+
+// ============================================================================
+// IZVOZ
+// ============================================================================
+
+export const SecurityCircuitBreaker = {
+    create: createCircuitBreaker,
+    execute: executeWithCircuitBreaker,
+    manuallyOpen: manuallyOpenCircuit,
+    manuallyClose: manuallyCloseCircuit,
+    get: getCircuitBreaker,
+    getAll: getAllCircuitBreakers,
+    getByState: getCircuitBreakersByState,
+    reset: resetCircuitBreaker,
+    remove: removeCircuitBreaker,
+    resetAll: resetAllCircuitBreakers,
+};

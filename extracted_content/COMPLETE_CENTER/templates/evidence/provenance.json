@@ -1,0 +1,40 @@
+{
+  "_type": "https://in-toto.io/Statement/v0.1",
+  "predicateType": "https://slsa.dev/provenance/v0.2",
+  "subject": [{
+    "name": "{{IME_PROJEKTA}}-varnostni_sistemi",
+    "digest": {"sha256": "{{BUILD_HASH}}"}
+  }],
+  "predicate": {
+    "buildType": "https://mia-build.io/deterministic/v1",
+    "builder": {"id": "https://mia-build.io/builder/v1"},
+    "invocation": {
+      "configSource": {
+        "uri": "git+https://github.com/{{AVTOR}}/{{IME_PROJEKTA}}",
+        "digest": {"sha256": "{{CONFIG_HASH}}"},
+        "entryPoint": "knowbank/paketi/VARNOSTNI_SISTEMI/index.json"
+      },
+      "parameters": {
+        "domain": "VARNOSTNI_SISTEMI",
+        "profile": "{{PROFIL}}"
+      }
+    },
+    "metadata": {
+      "buildInvocationId": "{{BUILD_ID}}",
+      "buildStartedOn": "{{DATUM}}",
+      "buildFinishedOn": "{{DATUM}}",
+      "completeness": {
+        "parameters": true,
+        "environment": true,
+        "materials": true
+      },
+      "reproducible": true
+    },
+    "materials": [
+      {
+        "uri": "knowbank/paketi/VARNOSTNI_SISTEMI/index.json",
+        "digest": {"sha256": "{{KNOWBANK_HASH}}"}
+      }
+    ]
+  }
+}

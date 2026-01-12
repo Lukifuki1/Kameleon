@@ -1,0 +1,1414 @@
+/**
+ * @file Biometric Security - Self-Contained Multi-Modal Biometric Platform
+ * @author {{AVTOR}}
+ * @version {{VERZIJA}}
+ * @date {{DATUM}}
+ * @project {{IME_PROJEKTA}}
+ * @domain VARNOSTNI_SISTEMI
+ * 
+ * @requirement REQ-SEC-BIO-001
+ * @design DSN-SEC-BIO-001
+ * @test TST-SEC-BIO-001
+ * 
+ * @description
+ * Enterprise-grade self-contained biometric security platform implementing
+ * multi-modal biometric authentication, liveness detection, spoofing prevention,
+ * behavioral biometrics, and continuous authentication. All algorithms are
+ * natively implemented without external dependencies.
+ * 
+ * @classification TOP SECRET - Biometric Security Operations
+ * @authorization Required: Level 5 Security Clearance
+ * @dependencies NONE - Fully self-contained implementation
+ */
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// BIOMETRIC SECURITY TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export type BiometricModality =
+  | 'FINGERPRINT'
+  | 'FACE'
+  | 'IRIS'
+  | 'RETINA'
+  | 'VOICE'
+  | 'PALM_PRINT'
+  | 'PALM_VEIN'
+  | 'FINGER_VEIN'
+  | 'HAND_GEOMETRY'
+  | 'SIGNATURE'
+  | 'KEYSTROKE'
+  | 'GAIT'
+  | 'EAR'
+  | 'DNA'
+  | 'ECG'
+  | 'EEG';
+
+export type BiometricCategory =
+  | 'PHYSIOLOGICAL'
+  | 'BEHAVIORAL'
+  | 'BIOLOGICAL';
+
+export type AuthenticationMode =
+  | 'VERIFICATION'
+  | 'IDENTIFICATION'
+  | 'CONTINUOUS'
+  | 'STEP_UP';
+
+export type MatchingAlgorithm =
+  | 'MINUTIAE'
+  | 'PATTERN'
+  | 'CORRELATION'
+  | 'DEEP_LEARNING'
+  | 'HYBRID';
+
+export type LivenessMethod =
+  | 'PASSIVE'
+  | 'ACTIVE'
+  | 'CHALLENGE_RESPONSE'
+  | 'MULTI_FRAME'
+  | 'DEPTH_BASED'
+  | 'TEXTURE_ANALYSIS'
+  | 'PHYSIOLOGICAL';
+
+export type SpoofType =
+  | 'PRINTED_PHOTO'
+  | 'DIGITAL_SCREEN'
+  | 'MASK_2D'
+  | 'MASK_3D'
+  | 'SILICONE'
+  | 'GELATIN'
+  | 'LATEX'
+  | 'REPLAY_ATTACK'
+  | 'DEEPFAKE'
+  | 'VOICE_SYNTHESIS'
+  | 'VOICE_CONVERSION'
+  | 'GUMMY_FINGER'
+  | 'CADAVER';
+
+export type QualityLevel =
+  | 'EXCELLENT'
+  | 'GOOD'
+  | 'ACCEPTABLE'
+  | 'MARGINAL'
+  | 'POOR'
+  | 'UNACCEPTABLE';
+
+export type ConfidenceLevel =
+  | 'VERY_HIGH'
+  | 'HIGH'
+  | 'MEDIUM'
+  | 'LOW'
+  | 'VERY_LOW';
+
+export type SecurityLevel =
+  | 'LEVEL_1'
+  | 'LEVEL_2'
+  | 'LEVEL_3'
+  | 'LEVEL_4';
+
+export type OperationalMode =
+  | 'ENROLLMENT'
+  | 'AUTHENTICATION'
+  | 'MONITORING'
+  | 'FORENSIC';
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// BIOMETRIC SECURITY CONFIGURATION
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface BiometricSecurityConfig {
+  readonly platformId: string;
+  readonly name: string;
+  readonly version: string;
+  readonly mode: OperationalMode;
+  readonly modalities: ModalitiesConfig;
+  readonly multiModal: MultiModalConfig;
+  readonly liveness: LivenessConfig;
+  readonly antiSpoofing: AntiSpoofingConfig;
+  readonly behavioral: BehavioralBiometricsConfig;
+  readonly continuous: ContinuousAuthConfig;
+  readonly enrollment: EnrollmentConfig;
+  readonly matching: MatchingConfig;
+  readonly storage: BiometricStorageConfig;
+  readonly privacy: PrivacyConfig;
+  readonly compliance: ComplianceConfig;
+  readonly alerting: AlertingConfig;
+  readonly security: SecurityConfig;
+  readonly metadata: PlatformMetadata;
+}
+
+export interface ModalitiesConfig {
+  readonly fingerprint: FingerprintConfig;
+  readonly face: FaceConfig;
+  readonly iris: IrisConfig;
+  readonly voice: VoiceConfig;
+  readonly palmPrint: PalmPrintConfig;
+  readonly vein: VeinConfig;
+  readonly signature: SignatureConfig;
+  readonly keystroke: KeystrokeConfig;
+  readonly gait: GaitConfig;
+}
+
+export interface FingerprintConfig {
+  readonly enabled: boolean;
+  readonly sensorType: FingerprintSensorType;
+  readonly imageResolution: number;
+  readonly imageSize: ImageSize;
+  readonly extraction: FingerprintExtractionConfig;
+  readonly matching: FingerprintMatchingConfig;
+  readonly quality: FingerprintQualityConfig;
+}
+
+export type FingerprintSensorType =
+  | 'OPTICAL'
+  | 'CAPACITIVE'
+  | 'ULTRASONIC'
+  | 'THERMAL'
+  | 'PRESSURE';
+
+export interface ImageSize {
+  readonly width: number;
+  readonly height: number;
+}
+
+export interface FingerprintExtractionConfig {
+  readonly algorithm: 'MINDTCT' | 'NIST' | 'PROPRIETARY';
+  readonly minutiaeTypes: readonly MinutiaeType[];
+  readonly minMinutiae: number;
+  readonly maxMinutiae: number;
+  readonly coreDetection: boolean;
+  readonly deltaDetection: boolean;
+}
+
+export type MinutiaeType =
+  | 'RIDGE_ENDING'
+  | 'BIFURCATION'
+  | 'SHORT_RIDGE'
+  | 'ISLAND'
+  | 'SPUR'
+  | 'CROSSOVER'
+  | 'CORE'
+  | 'DELTA';
+
+export interface FingerprintMatchingConfig {
+  readonly algorithm: MatchingAlgorithm;
+  readonly threshold: number;
+  readonly maxRotation: number;
+  readonly maxTranslation: number;
+  readonly elasticMatching: boolean;
+}
+
+export interface FingerprintQualityConfig {
+  readonly enabled: boolean;
+  readonly minQuality: number;
+  readonly nfiqCompliant: boolean;
+  readonly checkContrast: boolean;
+  readonly checkClarity: boolean;
+  readonly checkArea: boolean;
+}
+
+export interface FaceConfig {
+  readonly enabled: boolean;
+  readonly detection: FaceDetectionConfig;
+  readonly alignment: FaceAlignmentConfig;
+  readonly extraction: FaceExtractionConfig;
+  readonly matching: FaceMatchingConfig;
+  readonly quality: FaceQualityConfig;
+  readonly attributes: FaceAttributesConfig;
+}
+
+export interface FaceDetectionConfig {
+  readonly algorithm: 'HAAR' | 'HOG' | 'CNN' | 'MTCNN' | 'RETINAFACE';
+  readonly minFaceSize: number;
+  readonly maxFaces: number;
+  readonly confidenceThreshold: number;
+  readonly detectLandmarks: boolean;
+  readonly numLandmarks: 5 | 68 | 98 | 106 | 468;
+}
+
+export interface FaceAlignmentConfig {
+  readonly enabled: boolean;
+  readonly method: 'AFFINE' | 'SIMILARITY' | '3D';
+  readonly targetSize: ImageSize;
+  readonly eyeDistance: number;
+}
+
+export interface FaceExtractionConfig {
+  readonly algorithm: 'EIGENFACE' | 'FISHERFACE' | 'LBPH' | 'DEEP_LEARNING';
+  readonly modelArchitecture: 'RESNET' | 'INCEPTION' | 'MOBILENET' | 'ARCFACE' | 'COSFACE';
+  readonly embeddingSize: number;
+  readonly normalize: boolean;
+}
+
+export interface FaceMatchingConfig {
+  readonly metric: 'EUCLIDEAN' | 'COSINE' | 'ANGULAR';
+  readonly threshold: number;
+  readonly adaptiveThreshold: boolean;
+}
+
+export interface FaceQualityConfig {
+  readonly enabled: boolean;
+  readonly minQuality: number;
+  readonly checkPose: boolean;
+  readonly maxPitch: number;
+  readonly maxYaw: number;
+  readonly maxRoll: number;
+  readonly checkIllumination: boolean;
+  readonly checkOcclusion: boolean;
+  readonly checkBlur: boolean;
+  readonly checkExpression: boolean;
+  readonly icaoCompliant: boolean;
+}
+
+export interface FaceAttributesConfig {
+  readonly enabled: boolean;
+  readonly detectAge: boolean;
+  readonly detectGender: boolean;
+  readonly detectExpression: boolean;
+  readonly detectGlasses: boolean;
+  readonly detectMask: boolean;
+  readonly detectBeard: boolean;
+}
+
+export interface IrisConfig {
+  readonly enabled: boolean;
+  readonly capture: IrisCaptureConfig;
+  readonly segmentation: IrisSegmentationConfig;
+  readonly normalization: IrisNormalizationConfig;
+  readonly encoding: IrisEncodingConfig;
+  readonly matching: IrisMatchingConfig;
+  readonly quality: IrisQualityConfig;
+}
+
+export interface IrisCaptureConfig {
+  readonly illumination: 'NIR' | 'VISIBLE';
+  readonly resolution: number;
+  readonly imageSize: ImageSize;
+  readonly autoFocus: boolean;
+  readonly autoExposure: boolean;
+}
+
+export interface IrisSegmentationConfig {
+  readonly algorithm: 'DAUGMAN' | 'INTEGRO_DIFFERENTIAL' | 'HOUGH' | 'ACTIVE_CONTOUR' | 'DEEP_LEARNING';
+  readonly detectPupil: boolean;
+  readonly detectLimbus: boolean;
+  readonly detectEyelids: boolean;
+  readonly detectEyelashes: boolean;
+  readonly detectReflections: boolean;
+}
+
+export interface IrisNormalizationConfig {
+  readonly method: 'RUBBER_SHEET' | 'POLAR';
+  readonly radialResolution: number;
+  readonly angularResolution: number;
+}
+
+export interface IrisEncodingConfig {
+  readonly algorithm: 'GABOR' | 'LOG_GABOR' | 'HAAR' | 'DCT' | 'DEEP_LEARNING';
+  readonly codeSize: number;
+  readonly generateMask: boolean;
+}
+
+export interface IrisMatchingConfig {
+  readonly metric: 'HAMMING' | 'FRACTIONAL_HAMMING';
+  readonly threshold: number;
+  readonly rotationCompensation: boolean;
+  readonly maxRotation: number;
+  readonly maskHandling: 'IGNORE' | 'WEIGHT' | 'EXCLUDE';
+}
+
+export interface IrisQualityConfig {
+  readonly enabled: boolean;
+  readonly minQuality: number;
+  readonly checkFocus: boolean;
+  readonly checkMotionBlur: boolean;
+  readonly checkOcclusion: boolean;
+  readonly checkDilation: boolean;
+  readonly checkGazeDeviation: boolean;
+  readonly isoCompliant: boolean;
+}
+
+export interface VoiceConfig {
+  readonly enabled: boolean;
+  readonly capture: VoiceCaptureConfig;
+  readonly preprocessing: VoicePreprocessingConfig;
+  readonly extraction: VoiceExtractionConfig;
+  readonly matching: VoiceMatchingConfig;
+  readonly quality: VoiceQualityConfig;
+}
+
+export interface VoiceCaptureConfig {
+  readonly sampleRate: number;
+  readonly bitDepth: number;
+  readonly channels: number;
+  readonly minDuration: number;
+  readonly maxDuration: number;
+  readonly vadEnabled: boolean;
+}
+
+export interface VoicePreprocessingConfig {
+  readonly noiseReduction: boolean;
+  readonly normalization: boolean;
+  readonly preEmphasis: boolean;
+  readonly silenceRemoval: boolean;
+}
+
+export interface VoiceExtractionConfig {
+  readonly features: readonly VoiceFeatureType[];
+  readonly frameSize: number;
+  readonly frameShift: number;
+  readonly windowFunction: 'HAMMING' | 'HANNING' | 'BLACKMAN';
+  readonly numMFCC: number;
+  readonly numFilterBanks: number;
+  readonly includeDeltas: boolean;
+  readonly includeDeltaDeltas: boolean;
+}
+
+export type VoiceFeatureType =
+  | 'MFCC'
+  | 'PLP'
+  | 'FBANK'
+  | 'SPECTROGRAM'
+  | 'PITCH'
+  | 'FORMANTS'
+  | 'JITTER'
+  | 'SHIMMER'
+  | 'HNR'
+  | 'IVECTOR'
+  | 'XVECTOR';
+
+export interface VoiceMatchingConfig {
+  readonly algorithm: 'GMM_UBM' | 'IVECTOR_PLDA' | 'XVECTOR' | 'DEEP_LEARNING';
+  readonly threshold: number;
+  readonly scoreNormalization: 'ZNORM' | 'TNORM' | 'SNORM' | 'NONE';
+}
+
+export interface VoiceQualityConfig {
+  readonly enabled: boolean;
+  readonly minQuality: number;
+  readonly checkSNR: boolean;
+  readonly minSNR: number;
+  readonly checkClipping: boolean;
+  readonly checkSilence: boolean;
+  readonly checkDuration: boolean;
+}
+
+export interface PalmPrintConfig {
+  readonly enabled: boolean;
+  readonly capture: PalmCaptureConfig;
+  readonly roi: ROIExtractionConfig;
+  readonly extraction: PalmExtractionConfig;
+  readonly matching: PalmMatchingConfig;
+  readonly quality: PalmQualityConfig;
+}
+
+export interface PalmCaptureConfig {
+  readonly sensorType: 'CONTACT' | 'CONTACTLESS';
+  readonly resolution: number;
+  readonly imageSize: ImageSize;
+  readonly illumination: 'VISIBLE' | 'NIR' | 'MULTISPECTRAL';
+}
+
+export interface ROIExtractionConfig {
+  readonly method: 'LANDMARK' | 'CONTOUR' | 'DEEP_LEARNING';
+  readonly roiSize: ImageSize;
+  readonly alignment: boolean;
+}
+
+export interface PalmExtractionConfig {
+  readonly algorithm: 'GABOR' | 'LBP' | 'HOG' | 'COMPETITIVE_CODE' | 'DEEP_LEARNING';
+  readonly featureSize: number;
+}
+
+export interface PalmMatchingConfig {
+  readonly metric: 'HAMMING' | 'EUCLIDEAN' | 'COSINE' | 'ANGULAR';
+  readonly threshold: number;
+}
+
+export interface PalmQualityConfig {
+  readonly enabled: boolean;
+  readonly minQuality: number;
+  readonly checkContrast: boolean;
+  readonly checkFocus: boolean;
+  readonly checkArea: boolean;
+}
+
+export interface VeinConfig {
+  readonly enabled: boolean;
+  readonly type: 'FINGER' | 'PALM' | 'DORSAL';
+  readonly capture: VeinCaptureConfig;
+  readonly extraction: VeinExtractionConfig;
+  readonly matching: VeinMatchingConfig;
+  readonly quality: VeinQualityConfig;
+}
+
+export interface VeinCaptureConfig {
+  readonly illumination: 'NIR' | 'TRANSILLUMINATION';
+  readonly wavelength: number;
+  readonly resolution: number;
+  readonly imageSize: ImageSize;
+}
+
+export interface VeinExtractionConfig {
+  readonly algorithm: 'REPEATED_LINE_TRACKING' | 'MAXIMUM_CURVATURE' | 'GABOR' | 'DEEP_LEARNING';
+  readonly binarization: boolean;
+  readonly thinning: boolean;
+}
+
+export interface VeinMatchingConfig {
+  readonly metric: 'CORRELATION' | 'HAMMING' | 'EUCLIDEAN';
+  readonly threshold: number;
+  readonly elasticMatching: boolean;
+}
+
+export interface VeinQualityConfig {
+  readonly enabled: boolean;
+  readonly minQuality: number;
+  readonly checkContrast: boolean;
+  readonly checkVeinVisibility: boolean;
+}
+
+export interface SignatureConfig {
+  readonly enabled: boolean;
+  readonly type: 'ONLINE' | 'OFFLINE';
+  readonly capture: SignatureCaptureConfig;
+  readonly extraction: SignatureExtractionConfig;
+  readonly matching: SignatureMatchingConfig;
+  readonly quality: SignatureQualityConfig;
+}
+
+export interface SignatureCaptureConfig {
+  readonly sampleRate: number;
+  readonly pressureSensitivity: boolean;
+  readonly tiltSensitivity: boolean;
+  readonly captureArea: ImageSize;
+}
+
+export interface SignatureExtractionConfig {
+  readonly features: readonly SignatureFeatureType[];
+  readonly normalization: boolean;
+  readonly resampling: boolean;
+}
+
+export type SignatureFeatureType =
+  | 'POSITION'
+  | 'VELOCITY'
+  | 'ACCELERATION'
+  | 'PRESSURE'
+  | 'TILT'
+  | 'AZIMUTH'
+  | 'PEN_UP_DOWN'
+  | 'CURVATURE'
+  | 'GLOBAL_FEATURES';
+
+export interface SignatureMatchingConfig {
+  readonly algorithm: 'DTW' | 'HMM' | 'SVM' | 'DEEP_LEARNING';
+  readonly threshold: number;
+  readonly globalMatching: boolean;
+  readonly localMatching: boolean;
+}
+
+export interface SignatureQualityConfig {
+  readonly enabled: boolean;
+  readonly minQuality: number;
+  readonly checkDuration: boolean;
+  readonly checkComplexity: boolean;
+  readonly checkConsistency: boolean;
+}
+
+export interface KeystrokeConfig {
+  readonly enabled: boolean;
+  readonly capture: KeystrokeCaptureConfig;
+  readonly extraction: KeystrokeExtractionConfig;
+  readonly matching: KeystrokeMatchingConfig;
+  readonly quality: KeystrokeQualityConfig;
+}
+
+export interface KeystrokeCaptureConfig {
+  readonly captureMode: 'FIXED_TEXT' | 'FREE_TEXT' | 'BOTH';
+  readonly minKeystrokes: number;
+  readonly captureTimings: boolean;
+  readonly capturePressure: boolean;
+}
+
+export interface KeystrokeExtractionConfig {
+  readonly features: readonly KeystrokeFeatureType[];
+  readonly normalization: boolean;
+  readonly outlierRemoval: boolean;
+}
+
+export type KeystrokeFeatureType =
+  | 'DWELL_TIME'
+  | 'FLIGHT_TIME'
+  | 'DIGRAPH_LATENCY'
+  | 'TRIGRAPH_LATENCY'
+  | 'TYPING_SPEED'
+  | 'ERROR_RATE'
+  | 'PRESSURE'
+  | 'KEY_HOLD';
+
+export interface KeystrokeMatchingConfig {
+  readonly algorithm: 'STATISTICAL' | 'NEURAL_NETWORK' | 'SVM' | 'DISTANCE_BASED';
+  readonly threshold: number;
+  readonly adaptiveModel: boolean;
+}
+
+export interface KeystrokeQualityConfig {
+  readonly enabled: boolean;
+  readonly minKeystrokes: number;
+  readonly checkConsistency: boolean;
+  readonly checkTypingSpeed: boolean;
+}
+
+export interface GaitConfig {
+  readonly enabled: boolean;
+  readonly capture: GaitCaptureConfig;
+  readonly extraction: GaitExtractionConfig;
+  readonly matching: GaitMatchingConfig;
+  readonly quality: GaitQualityConfig;
+}
+
+export interface GaitCaptureConfig {
+  readonly sensorType: 'VIDEO' | 'ACCELEROMETER' | 'FLOOR_SENSOR' | 'RADAR';
+  readonly sampleRate: number;
+  readonly minCycles: number;
+}
+
+export interface GaitExtractionConfig {
+  readonly features: readonly GaitFeatureType[];
+  readonly cycleDetection: boolean;
+  readonly normalization: boolean;
+}
+
+export type GaitFeatureType =
+  | 'SILHOUETTE'
+  | 'SKELETON'
+  | 'ACCELERATION'
+  | 'ANGULAR_VELOCITY'
+  | 'STEP_LENGTH'
+  | 'STEP_WIDTH'
+  | 'CADENCE'
+  | 'VELOCITY'
+  | 'GEI';
+
+export interface GaitMatchingConfig {
+  readonly algorithm: 'DTW' | 'HMM' | 'CNN' | 'GAN';
+  readonly threshold: number;
+  readonly viewInvariant: boolean;
+}
+
+export interface GaitQualityConfig {
+  readonly enabled: boolean;
+  readonly minQuality: number;
+  readonly checkCycles: boolean;
+  readonly checkConsistency: boolean;
+}
+
+export interface MultiModalConfig {
+  readonly enabled: boolean;
+  readonly fusion: FusionConfig;
+  readonly fallback: FallbackConfig;
+  readonly requirements: MultiModalRequirements;
+}
+
+export interface FusionConfig {
+  readonly level: 'FEATURE' | 'SCORE' | 'DECISION' | 'RANK';
+  readonly method: FusionMethod;
+  readonly weights: Readonly<Record<BiometricModality, number>>;
+  readonly normalization: ScoreNormalizationConfig;
+}
+
+export type FusionMethod =
+  | 'SUM'
+  | 'PRODUCT'
+  | 'MAX'
+  | 'MIN'
+  | 'WEIGHTED_SUM'
+  | 'WEIGHTED_PRODUCT'
+  | 'MAJORITY_VOTING'
+  | 'BAYESIAN'
+  | 'DEMPSTER_SHAFER'
+  | 'SVM'
+  | 'NEURAL_NETWORK';
+
+export interface ScoreNormalizationConfig {
+  readonly enabled: boolean;
+  readonly method: 'MIN_MAX' | 'Z_SCORE' | 'TANH' | 'DOUBLE_SIGMOID';
+}
+
+export interface FallbackConfig {
+  readonly enabled: boolean;
+  readonly primaryModality: BiometricModality;
+  readonly fallbackOrder: readonly BiometricModality[];
+  readonly fallbackConditions: readonly FallbackCondition[];
+}
+
+export interface FallbackCondition {
+  readonly conditionId: string;
+  readonly modality: BiometricModality;
+  readonly condition: 'QUALITY_FAILURE' | 'CAPTURE_FAILURE' | 'MATCH_FAILURE' | 'TIMEOUT';
+  readonly fallbackTo: BiometricModality;
+}
+
+export interface MultiModalRequirements {
+  readonly minModalities: number;
+  readonly requiredModalities: readonly BiometricModality[];
+  readonly optionalModalities: readonly BiometricModality[];
+}
+
+export interface LivenessConfig {
+  readonly enabled: boolean;
+  readonly face: FaceLivenessConfig;
+  readonly fingerprint: FingerprintLivenessConfig;
+  readonly iris: IrisLivenessConfig;
+  readonly voice: VoiceLivenessConfig;
+}
+
+export interface FaceLivenessConfig {
+  readonly enabled: boolean;
+  readonly methods: readonly FaceLivenessMethod[];
+  readonly threshold: number;
+  readonly challengeResponse: ChallengeResponseConfig;
+}
+
+export type FaceLivenessMethod =
+  | 'TEXTURE_ANALYSIS'
+  | 'DEPTH_ANALYSIS'
+  | 'MOTION_ANALYSIS'
+  | 'BLINK_DETECTION'
+  | 'HEAD_MOVEMENT'
+  | 'FACIAL_EXPRESSION'
+  | 'EYE_TRACKING'
+  | 'REFLECTION_ANALYSIS'
+  | 'FREQUENCY_ANALYSIS'
+  | 'DEEP_LEARNING';
+
+export interface ChallengeResponseConfig {
+  readonly enabled: boolean;
+  readonly challenges: readonly ChallengeType[];
+  readonly timeout: number;
+  readonly maxAttempts: number;
+}
+
+export type ChallengeType =
+  | 'BLINK'
+  | 'SMILE'
+  | 'TURN_HEAD_LEFT'
+  | 'TURN_HEAD_RIGHT'
+  | 'NOD'
+  | 'OPEN_MOUTH'
+  | 'RAISE_EYEBROWS'
+  | 'RANDOM_NUMBER'
+  | 'RANDOM_PHRASE';
+
+export interface FingerprintLivenessConfig {
+  readonly enabled: boolean;
+  readonly methods: readonly FingerprintLivenessMethod[];
+  readonly threshold: number;
+}
+
+export type FingerprintLivenessMethod =
+  | 'PERSPIRATION'
+  | 'ELASTICITY'
+  | 'TEXTURE'
+  | 'RIDGE_DISTORTION'
+  | 'PORE_ANALYSIS'
+  | 'MULTISPECTRAL'
+  | 'DEEP_LEARNING';
+
+export interface IrisLivenessConfig {
+  readonly enabled: boolean;
+  readonly methods: readonly IrisLivenessMethod[];
+  readonly threshold: number;
+}
+
+export type IrisLivenessMethod =
+  | 'PUPIL_DYNAMICS'
+  | 'HIPPUS'
+  | 'TEXTURE_ANALYSIS'
+  | 'SPECULAR_REFLECTION'
+  | 'DEPTH_ANALYSIS'
+  | 'DEEP_LEARNING';
+
+export interface VoiceLivenessConfig {
+  readonly enabled: boolean;
+  readonly methods: readonly VoiceLivenessMethod[];
+  readonly threshold: number;
+  readonly challengeResponse: VoiceChallengeConfig;
+}
+
+export type VoiceLivenessMethod =
+  | 'REPLAY_DETECTION'
+  | 'SYNTHESIS_DETECTION'
+  | 'CONVERSION_DETECTION'
+  | 'CHANNEL_ANALYSIS'
+  | 'POP_NOISE'
+  | 'DEEP_LEARNING';
+
+export interface VoiceChallengeConfig {
+  readonly enabled: boolean;
+  readonly challengeType: 'RANDOM_DIGITS' | 'RANDOM_PHRASE' | 'QUESTION_ANSWER';
+  readonly timeout: number;
+}
+
+export interface AntiSpoofingConfig {
+  readonly enabled: boolean;
+  readonly detection: SpoofDetectionConfig;
+  readonly prevention: SpoofPreventionConfig;
+  readonly response: SpoofResponseConfig;
+}
+
+export interface SpoofDetectionConfig {
+  readonly enabled: boolean;
+  readonly methods: Readonly<Record<BiometricModality, readonly string[]>>;
+  readonly thresholds: Readonly<Record<BiometricModality, number>>;
+  readonly mlModels: readonly SpoofDetectionModel[];
+}
+
+export interface SpoofDetectionModel {
+  readonly modelId: string;
+  readonly modality: BiometricModality;
+  readonly spoofTypes: readonly SpoofType[];
+  readonly architecture: string;
+  readonly accuracy: number;
+}
+
+export interface SpoofPreventionConfig {
+  readonly enabled: boolean;
+  readonly multiCapture: boolean;
+  readonly randomChallenges: boolean;
+  readonly environmentalChecks: boolean;
+}
+
+export interface SpoofResponseConfig {
+  readonly logAttempt: boolean;
+  readonly alertOnDetection: boolean;
+  readonly lockoutEnabled: boolean;
+  readonly lockoutDuration: number;
+  readonly lockoutThreshold: number;
+}
+
+export interface BehavioralBiometricsConfig {
+  readonly enabled: boolean;
+  readonly keystroke: KeystrokeBehavioralConfig;
+  readonly mouse: MouseBehavioralConfig;
+  readonly touch: TouchBehavioralConfig;
+  readonly navigation: NavigationBehavioralConfig;
+  readonly fusion: BehavioralFusionConfig;
+}
+
+export interface KeystrokeBehavioralConfig {
+  readonly enabled: boolean;
+  readonly continuousMonitoring: boolean;
+  readonly adaptiveModel: boolean;
+  readonly anomalyThreshold: number;
+}
+
+export interface MouseBehavioralConfig {
+  readonly enabled: boolean;
+  readonly features: readonly MouseFeatureType[];
+  readonly continuousMonitoring: boolean;
+  readonly anomalyThreshold: number;
+}
+
+export type MouseFeatureType =
+  | 'MOVEMENT_SPEED'
+  | 'MOVEMENT_DIRECTION'
+  | 'CLICK_PATTERNS'
+  | 'SCROLL_PATTERNS'
+  | 'HESITATION'
+  | 'CURVATURE'
+  | 'ACCELERATION';
+
+export interface TouchBehavioralConfig {
+  readonly enabled: boolean;
+  readonly features: readonly TouchFeatureType[];
+  readonly continuousMonitoring: boolean;
+  readonly anomalyThreshold: number;
+}
+
+export type TouchFeatureType =
+  | 'TOUCH_PRESSURE'
+  | 'TOUCH_SIZE'
+  | 'TOUCH_DURATION'
+  | 'SWIPE_PATTERNS'
+  | 'TAP_PATTERNS'
+  | 'GESTURE_PATTERNS'
+  | 'TYPING_PATTERNS';
+
+export interface NavigationBehavioralConfig {
+  readonly enabled: boolean;
+  readonly features: readonly NavigationFeatureType[];
+  readonly continuousMonitoring: boolean;
+  readonly anomalyThreshold: number;
+}
+
+export type NavigationFeatureType =
+  | 'PAGE_SEQUENCE'
+  | 'TIME_ON_PAGE'
+  | 'CLICK_SEQUENCE'
+  | 'SCROLL_DEPTH'
+  | 'INTERACTION_PATTERNS';
+
+export interface BehavioralFusionConfig {
+  readonly enabled: boolean;
+  readonly method: FusionMethod;
+  readonly weights: Readonly<Record<string, number>>;
+}
+
+export interface ContinuousAuthConfig {
+  readonly enabled: boolean;
+  readonly interval: number;
+  readonly modalities: readonly BiometricModality[];
+  readonly riskBasedAuth: RiskBasedAuthConfig;
+  readonly sessionManagement: SessionManagementConfig;
+}
+
+export interface RiskBasedAuthConfig {
+  readonly enabled: boolean;
+  readonly riskFactors: readonly RiskFactor[];
+  readonly thresholds: RiskThresholds;
+  readonly adaptiveAuth: boolean;
+}
+
+export interface RiskFactor {
+  readonly factorId: string;
+  readonly name: string;
+  readonly weight: number;
+  readonly category: 'DEVICE' | 'LOCATION' | 'BEHAVIOR' | 'TIME' | 'NETWORK';
+}
+
+export interface RiskThresholds {
+  readonly low: number;
+  readonly medium: number;
+  readonly high: number;
+  readonly critical: number;
+}
+
+export interface SessionManagementConfig {
+  readonly timeout: number;
+  readonly maxDuration: number;
+  readonly reauthenticationRequired: boolean;
+  readonly reauthenticationInterval: number;
+}
+
+export interface EnrollmentConfig {
+  readonly enabled: boolean;
+  readonly workflow: EnrollmentWorkflowConfig;
+  readonly quality: EnrollmentQualityConfig;
+  readonly verification: EnrollmentVerificationConfig;
+  readonly storage: EnrollmentStorageConfig;
+}
+
+export interface EnrollmentWorkflowConfig {
+  readonly steps: readonly EnrollmentStep[];
+  readonly minSamples: Readonly<Record<BiometricModality, number>>;
+  readonly maxAttempts: number;
+  readonly timeout: number;
+}
+
+export interface EnrollmentStep {
+  readonly stepId: string;
+  readonly modality: BiometricModality;
+  readonly instructions: string;
+  readonly validations: readonly string[];
+}
+
+export interface EnrollmentQualityConfig {
+  readonly minQuality: Readonly<Record<BiometricModality, number>>;
+  readonly diversityCheck: boolean;
+  readonly consistencyCheck: boolean;
+}
+
+export interface EnrollmentVerificationConfig {
+  readonly enabled: boolean;
+  readonly method: 'SELF_VERIFICATION' | 'OPERATOR_VERIFICATION' | 'BOTH';
+  readonly threshold: number;
+}
+
+export interface EnrollmentStorageConfig {
+  readonly templateFormat: 'PROPRIETARY' | 'ISO_19794' | 'ANSI_378';
+  readonly encryption: boolean;
+  readonly compression: boolean;
+}
+
+export interface MatchingConfig {
+  readonly algorithms: Readonly<Record<BiometricModality, MatchingAlgorithm>>;
+  readonly thresholds: Readonly<Record<BiometricModality, number>>;
+  readonly performance: MatchingPerformanceConfig;
+  readonly indexing: IndexingConfig;
+}
+
+export interface MatchingPerformanceConfig {
+  readonly maxResponseTime: number;
+  readonly parallelMatching: boolean;
+  readonly caching: boolean;
+  readonly preFiltering: boolean;
+}
+
+export interface IndexingConfig {
+  readonly enabled: boolean;
+  readonly method: 'LSH' | 'KD_TREE' | 'BALL_TREE' | 'HNSW';
+  readonly parameters: Readonly<Record<string, unknown>>;
+}
+
+export interface BiometricStorageConfig {
+  readonly type: 'DATABASE' | 'FILESYSTEM' | 'HSM' | 'SECURE_ENCLAVE';
+  readonly encryption: BiometricEncryptionConfig;
+  readonly retention: BiometricRetentionConfig;
+  readonly backup: BiometricBackupConfig;
+}
+
+export interface BiometricEncryptionConfig {
+  readonly enabled: boolean;
+  readonly algorithm: 'AES_256_GCM' | 'CHACHA20_POLY1305';
+  readonly keyManagement: 'LOCAL' | 'HSM' | 'KMS';
+  readonly templateProtection: TemplateProtectionConfig;
+}
+
+export interface TemplateProtectionConfig {
+  readonly enabled: boolean;
+  readonly method: 'FUZZY_VAULT' | 'FUZZY_COMMITMENT' | 'CANCELABLE' | 'BIOHASHING';
+}
+
+export interface BiometricRetentionConfig {
+  readonly enabled: boolean;
+  readonly maxAge: number;
+  readonly deleteOnRevocation: boolean;
+}
+
+export interface BiometricBackupConfig {
+  readonly enabled: boolean;
+  readonly frequency: number;
+  readonly encryption: boolean;
+}
+
+export interface PrivacyConfig {
+  readonly enabled: boolean;
+  readonly consent: ConsentConfig;
+  readonly dataMinimization: DataMinimizationConfig;
+  readonly anonymization: AnonymizationConfig;
+  readonly rightToErasure: RightToErasureConfig;
+}
+
+export interface ConsentConfig {
+  readonly required: boolean;
+  readonly explicitConsent: boolean;
+  readonly consentStorage: boolean;
+  readonly withdrawalSupported: boolean;
+}
+
+export interface DataMinimizationConfig {
+  readonly enabled: boolean;
+  readonly storeTemplatesOnly: boolean;
+  readonly deleteRawData: boolean;
+  readonly deleteAfterEnrollment: boolean;
+}
+
+export interface AnonymizationConfig {
+  readonly enabled: boolean;
+  readonly method: 'PSEUDONYMIZATION' | 'TOKENIZATION' | 'ENCRYPTION';
+}
+
+export interface RightToErasureConfig {
+  readonly enabled: boolean;
+  readonly automaticDeletion: boolean;
+  readonly deletionVerification: boolean;
+}
+
+export interface ComplianceConfig {
+  readonly enabled: boolean;
+  readonly standards: readonly ComplianceStandard[];
+  readonly auditing: AuditingConfig;
+  readonly reporting: ReportingConfig;
+}
+
+export interface ComplianceStandard {
+  readonly standardId: string;
+  readonly name: string;
+  readonly version: string;
+  readonly requirements: readonly string[];
+}
+
+export interface AuditingConfig {
+  readonly enabled: boolean;
+  readonly logAllOperations: boolean;
+  readonly logTemplateAccess: boolean;
+  readonly retention: number;
+}
+
+export interface ReportingConfig {
+  readonly enabled: boolean;
+  readonly format: 'PDF' | 'HTML' | 'JSON';
+  readonly frequency: number;
+  readonly recipients: readonly string[];
+}
+
+export interface AlertingConfig {
+  readonly enabled: boolean;
+  readonly channels: readonly AlertChannel[];
+  readonly rules: readonly AlertRule[];
+  readonly escalation: EscalationConfig;
+}
+
+export interface AlertChannel {
+  readonly channelId: string;
+  readonly name: string;
+  readonly type: 'EMAIL' | 'SMS' | 'WEBHOOK' | 'SIEM';
+  readonly config: Readonly<Record<string, unknown>>;
+  readonly enabled: boolean;
+}
+
+export interface AlertRule {
+  readonly ruleId: string;
+  readonly name: string;
+  readonly condition: string;
+  readonly severity: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
+  readonly channels: readonly string[];
+  readonly cooldown: number;
+  readonly enabled: boolean;
+}
+
+export interface EscalationConfig {
+  readonly enabled: boolean;
+  readonly levels: readonly EscalationLevel[];
+  readonly autoEscalate: boolean;
+}
+
+export interface EscalationLevel {
+  readonly level: number;
+  readonly channels: readonly string[];
+  readonly delay: number;
+}
+
+export interface SecurityConfig {
+  readonly authentication: AuthenticationConfig;
+  readonly authorization: AuthorizationConfig;
+  readonly audit: AuditConfig;
+}
+
+export interface AuthenticationConfig {
+  readonly enabled: boolean;
+  readonly methods: readonly ('API_KEY' | 'BEARER' | 'MTLS')[];
+  readonly sessionTimeout: number;
+}
+
+export interface AuthorizationConfig {
+  readonly enabled: boolean;
+  readonly model: 'RBAC' | 'ABAC';
+  readonly defaultRole: string;
+}
+
+export interface AuditConfig {
+  readonly enabled: boolean;
+  readonly logOperations: boolean;
+  readonly logAccess: boolean;
+  readonly retention: number;
+}
+
+export interface PlatformMetadata {
+  readonly createdAt: number;
+  readonly updatedAt: number;
+  readonly createdBy: string;
+  readonly version: string;
+  readonly tags: readonly string[];
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// BIOMETRIC TEMPLATE TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface BiometricTemplate {
+  readonly templateId: string;
+  readonly subjectId: string;
+  readonly modality: BiometricModality;
+  readonly version: string;
+  readonly format: TemplateFormat;
+  readonly data: TemplateData;
+  readonly quality: TemplateQuality;
+  readonly metadata: TemplateMetadata;
+  readonly protection: TemplateProtection;
+}
+
+export type TemplateFormat =
+  | 'PROPRIETARY'
+  | 'ISO_19794_2'
+  | 'ISO_19794_4'
+  | 'ISO_19794_5'
+  | 'ISO_19794_6'
+  | 'ANSI_378'
+  | 'ANSI_381';
+
+export interface TemplateData {
+  readonly encoding: 'RAW' | 'BASE64' | 'HEX';
+  readonly data: Uint8Array;
+  readonly size: number;
+  readonly checksum: string;
+}
+
+export interface TemplateQuality {
+  readonly score: number;
+  readonly level: QualityLevel;
+  readonly metrics: Readonly<Record<string, number>>;
+}
+
+export interface TemplateMetadata {
+  readonly createdAt: number;
+  readonly updatedAt: number;
+  readonly captureDevice: string;
+  readonly captureConditions: CaptureConditions;
+  readonly enrollmentId: string;
+}
+
+export interface CaptureConditions {
+  readonly lighting: string;
+  readonly position: string;
+  readonly environment: string;
+}
+
+export interface TemplateProtection {
+  readonly protected: boolean;
+  readonly method: string | null;
+  readonly parameters: Readonly<Record<string, unknown>>;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// AUTHENTICATION RESULT TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface AuthenticationResult {
+  readonly resultId: string;
+  readonly timestamp: number;
+  readonly mode: AuthenticationMode;
+  readonly status: AuthenticationStatus;
+  readonly subject: SubjectInfo | null;
+  readonly scores: ModalityScores;
+  readonly fusedScore: number;
+  readonly confidence: ConfidenceLevel;
+  readonly liveness: LivenessResult;
+  readonly antiSpoofing: AntiSpoofingResult;
+  readonly riskAssessment: RiskAssessment;
+  readonly metadata: AuthenticationMetadata;
+}
+
+export type AuthenticationStatus =
+  | 'SUCCESS'
+  | 'FAILURE'
+  | 'INCONCLUSIVE'
+  | 'SPOOF_DETECTED'
+  | 'QUALITY_FAILURE'
+  | 'TIMEOUT'
+  | 'ERROR';
+
+export interface SubjectInfo {
+  readonly subjectId: string;
+  readonly name: string | null;
+  readonly enrollmentDate: number;
+  readonly lastAuthentication: number | null;
+}
+
+export interface ModalityScores {
+  readonly scores: Readonly<Record<BiometricModality, ModalityScore>>;
+}
+
+export interface ModalityScore {
+  readonly modality: BiometricModality;
+  readonly score: number;
+  readonly threshold: number;
+  readonly matched: boolean;
+  readonly quality: QualityLevel;
+  readonly templateId: string | null;
+}
+
+export interface LivenessResult {
+  readonly checked: boolean;
+  readonly passed: boolean;
+  readonly score: number;
+  readonly methods: readonly LivenessMethodResult[];
+}
+
+export interface LivenessMethodResult {
+  readonly method: string;
+  readonly passed: boolean;
+  readonly score: number;
+  readonly details: string | null;
+}
+
+export interface AntiSpoofingResult {
+  readonly checked: boolean;
+  readonly spoofDetected: boolean;
+  readonly spoofType: SpoofType | null;
+  readonly confidence: number;
+  readonly details: readonly SpoofCheckResult[];
+}
+
+export interface SpoofCheckResult {
+  readonly checkId: string;
+  readonly modality: BiometricModality;
+  readonly spoofType: SpoofType;
+  readonly detected: boolean;
+  readonly confidence: number;
+}
+
+export interface RiskAssessment {
+  readonly riskLevel: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+  readonly riskScore: number;
+  readonly factors: readonly RiskFactorResult[];
+  readonly recommendations: readonly string[];
+}
+
+export interface RiskFactorResult {
+  readonly factorId: string;
+  readonly name: string;
+  readonly score: number;
+  readonly contribution: number;
+}
+
+export interface AuthenticationMetadata {
+  readonly deviceId: string;
+  readonly location: string | null;
+  readonly ipAddress: string | null;
+  readonly userAgent: string | null;
+  readonly processingTime: number;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ENROLLMENT RESULT TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface EnrollmentResult {
+  readonly enrollmentId: string;
+  readonly timestamp: number;
+  readonly status: EnrollmentStatus;
+  readonly subjectId: string;
+  readonly templates: readonly EnrolledTemplate[];
+  readonly quality: EnrollmentQualityResult;
+  readonly verification: EnrollmentVerificationResult;
+  readonly metadata: EnrollmentMetadata;
+}
+
+export type EnrollmentStatus =
+  | 'SUCCESS'
+  | 'PARTIAL'
+  | 'FAILURE'
+  | 'QUALITY_FAILURE'
+  | 'DUPLICATE_DETECTED'
+  | 'CANCELLED';
+
+export interface EnrolledTemplate {
+  readonly templateId: string;
+  readonly modality: BiometricModality;
+  readonly quality: QualityLevel;
+  readonly qualityScore: number;
+  readonly sampleCount: number;
+}
+
+export interface EnrollmentQualityResult {
+  readonly overallQuality: QualityLevel;
+  readonly modalityQualities: Readonly<Record<BiometricModality, QualityLevel>>;
+  readonly issues: readonly QualityIssue[];
+}
+
+export interface QualityIssue {
+  readonly issueId: string;
+  readonly modality: BiometricModality;
+  readonly type: string;
+  readonly severity: 'ERROR' | 'WARNING' | 'INFO';
+  readonly description: string;
+}
+
+export interface EnrollmentVerificationResult {
+  readonly verified: boolean;
+  readonly method: string;
+  readonly score: number;
+  readonly verifiedBy: string | null;
+}
+
+export interface EnrollmentMetadata {
+  readonly deviceId: string;
+  readonly location: string | null;
+  readonly operator: string | null;
+  readonly processingTime: number;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SESSION TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface BiometricSession {
+  readonly sessionId: string;
+  readonly platformId: string;
+  readonly state: SessionState;
+  readonly config: SessionConfig;
+  readonly progress: SessionProgress;
+  readonly statistics: SessionStatistics;
+  readonly authentications: readonly AuthenticationResult[];
+  readonly enrollments: readonly EnrollmentResult[];
+  readonly errors: readonly SessionError[];
+  readonly startTime: number;
+  readonly endTime: number | null;
+  readonly metadata: SessionMetadata;
+}
+
+export type SessionState =
+  | 'PENDING'
+  | 'ACTIVE'
+  | 'PAUSED'
+  | 'COMPLETED'
+  | 'FAILED'
+  | 'EXPIRED';
+
+export interface SessionConfig {
+  readonly mode: OperationalMode;
+  readonly modalities: readonly BiometricModality[];
+  readonly options: Readonly<Record<string, unknown>>;
+}
+
+export interface SessionProgress {
+  readonly phase: SessionPhase;
+  readonly percentage: number;
+  readonly currentStep: string | null;
+  readonly estimatedTimeRemaining: number | null;
+}
+
+export type SessionPhase =
+  | 'INITIALIZING'
+  | 'CAPTURING'
+  | 'PROCESSING'
+  | 'MATCHING'
+  | 'VERIFYING'
+  | 'FINALIZING';
+
+export interface SessionStatistics {
+  readonly authenticationsTotal: number;
+  readonly authenticationsSuccessful: number;
+  readonly authenticationsFailed: number;
+  readonly enrollmentsTotal: number;
+  readonly enrollmentsSuccessful: number;
+  readonly spoofAttemptsDetected: number;
+  readonly averageProcessingTime: number;
+}
+
+export interface SessionError {
+  readonly errorId: string;
+  readonly timestamp: number;
+  readonly type: SessionErrorType;
+  readonly message: string;
+  readonly details: string | null;
+  readonly recoverable: boolean;
+}
+
+export type SessionErrorType =
+  | 'CAPTURE_ERROR'
+  | 'PROCESSING_ERROR'
+  | 'MATCHING_ERROR'
+  | 'TIMEOUT'
+  | 'DEVICE_ERROR'
+  | 'INTERNAL_ERROR';
+
+export interface SessionMetadata {
+  readonly platformVersion: string;
+  readonly startedBy: string;
+  readonly environment: string;
+  readonly tags: readonly string[];
+}
