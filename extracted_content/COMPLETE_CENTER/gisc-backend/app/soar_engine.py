@@ -41,7 +41,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-SOAR_DB_PATH = os.environ.get("SOAR_DB_PATH", "/var/lib/tyranthos/soar.db")
+SOAR_DB_PATH = os.environ.get("SOAR_DB_PATH", "/tmp/tyranthos/soar.db")
 MAX_PARALLEL_ACTIONS = int(os.environ.get("MAX_PARALLEL_ACTIONS", "10"))
 ACTION_TIMEOUT = int(os.environ.get("ACTION_TIMEOUT", "300"))
 
@@ -434,6 +434,53 @@ class SOARDatabase:
                 logger.error(f"Failed to save execution: {e}")
                 return False
     
+    def list_executions(self, limit: int = 50) -> List[PlaybookExecution]:
+        """List all playbook executions"""
+        executions = []
+        try:
+            with self._get_connection() as conn:
+                cursor = conn.cursor()
+                cursor.execute(
+                    "SELECT * FROM executions ORDER BY started_at DESC LIMIT ?",
+                    (limit,)
+                )
+                rows = cursor.fetchall()
+                for row in rows:
+                    executions.append(self._row_to_execution(row))
+        except Exception as e:
+            logger.error(f"Failed to list executions: {e}")
+        return executions
+    
+    def _row_to_execution(self, row: sqlite3.Row) -> PlaybookExecution:
+        """Convert database row to PlaybookExecution"""
+        action_results_data = json.loads(row["action_results"]) if row["action_results"] else []
+        action_results = [
+            ActionResult(
+                action_id=r.get("action_id", ""),
+                action_type=ActionType(r.get("action_type", "custom_script")),
+                success=r.get("success", False),
+                output=r.get("output", ""),
+                error=r.get("error"),
+                started_at=datetime.fromisoformat(r["started_at"]) if r.get("started_at") else datetime.utcnow(),
+                completed_at=datetime.fromisoformat(r["completed_at"]) if r.get("completed_at") else None,
+                metadata=r.get("metadata", {})
+            )
+            for r in action_results_data
+        ]
+        
+        return PlaybookExecution(
+            execution_id=row["execution_id"],
+            playbook_id=row["playbook_id"],
+            status=ExecutionStatus(row["status"]),
+            trigger_event=json.loads(row["trigger_event"]) if row["trigger_event"] else {},
+            variables=json.loads(row["variables"]) if row["variables"] else {},
+            action_results=action_results,
+            started_at=datetime.fromisoformat(row["started_at"]),
+            completed_at=datetime.fromisoformat(row["completed_at"]) if row["completed_at"] else None,
+            executed_by=row["executed_by"],
+            error=row["error"]
+        )
+    
     def save_case(self, case: Case) -> bool:
         with self._lock:
             try:
@@ -481,6 +528,29 @@ class SOARDatabase:
         except Exception as e:
             logger.error(f"Failed to get case: {e}")
         return None
+    
+    def list_cases(self, status: Optional[CaseStatus] = None, limit: int = 100) -> List[Case]:
+        """List all cases, optionally filtered by status"""
+        cases = []
+        try:
+            with self._get_connection() as conn:
+                cursor = conn.cursor()
+                if status:
+                    cursor.execute(
+                        "SELECT * FROM cases WHERE status = ? ORDER BY created_at DESC LIMIT ?",
+                        (status.value, limit)
+                    )
+                else:
+                    cursor.execute(
+                        "SELECT * FROM cases ORDER BY created_at DESC LIMIT ?",
+                        (limit,)
+                    )
+                rows = cursor.fetchall()
+                for row in rows:
+                    cases.append(self._row_to_case(row))
+        except Exception as e:
+            logger.error(f"Failed to list cases: {e}")
+        return cases
     
     def _row_to_case(self, row: sqlite3.Row) -> Case:
         return Case(
@@ -840,7 +910,7 @@ class ActionExecutor:
         if not os.path.exists(file_path):
             raise Exception(f"File not found: {file_path}")
         
-        quarantine_dir = "/var/lib/tyranthos/quarantine"
+        quarantine_dir = "/tmp/tyranthos/quarantine"
         os.makedirs(quarantine_dir, exist_ok=True)
         
         file_hash = hashlib.sha256(open(file_path, "rb").read()).hexdigest()
@@ -868,7 +938,7 @@ class ActionExecutor:
         evidence_type = params.get("type", "logs")
         target = params.get("target", "")
         
-        evidence_dir = "/var/lib/tyranthos/evidence"
+        evidence_dir = "/tmp/tyranthos/evidence"
         os.makedirs(evidence_dir, exist_ok=True)
         
         timestamp = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
@@ -938,7 +1008,7 @@ class ActionExecutor:
         severity = params.get("severity", "info")
         channel = params.get("channel", "default")
         
-        notification_dir = "/var/lib/tyranthos/notifications"
+        notification_dir = "/tmp/tyranthos/notifications"
         os.makedirs(notification_dir, exist_ok=True)
         
         notification = {
@@ -964,7 +1034,7 @@ class ActionExecutor:
         severity = params.get("severity", "medium")
         assignee = params.get("assignee", "")
         
-        ticket_dir = "/var/lib/tyranthos/tickets"
+        ticket_dir = "/tmp/tyranthos/tickets"
         os.makedirs(ticket_dir, exist_ok=True)
         
         ticket_id = f"TKT-{hashlib.sha256(f'{title}{datetime.utcnow().isoformat()}'.encode()).hexdigest()[:8].upper()}"
@@ -1129,7 +1199,7 @@ class ActionExecutor:
         """Capture memory dump"""
         pid = params.get("pid", "")
         
-        evidence_dir = "/var/lib/tyranthos/evidence/memory"
+        evidence_dir = "/tmp/tyranthos/evidence/memory"
         os.makedirs(evidence_dir, exist_ok=True)
         
         timestamp = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
@@ -1154,7 +1224,7 @@ class ActionExecutor:
         if not device:
             raise Exception("Device required")
         
-        evidence_dir = "/var/lib/tyranthos/evidence/disk"
+        evidence_dir = "/tmp/tyranthos/evidence/disk"
         os.makedirs(evidence_dir, exist_ok=True)
         
         timestamp = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
@@ -1214,8 +1284,8 @@ class ActionExecutor:
         if not os.path.exists(script_path):
             raise Exception(f"Script not found: {script_path}")
         
-        if not script_path.startswith("/var/lib/tyranthos/scripts/"):
-            raise Exception("Scripts must be in /var/lib/tyranthos/scripts/")
+        if not script_path.startswith("/tmp/tyranthos/scripts/"):
+            raise Exception("Scripts must be in /tmp/tyranthos/scripts/")
         
         cmd = [script_path] + args
         output, returncode = self._run_command(cmd, timeout=ACTION_TIMEOUT)
@@ -1904,6 +1974,10 @@ class SOAREngine:
         """Get case by ID"""
         return self.database.get_case(case_id)
     
+    def list_cases(self, status: Optional[CaseStatus] = None, limit: int = 100) -> List[Case]:
+        """List all cases, optionally filtered by status"""
+        return self.database.list_cases(status, limit)
+    
     def update_case_status(self, case_id: str, status: CaseStatus) -> bool:
         """Update case status"""
         case = self.database.get_case(case_id)
@@ -1945,6 +2019,10 @@ class SOAREngine:
     def get_playbooks(self) -> List[Playbook]:
         """Get all playbooks"""
         return self.database.get_active_playbooks()
+    
+    def list_executions(self, limit: int = 50) -> List[PlaybookExecution]:
+        """List all playbook executions"""
+        return self.database.list_executions(limit)
     
     def block_ip(self, ip: str, reason: str = "Manual block") -> Dict[str, Any]:
         """Manually block IP"""

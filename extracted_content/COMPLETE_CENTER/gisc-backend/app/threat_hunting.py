@@ -39,9 +39,9 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-HUNT_DB_PATH = os.environ.get("HUNT_DB_PATH", "/var/lib/tyranthos/threat_hunting.db")
+HUNT_DB_PATH = os.environ.get("HUNT_DB_PATH", "/tmp/tyranthos/threat_hunting.db")
 LOG_SOURCES_DIR = os.environ.get("LOG_SOURCES_DIR", "/var/log")
-PCAP_DIR = os.environ.get("PCAP_DIR", "/var/lib/tyranthos/pcap")
+PCAP_DIR = os.environ.get("PCAP_DIR", "/tmp/tyranthos/pcap")
 
 
 class HuntStatus(str, Enum):
@@ -387,6 +387,29 @@ class HuntDatabase:
             logger.error(f"Failed to get campaign: {e}")
         return None
     
+    def list_campaigns(self, status: Optional[HuntStatus] = None, limit: int = 100) -> List[HuntCampaign]:
+        """List all campaigns, optionally filtered by status"""
+        campaigns = []
+        try:
+            with self._get_connection() as conn:
+                cursor = conn.cursor()
+                if status:
+                    cursor.execute(
+                        "SELECT * FROM campaigns WHERE status = ? ORDER BY start_date DESC LIMIT ?",
+                        (status.value, limit)
+                    )
+                else:
+                    cursor.execute(
+                        "SELECT * FROM campaigns ORDER BY start_date DESC LIMIT ?",
+                        (limit,)
+                    )
+                rows = cursor.fetchall()
+                for row in rows:
+                    campaigns.append(self._row_to_campaign(row))
+        except Exception as e:
+            logger.error(f"Failed to list campaigns: {e}")
+        return campaigns
+    
     def _row_to_campaign(self, row: sqlite3.Row) -> HuntCampaign:
         hypotheses_data = json.loads(row["hypotheses"]) if row["hypotheses"] else []
         hypotheses = []
@@ -586,6 +609,33 @@ class HuntDatabase:
             except Exception as e:
                 logger.error(f"Failed to save anomaly: {e}")
                 return False
+    
+    def list_anomalies(self, limit: int = 50) -> List[AnomalyDetection]:
+        """List all detected anomalies"""
+        anomalies = []
+        try:
+            with self._get_connection() as conn:
+                cursor = conn.cursor()
+                cursor.execute(
+                    "SELECT * FROM anomalies ORDER BY detected_at DESC LIMIT ?",
+                    (limit,)
+                )
+                rows = cursor.fetchall()
+                for row in rows:
+                    anomalies.append(AnomalyDetection(
+                        anomaly_id=row["anomaly_id"],
+                        entity_type=row["entity_type"],
+                        entity_id=row["entity_id"],
+                        metric_name=row["metric_name"],
+                        observed_value=row["observed_value"],
+                        expected_range=(row["expected_min"], row["expected_max"]),
+                        deviation_score=row["deviation_score"],
+                        detected_at=datetime.fromisoformat(row["detected_at"]),
+                        context=json.loads(row["context"]) if row["context"] else {}
+                    ))
+        except Exception as e:
+            logger.error(f"Failed to list anomalies: {e}")
+        return anomalies
     
     def save_threat_actor(self, actor: ThreatActor) -> bool:
         with self._lock:
@@ -1596,6 +1646,10 @@ class ThreatHuntingEngine:
         """Get campaign by ID"""
         return self.database.get_campaign(campaign_id)
     
+    def list_campaigns(self, status: Optional[HuntStatus] = None, limit: int = 100) -> List[HuntCampaign]:
+        """List all campaigns, optionally filtered by status"""
+        return self.database.list_campaigns(status, limit)
+    
     def get_findings(self, hunt_id: str) -> List[HuntFinding]:
         """Get findings for hunt"""
         return self.database.get_findings_by_hunt(hunt_id)
@@ -1604,6 +1658,10 @@ class ThreatHuntingEngine:
         """Get current ATT&CK technique coverage"""
         results = self.hunt_all_techniques()
         return self.attack_hunter.get_technique_coverage(results)
+    
+    def get_anomalies(self, limit: int = 50) -> List[AnomalyDetection]:
+        """Get detected anomalies"""
+        return self.database.list_anomalies(limit)
 
 
 def get_threat_hunting_engine() -> ThreatHuntingEngine:

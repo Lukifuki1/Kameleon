@@ -38,7 +38,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-TENANT_DB_PATH = os.environ.get("TENANT_DB_PATH", "/var/lib/tyranthos/tenants.db")
+TENANT_DB_PATH = os.environ.get("TENANT_DB_PATH", "/tmp/tyranthos/tenants.db")
 DEFAULT_TENANT_ID = os.environ.get("DEFAULT_TENANT_ID", "default")
 API_KEY_LENGTH = 64
 API_KEY_PREFIX = "tyr_"

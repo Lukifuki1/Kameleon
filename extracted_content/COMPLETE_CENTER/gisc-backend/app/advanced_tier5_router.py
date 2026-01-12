@@ -324,6 +324,29 @@ async def analyze_malware(request: MalwareAnalyzeRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@router.get("/malware/list")
+async def list_malware_captures(
+    limit: int = Query(default=100, ge=1, le=500)
+):
+    """List all captured malware samples"""
+    try:
+        from app.malware_capture import get_malware_capture_engine
+        
+        engine = get_malware_capture_engine()
+        captures = engine.list_captures(limit)
+        
+        return {
+            "success": True,
+            "captures": captures,
+            "total": len(captures),
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+    except Exception as e:
+        logger.error(f"Error listing malware captures: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @router.get("/malware/{capture_id}")
 async def get_malware_sample(capture_id: str):
     """Get captured malware sample details"""
@@ -375,32 +398,53 @@ async def get_malware_code(capture_id: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/malware/list")
-async def list_malware_captures(
-    limit: int = Query(default=100, ge=1, le=500)
-):
-    """List all captured malware samples"""
-    try:
-        from app.malware_capture import get_malware_capture_engine
-        
-        engine = get_malware_capture_engine()
-        captures = engine.list_captures(limit)
-        
-        return {
-            "success": True,
-            "captures": captures,
-            "total": len(captures),
-            "timestamp": datetime.utcnow().isoformat()
-        }
-        
-    except Exception as e:
-        logger.error(f"Error listing malware captures: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-
 # ============================================================================
 # PERSON INTELLIGENCE ENDPOINTS
 # ============================================================================
+
+@router.get("/person/list")
+async def list_persons(
+    limit: int = Query(default=100, ge=1, le=500),
+    offset: int = Query(default=0, ge=0)
+):
+    """List all person profiles"""
+    try:
+        from app.person_profile_storage import get_person_profile_database
+        
+        db = get_person_profile_database()
+        profiles = db.list_profiles(limit, offset)
+        
+        return {
+            "success": True,
+            "profiles": profiles,
+            "total": len(profiles),
+            "offset": offset,
+            "limit": limit
+        }
+        
+    except Exception as e:
+        logger.error(f"Error listing persons: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/person/statistics")
+async def get_person_statistics():
+    """Get person database statistics"""
+    try:
+        from app.person_profile_storage import get_person_profile_database
+        
+        db = get_person_profile_database()
+        stats = db.get_statistics()
+        
+        return {
+            "success": True,
+            "statistics": stats
+        }
+        
+    except Exception as e:
+        logger.error(f"Error getting person statistics: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 
 @router.post("/person/create")
 async def create_person_profile(request: PersonProfileCreateRequest):
@@ -675,31 +719,6 @@ async def search_persons(request: PersonSearchRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/person/list")
-async def list_persons(
-    limit: int = Query(default=100, ge=1, le=500),
-    offset: int = Query(default=0, ge=0)
-):
-    """List all person profiles"""
-    try:
-        from app.person_profile_storage import get_person_profile_database
-        
-        db = get_person_profile_database()
-        profiles = db.list_profiles(limit, offset)
-        
-        return {
-            "success": True,
-            "profiles": profiles,
-            "total": len(profiles),
-            "offset": offset,
-            "limit": limit
-        }
-        
-    except Exception as e:
-        logger.error(f"Error listing persons: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-
 @router.post("/person/link-analysis/{profile_id}")
 async def analyze_person_network(
     profile_id: str,
@@ -719,25 +738,6 @@ async def analyze_person_network(
         
     except Exception as e:
         logger.error(f"Error analyzing person network: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@router.get("/person/statistics")
-async def get_person_statistics():
-    """Get person database statistics"""
-    try:
-        from app.person_profile_storage import get_person_profile_database
-        
-        db = get_person_profile_database()
-        stats = db.get_statistics()
-        
-        return {
-            "success": True,
-            "statistics": stats
-        }
-        
-    except Exception as e:
-        logger.error(f"Error getting person statistics: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
