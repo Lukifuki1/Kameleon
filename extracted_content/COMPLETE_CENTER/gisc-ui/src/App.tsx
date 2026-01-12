@@ -216,6 +216,33 @@ function App() {
     const [selectedInterface, setSelectedInterface] = useState('any');
     const [captureFilter, setCaptureFilter] = useState('');
 
+    // Advanced Tier 5 - Global Attack Visualization state
+    const [attackRoutes, setAttackRoutes] = useState<any[]>([]);
+    const [attackStatistics, setAttackStatistics] = useState<any>(null);
+    const [isLoadingAttackRoutes, setIsLoadingAttackRoutes] = useState(false);
+    const [attackMapData, setAttackMapData] = useState<any>(null);
+
+    // Advanced Tier 5 - Malware Capture state
+    const [malwareCaptureUrl, setMalwareCaptureUrl] = useState('');
+    const [capturedMalware, setCapturedMalware] = useState<any[]>([]);
+    const [selectedMalwareSample, setSelectedMalwareSample] = useState<any>(null);
+    const [malwareCodeView, setMalwareCodeView] = useState<'hex' | 'disasm' | 'decompiled'>('hex');
+    const [isCapturingMalware, setIsCapturingMalware] = useState(false);
+
+    // Advanced Tier 5 - Enhanced Person Intelligence state
+    const [personPhotos, setPersonPhotos] = useState<any[]>([]);
+    const [personConnections, setPersonConnections] = useState<any[]>([]);
+    const [personSightings, setPersonSightings] = useState<any[]>([]);
+    const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
+    const [isDetectingConnections, setIsDetectingConnections] = useState(false);
+
+    // Advanced Tier 5 - Camera Face Recognition state
+    const [cameraHierarchy, setCameraHierarchy] = useState<any>(null);
+    const [faceSearchTargets, setFaceSearchTargets] = useState<any[]>([]);
+    const [cameraSightings, setCameraSightings] = useState<any[]>([]);
+    const [isAddingFaceTarget, setIsAddingFaceTarget] = useState(false);
+    const [faceSearchImage, setFaceSearchImage] = useState<File | null>(null);
+
       const fetchTier5Status = useCallback(async () => {
       try {
         const response = await fetch(`${API_URL}/api/v1/tier5/status`);
@@ -978,6 +1005,268 @@ function App() {
         }
       } catch (err) {
         console.error('Error fetching interfaces:', err);
+      }
+    }, []);
+
+    // Advanced Tier 5 - Global Attack Visualization functions
+    const fetchAttackRoutes = useCallback(async (refresh: boolean = false) => {
+      setIsLoadingAttackRoutes(true);
+      try {
+        const response = await fetch(`${API_URL}/api/v1/tier5/advanced/attack-visualization/routes?limit=100&refresh=${refresh}`);
+        if (response.ok) {
+          const data = await response.json();
+          setAttackRoutes(data.routes || []);
+        }
+      } catch (err) {
+        console.error('Error fetching attack routes:', err);
+      } finally {
+        setIsLoadingAttackRoutes(false);
+      }
+    }, []);
+
+    const fetchAttackStatistics = useCallback(async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/tier5/advanced/attack-visualization/statistics`);
+        if (response.ok) {
+          const data = await response.json();
+          setAttackStatistics(data.statistics);
+        }
+      } catch (err) {
+        console.error('Error fetching attack statistics:', err);
+      }
+    }, []);
+
+    const fetchAttackMapData = useCallback(async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/tier5/advanced/attack-visualization/map-data`);
+        if (response.ok) {
+          const data = await response.json();
+          setAttackMapData(data.data);
+        }
+      } catch (err) {
+        console.error('Error fetching attack map data:', err);
+      }
+    }, []);
+
+    // Advanced Tier 5 - Malware Capture functions
+    const captureMalwareFromUrl = useCallback(async () => {
+      if (!malwareCaptureUrl.trim()) return;
+      setIsCapturingMalware(true);
+      try {
+        const response = await fetch(`${API_URL}/api/v1/tier5/advanced/malware/capture`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url: malwareCaptureUrl, timeout: 60 })
+        });
+        if (response.ok) {
+          const data = await response.json();
+          setCapturedMalware(prev => [data, ...prev]);
+          setSelectedMalwareSample(data);
+          setMalwareCaptureUrl('');
+        }
+      } catch (err) {
+        console.error('Error capturing malware:', err);
+      } finally {
+        setIsCapturingMalware(false);
+      }
+    }, [malwareCaptureUrl]);
+
+    const fetchMalwareCode = useCallback(async (captureId: string) => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/tier5/advanced/malware/${captureId}/code`);
+        if (response.ok) {
+          const data = await response.json();
+          setSelectedMalwareSample((prev: any) => prev ? { ...prev, ...data } : data);
+        }
+      } catch (err) {
+        console.error('Error fetching malware code:', err);
+      }
+    }, []);
+
+    const fetchMalwareCaptures = useCallback(async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/tier5/advanced/malware/list?limit=50`);
+        if (response.ok) {
+          const data = await response.json();
+          setCapturedMalware(data.captures || []);
+        }
+      } catch (err) {
+        console.error('Error fetching malware captures:', err);
+      }
+    }, []);
+
+    // Advanced Tier 5 - Enhanced Person Intelligence functions
+    const fetchPersonPhotos = useCallback(async (profileId: string) => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/tier5/advanced/person/${profileId}/photos`);
+        if (response.ok) {
+          const data = await response.json();
+          setPersonPhotos(data.photos || []);
+        }
+      } catch (err) {
+        console.error('Error fetching person photos:', err);
+      }
+    }, []);
+
+    const uploadPersonPhoto = useCallback(async (profileId: string, photoFile: File) => {
+      setIsUploadingPhoto(true);
+      try {
+        const reader = new FileReader();
+        reader.onload = async () => {
+          const base64Data = (reader.result as string).split(',')[1];
+          const response = await fetch(`${API_URL}/api/v1/tier5/advanced/person/${profileId}/photo`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              person_id: profileId,
+              photo_data: base64Data,
+              source: 'MANUAL_UPLOAD'
+            })
+          });
+          if (response.ok) {
+            fetchPersonPhotos(profileId);
+          }
+        };
+        reader.readAsDataURL(photoFile);
+      } catch (err) {
+        console.error('Error uploading photo:', err);
+      } finally {
+        setIsUploadingPhoto(false);
+      }
+    }, [fetchPersonPhotos]);
+
+    const detectPersonConnections = useCallback(async (profileId: string) => {
+      setIsDetectingConnections(true);
+      try {
+        const response = await fetch(`${API_URL}/api/v1/tier5/advanced/person/${profileId}/detect-connections`, {
+          method: 'POST'
+        });
+        if (response.ok) {
+          const data = await response.json();
+          setPersonConnections(data.new_connections || []);
+        }
+      } catch (err) {
+        console.error('Error detecting connections:', err);
+      } finally {
+        setIsDetectingConnections(false);
+      }
+    }, []);
+
+    const fetchPersonConnections = useCallback(async (profileId: string) => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/tier5/advanced/person/${profileId}/connections`);
+        if (response.ok) {
+          const data = await response.json();
+          setPersonConnections(data.connections || []);
+        }
+      } catch (err) {
+        console.error('Error fetching person connections:', err);
+      }
+    }, []);
+
+    // Advanced Tier 5 - Camera Face Recognition functions
+    const fetchCameraHierarchy = useCallback(async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/tier5/advanced/camera/hierarchy`);
+        if (response.ok) {
+          const data = await response.json();
+          setCameraHierarchy(data.hierarchy);
+        }
+      } catch (err) {
+        console.error('Error fetching camera hierarchy:', err);
+      }
+    }, []);
+
+    const addFaceToSearch = useCallback(async (personId: string, imageFile: File, threshold: number = 0.6) => {
+      setIsAddingFaceTarget(true);
+      try {
+        const reader = new FileReader();
+        reader.onload = async () => {
+          const base64Data = (reader.result as string).split(',')[1];
+          const response = await fetch(`${API_URL}/api/v1/tier5/advanced/camera/face-search/add`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              person_id: personId,
+              image_data: base64Data,
+              match_threshold: threshold
+            })
+          });
+          if (response.ok) {
+            const data = await response.json();
+            setFaceSearchTargets(prev => [...prev, data]);
+          }
+        };
+        reader.readAsDataURL(imageFile);
+      } catch (err) {
+        console.error('Error adding face to search:', err);
+      } finally {
+        setIsAddingFaceTarget(false);
+      }
+    }, []);
+
+    const fetchFaceSearchTargets = useCallback(async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/tier5/advanced/camera/face-search/targets`);
+        if (response.ok) {
+          const data = await response.json();
+          setFaceSearchTargets(data.targets || []);
+        }
+      } catch (err) {
+        console.error('Error fetching face search targets:', err);
+      }
+    }, []);
+
+    const fetchCameraSightings = useCallback(async (personId: string) => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/tier5/advanced/camera/sightings/${personId}?limit=50`);
+        if (response.ok) {
+          const data = await response.json();
+          setCameraSightings(data.sightings || []);
+        }
+      } catch (err) {
+        console.error('Error fetching camera sightings:', err);
+      }
+    }, []);
+
+    const discoverCamerasAdvanced = useCallback(async (sources?: string[]) => {
+      setCameraSearching(true);
+      try {
+        const response = await fetch(`${API_URL}/api/v1/tier5/advanced/camera/discover`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            sources: sources || ['insecam', 'earthcam', 'opentopia', 'webcamtaxi'],
+            max_per_source: 50
+          })
+        });
+        if (response.ok) {
+          fetchCameraHierarchy();
+        }
+      } catch (err) {
+        console.error('Error discovering cameras:', err);
+      } finally {
+        setCameraSearching(false);
+      }
+    }, [fetchCameraHierarchy]);
+
+    const fetchCamerasByLocation = useCallback(async (countryCode?: string, region?: string, city?: string) => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/tier5/advanced/camera/by-location`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            country_code: countryCode || null,
+            region: region || null,
+            city: city || null
+          })
+        });
+        if (response.ok) {
+          const data = await response.json();
+          setDiscoveredCameras(data.cameras || []);
+        }
+      } catch (err) {
+        console.error('Error fetching cameras by location:', err);
       }
     }, []);
 
