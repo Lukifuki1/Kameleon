@@ -253,7 +253,7 @@ function App() {
         }
         const data = await response.json();
         const allComponentsActive = data.components && 
-          Object.values(data.components).every((c: any) => c.status === 'active' || c.status === 'HEALTHY');
+          Object.values(data.components).every((c: any) => c.status === 'active' || c.status === 'HEALTHY' || c.status === 'degraded');
         setTier5Status({
           operational: data.status === 'OPERATIONAL' && allComponentsActive,
           components: data.components
@@ -2031,14 +2031,14 @@ function App() {
           {!isLoading && activeTab === 'intel' && (
             <div className="space-y-6">
               <div className="grid grid-cols-5 gap-4">
-                {['SIGINT', 'FININT', 'OSINT', 'HUMINT', 'CI'].map((type, i) => (
+                {(systemCapabilities?.capabilities?.intelligence || []).map((type: string, i: number) => (
                   <Card key={type} className="bg-zinc-900 border-zinc-800">
                     <CardHeader className="pb-2">
-                      <CardTitle className="text-lg" style={{ color: COLORS[i] }}>{type}</CardTitle>
+                      <CardTitle className="text-lg" style={{ color: COLORS[i % COLORS.length] }}>{type.toUpperCase()}</CardTitle>
                     </CardHeader>
                     <CardContent>
                       <div className="text-3xl font-bold text-white">
-                        {intelReports.filter(r => r.type === type).length}
+                        {intelReports.filter(r => r.type === type.toUpperCase()).length}
                       </div>
                       <div className="text-xs text-zinc-500">Active Reports</div>
                     </CardContent>
@@ -2074,10 +2074,10 @@ function App() {
                     </button>
                   </div>
                   <div className="grid grid-cols-4 gap-2 mb-4">
-                    {['Domain Intel', 'Social Media', 'Dark Web', 'Public Records', 'DNS/WHOIS', 'Email Intel', 'Network Intel', 'Threat Intel'].map((source) => (
+                    {(systemCapabilities?.capabilities?.intelligence || []).map((source: string) => (
                       <div key={source} className="p-2 rounded border border-cyan-700 bg-cyan-900/20">
                         <div className="text-xs font-bold text-cyan-400">{source}</div>
-                        <div className="text-xs text-zinc-500">Active</div>
+                        <div className="text-xs text-zinc-500">{tier5Status?.components?.threat_intelligence?.status === 'active' ? 'Active' : 'Standby'}</div>
                       </div>
                     ))}
                   </div>
@@ -2673,7 +2673,7 @@ function App() {
                 </CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-3 gap-4">
-                    {['Reconnaissance', 'Initial Access', 'Execution', 'Persistence', 'Privilege Escalation', 'Defense Evasion', 'Credential Access', 'Discovery', 'Lateral Movement', 'Collection', 'C2 Operations', 'Exfiltration'].map((phase, idx) => (
+                    {(systemCapabilities?.capabilities?.offensive || []).map((phase: string, idx: number) => (
                       <div key={phase} className="p-4 rounded-lg bg-red-900/20 border border-red-800">
                         <div className="flex items-center justify-between">
                           <span className="font-semibold text-red-300">{phase}</span>
@@ -2681,7 +2681,7 @@ function App() {
                             {threatEvents.filter(t => t.mitre_tactic?.toLowerCase().includes(phase.toLowerCase().split(' ')[0])).length} ops
                           </Badge>
                         </div>
-                        <Progress value={threatEvents.length > 0 ? ((idx + 1) / 12) * 100 : 0} className="mt-2 h-1" />
+                        <Progress value={threatEvents.length > 0 ? ((idx + 1) / (systemCapabilities?.capabilities?.offensive?.length || 1)) * 100 : 0} className="mt-2 h-1" />
                       </div>
                     ))}
                   </div>
@@ -2699,14 +2699,14 @@ function App() {
                 </CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-3 gap-4">
-                    {['Threat Detection', 'Incident Response', 'Threat Hunting', 'Vulnerability Management', 'Security Monitoring', 'Log Analysis', 'Malware Analysis', 'Network Defense', 'Endpoint Protection', 'Identity Security', 'Data Protection', 'Compliance'].map((area, idx) => (
+                    {(systemCapabilities?.capabilities?.defensive || []).map((area: string) => (
                       <div key={area} className="p-4 rounded-lg bg-blue-900/20 border border-blue-800">
                         <div className="flex items-center justify-between">
                           <span className="font-semibold text-blue-300">{area}</span>
                           <CheckCircle className="h-4 w-4 text-green-400" />
                         </div>
-                        <div className="text-xs text-blue-400/70 mt-1">Status: ACTIVE</div>
-                        <Progress value={100} className="mt-2 h-1" />
+                        <div className="text-xs text-blue-400/70 mt-1">Status: {tier5Status?.components?.threat_hunting?.status === 'active' ? 'ACTIVE' : 'STANDBY'}</div>
+                        <Progress value={tier5Status?.components?.threat_hunting?.status === 'active' ? 100 : 0} className="mt-2 h-1" />
                       </div>
                     ))}
                   </div>
@@ -2789,13 +2789,13 @@ function App() {
                 </CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-2 gap-4">
-                    {['Device Forensics', 'Memory Analysis', 'Network Forensics', 'Mobile Forensics', 'Cloud Forensics', 'Blockchain Forensics', 'Malware Forensics', 'Email Forensics'].map((type) => (
+                    {(systemCapabilities?.capabilities?.forensics || []).map((type: string) => (
                       <div key={type} className="p-4 rounded-lg bg-zinc-800 border border-zinc-700">
                         <div className="flex items-center gap-3">
                           <FileSearch className="h-6 w-6 text-cyan-400" />
                           <div>
                             <div className="font-semibold text-white">{type}</div>
-                            <div className="text-xs text-zinc-400">Status: OPERATIONAL</div>
+                            <div className="text-xs text-zinc-400">Status: {tier5Status?.components?.threat_hunting?.status === 'active' ? 'ACTIVE' : 'STANDBY'}</div>
                           </div>
                         </div>
                       </div>
@@ -2951,13 +2951,13 @@ function App() {
                 </CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-3 gap-4">
-                    {['Static Analysis', 'Dynamic Analysis', 'Behavioral Analysis', 'Code Reconstruction', 'Signature Generation', 'IOC Extraction', 'Sandbox Execution', 'Reverse Engineering', 'Threat Attribution'].map((type) => (
-                      <div key={type} className="p-4 rounded-lg bg-purple-900/20 border border-purple-800">
+                    {(systemCapabilities?.capabilities?.malware || []).map((capability: string) => (
+                      <div key={capability} className="p-4 rounded-lg bg-purple-900/20 border border-purple-800">
                         <div className="flex items-center gap-3">
                           <Bug className="h-5 w-5 text-purple-400" />
-                          <span className="font-semibold text-purple-300">{type}</span>
+                          <span className="font-semibold text-purple-300">{capability}</span>
                         </div>
-                        <div className="text-xs text-purple-400/70 mt-1">Status: OPERATIONAL</div>
+                        <div className="text-xs text-purple-400/70 mt-1">Status: {tier5Status?.components?.threat_intelligence?.status === 'active' ? 'ACTIVE' : 'STANDBY'}</div>
                       </div>
                     ))}
                   </div>
@@ -2975,14 +2975,14 @@ function App() {
                 </CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-2 gap-4">
-                    {['CRYSTALS-Kyber', 'CRYSTALS-Dilithium', 'SPHINCS+', 'FALCON', 'QKD Integration', 'Hybrid Encryption', 'Quantum RNG', 'PQC Migration'].map((algo) => (
+                    {(systemCapabilities?.capabilities?.cryptography || []).map((algo: string) => (
                       <div key={algo} className="p-4 rounded-lg bg-emerald-900/20 border border-emerald-800">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-3">
                             <Lock className="h-5 w-5 text-emerald-400" />
                             <span className="font-semibold text-emerald-300">{algo}</span>
                           </div>
-                          <Badge variant="outline" className="text-emerald-400 border-emerald-600">ACTIVE</Badge>
+                          <Badge variant="outline" className="text-emerald-400 border-emerald-600">{tier5Status?.components?.compliance?.status === 'active' ? 'ACTIVE' : 'STANDBY'}</Badge>
                         </div>
                       </div>
                     ))}
@@ -3487,10 +3487,10 @@ function App() {
                       <div className="text-2xl font-bold text-white">{threatEvents.filter(t => t.status === 'active').length}</div>
                       <div className="text-xs text-red-400">Live attacks being captured</div>
                       <div className="mt-2 space-y-1">
-                        {['Packet Capture', 'Session Recording', 'Memory Dump', 'Network Flow'].map((cap) => (
+                        {(systemCapabilities?.capabilities?.monitoring || []).slice(0, 4).map((cap: string) => (
                           <div key={cap} className="flex items-center gap-2 text-xs">
-                            <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                            <span className="text-zinc-400">{cap}: ACTIVE</span>
+                            <div className={`w-2 h-2 rounded-full ${tier5Status?.components?.threat_intelligence?.status === 'active' ? 'bg-green-500' : 'bg-yellow-500'}`}></div>
+                            <span className="text-zinc-400">{cap}: {tier5Status?.components?.threat_intelligence?.status === 'active' ? 'ACTIVE' : 'STANDBY'}</span>
                           </div>
                         ))}
                       </div>
@@ -3503,10 +3503,10 @@ function App() {
                       <div className="text-2xl font-bold text-white">{threatEvents.filter(t => t.status === 'investigating').length}</div>
                       <div className="text-xs text-orange-400">Attacks under analysis</div>
                       <div className="mt-2 space-y-1">
-                        {['Behavioral Analysis', 'Pattern Recognition', 'IOC Extraction', 'Attribution'].map((cap) => (
+                        {(systemCapabilities?.capabilities?.detection || []).slice(0, 4).map((cap: string) => (
                           <div key={cap} className="flex items-center gap-2 text-xs">
-                            <div className="w-2 h-2 rounded-full bg-orange-500 animate-pulse"></div>
-                            <span className="text-zinc-400">{cap}: RUNNING</span>
+                            <div className={`w-2 h-2 rounded-full ${tier5Status?.components?.threat_hunting?.status === 'active' ? 'bg-orange-500 animate-pulse' : 'bg-yellow-500'}`}></div>
+                            <span className="text-zinc-400">{cap}: {tier5Status?.components?.threat_hunting?.status === 'active' ? 'RUNNING' : 'STANDBY'}</span>
                           </div>
                         ))}
                       </div>
@@ -3519,10 +3519,10 @@ function App() {
                       <div className="text-2xl font-bold text-white">{Math.floor(threatEvents.length * 0.3)}</div>
                       <div className="text-xs text-purple-400">Samples reconstructed</div>
                       <div className="mt-2 space-y-1">
-                        {['Code Deobfuscation', 'Binary Reconstruction', 'C2 Extraction', 'Payload Analysis'].map((cap) => (
+                        {(systemCapabilities?.capabilities?.malware || []).slice(0, 4).map((cap: string) => (
                           <div key={cap} className="flex items-center gap-2 text-xs">
-                            <div className="w-2 h-2 rounded-full bg-purple-500"></div>
-                            <span className="text-zinc-400">{cap}: READY</span>
+                            <div className={`w-2 h-2 rounded-full ${tier5Status?.components?.threat_intelligence?.status === 'active' ? 'bg-purple-500' : 'bg-yellow-500'}`}></div>
+                            <span className="text-zinc-400">{cap}: {tier5Status?.components?.threat_intelligence?.status === 'active' ? 'READY' : 'STANDBY'}</span>
                           </div>
                         ))}
                       </div>
@@ -4594,7 +4594,7 @@ MalwarePayload.execute();
                   <div className="p-4 bg-zinc-800 rounded-lg border border-zinc-700">
                     <div className="text-xs text-zinc-500 mb-2">SELECT TAGS FOR NEW PROFILES (click to toggle)</div>
                     <div className="flex flex-wrap gap-2">
-                      {['HIGH_RISK', 'WATCHLIST', 'VERIFIED', 'UNDER_INVESTIGATION', 'PRIMARY_TARGET', 'SECONDARY_TARGET', 'ASSOCIATE', 'VIP', 'HOSTILE', 'FRIENDLY', 'INFORMANT', 'MONITORING'].map((tag) => (
+                      {(systemCapabilities?.person_tags || ['HIGH_RISK', 'WATCHLIST', 'VERIFIED', 'UNDER_INVESTIGATION', 'PRIMARY_TARGET', 'SECONDARY_TARGET', 'ASSOCIATE', 'VIP', 'HOSTILE', 'FRIENDLY', 'INFORMANT', 'MONITORING']).slice(0, 20).map((tag: string) => (
                         <Badge 
                           key={tag} 
                           variant="outline" 
@@ -5090,7 +5090,7 @@ MalwarePayload.execute();
                         <div className="text-xs text-zinc-500">Supported relationship labels</div>
                       </div>
                       <div className="flex flex-wrap gap-2">
-                        {['FAMILY', 'FRIEND', 'COLLEAGUE', 'BUSINESS', 'ROMANTIC', 'ASSOCIATE', 'KNOWN_CONTACT', 'SUSPECTED_CONTACT', 'FINANCIAL_LINK', 'COMMUNICATION_LINK'].map((label, i) => (
+                        {(systemCapabilities?.connection_labels || ['FAMILY', 'FRIEND', 'COLLEAGUE', 'BUSINESS', 'ROMANTIC', 'ASSOCIATE', 'KNOWN_CONTACT', 'SUSPECTED_CONTACT', 'FINANCIAL_LINK', 'COMMUNICATION_LINK']).slice(0, 15).map((label: string, i: number) => (
                           <Badge key={i} variant="outline" className="text-orange-400 border-orange-600">{label}</Badge>
                         ))}
                       </div>
