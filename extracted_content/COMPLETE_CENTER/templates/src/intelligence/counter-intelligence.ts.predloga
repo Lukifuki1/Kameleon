@@ -1,0 +1,1433 @@
+/**
+ * @file Counter-Intelligence - Self-Contained Counter-Intelligence Operations Platform
+ * @author {{AVTOR}}
+ * @version {{VERZIJA}}
+ * @date {{DATUM}}
+ * @project {{IME_PROJEKTA}}
+ * @domain VARNOSTNI_SISTEMI
+ * 
+ * @requirement REQ-SEC-CI-001
+ * @design DSN-SEC-CI-001
+ * @test TST-SEC-CI-001
+ * 
+ * @description
+ * Enterprise-grade self-contained counter-intelligence operations platform implementing
+ * mole detection, double agent management, disinformation detection, counter-surveillance,
+ * operational security assessment, and honey trapping detection. All algorithms are
+ * natively implemented without external dependencies.
+ * 
+ * @classification TOP SECRET - Counter-Intelligence Operations
+ * @authorization Required: Level 5 Security Clearance
+ * @dependencies NONE - Fully self-contained implementation
+ */
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// COUNTER-INTELLIGENCE TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export type ThreatType =
+  | 'ESPIONAGE'
+  | 'SABOTAGE'
+  | 'SUBVERSION'
+  | 'TERRORISM'
+  | 'INSIDER_THREAT'
+  | 'FOREIGN_INTELLIGENCE'
+  | 'CYBER_ESPIONAGE'
+  | 'ECONOMIC_ESPIONAGE'
+  | 'TECHNICAL_SURVEILLANCE'
+  | 'SOCIAL_ENGINEERING';
+
+export type ThreatActorType =
+  | 'NATION_STATE'
+  | 'TERRORIST_ORGANIZATION'
+  | 'CRIMINAL_ORGANIZATION'
+  | 'CORPORATE_COMPETITOR'
+  | 'INSIDER'
+  | 'HACKTIVIST'
+  | 'LONE_ACTOR';
+
+export type OperationType =
+  | 'DEFENSIVE'
+  | 'OFFENSIVE'
+  | 'DECEPTION'
+  | 'SURVEILLANCE'
+  | 'COUNTER_SURVEILLANCE'
+  | 'INVESTIGATION'
+  | 'NEUTRALIZATION';
+
+export type IntelligenceDiscipline =
+  | 'HUMINT'
+  | 'SIGINT'
+  | 'IMINT'
+  | 'MASINT'
+  | 'OSINT'
+  | 'TECHINT'
+  | 'FININT'
+  | 'GEOINT';
+
+export type SecurityLevel =
+  | 'TOP_SECRET_SCI'
+  | 'TOP_SECRET'
+  | 'SECRET'
+  | 'CONFIDENTIAL'
+  | 'UNCLASSIFIED';
+
+export type RiskLevel =
+  | 'CRITICAL'
+  | 'HIGH'
+  | 'MEDIUM'
+  | 'LOW'
+  | 'MINIMAL';
+
+export type AlertSeverity =
+  | 'CRITICAL'
+  | 'HIGH'
+  | 'MEDIUM'
+  | 'LOW'
+  | 'INFORMATIONAL';
+
+export type ConfidenceLevel =
+  | 'CONFIRMED'
+  | 'PROBABLE'
+  | 'POSSIBLE'
+  | 'DOUBTFUL'
+  | 'IMPROBABLE';
+
+export type OperationalStatus =
+  | 'ACTIVE'
+  | 'DORMANT'
+  | 'COMPROMISED'
+  | 'TERMINATED'
+  | 'UNKNOWN';
+
+export type OperationalMode =
+  | 'DETECTION'
+  | 'INVESTIGATION'
+  | 'NEUTRALIZATION'
+  | 'MONITORING'
+  | 'FULL_SPECTRUM';
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// COUNTER-INTELLIGENCE CONFIGURATION
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface CounterIntelligenceConfig {
+  readonly platformId: string;
+  readonly name: string;
+  readonly version: string;
+  readonly mode: OperationalMode;
+  readonly threatDetection: ThreatDetectionConfig;
+  readonly moleDetection: MoleDetectionConfig;
+  readonly doubleAgentManagement: DoubleAgentManagementConfig;
+  readonly disinformationDetection: DisinformationDetectionConfig;
+  readonly counterSurveillance: CounterSurveillanceConfig;
+  readonly operationalSecurity: OperationalSecurityConfig;
+  readonly honeyTrapping: HoneyTrappingDetectionConfig;
+  readonly deceptionOperations: DeceptionOperationsConfig;
+  readonly investigationManagement: InvestigationManagementConfig;
+  readonly assetProtection: AssetProtectionConfig;
+  readonly alerting: AlertingConfig;
+  readonly reporting: ReportingConfig;
+  readonly storage: StorageConfig;
+  readonly security: SecurityConfig;
+  readonly metadata: PlatformMetadata;
+}
+
+export interface ThreatDetectionConfig {
+  readonly enabled: boolean;
+  readonly threatTypes: ThreatTypesConfig;
+  readonly indicators: IndicatorsConfig;
+  readonly analysis: ThreatAnalysisConfig;
+  readonly attribution: AttributionConfig;
+}
+
+export interface ThreatTypesConfig {
+  readonly espionage: EspionageDetectionConfig;
+  readonly sabotage: SabotageDetectionConfig;
+  readonly subversion: SubversionDetectionConfig;
+  readonly cyberEspionage: CyberEspionageDetectionConfig;
+  readonly economicEspionage: EconomicEspionageDetectionConfig;
+}
+
+export interface EspionageDetectionConfig {
+  readonly enabled: boolean;
+  readonly indicators: readonly EspionageIndicator[];
+  readonly patterns: readonly EspionagePattern[];
+  readonly thresholds: EspionageThresholds;
+}
+
+export interface EspionageIndicator {
+  readonly indicatorId: string;
+  readonly name: string;
+  readonly category: string;
+  readonly weight: number;
+  readonly description: string;
+}
+
+export interface EspionagePattern {
+  readonly patternId: string;
+  readonly name: string;
+  readonly indicators: readonly string[];
+  readonly threshold: number;
+  readonly timeWindow: number;
+}
+
+export interface EspionageThresholds {
+  readonly alertThreshold: number;
+  readonly investigationThreshold: number;
+  readonly criticalThreshold: number;
+}
+
+export interface SabotageDetectionConfig {
+  readonly enabled: boolean;
+  readonly physicalSabotage: boolean;
+  readonly cyberSabotage: boolean;
+  readonly supplyChainSabotage: boolean;
+  readonly indicators: readonly string[];
+}
+
+export interface SubversionDetectionConfig {
+  readonly enabled: boolean;
+  readonly politicalSubversion: boolean;
+  readonly organizationalSubversion: boolean;
+  readonly socialSubversion: boolean;
+  readonly indicators: readonly string[];
+}
+
+export interface CyberEspionageDetectionConfig {
+  readonly enabled: boolean;
+  readonly aptDetection: boolean;
+  readonly dataExfiltration: boolean;
+  readonly persistentAccess: boolean;
+  readonly lateralMovement: boolean;
+}
+
+export interface EconomicEspionageDetectionConfig {
+  readonly enabled: boolean;
+  readonly tradeSecrets: boolean;
+  readonly intellectualProperty: boolean;
+  readonly competitiveIntelligence: boolean;
+  readonly insiderTrading: boolean;
+}
+
+export interface IndicatorsConfig {
+  readonly enabled: boolean;
+  readonly behavioral: BehavioralIndicatorsConfig;
+  readonly technical: TechnicalIndicatorsConfig;
+  readonly physical: PhysicalIndicatorsConfig;
+  readonly financial: FinancialIndicatorsConfig;
+}
+
+export interface BehavioralIndicatorsConfig {
+  readonly enabled: boolean;
+  readonly accessPatterns: boolean;
+  readonly communicationPatterns: boolean;
+  readonly travelPatterns: boolean;
+  readonly associationPatterns: boolean;
+  readonly lifestyleChanges: boolean;
+}
+
+export interface TechnicalIndicatorsConfig {
+  readonly enabled: boolean;
+  readonly networkAnomalies: boolean;
+  readonly dataMovement: boolean;
+  readonly accessAnomalies: boolean;
+  readonly deviceAnomalies: boolean;
+  readonly encryptionUsage: boolean;
+}
+
+export interface PhysicalIndicatorsConfig {
+  readonly enabled: boolean;
+  readonly accessViolations: boolean;
+  readonly tailgating: boolean;
+  readonly photographing: boolean;
+  readonly documentRemoval: boolean;
+  readonly afterHoursAccess: boolean;
+}
+
+export interface FinancialIndicatorsConfig {
+  readonly enabled: boolean;
+  readonly unexplainedWealth: boolean;
+  readonly unusualTransactions: boolean;
+  readonly foreignPayments: boolean;
+  readonly cashHandling: boolean;
+}
+
+export interface ThreatAnalysisConfig {
+  readonly enabled: boolean;
+  readonly correlation: CorrelationConfig;
+  readonly timeline: TimelineAnalysisConfig;
+  readonly network: NetworkAnalysisConfig;
+  readonly behavioral: BehavioralAnalysisConfig;
+}
+
+export interface CorrelationConfig {
+  readonly enabled: boolean;
+  readonly crossSource: boolean;
+  readonly temporal: boolean;
+  readonly spatial: boolean;
+  readonly relational: boolean;
+}
+
+export interface TimelineAnalysisConfig {
+  readonly enabled: boolean;
+  readonly eventSequencing: boolean;
+  readonly patternDetection: boolean;
+  readonly anomalyDetection: boolean;
+}
+
+export interface NetworkAnalysisConfig {
+  readonly enabled: boolean;
+  readonly socialNetwork: boolean;
+  readonly communicationNetwork: boolean;
+  readonly financialNetwork: boolean;
+  readonly organizationalNetwork: boolean;
+}
+
+export interface BehavioralAnalysisConfig {
+  readonly enabled: boolean;
+  readonly baselineProfiling: boolean;
+  readonly deviationDetection: boolean;
+  readonly predictiveAnalysis: boolean;
+}
+
+export interface AttributionConfig {
+  readonly enabled: boolean;
+  readonly actorProfiling: boolean;
+  readonly ttpAnalysis: boolean;
+  readonly infrastructureAnalysis: boolean;
+  readonly linguisticAnalysis: boolean;
+}
+
+export interface MoleDetectionConfig {
+  readonly enabled: boolean;
+  readonly screening: MoleScreeningConfig;
+  readonly monitoring: MoleMonitoringConfig;
+  readonly investigation: MoleInvestigationConfig;
+  readonly canaryOperations: CanaryOperationsConfig;
+}
+
+export interface MoleScreeningConfig {
+  readonly enabled: boolean;
+  readonly backgroundChecks: boolean;
+  readonly polygraph: boolean;
+  readonly financialReview: boolean;
+  readonly foreignContactReview: boolean;
+  readonly socialMediaReview: boolean;
+}
+
+export interface MoleMonitoringConfig {
+  readonly enabled: boolean;
+  readonly accessMonitoring: boolean;
+  readonly communicationMonitoring: boolean;
+  readonly behaviorMonitoring: boolean;
+  readonly travelMonitoring: boolean;
+  readonly financialMonitoring: boolean;
+}
+
+export interface MoleInvestigationConfig {
+  readonly enabled: boolean;
+  readonly covertInvestigation: boolean;
+  readonly technicalSurveillance: boolean;
+  readonly physicalSurveillance: boolean;
+  readonly financialInvestigation: boolean;
+}
+
+export interface CanaryOperationsConfig {
+  readonly enabled: boolean;
+  readonly documentCanaries: boolean;
+  readonly informationCanaries: boolean;
+  readonly accessCanaries: boolean;
+  readonly communicationCanaries: boolean;
+}
+
+export interface DoubleAgentManagementConfig {
+  readonly enabled: boolean;
+  readonly identification: DoubleAgentIdentificationConfig;
+  readonly handling: DoubleAgentHandlingConfig;
+  readonly exploitation: DoubleAgentExploitationConfig;
+  readonly security: DoubleAgentSecurityConfig;
+}
+
+export interface DoubleAgentIdentificationConfig {
+  readonly enabled: boolean;
+  readonly indicators: readonly DoubleAgentIndicator[];
+  readonly verification: VerificationConfig;
+  readonly assessment: AssessmentConfig;
+}
+
+export interface DoubleAgentIndicator {
+  readonly indicatorId: string;
+  readonly name: string;
+  readonly category: string;
+  readonly weight: number;
+  readonly reliability: ConfidenceLevel;
+}
+
+export interface VerificationConfig {
+  readonly enabled: boolean;
+  readonly methods: readonly VerificationMethod[];
+  readonly threshold: number;
+}
+
+export type VerificationMethod =
+  | 'CONTROLLED_INFORMATION'
+  | 'SURVEILLANCE'
+  | 'POLYGRAPH'
+  | 'FINANCIAL_ANALYSIS'
+  | 'COMMUNICATION_ANALYSIS'
+  | 'BEHAVIORAL_ANALYSIS';
+
+export interface AssessmentConfig {
+  readonly enabled: boolean;
+  readonly motivationAnalysis: boolean;
+  readonly reliabilityAssessment: boolean;
+  readonly valueAssessment: boolean;
+  readonly riskAssessment: boolean;
+}
+
+export interface DoubleAgentHandlingConfig {
+  readonly enabled: boolean;
+  readonly compartmentalization: boolean;
+  readonly communicationProtocols: CommunicationProtocolsConfig;
+  readonly meetingProtocols: MeetingProtocolsConfig;
+  readonly documentationRequirements: DocumentationRequirementsConfig;
+}
+
+export interface CommunicationProtocolsConfig {
+  readonly enabled: boolean;
+  readonly encryptedChannels: boolean;
+  readonly covertChannels: boolean;
+  readonly emergencyProtocols: boolean;
+  readonly signalSystems: boolean;
+}
+
+export interface MeetingProtocolsConfig {
+  readonly enabled: boolean;
+  readonly locationSelection: boolean;
+  readonly counterSurveillance: boolean;
+  readonly emergencyProcedures: boolean;
+  readonly documentationRequirements: boolean;
+}
+
+export interface DocumentationRequirementsConfig {
+  readonly enabled: boolean;
+  readonly contactReports: boolean;
+  readonly intelligenceReports: boolean;
+  readonly assessmentReports: boolean;
+  readonly securityReports: boolean;
+}
+
+export interface DoubleAgentExploitationConfig {
+  readonly enabled: boolean;
+  readonly disinformation: boolean;
+  readonly penetration: boolean;
+  readonly disruption: boolean;
+  readonly collection: boolean;
+}
+
+export interface DoubleAgentSecurityConfig {
+  readonly enabled: boolean;
+  readonly accessControl: boolean;
+  readonly compartmentalization: boolean;
+  readonly counterIntelligence: boolean;
+  readonly terminationProtocols: boolean;
+}
+
+export interface DisinformationDetectionConfig {
+  readonly enabled: boolean;
+  readonly sources: DisinformationSourcesConfig;
+  readonly analysis: DisinformationAnalysisConfig;
+  readonly attribution: DisinformationAttributionConfig;
+  readonly response: DisinformationResponseConfig;
+}
+
+export interface DisinformationSourcesConfig {
+  readonly socialMedia: boolean;
+  readonly news: boolean;
+  readonly forums: boolean;
+  readonly messaging: boolean;
+  readonly stateMedia: boolean;
+}
+
+export interface DisinformationAnalysisConfig {
+  readonly enabled: boolean;
+  readonly narrativeAnalysis: NarrativeAnalysisConfig;
+  readonly networkAnalysis: DisinfoNetworkAnalysisConfig;
+  readonly amplificationAnalysis: AmplificationAnalysisConfig;
+  readonly originAnalysis: OriginAnalysisConfig;
+}
+
+export interface NarrativeAnalysisConfig {
+  readonly enabled: boolean;
+  readonly themeExtraction: boolean;
+  readonly sentimentAnalysis: boolean;
+  readonly factChecking: boolean;
+  readonly sourceVerification: boolean;
+}
+
+export interface DisinfoNetworkAnalysisConfig {
+  readonly enabled: boolean;
+  readonly botDetection: boolean;
+  readonly coordinatedBehavior: boolean;
+  readonly influencerMapping: boolean;
+  readonly propagationTracking: boolean;
+}
+
+export interface AmplificationAnalysisConfig {
+  readonly enabled: boolean;
+  readonly artificialAmplification: boolean;
+  readonly organicSpread: boolean;
+  readonly crossPlatform: boolean;
+  readonly temporalPatterns: boolean;
+}
+
+export interface OriginAnalysisConfig {
+  readonly enabled: boolean;
+  readonly firstAppearance: boolean;
+  readonly geographicOrigin: boolean;
+  readonly linguisticAnalysis: boolean;
+  readonly technicalAnalysis: boolean;
+}
+
+export interface DisinformationAttributionConfig {
+  readonly enabled: boolean;
+  readonly actorIdentification: boolean;
+  readonly campaignLinking: boolean;
+  readonly infrastructureMapping: boolean;
+  readonly motivationAnalysis: boolean;
+}
+
+export interface DisinformationResponseConfig {
+  readonly enabled: boolean;
+  readonly alerting: boolean;
+  readonly reporting: boolean;
+  readonly countermeasures: boolean;
+  readonly publicResponse: boolean;
+}
+
+export interface CounterSurveillanceConfig {
+  readonly enabled: boolean;
+  readonly detection: SurveillanceDetectionConfig;
+  readonly technical: TechnicalCounterSurveillanceConfig;
+  readonly physical: PhysicalCounterSurveillanceConfig;
+  readonly cyber: CyberCounterSurveillanceConfig;
+}
+
+export interface SurveillanceDetectionConfig {
+  readonly enabled: boolean;
+  readonly routeAnalysis: boolean;
+  readonly patternRecognition: boolean;
+  readonly anomalyDetection: boolean;
+  readonly teamDetection: boolean;
+}
+
+export interface TechnicalCounterSurveillanceConfig {
+  readonly enabled: boolean;
+  readonly rfDetection: RFDetectionConfig;
+  readonly audioDetection: AudioDetectionConfig;
+  readonly videoDetection: VideoDetectionConfig;
+  readonly cyberDetection: CyberDetectionConfig;
+}
+
+export interface RFDetectionConfig {
+  readonly enabled: boolean;
+  readonly spectrumAnalysis: boolean;
+  readonly bugDetection: boolean;
+  readonly gpsTrackerDetection: boolean;
+  readonly wirelessDeviceDetection: boolean;
+}
+
+export interface AudioDetectionConfig {
+  readonly enabled: boolean;
+  readonly microphoneDetection: boolean;
+  readonly laserMicrophoneDetection: boolean;
+  readonly acousticLeakage: boolean;
+  readonly vibrationAnalysis: boolean;
+}
+
+export interface VideoDetectionConfig {
+  readonly enabled: boolean;
+  readonly cameraDetection: boolean;
+  readonly lensDetection: boolean;
+  readonly infraredDetection: boolean;
+  readonly pinholeCameraDetection: boolean;
+}
+
+export interface CyberDetectionConfig {
+  readonly enabled: boolean;
+  readonly malwareDetection: boolean;
+  readonly networkMonitoring: boolean;
+  readonly deviceCompromise: boolean;
+  readonly dataExfiltration: boolean;
+}
+
+export interface PhysicalCounterSurveillanceConfig {
+  readonly enabled: boolean;
+  readonly surveillanceDetectionRoutes: boolean;
+  readonly teamOperations: boolean;
+  readonly vehicleCounterSurveillance: boolean;
+  readonly pedestrianCounterSurveillance: boolean;
+}
+
+export interface CyberCounterSurveillanceConfig {
+  readonly enabled: boolean;
+  readonly networkSecurity: boolean;
+  readonly endpointSecurity: boolean;
+  readonly communicationSecurity: boolean;
+  readonly dataSecurity: boolean;
+}
+
+export interface OperationalSecurityConfig {
+  readonly enabled: boolean;
+  readonly assessment: OPSECAssessmentConfig;
+  readonly measures: OPSECMeasuresConfig;
+  readonly training: OPSECTrainingConfig;
+  readonly audit: OPSECAuditConfig;
+}
+
+export interface OPSECAssessmentConfig {
+  readonly enabled: boolean;
+  readonly criticalInformation: boolean;
+  readonly threatAnalysis: boolean;
+  readonly vulnerabilityAnalysis: boolean;
+  readonly riskAssessment: boolean;
+  readonly countermeasures: boolean;
+}
+
+export interface OPSECMeasuresConfig {
+  readonly enabled: boolean;
+  readonly informationControl: boolean;
+  readonly communicationSecurity: boolean;
+  readonly physicalSecurity: boolean;
+  readonly personnelSecurity: boolean;
+  readonly travelSecurity: boolean;
+}
+
+export interface OPSECTrainingConfig {
+  readonly enabled: boolean;
+  readonly awarenessTraining: boolean;
+  readonly practicalExercises: boolean;
+  readonly scenarioTraining: boolean;
+  readonly refresherTraining: boolean;
+}
+
+export interface OPSECAuditConfig {
+  readonly enabled: boolean;
+  readonly regularAudits: boolean;
+  readonly penetrationTesting: boolean;
+  readonly complianceChecks: boolean;
+  readonly incidentReview: boolean;
+}
+
+export interface HoneyTrappingDetectionConfig {
+  readonly enabled: boolean;
+  readonly indicators: HoneyTrapIndicatorsConfig;
+  readonly analysis: HoneyTrapAnalysisConfig;
+  readonly response: HoneyTrapResponseConfig;
+  readonly training: HoneyTrapTrainingConfig;
+}
+
+export interface HoneyTrapIndicatorsConfig {
+  readonly enabled: boolean;
+  readonly approachPatterns: boolean;
+  readonly relationshipProgression: boolean;
+  readonly informationSeeking: boolean;
+  readonly backgroundInconsistencies: boolean;
+  readonly financialInducements: boolean;
+}
+
+export interface HoneyTrapAnalysisConfig {
+  readonly enabled: boolean;
+  readonly backgroundInvestigation: boolean;
+  readonly communicationAnalysis: boolean;
+  readonly behavioralAnalysis: boolean;
+  readonly networkAnalysis: boolean;
+}
+
+export interface HoneyTrapResponseConfig {
+  readonly enabled: boolean;
+  readonly alerting: boolean;
+  readonly investigation: boolean;
+  readonly counterOperations: boolean;
+  readonly documentation: boolean;
+}
+
+export interface HoneyTrapTrainingConfig {
+  readonly enabled: boolean;
+  readonly awarenessTraining: boolean;
+  readonly recognitionTraining: boolean;
+  readonly responseTraining: boolean;
+  readonly scenarioExercises: boolean;
+}
+
+export interface DeceptionOperationsConfig {
+  readonly enabled: boolean;
+  readonly planning: DeceptionPlanningConfig;
+  readonly execution: DeceptionExecutionConfig;
+  readonly channels: DeceptionChannelsConfig;
+  readonly feedback: DeceptionFeedbackConfig;
+}
+
+export interface DeceptionPlanningConfig {
+  readonly enabled: boolean;
+  readonly objectiveDefinition: boolean;
+  readonly targetAnalysis: boolean;
+  readonly storyDevelopment: boolean;
+  readonly channelSelection: boolean;
+  readonly feedbackMechanisms: boolean;
+}
+
+export interface DeceptionExecutionConfig {
+  readonly enabled: boolean;
+  readonly coordinatedRelease: boolean;
+  readonly multiChannel: boolean;
+  readonly adaptiveExecution: boolean;
+  readonly securityMeasures: boolean;
+}
+
+export interface DeceptionChannelsConfig {
+  readonly enabled: boolean;
+  readonly humanSources: boolean;
+  readonly technicalChannels: boolean;
+  readonly mediaChannels: boolean;
+  readonly documentChannels: boolean;
+}
+
+export interface DeceptionFeedbackConfig {
+  readonly enabled: boolean;
+  readonly targetReaction: boolean;
+  readonly effectivenessAssessment: boolean;
+  readonly adjustmentMechanisms: boolean;
+}
+
+export interface InvestigationManagementConfig {
+  readonly enabled: boolean;
+  readonly caseManagement: CaseManagementConfig;
+  readonly evidenceManagement: EvidenceManagementConfig;
+  readonly interviewManagement: InterviewManagementConfig;
+  readonly surveillanceManagement: SurveillanceManagementConfig;
+}
+
+export interface CaseManagementConfig {
+  readonly enabled: boolean;
+  readonly workflow: CaseWorkflowConfig;
+  readonly assignment: CaseAssignmentConfig;
+  readonly tracking: CaseTrackingConfig;
+  readonly reporting: CaseReportingConfig;
+}
+
+export interface CaseWorkflowConfig {
+  readonly statuses: readonly CaseStatus[];
+  readonly transitions: readonly CaseTransition[];
+  readonly approvals: readonly ApprovalRequirement[];
+}
+
+export interface CaseStatus {
+  readonly statusId: string;
+  readonly name: string;
+  readonly category: 'OPEN' | 'IN_PROGRESS' | 'PENDING' | 'CLOSED';
+}
+
+export interface CaseTransition {
+  readonly from: string;
+  readonly to: string;
+  readonly requiredFields: readonly string[];
+  readonly approvalRequired: boolean;
+}
+
+export interface ApprovalRequirement {
+  readonly transitionId: string;
+  readonly approverRole: string;
+  readonly justificationRequired: boolean;
+}
+
+export interface CaseAssignmentConfig {
+  readonly method: 'MANUAL' | 'AUTOMATIC' | 'HYBRID';
+  readonly loadBalancing: boolean;
+  readonly skillMatching: boolean;
+  readonly clearanceMatching: boolean;
+}
+
+export interface CaseTrackingConfig {
+  readonly enabled: boolean;
+  readonly milestones: boolean;
+  readonly deadlines: boolean;
+  readonly progress: boolean;
+  readonly resources: boolean;
+}
+
+export interface CaseReportingConfig {
+  readonly enabled: boolean;
+  readonly statusReports: boolean;
+  readonly progressReports: boolean;
+  readonly finalReports: boolean;
+  readonly executiveSummaries: boolean;
+}
+
+export interface EvidenceManagementConfig {
+  readonly enabled: boolean;
+  readonly collection: EvidenceCollectionConfig;
+  readonly storage: EvidenceStorageConfig;
+  readonly chainOfCustody: ChainOfCustodyConfig;
+  readonly analysis: EvidenceAnalysisConfig;
+}
+
+export interface EvidenceCollectionConfig {
+  readonly enabled: boolean;
+  readonly digitalEvidence: boolean;
+  readonly physicalEvidence: boolean;
+  readonly testimonialEvidence: boolean;
+  readonly documentaryEvidence: boolean;
+}
+
+export interface EvidenceStorageConfig {
+  readonly enabled: boolean;
+  readonly encryption: boolean;
+  readonly accessControl: boolean;
+  readonly retention: number;
+  readonly backup: boolean;
+}
+
+export interface ChainOfCustodyConfig {
+  readonly enabled: boolean;
+  readonly tracking: boolean;
+  readonly verification: boolean;
+  readonly documentation: boolean;
+}
+
+export interface EvidenceAnalysisConfig {
+  readonly enabled: boolean;
+  readonly forensicAnalysis: boolean;
+  readonly correlationAnalysis: boolean;
+  readonly timelineAnalysis: boolean;
+}
+
+export interface InterviewManagementConfig {
+  readonly enabled: boolean;
+  readonly scheduling: boolean;
+  readonly preparation: boolean;
+  readonly recording: boolean;
+  readonly analysis: boolean;
+}
+
+export interface SurveillanceManagementConfig {
+  readonly enabled: boolean;
+  readonly planning: boolean;
+  readonly execution: boolean;
+  readonly reporting: boolean;
+  readonly coordination: boolean;
+}
+
+export interface AssetProtectionConfig {
+  readonly enabled: boolean;
+  readonly personnel: PersonnelProtectionConfig;
+  readonly information: InformationProtectionConfig;
+  readonly facilities: FacilitiesProtectionConfig;
+  readonly operations: OperationsProtectionConfig;
+}
+
+export interface PersonnelProtectionConfig {
+  readonly enabled: boolean;
+  readonly vetting: boolean;
+  readonly monitoring: boolean;
+  readonly training: boolean;
+  readonly support: boolean;
+}
+
+export interface InformationProtectionConfig {
+  readonly enabled: boolean;
+  readonly classification: boolean;
+  readonly accessControl: boolean;
+  readonly encryption: boolean;
+  readonly destruction: boolean;
+}
+
+export interface FacilitiesProtectionConfig {
+  readonly enabled: boolean;
+  readonly physicalSecurity: boolean;
+  readonly technicalSecurity: boolean;
+  readonly accessControl: boolean;
+  readonly monitoring: boolean;
+}
+
+export interface OperationsProtectionConfig {
+  readonly enabled: boolean;
+  readonly compartmentalization: boolean;
+  readonly coverStories: boolean;
+  readonly communicationSecurity: boolean;
+  readonly contingencyPlanning: boolean;
+}
+
+export interface AlertingConfig {
+  readonly enabled: boolean;
+  readonly channels: readonly AlertChannel[];
+  readonly rules: readonly AlertRule[];
+  readonly escalation: EscalationConfig;
+}
+
+export interface AlertChannel {
+  readonly channelId: string;
+  readonly name: string;
+  readonly type: 'SECURE_MESSAGE' | 'ENCRYPTED_EMAIL' | 'PHONE' | 'IN_PERSON';
+  readonly config: Readonly<Record<string, unknown>>;
+  readonly enabled: boolean;
+}
+
+export interface AlertRule {
+  readonly ruleId: string;
+  readonly name: string;
+  readonly condition: string;
+  readonly severity: AlertSeverity;
+  readonly channels: readonly string[];
+  readonly cooldown: number;
+  readonly enabled: boolean;
+}
+
+export interface EscalationConfig {
+  readonly enabled: boolean;
+  readonly levels: readonly EscalationLevel[];
+  readonly timeouts: Readonly<Record<AlertSeverity, number>>;
+}
+
+export interface EscalationLevel {
+  readonly level: number;
+  readonly recipients: readonly string[];
+  readonly timeout: number;
+}
+
+export interface ReportingConfig {
+  readonly enabled: boolean;
+  readonly intelligence: IntelligenceReportingConfig;
+  readonly operational: OperationalReportingConfig;
+  readonly executive: ExecutiveReportingConfig;
+}
+
+export interface IntelligenceReportingConfig {
+  readonly enabled: boolean;
+  readonly formats: readonly ReportFormat[];
+  readonly distribution: DistributionConfig;
+}
+
+export type ReportFormat =
+  | 'INTELLIGENCE_REPORT'
+  | 'SITUATION_REPORT'
+  | 'THREAT_ASSESSMENT'
+  | 'CASE_SUMMARY';
+
+export interface DistributionConfig {
+  readonly enabled: boolean;
+  readonly channels: readonly string[];
+  readonly accessControl: boolean;
+  readonly tracking: boolean;
+}
+
+export interface OperationalReportingConfig {
+  readonly enabled: boolean;
+  readonly activityReports: boolean;
+  readonly progressReports: boolean;
+  readonly incidentReports: boolean;
+}
+
+export interface ExecutiveReportingConfig {
+  readonly enabled: boolean;
+  readonly summaries: boolean;
+  readonly briefings: boolean;
+  readonly assessments: boolean;
+}
+
+export interface StorageConfig {
+  readonly type: 'SECURE_DATABASE' | 'CLASSIFIED_STORAGE' | 'HYBRID';
+  readonly encryption: EncryptionConfig;
+  readonly retention: RetentionConfig;
+  readonly backup: BackupConfig;
+}
+
+export interface EncryptionConfig {
+  readonly enabled: boolean;
+  readonly algorithm: 'AES_256_GCM' | 'CHACHA20_POLY1305';
+  readonly keyManagement: 'HSM' | 'KMS';
+  readonly atRest: boolean;
+  readonly inTransit: boolean;
+}
+
+export interface RetentionConfig {
+  readonly enabled: boolean;
+  readonly cases: number;
+  readonly evidence: number;
+  readonly reports: number;
+  readonly alerts: number;
+}
+
+export interface BackupConfig {
+  readonly enabled: boolean;
+  readonly frequency: number;
+  readonly encryption: boolean;
+  readonly offsite: boolean;
+}
+
+export interface SecurityConfig {
+  readonly authentication: AuthenticationConfig;
+  readonly authorization: AuthorizationConfig;
+  readonly audit: AuditConfig;
+  readonly classification: ClassificationConfig;
+}
+
+export interface AuthenticationConfig {
+  readonly enabled: boolean;
+  readonly methods: readonly ('PKI' | 'CAC' | 'BIOMETRIC' | 'MFA')[];
+  readonly sessionTimeout: number;
+}
+
+export interface AuthorizationConfig {
+  readonly enabled: boolean;
+  readonly model: 'MAC' | 'RBAC' | 'ABAC';
+  readonly clearanceRequired: boolean;
+  readonly compartments: readonly string[];
+}
+
+export interface AuditConfig {
+  readonly enabled: boolean;
+  readonly logAllAccess: boolean;
+  readonly logAllOperations: boolean;
+  readonly retention: number;
+}
+
+export interface ClassificationConfig {
+  readonly enabled: boolean;
+  readonly defaultLevel: SecurityLevel;
+  readonly autoClassification: boolean;
+  readonly markingRequired: boolean;
+}
+
+export interface PlatformMetadata {
+  readonly createdAt: number;
+  readonly updatedAt: number;
+  readonly createdBy: string;
+  readonly version: string;
+  readonly tags: readonly string[];
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// THREAT TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface Threat {
+  readonly threatId: string;
+  readonly timestamp: number;
+  readonly type: ThreatType;
+  readonly actor: ThreatActorInfo;
+  readonly target: ThreatTargetInfo;
+  readonly indicators: readonly ThreatIndicator[];
+  readonly assessment: ThreatAssessment;
+  readonly status: ThreatStatus;
+  readonly response: ThreatResponse | null;
+  readonly metadata: ThreatMetadata;
+}
+
+export interface ThreatActorInfo {
+  readonly actorId: string | null;
+  readonly type: ThreatActorType;
+  readonly name: string | null;
+  readonly aliases: readonly string[];
+  readonly attribution: AttributionInfo;
+  readonly capabilities: ActorCapabilities;
+  readonly intentions: ActorIntentions;
+}
+
+export interface AttributionInfo {
+  readonly confidence: ConfidenceLevel;
+  readonly basis: readonly string[];
+  readonly nationState: string | null;
+  readonly organization: string | null;
+}
+
+export interface ActorCapabilities {
+  readonly technical: 'HIGH' | 'MEDIUM' | 'LOW';
+  readonly operational: 'HIGH' | 'MEDIUM' | 'LOW';
+  readonly resources: 'HIGH' | 'MEDIUM' | 'LOW';
+  readonly sophistication: 'HIGH' | 'MEDIUM' | 'LOW';
+}
+
+export interface ActorIntentions {
+  readonly primaryObjective: string;
+  readonly secondaryObjectives: readonly string[];
+  readonly targetingCriteria: readonly string[];
+  readonly timeframe: string | null;
+}
+
+export interface ThreatTargetInfo {
+  readonly targetId: string;
+  readonly type: 'PERSONNEL' | 'INFORMATION' | 'FACILITY' | 'OPERATION' | 'SYSTEM';
+  readonly name: string;
+  readonly criticality: RiskLevel;
+  readonly vulnerabilities: readonly string[];
+}
+
+export interface ThreatIndicator {
+  readonly indicatorId: string;
+  readonly type: string;
+  readonly value: string;
+  readonly confidence: ConfidenceLevel;
+  readonly source: string;
+  readonly timestamp: number;
+}
+
+export interface ThreatAssessment {
+  readonly likelihood: RiskLevel;
+  readonly impact: RiskLevel;
+  readonly overallRisk: RiskLevel;
+  readonly urgency: 'IMMEDIATE' | 'SHORT_TERM' | 'MEDIUM_TERM' | 'LONG_TERM';
+  readonly factors: readonly AssessmentFactor[];
+}
+
+export interface AssessmentFactor {
+  readonly factorId: string;
+  readonly name: string;
+  readonly value: string;
+  readonly weight: number;
+  readonly contribution: number;
+}
+
+export interface ThreatStatus {
+  readonly state: 'ACTIVE' | 'DORMANT' | 'NEUTRALIZED' | 'UNKNOWN';
+  readonly lastActivity: number | null;
+  readonly monitoring: boolean;
+  readonly investigation: boolean;
+}
+
+export interface ThreatResponse {
+  readonly responseId: string;
+  readonly type: 'DEFENSIVE' | 'OFFENSIVE' | 'DECEPTION' | 'NEUTRALIZATION';
+  readonly actions: readonly ResponseAction[];
+  readonly effectiveness: 'HIGH' | 'MEDIUM' | 'LOW' | 'UNKNOWN';
+}
+
+export interface ResponseAction {
+  readonly actionId: string;
+  readonly type: string;
+  readonly description: string;
+  readonly status: 'PLANNED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
+  readonly timestamp: number;
+}
+
+export interface ThreatMetadata {
+  readonly source: string;
+  readonly classification: SecurityLevel;
+  readonly compartments: readonly string[];
+  readonly version: string;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// CASE TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface CounterIntelligenceCase {
+  readonly caseId: string;
+  readonly title: string;
+  readonly description: string;
+  readonly type: CaseType;
+  readonly classification: SecurityLevel;
+  readonly status: CaseStatusInfo;
+  readonly subjects: readonly CaseSubject[];
+  readonly threats: readonly string[];
+  readonly evidence: readonly CaseEvidence[];
+  readonly investigation: InvestigationInfo;
+  readonly timeline: readonly CaseTimelineEntry[];
+  readonly outcome: CaseOutcome | null;
+  readonly metadata: CaseMetadata;
+}
+
+export type CaseType =
+  | 'ESPIONAGE'
+  | 'INSIDER_THREAT'
+  | 'FOREIGN_INTELLIGENCE'
+  | 'DISINFORMATION'
+  | 'SURVEILLANCE'
+  | 'COMPROMISE'
+  | 'SECURITY_VIOLATION';
+
+export interface CaseStatusInfo {
+  readonly status: string;
+  readonly assignee: string | null;
+  readonly priority: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
+  readonly dueDate: number | null;
+}
+
+export interface CaseSubject {
+  readonly subjectId: string;
+  readonly type: 'INDIVIDUAL' | 'ORGANIZATION' | 'FOREIGN_ENTITY';
+  readonly name: string;
+  readonly role: 'PRIMARY' | 'SECONDARY' | 'ASSOCIATED';
+  readonly status: 'ACTIVE' | 'CLEARED' | 'COMPROMISED' | 'UNKNOWN';
+  readonly assessment: SubjectAssessment;
+}
+
+export interface SubjectAssessment {
+  readonly riskLevel: RiskLevel;
+  readonly confidence: ConfidenceLevel;
+  readonly indicators: readonly string[];
+  readonly notes: string | null;
+}
+
+export interface CaseEvidence {
+  readonly evidenceId: string;
+  readonly type: 'DIGITAL' | 'PHYSICAL' | 'TESTIMONIAL' | 'DOCUMENTARY';
+  readonly description: string;
+  readonly source: string;
+  readonly classification: SecurityLevel;
+  readonly collectedAt: number;
+  readonly collectedBy: string;
+  readonly chainOfCustody: readonly CustodyEntry[];
+}
+
+export interface CustodyEntry {
+  readonly entryId: string;
+  readonly timestamp: number;
+  readonly action: 'COLLECTED' | 'TRANSFERRED' | 'ANALYZED' | 'STORED' | 'DESTROYED';
+  readonly handler: string;
+  readonly location: string;
+  readonly notes: string | null;
+}
+
+export interface InvestigationInfo {
+  readonly stage: InvestigationStage;
+  readonly methods: readonly InvestigationMethod[];
+  readonly findings: readonly InvestigationFinding[];
+  readonly recommendations: readonly string[];
+}
+
+export type InvestigationStage =
+  | 'PRELIMINARY'
+  | 'ACTIVE'
+  | 'ADVANCED'
+  | 'CONCLUDING'
+  | 'CLOSED';
+
+export type InvestigationMethod =
+  | 'SURVEILLANCE'
+  | 'INTERVIEW'
+  | 'DOCUMENT_ANALYSIS'
+  | 'TECHNICAL_ANALYSIS'
+  | 'FINANCIAL_ANALYSIS'
+  | 'NETWORK_ANALYSIS'
+  | 'UNDERCOVER';
+
+export interface InvestigationFinding {
+  readonly findingId: string;
+  readonly type: string;
+  readonly description: string;
+  readonly significance: 'HIGH' | 'MEDIUM' | 'LOW';
+  readonly evidence: readonly string[];
+  readonly timestamp: number;
+}
+
+export interface CaseTimelineEntry {
+  readonly entryId: string;
+  readonly timestamp: number;
+  readonly type: string;
+  readonly description: string;
+  readonly actor: string;
+  readonly classification: SecurityLevel;
+}
+
+export interface CaseOutcome {
+  readonly resolution: 'CONFIRMED' | 'UNSUBSTANTIATED' | 'INCONCLUSIVE' | 'REFERRED';
+  readonly actions: readonly string[];
+  readonly lessons: readonly string[];
+  readonly closedAt: number;
+  readonly closedBy: string;
+}
+
+export interface CaseMetadata {
+  readonly createdAt: number;
+  readonly updatedAt: number;
+  readonly createdBy: string;
+  readonly compartments: readonly string[];
+  readonly version: string;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ALERT TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface CounterIntelligenceAlert {
+  readonly alertId: string;
+  readonly timestamp: number;
+  readonly type: AlertType;
+  readonly severity: AlertSeverity;
+  readonly confidence: ConfidenceLevel;
+  readonly subject: AlertSubjectInfo;
+  readonly indicators: readonly AlertIndicatorInfo[];
+  readonly context: AlertContext;
+  readonly recommendations: readonly AlertRecommendation[];
+  readonly status: AlertStatusInfo;
+  readonly metadata: AlertMetadata;
+}
+
+export type AlertType =
+  | 'ESPIONAGE_INDICATOR'
+  | 'INSIDER_THREAT'
+  | 'SURVEILLANCE_DETECTED'
+  | 'COMPROMISE_SUSPECTED'
+  | 'DISINFORMATION'
+  | 'HONEY_TRAP'
+  | 'SECURITY_VIOLATION'
+  | 'ANOMALOUS_BEHAVIOR';
+
+export interface AlertSubjectInfo {
+  readonly subjectId: string;
+  readonly type: string;
+  readonly name: string;
+  readonly riskScore: number;
+}
+
+export interface AlertIndicatorInfo {
+  readonly indicatorId: string;
+  readonly type: string;
+  readonly value: string;
+  readonly confidence: ConfidenceLevel;
+  readonly weight: number;
+}
+
+export interface AlertContext {
+  readonly historical: HistoricalContext;
+  readonly relational: RelationalContext;
+  readonly environmental: EnvironmentalContext;
+}
+
+export interface HistoricalContext {
+  readonly previousAlerts: number;
+  readonly previousCases: number;
+  readonly riskTrend: 'INCREASING' | 'DECREASING' | 'STABLE';
+}
+
+export interface RelationalContext {
+  readonly connectedSubjects: number;
+  readonly suspiciousConnections: number;
+  readonly networkRisk: RiskLevel;
+}
+
+export interface EnvironmentalContext {
+  readonly threatLevel: RiskLevel;
+  readonly recentIncidents: number;
+  readonly operationalTempo: 'HIGH' | 'MEDIUM' | 'LOW';
+}
+
+export interface AlertRecommendation {
+  readonly recommendationId: string;
+  readonly priority: 'IMMEDIATE' | 'HIGH' | 'MEDIUM' | 'LOW';
+  readonly category: string;
+  readonly title: string;
+  readonly description: string;
+  readonly actions: readonly string[];
+}
+
+export interface AlertStatusInfo {
+  readonly state: 'NEW' | 'ACKNOWLEDGED' | 'INVESTIGATING' | 'ESCALATED' | 'RESOLVED' | 'CLOSED';
+  readonly assignee: string | null;
+  readonly updatedAt: number;
+  readonly resolution: string | null;
+  readonly caseId: string | null;
+}
+
+export interface AlertMetadata {
+  readonly source: string;
+  readonly classification: SecurityLevel;
+  readonly compartments: readonly string[];
+  readonly version: string;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SESSION TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface CounterIntelligenceSession {
+  readonly sessionId: string;
+  readonly platformId: string;
+  readonly state: SessionState;
+  readonly config: SessionConfig;
+  readonly progress: SessionProgress;
+  readonly statistics: SessionStatistics;
+  readonly threats: readonly Threat[];
+  readonly alerts: readonly CounterIntelligenceAlert[];
+  readonly cases: readonly CounterIntelligenceCase[];
+  readonly errors: readonly SessionError[];
+  readonly startTime: number;
+  readonly endTime: number | null;
+  readonly metadata: SessionMetadata;
+}
+
+export type SessionState =
+  | 'PENDING'
+  | 'INITIALIZING'
+  | 'RUNNING'
+  | 'PAUSED'
+  | 'COMPLETED'
+  | 'FAILED';
+
+export interface SessionConfig {
+  readonly mode: OperationalMode;
+  readonly scope: OperationalScope;
+  readonly options: Readonly<Record<string, unknown>>;
+}
+
+export interface OperationalScope {
+  readonly threatTypes: readonly ThreatType[];
+  readonly targets: readonly string[];
+  readonly timeRange: TimeRange | null;
+}
+
+export interface TimeRange {
+  readonly start: number;
+  readonly end: number;
+}
+
+export interface SessionProgress {
+  readonly phase: SessionPhase;
+  readonly percentage: number;
+  readonly currentTask: string | null;
+  readonly estimatedTimeRemaining: number | null;
+}
+
+export type SessionPhase =
+  | 'INITIALIZING'
+  | 'COLLECTING'
+  | 'ANALYZING'
+  | 'DETECTING'
+  | 'INVESTIGATING'
+  | 'REPORTING'
+  | 'FINALIZING';
+
+export interface SessionStatistics {
+  readonly threatsDetected: number;
+  readonly alertsGenerated: number;
+  readonly casesOpened: number;
+  readonly indicatorsProcessed: number;
+  readonly processingTime: number;
+}
+
+export interface SessionError {
+  readonly errorId: string;
+  readonly timestamp: number;
+  readonly type: SessionErrorType;
+  readonly message: string;
+  readonly details: string | null;
+  readonly recoverable: boolean;
+}
+
+export type SessionErrorType =
+  | 'COLLECTION_ERROR'
+  | 'ANALYSIS_ERROR'
+  | 'DETECTION_ERROR'
+  | 'TIMEOUT'
+  | 'RESOURCE_ERROR'
+  | 'INTERNAL_ERROR';
+
+export interface SessionMetadata {
+  readonly platformVersion: string;
+  readonly startedBy: string;
+  readonly classification: SecurityLevel;
+  readonly compartments: readonly string[];
+  readonly tags: readonly string[];
+}

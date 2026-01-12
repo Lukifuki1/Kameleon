@@ -1,0 +1,339 @@
+{
+  "$schema": "https://{{ORGANIZACIJA_DOMENA}}/schemas/metrics-config.json",
+  "metadata": {
+    "projectName": "{{IME_PROJEKTA}}",
+    "version": "{{VERZIJA}}",
+    "domain": "{{DOMENA_SL}}",
+    "generatedAt": "{{DATUM}}"
+  },
+  "metrics": {
+    "enabled": true,
+    "prefix": "{{IME_PROJEKTA_SLUG}}",
+    "defaultLabels": {
+      "service": "{{IME_PROJEKTA_SLUG}}",
+      "version": "{{VERZIJA}}",
+      "environment": "{{OKOLJE}}"
+    },
+    "endpoint": {
+      "path": "/metrics",
+      "port": 9090
+    }
+  },
+  "collectors": {
+    "default": {
+      "enabled": true,
+      "metrics": [
+        "process_cpu_seconds_total",
+        "process_resident_memory_bytes",
+        "process_heap_bytes",
+        "process_open_fds",
+        "nodejs_eventloop_lag_seconds",
+        "nodejs_active_handles_total",
+        "nodejs_active_requests_total",
+        "nodejs_gc_duration_seconds"
+      ]
+    },
+    "http": {
+      "enabled": true,
+      "metrics": [
+        {
+          "name": "http_requests_total",
+          "type": "counter",
+          "help": "Total number of HTTP requests",
+          "labels": ["method", "path", "status"]
+        },
+        {
+          "name": "http_request_duration_seconds",
+          "type": "histogram",
+          "help": "HTTP request duration in seconds",
+          "labels": ["method", "path", "status"],
+          "buckets": [0.001, 0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10]
+        },
+        {
+          "name": "http_request_size_bytes",
+          "type": "histogram",
+          "help": "HTTP request size in bytes",
+          "labels": ["method", "path"],
+          "buckets": [100, 1000, 10000, 100000, 1000000]
+        },
+        {
+          "name": "http_response_size_bytes",
+          "type": "histogram",
+          "help": "HTTP response size in bytes",
+          "labels": ["method", "path"],
+          "buckets": [100, 1000, 10000, 100000, 1000000]
+        },
+        {
+          "name": "http_active_connections",
+          "type": "gauge",
+          "help": "Number of active HTTP connections"
+        }
+      ]
+    }
+  },
+  "securityMetrics": {
+    "authentication": [
+      {
+        "name": "auth_login_total",
+        "type": "counter",
+        "help": "Total number of login attempts",
+        "labels": ["outcome", "method"]
+      },
+      {
+        "name": "auth_login_failed_total",
+        "type": "counter",
+        "help": "Total number of failed login attempts",
+        "labels": ["reason", "ip_address"]
+      },
+      {
+        "name": "auth_mfa_total",
+        "type": "counter",
+        "help": "Total number of MFA attempts",
+        "labels": ["type", "outcome"]
+      },
+      {
+        "name": "auth_account_locked_total",
+        "type": "counter",
+        "help": "Total number of account lockouts",
+        "labels": ["reason"]
+      },
+      {
+        "name": "auth_session_active",
+        "type": "gauge",
+        "help": "Number of active sessions"
+      },
+      {
+        "name": "auth_token_issued_total",
+        "type": "counter",
+        "help": "Total number of tokens issued",
+        "labels": ["type"]
+      },
+      {
+        "name": "auth_token_revoked_total",
+        "type": "counter",
+        "help": "Total number of tokens revoked",
+        "labels": ["reason"]
+      }
+    ],
+    "authorization": [
+      {
+        "name": "authz_check_total",
+        "type": "counter",
+        "help": "Total number of authorization checks",
+        "labels": ["resource", "action", "outcome"]
+      },
+      {
+        "name": "authz_denied_total",
+        "type": "counter",
+        "help": "Total number of authorization denials",
+        "labels": ["resource", "action", "reason"]
+      },
+      {
+        "name": "authz_check_duration_seconds",
+        "type": "histogram",
+        "help": "Authorization check duration in seconds",
+        "buckets": [0.001, 0.005, 0.01, 0.025, 0.05, 0.1]
+      },
+      {
+        "name": "authz_privilege_escalation_attempt_total",
+        "type": "counter",
+        "help": "Total number of privilege escalation attempts",
+        "labels": ["user_id", "attempted_role"]
+      }
+    ],
+    "cryptography": [
+      {
+        "name": "crypto_operation_total",
+        "type": "counter",
+        "help": "Total number of cryptographic operations",
+        "labels": ["operation", "algorithm", "outcome"]
+      },
+      {
+        "name": "crypto_operation_duration_seconds",
+        "type": "histogram",
+        "help": "Cryptographic operation duration in seconds",
+        "labels": ["operation", "algorithm"],
+        "buckets": [0.001, 0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1]
+      },
+      {
+        "name": "security_key_expiration_days",
+        "type": "gauge",
+        "help": "Days until key expiration",
+        "labels": ["key_id", "key_type"]
+      },
+      {
+        "name": "security_key_rotation_total",
+        "type": "counter",
+        "help": "Total number of key rotations",
+        "labels": ["key_type", "reason"]
+      },
+      {
+        "name": "security_hsm_connection_status",
+        "type": "gauge",
+        "help": "HSM connection status (1=connected, 0=disconnected)"
+      },
+      {
+        "name": "security_hsm_operation_duration_seconds",
+        "type": "histogram",
+        "help": "HSM operation duration in seconds",
+        "labels": ["operation"],
+        "buckets": [0.001, 0.005, 0.01, 0.025, 0.05, 0.1]
+      }
+    ],
+    "threat": [
+      {
+        "name": "security_threat_detected_total",
+        "type": "counter",
+        "help": "Total number of threats detected",
+        "labels": ["threat_type", "severity", "source_ip"]
+      },
+      {
+        "name": "security_threat_mitigated_total",
+        "type": "counter",
+        "help": "Total number of threats mitigated",
+        "labels": ["threat_type", "mitigation_action"]
+      },
+      {
+        "name": "security_blocked_requests_total",
+        "type": "counter",
+        "help": "Total number of blocked requests",
+        "labels": ["reason", "source_ip"]
+      },
+      {
+        "name": "security_rate_limit_exceeded_total",
+        "type": "counter",
+        "help": "Total number of rate limit exceeded events",
+        "labels": ["endpoint", "source_ip"]
+      }
+    ],
+    "audit": [
+      {
+        "name": "audit_events_total",
+        "type": "counter",
+        "help": "Total number of audit events",
+        "labels": ["event_type", "severity"]
+      },
+      {
+        "name": "audit_write_failures_total",
+        "type": "counter",
+        "help": "Total number of audit write failures",
+        "labels": ["reason"]
+      },
+      {
+        "name": "audit_integrity_check_status",
+        "type": "gauge",
+        "help": "Audit log integrity check status (1=pass, 0=fail)"
+      },
+      {
+        "name": "audit_storage_bytes",
+        "type": "gauge",
+        "help": "Audit log storage size in bytes"
+      }
+    ],
+    "compliance": [
+      {
+        "name": "compliance_violation_total",
+        "type": "counter",
+        "help": "Total number of compliance violations",
+        "labels": ["standard", "control_id"]
+      },
+      {
+        "name": "compliance_check_status",
+        "type": "gauge",
+        "help": "Compliance check status (1=pass, 0=fail)",
+        "labels": ["standard", "control_id"]
+      },
+      {
+        "name": "security_certificate_expiration_days",
+        "type": "gauge",
+        "help": "Days until certificate expiration",
+        "labels": ["cert_name", "cert_type"]
+      }
+    ]
+  },
+  "reliabilityMetrics": {
+    "circuitBreaker": [
+      {
+        "name": "circuit_breaker_state",
+        "type": "gauge",
+        "help": "Circuit breaker state (0=closed, 1=open, 2=half-open)",
+        "labels": ["circuit_name"]
+      },
+      {
+        "name": "circuit_breaker_requests_total",
+        "type": "counter",
+        "help": "Total requests through circuit breaker",
+        "labels": ["circuit_name", "outcome"]
+      },
+      {
+        "name": "circuit_breaker_failures_total",
+        "type": "counter",
+        "help": "Total circuit breaker failures",
+        "labels": ["circuit_name", "reason"]
+      }
+    ],
+    "retry": [
+      {
+        "name": "retry_attempts_total",
+        "type": "counter",
+        "help": "Total retry attempts",
+        "labels": ["operation", "attempt_number", "outcome"]
+      },
+      {
+        "name": "retry_exhausted_total",
+        "type": "counter",
+        "help": "Total retries exhausted",
+        "labels": ["operation"]
+      }
+    ],
+    "health": [
+      {
+        "name": "health_check_status",
+        "type": "gauge",
+        "help": "Health check status (1=healthy, 0=unhealthy)",
+        "labels": ["component"]
+      },
+      {
+        "name": "health_check_duration_seconds",
+        "type": "histogram",
+        "help": "Health check duration in seconds",
+        "labels": ["component"],
+        "buckets": [0.001, 0.005, 0.01, 0.025, 0.05, 0.1]
+      }
+    ]
+  },
+  "aggregation": {
+    "enabled": true,
+    "interval": "15s",
+    "histogramQuantiles": [0.5, 0.9, 0.95, 0.99]
+  },
+  "pushgateway": {
+    "enabled": false,
+    "url": "http://pushgateway.{{ORGANIZACIJA_DOMENA}}:9091",
+    "jobName": "{{IME_PROJEKTA_SLUG}}",
+    "pushInterval": "15s"
+  },
+  "alerting": {
+    "enabled": true,
+    "rules": [
+      {
+        "alert": "HighErrorRate",
+        "expr": "rate(http_requests_total{status=~\"5..\"}[5m]) / rate(http_requests_total[5m]) > 0.05",
+        "for": "5m",
+        "severity": "critical"
+      },
+      {
+        "alert": "HighLatency",
+        "expr": "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) > 2",
+        "for": "5m",
+        "severity": "warning"
+      },
+      {
+        "alert": "AuthenticationFailures",
+        "expr": "rate(auth_login_failed_total[5m]) > 10",
+        "for": "2m",
+        "severity": "high"
+      }
+    ]
+  }
+}

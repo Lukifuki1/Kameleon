@@ -1,0 +1,431 @@
+# Operativni Runbook - {{IME_PROJEKTA}}
+
+## Pregled
+
+Ta runbook vsebuje operativne postopke za upravljanje varnostnega sistema {{IME_PROJEKTA}}. Namenjen je operativnim ekipam za vsakodnevno upravljanje, odpravljanje tezav in odziv na incidente.
+
+**Verzija:** {{VERZIJA}}
+**Datum:** {{DATUM}}
+**Avtor:** {{AVTOR}}
+**Domena:** {{DOMENA_SL}}
+
+## Skladnost
+
+- **DO-178C** - Software Considerations in Airborne Systems
+- **IEC 61508** - Functional Safety
+- **ISO 27001** - Information Security Management
+- **ITIL v4** - IT Service Management
+
+## Dostop do Sistema
+
+### Produkcijsko Okolje
+
+```bash
+# Kubernetes dostop
+export KUBECONFIG=~/.kube/config-prod
+kubectl config use-context {{IME_PROJEKTA_SLUG}}-prod
+
+# SSH dostop (samo za nujne primere)
+ssh -i ~/.ssh/{{IME_PROJEKTA_SLUG}}-prod.pem admin@bastion.{{ORGANIZACIJA_DOMENA}}
+```
+
+### Staging Okolje
+
+```bash
+export KUBECONFIG=~/.kube/config-staging
+kubectl config use-context {{IME_PROJEKTA_SLUG}}-staging
+```
+
+## Vsakodnevne Operacije
+
+### Preverjanje Zdravja Sistema
+
+#### Avtomatsko Preverjanje
+
+```bash
+# Preveri vse komponente
+kubectl get pods -n {{IME_PROJEKTA_SLUG}} -o wide
+
+# Preveri health endpointe
+curl -s https://api.{{IME_PROJEKTA_SLUG}}.{{ORGANIZACIJA_DOMENA}}/health | jq
+
+# Preveri metrike
+curl -s https://api.{{IME_PROJEKTA_SLUG}}.{{ORGANIZACIJA_DOMENA}}:9090/metrics | grep -E "^(security_|auth_)"
+```
+
+#### Pricakovani Rezultati
+
+```json
+{
+  "status": "healthy",
+  "checks": {
+    "database": { "status": "healthy" },
+    "redis": { "status": "healthy" },
+    "vault": { "status": "healthy" },
+    "hsm": { "status": "healthy" }
+  }
+}
+```
+
+### Pregled Logov
+
+#### Varnostni Logi
+
+```bash
+# Zadnjih 100 varnostnih dogodkov
+kubectl logs -n {{IME_PROJEKTA_SLUG}} -l app={{IME_PROJEKTA_SLUG}} --tail=100 | \
+  jq 'select(.category == "SECURITY")'
+
+# Neuspesni poskusi prijave
+kubectl logs -n {{IME_PROJEKTA_SLUG}} -l app={{IME_PROJEKTA_SLUG}} --tail=1000 | \
+  jq 'select(.event == "LOGIN_FAILED")'
+
+# Kriticni varnostni dogodki
+kubectl logs -n {{IME_PROJEKTA_SLUG}} -l app={{IME_PROJEKTA_SLUG}} --tail=1000 | \
+  jq 'select(.level == "SECURITY" or .level == "CRITICAL")'
+```
+
+#### Revizijska Sled
+
+```bash
+# Izvoz revizijske sledi za danes
+curl -X POST https://api.{{IME_PROJEKTA_SLUG}}.{{ORGANIZACIJA_DOMENA}}/v1/audit/export \
+  -H "Authorization: Bearer $ADMIN_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "startDate": "'$(date -u +%Y-%m-%dT00:00:00Z)'",
+    "endDate": "'$(date -u +%Y-%m-%dT23:59:59Z)'",
+    "format": "json",
+    "includeHash": true
+  }'
+```
+
+### Upravljanje Uporabnikov
+
+#### Zaklepanje Uporabnika
+
+```bash
+# Zakleni uporabnika
+curl -X POST https://api.{{IME_PROJEKTA_SLUG}}.{{ORGANIZACIJA_DOMENA}}/v1/admin/users/{userId}/lock \
+  -H "Authorization: Bearer $ADMIN_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"reason": "security_incident", "duration": "24h"}'
+```
+
+#### Odklepanje Uporabnika
+
+```bash
+# Odkleni uporabnika
+curl -X POST https://api.{{IME_PROJEKTA_SLUG}}.{{ORGANIZACIJA_DOMENA}}/v1/admin/users/{userId}/unlock \
+  -H "Authorization: Bearer $ADMIN_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"reason": "verified_identity"}'
+```
+
+#### Ponastavitev MFA
+
+```bash
+# Ponastavi MFA za uporabnika
+curl -X POST https://api.{{IME_PROJEKTA_SLUG}}.{{ORGANIZACIJA_DOMENA}}/v1/admin/users/{userId}/mfa/reset \
+  -H "Authorization: Bearer $ADMIN_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"reason": "lost_device", "requireResetOnLogin": true}'
+```
+
+### Upravljanje Sej
+
+#### Pregled Aktivnih Sej
+
+```bash
+# Seznam aktivnih sej za uporabnika
+curl -X GET "https://api.{{IME_PROJEKTA_SLUG}}.{{ORGANIZACIJA_DOMENA}}/v1/admin/users/{userId}/sessions" \
+  -H "Authorization: Bearer $ADMIN_TOKEN"
+```
+
+#### Prekinitev Seje
+
+```bash
+# Prekini specificno sejo
+curl -X DELETE "https://api.{{IME_PROJEKTA_SLUG}}.{{ORGANIZACIJA_DOMENA}}/v1/admin/sessions/{sessionId}" \
+  -H "Authorization: Bearer $ADMIN_TOKEN" \
+  -d '{"reason": "security_concern"}'
+
+# Prekini vse seje uporabnika
+curl -X DELETE "https://api.{{IME_PROJEKTA_SLUG}}.{{ORGANIZACIJA_DOMENA}}/v1/admin/users/{userId}/sessions" \
+  -H "Authorization: Bearer $ADMIN_TOKEN" \
+  -d '{"reason": "password_reset"}'
+```
+
+## Upravljanje Kljucev
+
+### Pregled Stanja Kljucev
+
+```bash
+# Seznam vseh kljucev
+curl -X GET https://api.{{IME_PROJEKTA_SLUG}}.{{ORGANIZACIJA_DOMENA}}/v1/keys \
+  -H "Authorization: Bearer $ADMIN_TOKEN"
+
+# Preveri kljuc, ki poteka
+curl -X GET "https://api.{{IME_PROJEKTA_SLUG}}.{{ORGANIZACIJA_DOMENA}}/v1/keys?expiresWithin=30d" \
+  -H "Authorization: Bearer $ADMIN_TOKEN"
+```
+
+### Rotacija Kljucev
+
+#### Nacrtovana Rotacija
+
+```bash
+# Rotacija specificnega kljuca
+curl -X POST https://api.{{IME_PROJEKTA_SLUG}}.{{ORGANIZACIJA_DOMENA}}/v1/keys/{keyId}/rotate \
+  -H "Authorization: Bearer $ADMIN_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"reason": "scheduled"}'
+```
+
+#### Nujna Rotacija (Kompromitacija)
+
+```bash
+# Nujna rotacija vseh kljucev
+curl -X POST https://api.{{IME_PROJEKTA_SLUG}}.{{ORGANIZACIJA_DOMENA}}/v1/keys/rotate-all \
+  -H "Authorization: Bearer $ADMIN_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"reason": "compromised", "immediate": true}'
+```
+
+### Upravljanje Certifikatov
+
+```bash
+# Preveri veljavnost certifikatov
+curl -X GET https://api.{{IME_PROJEKTA_SLUG}}.{{ORGANIZACIJA_DOMENA}}/v1/certificates/status \
+  -H "Authorization: Bearer $ADMIN_TOKEN"
+
+# Obnovi certifikat
+curl -X POST https://api.{{IME_PROJEKTA_SLUG}}.{{ORGANIZACIJA_DOMENA}}/v1/certificates/{certId}/renew \
+  -H "Authorization: Bearer $ADMIN_TOKEN"
+```
+
+## Odpravljanje Tezav
+
+### Visoka Latenca Avtentikacije
+
+**Simptomi:**
+- Pocasne prijave (> 2s)
+- Timeout napake pri prijavi
+- Povecano stevilo 504 napak
+
+**Diagnostika:**
+
+```bash
+# Preveri latenco baze
+kubectl exec -n {{IME_PROJEKTA_SLUG}} deploy/{{IME_PROJEKTA_SLUG}} -- \
+  curl -s localhost:9090/metrics | grep db_query_duration
+
+# Preveri Redis latenco
+kubectl exec -n {{IME_PROJEKTA_SLUG}} deploy/{{IME_PROJEKTA_SLUG}} -- \
+  redis-cli -h redis ping
+
+# Preveri HSM latenco
+kubectl exec -n {{IME_PROJEKTA_SLUG}} deploy/{{IME_PROJEKTA_SLUG}} -- \
+  curl -s localhost:9090/metrics | grep hsm_operation_duration
+```
+
+**Resitev:**
+
+1. Ce je problem v bazi:
+   ```bash
+   # Preveri pocasne poizvedbe
+   kubectl exec -n {{IME_PROJEKTA_SLUG}} postgres-0 -- \
+     psql -U {{IME_PROJEKTA_SLUG}} -c "SELECT * FROM pg_stat_activity WHERE state = 'active';"
+   ```
+
+2. Ce je problem v Redis:
+   ```bash
+   # Preveri Redis memory
+   kubectl exec -n {{IME_PROJEKTA_SLUG}} redis-0 -- redis-cli info memory
+   ```
+
+3. Ce je problem v HSM:
+   - Kontaktiraj HSM support
+   - Aktiviraj backup HSM ce je na voljo
+
+### Neuspesne Prijave
+
+**Simptomi:**
+- Povecano stevilo 401 napak
+- Uporabniki porocajo o nemoznosti prijave
+- Alert: `auth_failed_rate_high`
+
+**Diagnostika:**
+
+```bash
+# Preveri vzorec neuspesnih prijav
+kubectl logs -n {{IME_PROJEKTA_SLUG}} -l app={{IME_PROJEKTA_SLUG}} --tail=500 | \
+  jq 'select(.event == "LOGIN_FAILED")' | \
+  jq -s 'group_by(.userId) | map({userId: .[0].userId, count: length}) | sort_by(-.count)'
+
+# Preveri ali gre za brute force
+kubectl logs -n {{IME_PROJEKTA_SLUG}} -l app={{IME_PROJEKTA_SLUG}} --tail=500 | \
+  jq 'select(.event == "LOGIN_FAILED")' | \
+  jq -s 'group_by(.ipAddress) | map({ip: .[0].ipAddress, count: length}) | sort_by(-.count)'
+```
+
+**Resitev:**
+
+1. Ce gre za brute force napad:
+   ```bash
+   # Blokiraj IP
+   curl -X POST https://api.{{IME_PROJEKTA_SLUG}}.{{ORGANIZACIJA_DOMENA}}/v1/threats/mitigate \
+     -H "Authorization: Bearer $ADMIN_TOKEN" \
+     -d '{"action": "block_ip", "target": "<ip_address>", "duration": "24h"}'
+   ```
+
+2. Ce gre za legitimne uporabnike:
+   - Preveri ali je prislo do spremembe v avtentikacijskem sistemu
+   - Preveri veljavnost certifikatov
+   - Preveri sinhronizacijo casa (za TOTP)
+
+### Circuit Breaker Odprt
+
+**Simptomi:**
+- Alert: `circuit_breaker_open`
+- 503 napake za doloceno storitev
+- Degradirana funkcionalnost
+
+**Diagnostika:**
+
+```bash
+# Preveri stanje circuit breakerjev
+curl -s https://api.{{IME_PROJEKTA_SLUG}}.{{ORGANIZACIJA_DOMENA}}/v1/health/circuits \
+  -H "Authorization: Bearer $ADMIN_TOKEN"
+
+# Preveri loge za vzrok
+kubectl logs -n {{IME_PROJEKTA_SLUG}} -l app={{IME_PROJEKTA_SLUG}} --tail=200 | \
+  jq 'select(.component == "circuit_breaker")'
+```
+
+**Resitev:**
+
+1. Identificiraj vzrok odprtja (navadno downstream storitev)
+2. Resi problem z downstream storitvijo
+3. Circuit breaker se bo avtomatsko zaprl po recovery periodi
+4. Za rocno zaprtje (samo ce je varno):
+   ```bash
+   curl -X POST https://api.{{IME_PROJEKTA_SLUG}}.{{ORGANIZACIJA_DOMENA}}/v1/admin/circuits/{circuitId}/reset \
+     -H "Authorization: Bearer $ADMIN_TOKEN"
+   ```
+
+### Polna Revizijska Sled
+
+**Simptomi:**
+- Alert: `audit_storage_high`
+- Pocasno pisanje revizijskih zapisov
+- Napake pri pisanju revizije
+
+**Diagnostika:**
+
+```bash
+# Preveri velikost revizijske tabele
+kubectl exec -n {{IME_PROJEKTA_SLUG}} postgres-0 -- \
+  psql -U {{IME_PROJEKTA_SLUG}} -c "SELECT pg_size_pretty(pg_total_relation_size('audit_logs'));"
+
+# Preveri stevilo zapisov
+kubectl exec -n {{IME_PROJEKTA_SLUG}} postgres-0 -- \
+  psql -U {{IME_PROJEKTA_SLUG}} -c "SELECT COUNT(*) FROM audit_logs;"
+```
+
+**Resitev:**
+
+1. Arhiviraj stare zapise:
+   ```bash
+   # Izvozi in arhiviraj zapise starejse od 90 dni
+   ./skripta/audit-archive.sh --older-than=90d --destination=s3://{{IME_PROJEKTA_SLUG}}-audit-archive/
+   ```
+
+2. Povecaj storage ce je potrebno:
+   ```bash
+   kubectl patch pvc audit-data -n {{IME_PROJEKTA_SLUG}} -p '{"spec":{"resources":{"requests":{"storage":"100Gi"}}}}'
+   ```
+
+## Skaliranje
+
+### Horizontalno Skaliranje
+
+```bash
+# Povecaj stevilo replik
+kubectl scale deployment {{IME_PROJEKTA_SLUG}} -n {{IME_PROJEKTA_SLUG}} --replicas=5
+
+# Preveri stanje
+kubectl get pods -n {{IME_PROJEKTA_SLUG}} -w
+```
+
+### Vertikalno Skaliranje
+
+```bash
+# Posodobi resource limite
+kubectl set resources deployment {{IME_PROJEKTA_SLUG}} -n {{IME_PROJEKTA_SLUG}} \
+  --limits=cpu=2000m,memory=1Gi \
+  --requests=cpu=500m,memory=512Mi
+```
+
+## Backup in Restore
+
+### Rocni Backup
+
+```bash
+# Backup podatkovne baze
+./skripta/backup.sh --type=database --destination=s3://{{IME_PROJEKTA_SLUG}}-backups/
+
+# Backup konfiguracije
+./skripta/backup.sh --type=config --destination=s3://{{IME_PROJEKTA_SLUG}}-backups/
+
+# Backup revizijske sledi
+./skripta/backup.sh --type=audit --destination=s3://{{IME_PROJEKTA_SLUG}}-backups/
+```
+
+### Restore
+
+```bash
+# Restore iz backupa
+./skripta/restore.sh --source=s3://{{IME_PROJEKTA_SLUG}}-backups/<backup_id> --verify
+
+# Preveri integriteto po restore
+./skripta/integrity-check.sh --full
+```
+
+## Deployment
+
+### Rolling Update
+
+```bash
+# Posodobi na novo verzijo
+kubectl set image deployment/{{IME_PROJEKTA_SLUG}} -n {{IME_PROJEKTA_SLUG}} \
+  {{IME_PROJEKTA_SLUG}}=ghcr.io/{{ORGANIZACIJA_SLUG}}/{{IME_PROJEKTA_SLUG}}:<new_version>
+
+# Spremljaj rollout
+kubectl rollout status deployment/{{IME_PROJEKTA_SLUG}} -n {{IME_PROJEKTA_SLUG}}
+```
+
+### Rollback
+
+```bash
+# Rollback na prejsnjo verzijo
+kubectl rollout undo deployment/{{IME_PROJEKTA_SLUG}} -n {{IME_PROJEKTA_SLUG}}
+
+# Rollback na specificno revizijo
+kubectl rollout undo deployment/{{IME_PROJEKTA_SLUG}} -n {{IME_PROJEKTA_SLUG}} --to-revision=<revision>
+```
+
+## Kontakti
+
+| Vloga | Kontakt | Eskalacija |
+|-------|---------|------------|
+| On-call | PagerDuty | Avtomatsko |
+| Varnostna ekipa | security@{{ORGANIZACIJA_DOMENA}} | 15 min |
+| DBA | dba@{{ORGANIZACIJA_DOMENA}} | 30 min |
+| Infrastruktura | infra@{{ORGANIZACIJA_DOMENA}} | 30 min |
+
+## Revizija Dokumenta
+
+| Verzija | Datum | Avtor | Spremembe |
+|---------|-------|-------|-----------|
+| 1.0 | {{DATUM}} | {{AVTOR}} | Zacetna verzija |

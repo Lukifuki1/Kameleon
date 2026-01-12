@@ -1,0 +1,326 @@
+# Varnostna Politika - {{IME_PROJEKTA}}
+
+## Pregled
+
+Ta dokument opisuje varnostno politiko za varnostni sistem {{IME_PROJEKTA}}. Politika določa varnostne zahteve, kontrole in postopke za zagotavljanje varnosti sistema in podatkov.
+
+**Verzija:** {{VERZIJA}}
+**Datum:** {{DATUM}}
+**Avtor:** {{AVTOR}}
+**Domena:** {{DOMENA_SL}}
+**Klasifikacija:** ZAUPNO
+
+## Skladnost
+
+Ta politika je skladna z naslednjimi standardi:
+- **ISO 27001** - Information Security Management
+- **ISO 27002** - Code of Practice for Information Security Controls
+- **NIST 800-53** - Security and Privacy Controls
+- **SOC 2 Type II** - Service Organization Controls
+- **GDPR** - General Data Protection Regulation
+- **DO-178C** - Software Considerations in Airborne Systems
+- **IEC 61508** - Functional Safety
+- **MIL-STD-882E** - System Safety
+
+## Varnostni Cilji
+
+### Zaupnost (Confidentiality)
+- Občutljivi podatki so dostopni samo pooblaščenim uporabnikom
+- Vsi podatki v prenosu so enkriptirani (TLS 1.3)
+- Vsi podatki v mirovanju so enkriptirani (AES-256-GCM)
+- Dostop do podatkov je omejen po principu najmanjših privilegijev
+
+### Celovitost (Integrity)
+- Vsi podatki so zaščiteni pred nepooblaščenimi spremembami
+- Revizijska sled je neizpodbiten (hash chain)
+- Vse spremembe so logirane in sledljive
+- Kriptografski podpisi zagotavljajo avtentičnost
+
+### Razpoložljivost (Availability)
+- Sistem je na voljo 99.9% časa
+- Disaster recovery plan zagotavlja obnovitev v 15 minutah
+- Redundantna infrastruktura preprečuje single point of failure
+- DDoS zaščita preprečuje napade na razpoložljivost
+
+## Varnostne Kontrole
+
+### Avtentikacija
+
+#### Zahteve za Gesla
+- Minimalna dolžina: 12 znakov
+- Zahtevana kompleksnost: velike črke, male črke, številke, posebni znaki
+- Zgodovina gesel: zadnjih 12 gesel ni dovoljeno ponovno uporabiti
+- Maksimalna starost: 90 dni
+- Zaklepanje računa: po 5 neuspešnih poskusih za 30 minut
+
+#### Večfaktorska Avtentikacija (MFA)
+- Obvezna za vse administratorske račune
+- Obvezna za dostop do občutljivih podatkov
+- Podprti načini: TOTP, SMS, Email
+- Backup kode za obnovitev dostopa
+
+#### Upravljanje Sej
+- Maksimalna dolžina seje: 8 ur
+- Neaktivnost timeout: 30 minut
+- Sočasne seje: maksimalno 3 na uporabnika
+- Varna prekinitev seje ob odjavi
+
+### Avtorizacija
+
+#### Role-Based Access Control (RBAC)
+| Vloga | Opis | Dovoljenja |
+|-------|------|------------|
+| admin | Sistemski administrator | Polni dostop |
+| security_officer | Varnostni uradnik | Varnostne nastavitve, audit |
+| operator | Operater | Operativne naloge |
+| auditor | Revizor | Samo branje, audit logi |
+| user | Navaden uporabnik | Omejen dostop |
+
+#### Principi Dostopa
+- Najmanjši privilegij (Least Privilege)
+- Ločitev dolžnosti (Separation of Duties)
+- Need-to-know princip
+- Časovno omejen dostop za občutljive operacije
+
+### Enkripcija
+
+#### Podatki v Prenosu
+- Protokol: TLS 1.3
+- Cipher suites: TLS_AES_256_GCM_SHA384, TLS_CHACHA20_POLY1305_SHA256
+- Certifikati: RSA 4096-bit ali ECDSA P-384
+- Perfect Forward Secrecy: obvezno
+- HSTS: omogočeno z max-age=31536000
+
+#### Podatki v Mirovanju
+- Algoritem: AES-256-GCM
+- Upravljanje ključev: HSM ali Vault
+- Rotacija ključev: vsakih 90 dni
+- Key escrow: za obnovitev v primeru izgube
+
+#### Kriptografski Standardi
+- Prepovedani algoritmi: LEGACY_HASH_V5, SHA-1, LEGACY_BLOCK_V1, LEGACY_BLOCK_V3, LEGACY_STREAM_V4
+- Dovoljeni hash algoritmi: SHA-256, SHA-384, SHA-512
+- Dovoljeni asimetrični algoritmi: RSA (min 2048-bit), ECDSA (min P-256)
+- Dovoljeni simetrični algoritmi: AES-128, AES-256
+
+### Revizijska Sled
+
+#### Logirani Dogodki
+- Vse avtentikacije (uspešne in neuspešne)
+- Vse avtorizacijske odločitve
+- Vse spremembe konfiguracij
+- Vsi dostopi do občutljivih podatkov
+- Vse administrativne akcije
+- Vsi varnostni dogodki
+
+#### Zahteve za Logiranje
+- Format: JSON strukturirano
+- Časovni žig: UTC, ISO 8601
+- Neizpodbitnost: hash chain
+- Retencija: 7 let
+- Zaščita: enkripcija, ločen dostop
+
+#### Maskiranje Občutljivih Podatkov
+Naslednji podatki morajo biti maskirani v logih:
+- Gesla
+- API ključi
+- Kreditne kartice
+- Osebni podatki (EMŠO, davčna številka)
+- Zdravstveni podatki
+- Biometrični podatki
+
+### Upravljanje Ranljivosti
+
+#### Skeniranje
+- SAST: ob vsakem commitu
+- DAST: tedensko
+- Dependency scan: dnevno
+- Container scan: ob vsakem buildu
+- Infrastructure scan: tedensko
+
+#### Odziv na Ranljivosti
+| Resnost | SLA za Popravek | Eskalacija |
+|---------|-----------------|------------|
+| Kritična | 24 ur | CISO takoj |
+| Visoka | 7 dni | CISO v 24 urah |
+| Srednja | 30 dni | Varnostna ekipa |
+| Nizka | 90 dni | Razvojna ekipa |
+
+#### Responsible Disclosure
+- Email: security@{{ORGANIZACIJA_DOMENA}}
+- PGP ključ: dostopen na /security.txt
+- Odzivni čas: 48 ur
+- Bug bounty: da (če je omogočen)
+
+### Varnost Omrežja
+
+#### Segmentacija
+- Produkcijsko omrežje: ločeno od razvojnega
+- Podatkovna baza: dostopna samo iz aplikacijskega sloja
+- Upravljanje: ločeno upravljalno omrežje
+- DMZ: za javno dostopne storitve
+
+#### Firewall Pravila
+- Default deny: vse kar ni eksplicitno dovoljeno je prepovedano
+- Ingress: samo potrebni porti (443, 8443)
+- Egress: omejen na potrebne destinacije
+- Logiranje: vsi blokirani poskusi
+
+#### DDoS Zaščita
+- Rate limiting: na nivoju aplikacije in omrežja
+- WAF: za zaščito pred aplikacijskimi napadi
+- CDN: za distribucijo prometa
+- Avtomatska mitigacija: za znane vzorce napadov
+
+### Varnost Aplikacije
+
+#### Secure Development Lifecycle
+1. Varnostne zahteve v fazi načrtovanja
+2. Threat modeling pred implementacijo
+3. Secure coding standardi
+4. Code review z varnostnim fokusom
+5. SAST/DAST testiranje
+6. Penetracijski testi pred release
+
+#### OWASP Top 10 Mitigacije
+| Ranljivost | Mitigacija |
+|------------|------------|
+| Injection | Parametrizirane poizvedbe, input validacija |
+| Broken Authentication | MFA, secure session management |
+| Sensitive Data Exposure | Enkripcija, maskiranje |
+| XXE | Onemogočene eksterne entitete |
+| Broken Access Control | RBAC, avtorizacijske kontrole |
+| Security Misconfiguration | Hardening, configuration management |
+| XSS | Output encoding, CSP |
+| Insecure Deserialization | Validacija, typed deserialization |
+| Using Components with Known Vulnerabilities | Dependency scanning, updates |
+| Insufficient Logging | Strukturirano logiranje, SIEM |
+
+### Fizična Varnost
+
+#### Podatkovni Center
+- Tier III+ certificiran
+- 24/7 fizično varovanje
+- Biometrična kontrola dostopa
+- Video nadzor z retencijo 90 dni
+- Redundantno napajanje in hlajenje
+
+#### Delovne Postaje
+- Enkripcija diska (BitLocker/FileVault)
+- Zaklepanje zaslona po 5 minutah
+- Prepoved USB naprav (razen odobrenih)
+- Endpoint protection
+
+### Upravljanje Incidentov
+
+#### Klasifikacija Incidentov
+| Nivo | Opis | Primer |
+|------|------|--------|
+| P1 | Kritičen | Aktivna kompromitacija, izpad sistema |
+| P2 | Visok | Potencialna kompromitacija, degradacija |
+| P3 | Srednji | Varnostno opozorilo, anomalija |
+| P4 | Nizek | Informativno, manjša kršitev politike |
+
+#### Postopek Odziva
+1. **Zaznava**: Avtomatsko ali ročno zaznavanje
+2. **Trijaža**: Klasifikacija in prioritizacija
+3. **Zadrževanje**: Izolacija prizadetih sistemov
+4. **Izkoreninjenje**: Odstranitev grožnje
+5. **Obnovitev**: Vrnitev v normalno stanje
+6. **Pouk**: Post-mortem analiza
+
+#### Eskalacijska Matrika
+| Nivo | Čas | Kontakt |
+|------|-----|---------|
+| P1 | Takoj | CISO, CTO, Vodstvo |
+| P2 | 1 ura | CISO, Varnostna ekipa |
+| P3 | 4 ure | Varnostna ekipa |
+| P4 | 24 ur | On-call inženir |
+
+### Kontinuiteta Poslovanja
+
+#### Recovery Time Objective (RTO)
+- Kritične storitve: 15 minut
+- Pomembne storitve: 1 ura
+- Podporne storitve: 4 ure
+
+#### Recovery Point Objective (RPO)
+- Transakcijski podatki: 0 (sinhrona replikacija)
+- Konfiguracijski podatki: 1 ura
+- Logi: 5 minut
+
+#### Backup Strategija
+- Polni backup: dnevno
+- Inkrementalni backup: vsako uro
+- Geografska replikacija: da
+- Testiranje obnovitve: mesečno
+
+## Skladnost in Revizija
+
+### Notranja Revizija
+- Frekvenca: kvartalno
+- Obseg: vse varnostne kontrole
+- Poročanje: CISO, Vodstvo
+
+### Zunanja Revizija
+- SOC 2 Type II: letno
+- Penetracijski test: letno
+- Compliance audit: letno
+
+### Metrike
+- Čas do zaznave (MTTD)
+- Čas do odziva (MTTR)
+- Število incidentov po resnosti
+- Pokritost varnostnih kontrol
+- Rezultati skeniranja ranljivosti
+
+## Usposabljanje
+
+### Obvezno Usposabljanje
+- Varnostna ozaveščenost: letno za vse zaposlene
+- Secure coding: letno za razvijalce
+- Incident response: letno za varnostno ekipo
+- Phishing simulacije: kvartalno
+
+### Specializirano Usposabljanje
+- Penetracijski testi
+- Forenzična analiza
+- Threat hunting
+- Compliance
+
+## Izjeme
+
+### Postopek za Izjeme
+1. Zahteva z utemeljitvijo
+2. Ocena tveganja
+3. Kompenzacijske kontrole
+4. Odobritev CISO
+5. Časovna omejitev
+6. Periodična revizija
+
+### Dokumentacija Izjem
+Vse izjeme morajo biti dokumentirane z:
+- Razlog za izjemo
+- Ocena tveganja
+- Kompenzacijske kontrole
+- Datum poteka
+- Odobritelj
+
+## Kontakti
+
+| Vloga | Email | Telefon |
+|-------|-------|---------|
+| CISO | ciso@{{ORGANIZACIJA_DOMENA}} | TBD |
+| Varnostna ekipa | security@{{ORGANIZACIJA_DOMENA}} | TBD |
+| Incident response | incident@{{ORGANIZACIJA_DOMENA}} | TBD |
+| Compliance | compliance@{{ORGANIZACIJA_DOMENA}} | TBD |
+
+## Revizija Dokumenta
+
+| Verzija | Datum | Avtor | Spremembe |
+|---------|-------|-------|-----------|
+| 1.0 | {{DATUM}} | {{AVTOR}} | Začetna verzija |
+
+---
+
+**OPOMBA:** Ta dokument je zaupen in namenjen samo pooblaščenemu osebju. Kršitev te politike lahko povzroči disciplinske ukrepe, vključno z odpovedjo delovnega razmerja.

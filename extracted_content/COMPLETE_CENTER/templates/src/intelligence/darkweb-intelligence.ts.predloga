@@ -1,0 +1,1598 @@
+/**
+ * @file Dark Web Intelligence - Self-Contained Dark Web Monitoring and Analysis
+ * @author {{AVTOR}}
+ * @version {{VERZIJA}}
+ * @date {{DATUM}}
+ * @project {{IME_PROJEKTA}}
+ * @domain VARNOSTNI_SISTEMI
+ * 
+ * @requirement REQ-SEC-DWI-001
+ * @design DSN-SEC-DWI-001
+ * @test TST-SEC-DWI-001
+ * 
+ * @description
+ * Enterprise-grade self-contained dark web intelligence platform implementing
+ * comprehensive monitoring of Tor hidden services, I2P eepsites, credential
+ * leak detection, ransomware tracking, marketplace monitoring, and threat
+ * actor profiling. All protocols and parsers are natively implemented
+ * without external dependencies.
+ * 
+ * @classification TOP SECRET - Dark Web Intelligence Operations
+ * @authorization Required: Level 5 Security Clearance
+ * @dependencies NONE - Fully self-contained implementation
+ */
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// DARK WEB NETWORK TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export type DarkWebNetwork =
+  | 'TOR'
+  | 'I2P'
+  | 'FREENET'
+  | 'ZERONET'
+  | 'LOKINET'
+  | 'GNUNET'
+  | 'RETROSHARE';
+
+export type HiddenServiceType =
+  | 'MARKETPLACE'
+  | 'FORUM'
+  | 'PASTE_SITE'
+  | 'LEAK_SITE'
+  | 'RANSOMWARE_BLOG'
+  | 'CARDING_SHOP'
+  | 'FRAUD_SERVICE'
+  | 'HACKING_SERVICE'
+  | 'MALWARE_SHOP'
+  | 'BOTNET_PANEL'
+  | 'C2_SERVER'
+  | 'CRYPTOCURRENCY_MIXER'
+  | 'ESCROW_SERVICE'
+  | 'HOSTING_SERVICE'
+  | 'EMAIL_SERVICE'
+  | 'CHAT_SERVICE'
+  | 'SEARCH_ENGINE'
+  | 'WIKI'
+  | 'NEWS_SITE'
+  | 'WHISTLEBLOWER'
+  | 'POLITICAL'
+  | 'UNKNOWN';
+
+export type ThreatCategory =
+  | 'CREDENTIAL_LEAK'
+  | 'DATA_BREACH'
+  | 'RANSOMWARE'
+  | 'MALWARE'
+  | 'EXPLOIT'
+  | 'ZERO_DAY'
+  | 'CARDING'
+  | 'FRAUD'
+  | 'IDENTITY_THEFT'
+  | 'CORPORATE_ESPIONAGE'
+  | 'NATION_STATE'
+  | 'HACKTIVISM'
+  | 'TERRORISM'
+  | 'CHILD_EXPLOITATION'
+  | 'DRUG_TRAFFICKING'
+  | 'WEAPONS'
+  | 'HUMAN_TRAFFICKING'
+  | 'MONEY_LAUNDERING'
+  | 'CRYPTOCURRENCY_FRAUD';
+
+export type MonitoringMode =
+  | 'PASSIVE'
+  | 'ACTIVE'
+  | 'STEALTH'
+  | 'AGGRESSIVE';
+
+export type AlertSeverity =
+  | 'CRITICAL'
+  | 'HIGH'
+  | 'MEDIUM'
+  | 'LOW'
+  | 'INFORMATIONAL';
+
+export type ContentClassification =
+  | 'BENIGN'
+  | 'SUSPICIOUS'
+  | 'MALICIOUS'
+  | 'ILLEGAL'
+  | 'UNKNOWN';
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// DARK WEB INTELLIGENCE CONFIGURATION
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface DarkWebIntelligenceConfig {
+  readonly platformId: string;
+  readonly name: string;
+  readonly version: string;
+  readonly mode: MonitoringMode;
+  readonly networks: NetworksConfig;
+  readonly monitoring: MonitoringConfig;
+  readonly collection: CollectionConfig;
+  readonly analysis: AnalysisConfig;
+  readonly alerting: AlertingConfig;
+  readonly storage: StorageConfig;
+  readonly security: SecurityConfig;
+  readonly metadata: PlatformMetadata;
+}
+
+export interface NetworksConfig {
+  readonly tor: TorConfig;
+  readonly i2p: I2PConfig;
+  readonly freenet: FreenetConfig | null;
+  readonly zeronet: ZeronetConfig | null;
+  readonly lokinet: LokinetConfig | null;
+}
+
+export interface TorConfig {
+  readonly enabled: boolean;
+  readonly socksProxy: ProxyConfig;
+  readonly controlPort: ControlPortConfig;
+  readonly bridges: readonly BridgeConfig[];
+  readonly circuitConfig: CircuitConfig;
+  readonly hiddenServiceConfig: HiddenServiceMonitorConfig;
+  readonly exitPolicy: ExitPolicyConfig;
+}
+
+export interface ProxyConfig {
+  readonly host: string;
+  readonly port: number;
+  readonly username: string | null;
+  readonly password: string | null;
+  readonly timeout: number;
+}
+
+export interface ControlPortConfig {
+  readonly host: string;
+  readonly port: number;
+  readonly password: string | null;
+  readonly cookieAuth: boolean;
+}
+
+export interface BridgeConfig {
+  readonly type: 'OBFS4' | 'MEEK' | 'SNOWFLAKE' | 'WEBTUNNEL';
+  readonly address: string;
+  readonly fingerprint: string;
+  readonly transport: string | null;
+}
+
+export interface CircuitConfig {
+  readonly maxCircuits: number;
+  readonly circuitTimeout: number;
+  readonly circuitBuildTimeout: number;
+  readonly newCircuitPeriod: number;
+  readonly enforceDistinctSubnets: boolean;
+  readonly excludeNodes: readonly string[];
+  readonly excludeExitNodes: readonly string[];
+  readonly strictNodes: boolean;
+}
+
+export interface HiddenServiceMonitorConfig {
+  readonly maxConcurrentConnections: number;
+  readonly connectionTimeout: number;
+  readonly retryAttempts: number;
+  readonly retryDelay: number;
+  readonly circuitIsolation: boolean;
+}
+
+export interface ExitPolicyConfig {
+  readonly rejectPlaintext: boolean;
+  readonly allowedPorts: readonly number[];
+  readonly blockedPorts: readonly number[];
+}
+
+export interface I2PConfig {
+  readonly enabled: boolean;
+  readonly samBridge: SAMBridgeConfig;
+  readonly tunnelConfig: TunnelConfig;
+  readonly floodfillConfig: FloodfillConfig;
+}
+
+export interface SAMBridgeConfig {
+  readonly host: string;
+  readonly port: number;
+  readonly timeout: number;
+}
+
+export interface TunnelConfig {
+  readonly inboundLength: number;
+  readonly outboundLength: number;
+  readonly inboundQuantity: number;
+  readonly outboundQuantity: number;
+  readonly inboundBackupQuantity: number;
+  readonly outboundBackupQuantity: number;
+}
+
+export interface FloodfillConfig {
+  readonly enabled: boolean;
+  readonly participateInFloodfill: boolean;
+}
+
+export interface FreenetConfig {
+  readonly enabled: boolean;
+  readonly fcpHost: string;
+  readonly fcpPort: number;
+  readonly timeout: number;
+}
+
+export interface ZeronetConfig {
+  readonly enabled: boolean;
+  readonly uiHost: string;
+  readonly uiPort: number;
+  readonly fileserverPort: number;
+  readonly timeout: number;
+}
+
+export interface LokinetConfig {
+  readonly enabled: boolean;
+  readonly rpcHost: string;
+  readonly rpcPort: number;
+  readonly timeout: number;
+}
+
+export interface MonitoringConfig {
+  readonly targets: MonitoringTargetsConfig;
+  readonly keywords: KeywordMonitoringConfig;
+  readonly credentials: CredentialMonitoringConfig;
+  readonly ransomware: RansomwareMonitoringConfig;
+  readonly marketplace: MarketplaceMonitoringConfig;
+  readonly forum: ForumMonitoringConfig;
+  readonly pasteSite: PasteSiteMonitoringConfig;
+  readonly scheduling: SchedulingConfig;
+}
+
+export interface MonitoringTargetsConfig {
+  readonly onionAddresses: readonly OnionTarget[];
+  readonly i2pAddresses: readonly I2PTarget[];
+  readonly keywords: readonly string[];
+  readonly domains: readonly string[];
+  readonly emails: readonly string[];
+  readonly usernames: readonly string[];
+  readonly ipAddresses: readonly string[];
+  readonly creditCards: readonly string[];
+  readonly cryptoAddresses: readonly string[];
+  readonly customPatterns: readonly CustomPattern[];
+}
+
+export interface OnionTarget {
+  readonly address: string;
+  readonly name: string | null;
+  readonly type: HiddenServiceType;
+  readonly priority: number;
+  readonly monitoringInterval: number;
+  readonly enabled: boolean;
+}
+
+export interface I2PTarget {
+  readonly address: string;
+  readonly name: string | null;
+  readonly type: HiddenServiceType;
+  readonly priority: number;
+  readonly monitoringInterval: number;
+  readonly enabled: boolean;
+}
+
+export interface CustomPattern {
+  readonly patternId: string;
+  readonly name: string;
+  readonly pattern: string;
+  readonly type: 'REGEX' | 'LITERAL' | 'FUZZY';
+  readonly caseSensitive: boolean;
+  readonly category: ThreatCategory;
+  readonly severity: AlertSeverity;
+}
+
+export interface KeywordMonitoringConfig {
+  readonly enabled: boolean;
+  readonly keywords: readonly KeywordConfig[];
+  readonly fuzzyMatching: boolean;
+  readonly fuzzyThreshold: number;
+  readonly contextWindow: number;
+  readonly excludePatterns: readonly string[];
+}
+
+export interface KeywordConfig {
+  readonly keyword: string;
+  readonly category: ThreatCategory;
+  readonly severity: AlertSeverity;
+  readonly aliases: readonly string[];
+  readonly languages: readonly string[];
+}
+
+export interface CredentialMonitoringConfig {
+  readonly enabled: boolean;
+  readonly domains: readonly string[];
+  readonly emails: readonly string[];
+  readonly usernames: readonly string[];
+  readonly hashTypes: readonly HashType[];
+  readonly checkPwnedPasswords: boolean;
+  readonly alertOnPartialMatch: boolean;
+}
+
+export type HashType =
+  | 'MD5'
+  | 'SHA1'
+  | 'SHA256'
+  | 'SHA512'
+  | 'BCRYPT'
+  | 'SCRYPT'
+  | 'ARGON2'
+  | 'NTLM'
+  | 'LM'
+  | 'MYSQL'
+  | 'MSSQL'
+  | 'ORACLE'
+  | 'POSTGRES';
+
+export interface RansomwareMonitoringConfig {
+  readonly enabled: boolean;
+  readonly groups: readonly RansomwareGroupConfig[];
+  readonly victimKeywords: readonly string[];
+  readonly monitorLeakSites: boolean;
+  readonly monitorNegotiations: boolean;
+  readonly trackPayments: boolean;
+}
+
+export interface RansomwareGroupConfig {
+  readonly groupId: string;
+  readonly name: string;
+  readonly aliases: readonly string[];
+  readonly knownSites: readonly string[];
+  readonly ttps: readonly string[];
+  readonly active: boolean;
+}
+
+export interface MarketplaceMonitoringConfig {
+  readonly enabled: boolean;
+  readonly marketplaces: readonly MarketplaceConfig[];
+  readonly categories: readonly MarketplaceCategory[];
+  readonly priceAlerts: readonly PriceAlertConfig[];
+  readonly vendorTracking: boolean;
+  readonly productTracking: boolean;
+}
+
+export interface MarketplaceConfig {
+  readonly marketplaceId: string;
+  readonly name: string;
+  readonly address: string;
+  readonly network: DarkWebNetwork;
+  readonly type: MarketplaceType;
+  readonly active: boolean;
+  readonly authentication: MarketplaceAuthConfig | null;
+}
+
+export type MarketplaceType =
+  | 'GENERAL'
+  | 'DRUGS'
+  | 'FRAUD'
+  | 'CARDING'
+  | 'HACKING'
+  | 'WEAPONS'
+  | 'COUNTERFEIT'
+  | 'DIGITAL_GOODS';
+
+export interface MarketplaceAuthConfig {
+  readonly username: string;
+  readonly password: string;
+  readonly pgpKey: string | null;
+  readonly twoFactorSecret: string | null;
+}
+
+export type MarketplaceCategory =
+  | 'CREDENTIALS'
+  | 'CREDIT_CARDS'
+  | 'BANK_ACCOUNTS'
+  | 'FULLZ'
+  | 'DUMPS'
+  | 'EXPLOITS'
+  | 'MALWARE'
+  | 'BOTNETS'
+  | 'DDOS_SERVICES'
+  | 'HACKING_SERVICES'
+  | 'DOCUMENTS'
+  | 'ACCOUNTS'
+  | 'DATABASES'
+  | 'CORPORATE_DATA';
+
+export interface PriceAlertConfig {
+  readonly category: MarketplaceCategory;
+  readonly maxPrice: number;
+  readonly currency: string;
+  readonly keywords: readonly string[];
+}
+
+export interface ForumMonitoringConfig {
+  readonly enabled: boolean;
+  readonly forums: readonly ForumConfig[];
+  readonly sections: readonly string[];
+  readonly userTracking: readonly string[];
+  readonly threadTracking: readonly string[];
+}
+
+export interface ForumConfig {
+  readonly forumId: string;
+  readonly name: string;
+  readonly address: string;
+  readonly network: DarkWebNetwork;
+  readonly type: ForumType;
+  readonly active: boolean;
+  readonly authentication: ForumAuthConfig | null;
+}
+
+export type ForumType =
+  | 'HACKING'
+  | 'CARDING'
+  | 'FRAUD'
+  | 'MALWARE'
+  | 'LEAKS'
+  | 'GENERAL'
+  | 'POLITICAL'
+  | 'WHISTLEBLOWER';
+
+export interface ForumAuthConfig {
+  readonly username: string;
+  readonly password: string;
+  readonly inviteCode: string | null;
+}
+
+export interface PasteSiteMonitoringConfig {
+  readonly enabled: boolean;
+  readonly sites: readonly PasteSiteConfig[];
+  readonly keywords: readonly string[];
+  readonly patterns: readonly string[];
+  readonly maxPasteAge: number;
+}
+
+export interface PasteSiteConfig {
+  readonly siteId: string;
+  readonly name: string;
+  readonly address: string;
+  readonly network: DarkWebNetwork;
+  readonly apiEndpoint: string | null;
+  readonly active: boolean;
+}
+
+export interface SchedulingConfig {
+  readonly defaultInterval: number;
+  readonly priorityIntervals: Readonly<Record<number, number>>;
+  readonly maxConcurrentTasks: number;
+  readonly retryPolicy: RetryPolicyConfig;
+  readonly blackoutPeriods: readonly BlackoutPeriod[];
+}
+
+export interface RetryPolicyConfig {
+  readonly maxRetries: number;
+  readonly initialDelay: number;
+  readonly maxDelay: number;
+  readonly backoffMultiplier: number;
+}
+
+export interface BlackoutPeriod {
+  readonly startTime: string;
+  readonly endTime: string;
+  readonly daysOfWeek: readonly number[];
+}
+
+export interface CollectionConfig {
+  readonly crawling: CrawlingConfig;
+  readonly scraping: ScrapingConfig;
+  readonly archiving: ArchivingConfig;
+  readonly deduplication: DeduplicationConfig;
+}
+
+export interface CrawlingConfig {
+  readonly enabled: boolean;
+  readonly maxDepth: number;
+  readonly maxPages: number;
+  readonly followLinks: boolean;
+  readonly respectRobots: boolean;
+  readonly userAgent: string;
+  readonly timeout: number;
+  readonly delay: number;
+  readonly jitter: number;
+}
+
+export interface ScrapingConfig {
+  readonly enabled: boolean;
+  readonly javascript: boolean;
+  readonly screenshots: boolean;
+  readonly fullPage: boolean;
+  readonly extractText: boolean;
+  readonly extractLinks: boolean;
+  readonly extractImages: boolean;
+  readonly extractForms: boolean;
+}
+
+export interface ArchivingConfig {
+  readonly enabled: boolean;
+  readonly format: 'WARC' | 'HAR' | 'MHTML' | 'PDF';
+  readonly compression: boolean;
+  readonly includeResources: boolean;
+  readonly maxArchiveSize: number;
+}
+
+export interface DeduplicationConfig {
+  readonly enabled: boolean;
+  readonly method: 'HASH' | 'SIMHASH' | 'MINHASH';
+  readonly threshold: number;
+}
+
+export interface AnalysisConfig {
+  readonly nlp: NLPConfig;
+  readonly entityExtraction: EntityExtractionConfig;
+  readonly sentimentAnalysis: SentimentAnalysisConfig;
+  readonly topicModeling: TopicModelingConfig;
+  readonly threatScoring: ThreatScoringConfig;
+  readonly attribution: AttributionConfig;
+}
+
+export interface NLPConfig {
+  readonly enabled: boolean;
+  readonly languages: readonly string[];
+  readonly translateToEnglish: boolean;
+  readonly detectLanguage: boolean;
+}
+
+export interface EntityExtractionConfig {
+  readonly enabled: boolean;
+  readonly extractPersons: boolean;
+  readonly extractOrganizations: boolean;
+  readonly extractLocations: boolean;
+  readonly extractEmails: boolean;
+  readonly extractPhones: boolean;
+  readonly extractUrls: boolean;
+  readonly extractIps: boolean;
+  readonly extractHashes: boolean;
+  readonly extractCryptoAddresses: boolean;
+  readonly extractCreditCards: boolean;
+  readonly customEntities: readonly CustomEntityConfig[];
+}
+
+export interface CustomEntityConfig {
+  readonly entityId: string;
+  readonly name: string;
+  readonly pattern: string;
+  readonly type: string;
+}
+
+export interface SentimentAnalysisConfig {
+  readonly enabled: boolean;
+  readonly model: 'VADER' | 'TEXTBLOB' | 'CUSTOM';
+  readonly threshold: number;
+}
+
+export interface TopicModelingConfig {
+  readonly enabled: boolean;
+  readonly algorithm: 'LDA' | 'NMF' | 'LSA';
+  readonly numTopics: number;
+  readonly minDocuments: number;
+}
+
+export interface ThreatScoringConfig {
+  readonly enabled: boolean;
+  readonly factors: readonly ThreatFactor[];
+  readonly weights: Readonly<Record<string, number>>;
+  readonly thresholds: ThreatThresholds;
+}
+
+export interface ThreatFactor {
+  readonly factorId: string;
+  readonly name: string;
+  readonly weight: number;
+  readonly calculation: string;
+}
+
+export interface ThreatThresholds {
+  readonly critical: number;
+  readonly high: number;
+  readonly medium: number;
+  readonly low: number;
+}
+
+export interface AttributionConfig {
+  readonly enabled: boolean;
+  readonly trackActors: boolean;
+  readonly trackGroups: boolean;
+  readonly trackCampaigns: boolean;
+  readonly correlateIndicators: boolean;
+}
+
+export interface AlertingConfig {
+  readonly enabled: boolean;
+  readonly channels: readonly AlertChannelConfig[];
+  readonly rules: readonly AlertRuleConfig[];
+  readonly escalation: EscalationConfig;
+  readonly deduplication: AlertDeduplicationConfig;
+}
+
+export interface AlertChannelConfig {
+  readonly channelId: string;
+  readonly name: string;
+  readonly type: 'EMAIL' | 'WEBHOOK' | 'SLACK' | 'TEAMS' | 'PAGERDUTY' | 'SIEM';
+  readonly config: Readonly<Record<string, unknown>>;
+  readonly enabled: boolean;
+}
+
+export interface AlertRuleConfig {
+  readonly ruleId: string;
+  readonly name: string;
+  readonly condition: string;
+  readonly severity: AlertSeverity;
+  readonly channels: readonly string[];
+  readonly cooldown: number;
+  readonly enabled: boolean;
+}
+
+export interface EscalationConfig {
+  readonly enabled: boolean;
+  readonly levels: readonly EscalationLevel[];
+  readonly autoEscalate: boolean;
+  readonly escalationDelay: number;
+}
+
+export interface EscalationLevel {
+  readonly level: number;
+  readonly channels: readonly string[];
+  readonly delay: number;
+}
+
+export interface AlertDeduplicationConfig {
+  readonly enabled: boolean;
+  readonly window: number;
+  readonly fields: readonly string[];
+}
+
+export interface StorageConfig {
+  readonly type: 'FILESYSTEM' | 'DATABASE' | 'OBJECT_STORAGE';
+  readonly path: string;
+  readonly encryption: EncryptionConfig;
+  readonly retention: RetentionConfig;
+  readonly backup: BackupConfig;
+}
+
+export interface EncryptionConfig {
+  readonly enabled: boolean;
+  readonly algorithm: 'AES_256_GCM' | 'CHACHA20_POLY1305';
+  readonly keyManagement: 'LOCAL' | 'HSM' | 'KMS';
+}
+
+export interface RetentionConfig {
+  readonly enabled: boolean;
+  readonly maxAge: number;
+  readonly maxSize: number;
+  readonly archiveOld: boolean;
+}
+
+export interface BackupConfig {
+  readonly enabled: boolean;
+  readonly interval: number;
+  readonly retention: number;
+  readonly destination: string;
+}
+
+export interface SecurityConfig {
+  readonly authentication: AuthenticationConfig;
+  readonly authorization: AuthorizationConfig;
+  readonly audit: AuditConfig;
+  readonly operationalSecurity: OpSecConfig;
+}
+
+export interface AuthenticationConfig {
+  readonly enabled: boolean;
+  readonly methods: readonly ('API_KEY' | 'BEARER' | 'MTLS')[];
+  readonly sessionTimeout: number;
+}
+
+export interface AuthorizationConfig {
+  readonly enabled: boolean;
+  readonly model: 'RBAC' | 'ABAC';
+  readonly defaultRole: string;
+}
+
+export interface AuditConfig {
+  readonly enabled: boolean;
+  readonly logAccess: boolean;
+  readonly logSearches: boolean;
+  readonly logAlerts: boolean;
+  readonly retention: number;
+}
+
+export interface OpSecConfig {
+  readonly rotateCircuits: boolean;
+  readonly circuitRotationInterval: number;
+  readonly useMultipleIdentities: boolean;
+  readonly randomizeTimings: boolean;
+  readonly minimizeFingerprint: boolean;
+}
+
+export interface PlatformMetadata {
+  readonly createdAt: number;
+  readonly updatedAt: number;
+  readonly createdBy: string;
+  readonly version: string;
+  readonly tags: readonly string[];
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// INTELLIGENCE RESULT TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface IntelligenceReport {
+  readonly reportId: string;
+  readonly platformId: string;
+  readonly type: ReportType;
+  readonly title: string;
+  readonly summary: string;
+  readonly severity: AlertSeverity;
+  readonly classification: ContentClassification;
+  readonly findings: readonly IntelligenceFinding[];
+  readonly indicators: readonly ThreatIndicator[];
+  readonly entities: readonly ExtractedEntity[];
+  readonly recommendations: readonly Recommendation[];
+  readonly timeline: readonly TimelineEvent[];
+  readonly relatedReports: readonly string[];
+  readonly createdAt: number;
+  readonly updatedAt: number;
+  readonly metadata: ReportMetadata;
+}
+
+export type ReportType =
+  | 'CREDENTIAL_LEAK'
+  | 'DATA_BREACH'
+  | 'RANSOMWARE_ACTIVITY'
+  | 'THREAT_ACTOR'
+  | 'MARKETPLACE_LISTING'
+  | 'FORUM_DISCUSSION'
+  | 'PASTE_CONTENT'
+  | 'VULNERABILITY'
+  | 'CAMPAIGN'
+  | 'TREND_ANALYSIS';
+
+export interface IntelligenceFinding {
+  readonly findingId: string;
+  readonly type: FindingType;
+  readonly title: string;
+  readonly description: string;
+  readonly severity: AlertSeverity;
+  readonly confidence: number;
+  readonly source: SourceInfo;
+  readonly evidence: readonly Evidence[];
+  readonly affectedAssets: readonly AffectedAsset[];
+  readonly mitreTechniques: readonly string[];
+  readonly timestamp: number;
+}
+
+export type FindingType =
+  | 'CREDENTIAL_EXPOSURE'
+  | 'PII_EXPOSURE'
+  | 'FINANCIAL_DATA'
+  | 'CORPORATE_DATA'
+  | 'MALWARE_DISTRIBUTION'
+  | 'EXPLOIT_SALE'
+  | 'SERVICE_OFFERING'
+  | 'THREAT_DISCUSSION'
+  | 'ACTOR_ACTIVITY'
+  | 'INFRASTRUCTURE';
+
+export interface SourceInfo {
+  readonly sourceId: string;
+  readonly type: SourceType;
+  readonly name: string;
+  readonly address: string;
+  readonly network: DarkWebNetwork;
+  readonly reliability: number;
+  readonly lastAccessed: number;
+}
+
+export type SourceType =
+  | 'HIDDEN_SERVICE'
+  | 'MARKETPLACE'
+  | 'FORUM'
+  | 'PASTE_SITE'
+  | 'LEAK_SITE'
+  | 'CHAT_CHANNEL'
+  | 'SOCIAL_MEDIA';
+
+export interface Evidence {
+  readonly evidenceId: string;
+  readonly type: EvidenceType;
+  readonly content: string;
+  readonly hash: string;
+  readonly screenshot: string | null;
+  readonly archive: string | null;
+  readonly timestamp: number;
+  readonly metadata: Readonly<Record<string, unknown>>;
+}
+
+export type EvidenceType =
+  | 'TEXT'
+  | 'IMAGE'
+  | 'FILE'
+  | 'SCREENSHOT'
+  | 'ARCHIVE'
+  | 'LOG';
+
+export interface AffectedAsset {
+  readonly assetId: string;
+  readonly type: AssetType;
+  readonly identifier: string;
+  readonly description: string | null;
+  readonly owner: string | null;
+  readonly sensitivity: 'PUBLIC' | 'INTERNAL' | 'CONFIDENTIAL' | 'RESTRICTED';
+}
+
+export type AssetType =
+  | 'DOMAIN'
+  | 'EMAIL'
+  | 'USERNAME'
+  | 'PASSWORD'
+  | 'CREDIT_CARD'
+  | 'BANK_ACCOUNT'
+  | 'SSN'
+  | 'PASSPORT'
+  | 'DRIVER_LICENSE'
+  | 'IP_ADDRESS'
+  | 'DATABASE'
+  | 'SOURCE_CODE'
+  | 'DOCUMENT'
+  | 'API_KEY'
+  | 'CRYPTO_WALLET';
+
+export interface ThreatIndicator {
+  readonly indicatorId: string;
+  readonly type: IndicatorType;
+  readonly value: string;
+  readonly confidence: number;
+  readonly firstSeen: number;
+  readonly lastSeen: number;
+  readonly sources: readonly string[];
+  readonly tags: readonly string[];
+  readonly context: string | null;
+}
+
+export type IndicatorType =
+  | 'IP_ADDRESS'
+  | 'DOMAIN'
+  | 'URL'
+  | 'EMAIL'
+  | 'FILE_HASH_MD5'
+  | 'FILE_HASH_SHA1'
+  | 'FILE_HASH_SHA256'
+  | 'BITCOIN_ADDRESS'
+  | 'ETHEREUM_ADDRESS'
+  | 'MONERO_ADDRESS'
+  | 'PGP_FINGERPRINT'
+  | 'USERNAME'
+  | 'PHONE_NUMBER'
+  | 'CVE'
+  | 'YARA_RULE';
+
+export interface ExtractedEntity {
+  readonly entityId: string;
+  readonly type: EntityType;
+  readonly value: string;
+  readonly normalizedValue: string;
+  readonly confidence: number;
+  readonly context: string;
+  readonly source: string;
+  readonly timestamp: number;
+}
+
+export type EntityType =
+  | 'PERSON'
+  | 'ORGANIZATION'
+  | 'LOCATION'
+  | 'EMAIL'
+  | 'PHONE'
+  | 'URL'
+  | 'IP_ADDRESS'
+  | 'HASH'
+  | 'CRYPTO_ADDRESS'
+  | 'CREDIT_CARD'
+  | 'SSN'
+  | 'DATE'
+  | 'MONEY'
+  | 'PRODUCT'
+  | 'MALWARE'
+  | 'VULNERABILITY';
+
+export interface Recommendation {
+  readonly recommendationId: string;
+  readonly priority: 'IMMEDIATE' | 'SHORT_TERM' | 'LONG_TERM';
+  readonly category: RecommendationCategory;
+  readonly title: string;
+  readonly description: string;
+  readonly actions: readonly string[];
+  readonly resources: readonly string[];
+}
+
+export type RecommendationCategory =
+  | 'CREDENTIAL_RESET'
+  | 'ACCESS_REVOCATION'
+  | 'MONITORING_ENHANCEMENT'
+  | 'INCIDENT_RESPONSE'
+  | 'LEGAL_ACTION'
+  | 'COMMUNICATION'
+  | 'TECHNICAL_REMEDIATION';
+
+export interface TimelineEvent {
+  readonly eventId: string;
+  readonly timestamp: number;
+  readonly type: TimelineEventType;
+  readonly description: string;
+  readonly source: string | null;
+  readonly actor: string | null;
+  readonly details: Readonly<Record<string, unknown>>;
+}
+
+export type TimelineEventType =
+  | 'DISCOVERY'
+  | 'PUBLICATION'
+  | 'UPDATE'
+  | 'REMOVAL'
+  | 'ACTOR_ACTION'
+  | 'SYSTEM_ACTION';
+
+export interface ReportMetadata {
+  readonly author: string;
+  readonly reviewedBy: string | null;
+  readonly classification: string;
+  readonly tlp: 'WHITE' | 'GREEN' | 'AMBER' | 'RED';
+  readonly tags: readonly string[];
+  readonly version: number;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// CREDENTIAL LEAK TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface CredentialLeak {
+  readonly leakId: string;
+  readonly name: string;
+  readonly description: string;
+  readonly source: LeakSource;
+  readonly discoveryDate: number;
+  readonly breachDate: number | null;
+  readonly recordCount: number;
+  readonly dataTypes: readonly DataType[];
+  readonly affectedDomains: readonly string[];
+  readonly credentials: readonly LeakedCredential[];
+  readonly statistics: LeakStatistics;
+  readonly metadata: LeakMetadata;
+}
+
+export interface LeakSource {
+  readonly type: LeakSourceType;
+  readonly name: string;
+  readonly address: string | null;
+  readonly network: DarkWebNetwork | null;
+  readonly reliability: number;
+}
+
+export type LeakSourceType =
+  | 'PASTE_SITE'
+  | 'FORUM'
+  | 'MARKETPLACE'
+  | 'LEAK_SITE'
+  | 'DIRECT_SHARE'
+  | 'RANSOMWARE_BLOG'
+  | 'UNKNOWN';
+
+export type DataType =
+  | 'EMAIL'
+  | 'USERNAME'
+  | 'PASSWORD_PLAINTEXT'
+  | 'PASSWORD_HASH'
+  | 'PHONE'
+  | 'NAME'
+  | 'ADDRESS'
+  | 'DOB'
+  | 'SSN'
+  | 'CREDIT_CARD'
+  | 'BANK_ACCOUNT'
+  | 'IP_ADDRESS'
+  | 'DEVICE_ID'
+  | 'SESSION_TOKEN'
+  | 'API_KEY'
+  | 'PRIVATE_KEY';
+
+export interface LeakedCredential {
+  readonly credentialId: string;
+  readonly email: string | null;
+  readonly username: string | null;
+  readonly password: PasswordInfo | null;
+  readonly domain: string | null;
+  readonly additionalData: Readonly<Record<string, string>>;
+  readonly hash: string;
+  readonly firstSeen: number;
+  readonly lastSeen: number;
+}
+
+export interface PasswordInfo {
+  readonly value: string;
+  readonly type: 'PLAINTEXT' | 'HASH';
+  readonly hashType: HashType | null;
+  readonly cracked: boolean;
+  readonly crackedValue: string | null;
+  readonly strength: 'WEAK' | 'MEDIUM' | 'STRONG' | 'UNKNOWN';
+}
+
+export interface LeakStatistics {
+  readonly totalRecords: number;
+  readonly uniqueEmails: number;
+  readonly uniqueUsernames: number;
+  readonly uniqueDomains: number;
+  readonly plaintextPasswords: number;
+  readonly hashedPasswords: number;
+  readonly crackedPasswords: number;
+  readonly topDomains: readonly DomainCount[];
+  readonly topHashTypes: readonly HashTypeCount[];
+  readonly passwordStrengthDistribution: PasswordStrengthDistribution;
+}
+
+export interface DomainCount {
+  readonly domain: string;
+  readonly count: number;
+}
+
+export interface HashTypeCount {
+  readonly hashType: HashType;
+  readonly count: number;
+}
+
+export interface PasswordStrengthDistribution {
+  readonly weak: number;
+  readonly medium: number;
+  readonly strong: number;
+  readonly unknown: number;
+}
+
+export interface LeakMetadata {
+  readonly discoveredBy: string;
+  readonly verifiedBy: string | null;
+  readonly verified: boolean;
+  readonly tags: readonly string[];
+  readonly notes: string | null;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// RANSOMWARE TRACKING TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface RansomwareIncident {
+  readonly incidentId: string;
+  readonly group: RansomwareGroup;
+  readonly victim: VictimInfo;
+  readonly timeline: RansomwareTimeline;
+  readonly demands: RansomwareDemands;
+  readonly leakedData: LeakedDataInfo | null;
+  readonly negotiations: readonly NegotiationEvent[];
+  readonly payment: PaymentInfo | null;
+  readonly indicators: readonly ThreatIndicator[];
+  readonly metadata: IncidentMetadata;
+}
+
+export interface RansomwareGroup {
+  readonly groupId: string;
+  readonly name: string;
+  readonly aliases: readonly string[];
+  readonly firstSeen: number;
+  readonly lastSeen: number;
+  readonly active: boolean;
+  readonly leakSites: readonly string[];
+  readonly contactMethods: readonly ContactMethod[];
+  readonly ttps: readonly string[];
+  readonly targetedSectors: readonly string[];
+  readonly targetedCountries: readonly string[];
+  readonly affiliateProgram: boolean;
+  readonly raasModel: boolean;
+  readonly encryptionInfo: EncryptionInfo;
+  readonly statistics: GroupStatistics;
+}
+
+export interface ContactMethod {
+  readonly type: 'TOR_CHAT' | 'EMAIL' | 'JABBER' | 'TOX' | 'SESSION' | 'TELEGRAM';
+  readonly value: string;
+  readonly active: boolean;
+}
+
+export interface EncryptionInfo {
+  readonly algorithm: string | null;
+  readonly extension: string | null;
+  readonly ransomNote: string | null;
+  readonly decryptorAvailable: boolean;
+}
+
+export interface GroupStatistics {
+  readonly totalVictims: number;
+  readonly confirmedPayments: number;
+  readonly estimatedRevenue: number;
+  readonly averageDemand: number;
+  readonly averagePayment: number;
+  readonly paymentRate: number;
+}
+
+export interface VictimInfo {
+  readonly victimId: string;
+  readonly name: string;
+  readonly domain: string | null;
+  readonly sector: string;
+  readonly country: string;
+  readonly employeeCount: number | null;
+  readonly revenue: number | null;
+  readonly description: string | null;
+}
+
+export interface RansomwareTimeline {
+  readonly attackDate: number | null;
+  readonly discoveryDate: number | null;
+  readonly publicationDate: number;
+  readonly deadlineDate: number | null;
+  readonly leakDate: number | null;
+  readonly removalDate: number | null;
+}
+
+export interface RansomwareDemands {
+  readonly initialDemand: number | null;
+  readonly currency: string;
+  readonly cryptoCurrency: string | null;
+  readonly walletAddress: string | null;
+  readonly deadline: number | null;
+  readonly threatDescription: string | null;
+}
+
+export interface LeakedDataInfo {
+  readonly totalSize: number;
+  readonly fileCount: number;
+  readonly dataTypes: readonly string[];
+  readonly sampleAvailable: boolean;
+  readonly fullLeakAvailable: boolean;
+  readonly downloadLinks: readonly string[];
+}
+
+export interface NegotiationEvent {
+  readonly eventId: string;
+  readonly timestamp: number;
+  readonly type: NegotiationType;
+  readonly actor: 'VICTIM' | 'ATTACKER' | 'UNKNOWN';
+  readonly content: string;
+  readonly amount: number | null;
+}
+
+export type NegotiationType =
+  | 'INITIAL_CONTACT'
+  | 'DEMAND'
+  | 'COUNTER_OFFER'
+  | 'PROOF_OF_DATA'
+  | 'DEADLINE_EXTENSION'
+  | 'THREAT'
+  | 'AGREEMENT'
+  | 'PAYMENT_INSTRUCTION'
+  | 'DECRYPTOR_DELIVERY'
+  | 'DISPUTE';
+
+export interface PaymentInfo {
+  readonly paid: boolean;
+  readonly amount: number | null;
+  readonly currency: string | null;
+  readonly transactionId: string | null;
+  readonly walletAddress: string | null;
+  readonly paymentDate: number | null;
+  readonly decryptorReceived: boolean;
+  readonly dataDeleted: boolean;
+}
+
+export interface IncidentMetadata {
+  readonly discoveredBy: string;
+  readonly verifiedBy: string | null;
+  readonly verified: boolean;
+  readonly confidence: number;
+  readonly tags: readonly string[];
+  readonly notes: string | null;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// THREAT ACTOR TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface ThreatActor {
+  readonly actorId: string;
+  readonly name: string;
+  readonly aliases: readonly string[];
+  readonly type: ThreatActorType;
+  readonly motivation: readonly ThreatMotivation[];
+  readonly sophistication: SophisticationLevel;
+  readonly resourceLevel: ResourceLevel;
+  readonly primaryLanguage: string | null;
+  readonly country: string | null;
+  readonly firstSeen: number;
+  readonly lastSeen: number;
+  readonly active: boolean;
+  readonly profiles: readonly ActorProfile[];
+  readonly infrastructure: ActorInfrastructure;
+  readonly ttps: readonly TTPInfo[];
+  readonly targets: ActorTargets;
+  readonly campaigns: readonly CampaignInfo[];
+  readonly relationships: readonly ActorRelationship[];
+  readonly indicators: readonly ThreatIndicator[];
+  readonly metadata: ActorMetadata;
+}
+
+export type ThreatActorType =
+  | 'NATION_STATE'
+  | 'CRIMINAL'
+  | 'HACKTIVIST'
+  | 'INSIDER'
+  | 'TERRORIST'
+  | 'COMPETITOR'
+  | 'UNKNOWN';
+
+export type ThreatMotivation =
+  | 'FINANCIAL'
+  | 'ESPIONAGE'
+  | 'SABOTAGE'
+  | 'IDEOLOGY'
+  | 'REVENGE'
+  | 'NOTORIETY'
+  | 'UNKNOWN';
+
+export type SophisticationLevel =
+  | 'NONE'
+  | 'MINIMAL'
+  | 'INTERMEDIATE'
+  | 'ADVANCED'
+  | 'EXPERT'
+  | 'INNOVATOR';
+
+export type ResourceLevel =
+  | 'INDIVIDUAL'
+  | 'CLUB'
+  | 'CONTEST'
+  | 'TEAM'
+  | 'ORGANIZATION'
+  | 'GOVERNMENT';
+
+export interface ActorProfile {
+  readonly profileId: string;
+  readonly platform: string;
+  readonly username: string;
+  readonly url: string | null;
+  readonly registrationDate: number | null;
+  readonly lastActivity: number | null;
+  readonly reputation: number | null;
+  readonly posts: number | null;
+  readonly verified: boolean;
+}
+
+export interface ActorInfrastructure {
+  readonly domains: readonly string[];
+  readonly ipAddresses: readonly string[];
+  readonly emailAddresses: readonly string[];
+  readonly cryptoWallets: readonly CryptoWallet[];
+  readonly pgpKeys: readonly PGPKeyInfo[];
+  readonly hiddenServices: readonly string[];
+}
+
+export interface CryptoWallet {
+  readonly address: string;
+  readonly currency: string;
+  readonly firstSeen: number;
+  readonly lastSeen: number;
+  readonly transactionCount: number;
+  readonly totalReceived: number;
+  readonly totalSent: number;
+}
+
+export interface PGPKeyInfo {
+  readonly fingerprint: string;
+  readonly keyId: string;
+  readonly algorithm: string;
+  readonly bits: number;
+  readonly created: number;
+  readonly expires: number | null;
+  readonly userIds: readonly string[];
+}
+
+export interface TTPInfo {
+  readonly ttpId: string;
+  readonly mitreId: string;
+  readonly name: string;
+  readonly tactic: string;
+  readonly technique: string;
+  readonly subTechnique: string | null;
+  readonly description: string;
+  readonly confidence: number;
+  readonly firstSeen: number;
+  readonly lastSeen: number;
+}
+
+export interface ActorTargets {
+  readonly sectors: readonly string[];
+  readonly countries: readonly string[];
+  readonly organizations: readonly string[];
+  readonly technologies: readonly string[];
+}
+
+export interface CampaignInfo {
+  readonly campaignId: string;
+  readonly name: string;
+  readonly description: string;
+  readonly startDate: number;
+  readonly endDate: number | null;
+  readonly active: boolean;
+  readonly objectives: readonly string[];
+  readonly victims: readonly string[];
+}
+
+export interface ActorRelationship {
+  readonly relationshipId: string;
+  readonly relatedActorId: string;
+  readonly relatedActorName: string;
+  readonly relationshipType: RelationshipType;
+  readonly confidence: number;
+  readonly description: string | null;
+}
+
+export type RelationshipType =
+  | 'ALIAS'
+  | 'MEMBER_OF'
+  | 'AFFILIATED_WITH'
+  | 'SUCCESSOR_OF'
+  | 'PREDECESSOR_OF'
+  | 'COLLABORATES_WITH'
+  | 'COMPETES_WITH'
+  | 'TARGETS_SAME';
+
+export interface ActorMetadata {
+  readonly createdAt: number;
+  readonly updatedAt: number;
+  readonly createdBy: string;
+  readonly confidence: number;
+  readonly sources: readonly string[];
+  readonly tags: readonly string[];
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// NATIVE TOR PROTOCOL TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface NativeTorClient {
+  readonly clientId: string;
+  readonly config: TorClientConfig;
+  readonly circuits: readonly TorCircuit[];
+  readonly streams: readonly TorStream[];
+}
+
+export interface TorClientConfig {
+  readonly socksHost: string;
+  readonly socksPort: number;
+  readonly controlHost: string;
+  readonly controlPort: number;
+  readonly authMethod: 'NONE' | 'PASSWORD' | 'COOKIE';
+  readonly authValue: string | null;
+  readonly timeout: number;
+}
+
+export interface TorCircuit {
+  readonly circuitId: string;
+  readonly status: CircuitStatus;
+  readonly purpose: CircuitPurpose;
+  readonly path: readonly TorRelay[];
+  readonly buildTime: number;
+  readonly createdAt: number;
+}
+
+export type CircuitStatus =
+  | 'LAUNCHED'
+  | 'BUILT'
+  | 'EXTENDED'
+  | 'FAILED'
+  | 'CLOSED';
+
+export type CircuitPurpose =
+  | 'GENERAL'
+  | 'HS_CLIENT_INTRO'
+  | 'HS_CLIENT_REND'
+  | 'HS_SERVICE_INTRO'
+  | 'HS_SERVICE_REND'
+  | 'TESTING'
+  | 'CONTROLLER';
+
+export interface TorRelay {
+  readonly fingerprint: string;
+  readonly nickname: string;
+  readonly address: string;
+  readonly orPort: number;
+  readonly dirPort: number;
+  readonly flags: readonly RelayFlag[];
+  readonly bandwidth: number;
+  readonly country: string | null;
+}
+
+export type RelayFlag =
+  | 'AUTHORITY'
+  | 'BADEXIT'
+  | 'EXIT'
+  | 'FAST'
+  | 'GUARD'
+  | 'HSDIR'
+  | 'NAMED'
+  | 'STABLE'
+  | 'RUNNING'
+  | 'UNNAMED'
+  | 'VALID'
+  | 'V2DIR';
+
+export interface TorStream {
+  readonly streamId: string;
+  readonly circuitId: string;
+  readonly status: StreamStatus;
+  readonly target: string;
+  readonly targetPort: number;
+  readonly purpose: StreamPurpose;
+  readonly createdAt: number;
+}
+
+export type StreamStatus =
+  | 'NEW'
+  | 'NEWRESOLVE'
+  | 'REMAP'
+  | 'SENTCONNECT'
+  | 'SENTRESOLVE'
+  | 'SUCCEEDED'
+  | 'FAILED'
+  | 'CLOSED'
+  | 'DETACHED';
+
+export type StreamPurpose =
+  | 'DIR_FETCH'
+  | 'DIR_UPLOAD'
+  | 'DNS_REQUEST'
+  | 'DIRPORT_TEST'
+  | 'USER';
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// NATIVE I2P PROTOCOL TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface NativeI2PClient {
+  readonly clientId: string;
+  readonly config: I2PClientConfig;
+  readonly sessions: readonly I2PSession[];
+}
+
+export interface I2PClientConfig {
+  readonly samHost: string;
+  readonly samPort: number;
+  readonly timeout: number;
+  readonly inboundLength: number;
+  readonly outboundLength: number;
+}
+
+export interface I2PSession {
+  readonly sessionId: string;
+  readonly destination: string;
+  readonly style: SessionStyle;
+  readonly status: SessionStatus;
+  readonly createdAt: number;
+}
+
+export type SessionStyle =
+  | 'STREAM'
+  | 'DATAGRAM'
+  | 'RAW';
+
+export type SessionStatus =
+  | 'CREATED'
+  | 'CONNECTED'
+  | 'CLOSED'
+  | 'FAILED';
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// MONITORING SESSION TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface MonitoringSession {
+  readonly sessionId: string;
+  readonly platformId: string;
+  readonly state: SessionState;
+  readonly config: SessionConfig;
+  readonly progress: SessionProgress;
+  readonly statistics: SessionStatistics;
+  readonly findings: readonly IntelligenceFinding[];
+  readonly alerts: readonly Alert[];
+  readonly errors: readonly SessionError[];
+  readonly startTime: number;
+  readonly endTime: number | null;
+  readonly metadata: SessionMetadata;
+}
+
+export type SessionState =
+  | 'PENDING'
+  | 'INITIALIZING'
+  | 'RUNNING'
+  | 'PAUSED'
+  | 'STOPPING'
+  | 'COMPLETED'
+  | 'FAILED';
+
+export interface SessionConfig {
+  readonly targets: readonly string[];
+  readonly networks: readonly DarkWebNetwork[];
+  readonly keywords: readonly string[];
+  readonly duration: number | null;
+}
+
+export interface SessionProgress {
+  readonly phase: SessionPhase;
+  readonly percentage: number;
+  readonly targetsTotal: number;
+  readonly targetsProcessed: number;
+  readonly pagesProcessed: number;
+  readonly findingsCount: number;
+  readonly alertsCount: number;
+  readonly currentTarget: string | null;
+}
+
+export type SessionPhase =
+  | 'INITIALIZING'
+  | 'CONNECTING'
+  | 'CRAWLING'
+  | 'ANALYZING'
+  | 'ALERTING'
+  | 'FINALIZING';
+
+export interface SessionStatistics {
+  readonly targetsMonitored: number;
+  readonly pagesProcessed: number;
+  readonly bytesDownloaded: number;
+  readonly findingsTotal: number;
+  readonly findingsBySeverity: Readonly<Record<AlertSeverity, number>>;
+  readonly alertsGenerated: number;
+  readonly errorsEncountered: number;
+  readonly averageResponseTime: number;
+  readonly circuitsUsed: number;
+}
+
+export interface Alert {
+  readonly alertId: string;
+  readonly sessionId: string;
+  readonly ruleId: string;
+  readonly severity: AlertSeverity;
+  readonly title: string;
+  readonly description: string;
+  readonly finding: IntelligenceFinding;
+  readonly notified: boolean;
+  readonly acknowledged: boolean;
+  readonly timestamp: number;
+}
+
+export interface SessionError {
+  readonly errorId: string;
+  readonly timestamp: number;
+  readonly type: SessionErrorType;
+  readonly target: string | null;
+  readonly message: string;
+  readonly details: string | null;
+  readonly recoverable: boolean;
+}
+
+export type SessionErrorType =
+  | 'CONNECTION_ERROR'
+  | 'TIMEOUT'
+  | 'CIRCUIT_ERROR'
+  | 'PARSE_ERROR'
+  | 'AUTHENTICATION_ERROR'
+  | 'RATE_LIMIT'
+  | 'BLOCKED'
+  | 'INTERNAL_ERROR';
+
+export interface SessionMetadata {
+  readonly platformVersion: string;
+  readonly startedBy: string;
+  readonly environment: string;
+  readonly tags: readonly string[];
+}

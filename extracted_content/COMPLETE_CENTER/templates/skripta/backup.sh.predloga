@@ -1,0 +1,547 @@
+#!/bin/bash
+# {{IME_PROJEKTA}} - Backup Script
+# Domain: {{DOMENA_SL}}
+# Compliance: DO-178C, IEC-61508, ISO-26262, MIL-STD-882E
+
+set -euo pipefail
+
+# Configuration
+readonly SCRIPT_NAME="$(basename "$0")"
+readonly SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+readonly TIMESTAMP="$(date -u +%Y%m%d%H%M%S)"
+readonly LOG_FILE="/var/log/{{IME_PROJEKTA_SLUG}}/backup-${TIMESTAMP}.log"
+
+# Default values
+BACKUP_TYPE="full"
+BACKUP_TAG=""
+BACKUP_DIR="/var/backups/{{IME_PROJEKTA_SLUG}}"
+S3_BUCKET="{{S3_BACKUP_BUCKET}}"
+RETENTION_DAYS=30
+ENCRYPT=true
+VERIFY=true
+NOTIFY=true
+
+# Database configuration
+DB_HOST="${DB_HOST:-localhost}"
+DB_PORT="${DB_PORT:-5432}"
+DB_NAME="${DB_NAME:-{{IME_PROJEKTA_SLUG}}}"
+DB_USER="${DB_USER:-{{IME_PROJEKTA_SLUG}}}"
+
+# Logging functions
+log() {
+    local level="$1"
+    shift
+    local message="$*"
+    local timestamp
+    timestamp="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+    echo "[${timestamp}] [${level}] ${message}" | tee -a "${LOG_FILE}"
+}
+
+log_info() { log "INFO" "$@"; }
+log_warn() { log "WARN" "$@"; }
+log_error() { log "ERROR" "$@"; }
+
+# Error handling
+error_exit() {
+    log_error "$1"
+    send_notification "FAILED" "$1"
+    exit 1
+}
+
+# Usage
+usage() {
+    cat << EOF
+Usage: ${SCRIPT_NAME} [OPTIONS]
+
+Backup script for {{IME_PROJEKTA}} security system.
+
+Options:
+    -t, --type TYPE         Backup type: full, incremental, database, config (default: full)
+    -T, --tag TAG           Custom tag for backup identification
+    -d, --dir DIR           Backup directory (default: ${BACKUP_DIR})
+    -b, --bucket BUCKET     S3 bucket for remote storage (default: ${S3_BUCKET})
+    -r, --retention DAYS    Retention period in days (default: ${RETENTION_DAYS})
+    -e, --no-encrypt        Disable encryption
+    -v, --no-verify         Skip verification
+    -n, --no-notify         Disable notifications
+    -h, --help              Show this help message
+
+Examples:
+    ${SCRIPT_NAME} --type full --tag daily
+    ${SCRIPT_NAME} --type database --retention 90
+    ${SCRIPT_NAME} --type config --no-encrypt
+
+EOF
+    exit 0
+}
+
+# Parse arguments
+parse_args() {
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            -t|--type)
+                BACKUP_TYPE="$2"
+                shift 2
+                ;;
+            -T|--tag)
+                BACKUP_TAG="$2"
+                shift 2
+                ;;
+            -d|--dir)
+                BACKUP_DIR="$2"
+                shift 2
+                ;;
+            -b|--bucket)
+                S3_BUCKET="$2"
+                shift 2
+                ;;
+            -r|--retention)
+                RETENTION_DAYS="$2"
+                shift 2
+                ;;
+            -e|--no-encrypt)
+                ENCRYPT=false
+                shift
+                ;;
+            -v|--no-verify)
+                VERIFY=false
+                shift
+                ;;
+            -n|--no-notify)
+                NOTIFY=false
+                shift
+                ;;
+            -h|--help)
+                usage
+                ;;
+            *)
+                error_exit "Unknown option: $1"
+                ;;
+        esac
+    done
+}
+
+# Validate environment
+validate_environment() {
+    log_info "Validating environment..."
+    
+    # Check required tools
+    local required_tools=("pg_dump" "aws" "gpg" "sha256sum" "tar" "gzip")
+    for tool in "${required_tools[@]}"; do
+        if ! command -v "${tool}" &> /dev/null; then
+            error_exit "Required tool not found: ${tool}"
+        fi
+    done
+    
+    # Check backup directory
+    if [[ ! -d "${BACKUP_DIR}" ]]; then
+        mkdir -p "${BACKUP_DIR}" || error_exit "Failed to create backup directory: ${BACKUP_DIR}"
+    fi
+    
+    # Check database connectivity
+    if [[ "${BACKUP_TYPE}" == "full" || "${BACKUP_TYPE}" == "database" ]]; then
+        if ! pg_isready -h "${DB_HOST}" -p "${DB_PORT}" -U "${DB_USER}" &> /dev/null; then
+            error_exit "Database is not accessible"
+        fi
+    fi
+    
+    # Check S3 access
+    if ! aws s3 ls "s3://${S3_BUCKET}" &> /dev/null; then
+        error_exit "Cannot access S3 bucket: ${S3_BUCKET}"
+    fi
+    
+    log_info "Environment validation passed"
+}
+
+# Generate backup filename
+generate_backup_name() {
+    local type="$1"
+    local name="{{IME_PROJEKTA_SLUG}}-${type}-${TIMESTAMP}"
+    if [[ -n "${BACKUP_TAG}" ]]; then
+        name="${name}-${BACKUP_TAG}"
+    fi
+    echo "${name}"
+}
+
+# Backup database
+backup_database() {
+    log_info "Starting database backup..."
+    
+    local backup_name
+    backup_name="$(generate_backup_name "database")"
+    local backup_file="${BACKUP_DIR}/${backup_name}.sql"
+    local compressed_file="${backup_file}.gz"
+    
+    # Create database dump
+    log_info "Creating database dump..."
+    PGPASSWORD="${DB_PASSWORD}" pg_dump \
+        -h "${DB_HOST}" \
+        -p "${DB_PORT}" \
+        -U "${DB_USER}" \
+        -d "${DB_NAME}" \
+        -F p \
+        --no-owner \
+        --no-acl \
+        --clean \
+        --if-exists \
+        -f "${backup_file}" || error_exit "Database dump failed"
+    
+    # Compress
+    log_info "Compressing database backup..."
+    gzip -9 "${backup_file}" || error_exit "Compression failed"
+    
+    # Calculate checksum
+    local checksum
+    checksum="$(sha256sum "${compressed_file}" | awk '{print $1}')"
+    echo "${checksum}" > "${compressed_file}.sha256"
+    
+    # Encrypt if enabled
+    if [[ "${ENCRYPT}" == true ]]; then
+        log_info "Encrypting database backup..."
+        encrypt_file "${compressed_file}"
+        compressed_file="${compressed_file}.gpg"
+    fi
+    
+    log_info "Database backup completed: ${compressed_file}"
+    echo "${compressed_file}"
+}
+
+# Backup configuration
+backup_config() {
+    log_info "Starting configuration backup..."
+    
+    local backup_name
+    backup_name="$(generate_backup_name "config")"
+    local backup_file="${BACKUP_DIR}/${backup_name}.tar.gz"
+    
+    # Create config archive
+    log_info "Creating configuration archive..."
+    tar -czf "${backup_file}" \
+        --exclude='*.log' \
+        --exclude='*.tmp' \
+        --exclude='node_modules' \
+        -C /app \
+        config \
+        .env.example \
+        package.json \
+        tsconfig.json || error_exit "Configuration backup failed"
+    
+    # Calculate checksum
+    local checksum
+    checksum="$(sha256sum "${backup_file}" | awk '{print $1}')"
+    echo "${checksum}" > "${backup_file}.sha256"
+    
+    # Encrypt if enabled
+    if [[ "${ENCRYPT}" == true ]]; then
+        log_info "Encrypting configuration backup..."
+        encrypt_file "${backup_file}"
+        backup_file="${backup_file}.gpg"
+    fi
+    
+    log_info "Configuration backup completed: ${backup_file}"
+    echo "${backup_file}"
+}
+
+# Backup secrets (from Vault)
+backup_secrets() {
+    log_info "Starting secrets backup..."
+    
+    local backup_name
+    backup_name="$(generate_backup_name "secrets")"
+    local backup_file="${BACKUP_DIR}/${backup_name}.json"
+    
+    # Export secrets from Vault
+    log_info "Exporting secrets from Vault..."
+    vault kv get -format=json "secret/{{IME_PROJEKTA_SLUG}}" > "${backup_file}" || error_exit "Secrets export failed"
+    
+    # Calculate checksum
+    local checksum
+    checksum="$(sha256sum "${backup_file}" | awk '{print $1}')"
+    echo "${checksum}" > "${backup_file}.sha256"
+    
+    # Always encrypt secrets
+    log_info "Encrypting secrets backup..."
+    encrypt_file "${backup_file}"
+    backup_file="${backup_file}.gpg"
+    
+    # Remove unencrypted file
+    rm -f "${BACKUP_DIR}/${backup_name}.json"
+    
+    log_info "Secrets backup completed: ${backup_file}"
+    echo "${backup_file}"
+}
+
+# Backup audit logs
+backup_audit_logs() {
+    log_info "Starting audit logs backup..."
+    
+    local backup_name
+    backup_name="$(generate_backup_name "audit")"
+    local backup_file="${BACKUP_DIR}/${backup_name}.tar.gz"
+    
+    # Create audit logs archive
+    log_info "Creating audit logs archive..."
+    tar -czf "${backup_file}" \
+        -C /var/log/{{IME_PROJEKTA_SLUG}} \
+        audit.log \
+        security.log || error_exit "Audit logs backup failed"
+    
+    # Calculate checksum
+    local checksum
+    checksum="$(sha256sum "${backup_file}" | awk '{print $1}')"
+    echo "${checksum}" > "${backup_file}.sha256"
+    
+    # Encrypt if enabled
+    if [[ "${ENCRYPT}" == true ]]; then
+        log_info "Encrypting audit logs backup..."
+        encrypt_file "${backup_file}"
+        backup_file="${backup_file}.gpg"
+    fi
+    
+    log_info "Audit logs backup completed: ${backup_file}"
+    echo "${backup_file}"
+}
+
+# Full backup
+backup_full() {
+    log_info "Starting full backup..."
+    
+    local backup_files=()
+    
+    # Backup all components
+    backup_files+=("$(backup_database)")
+    backup_files+=("$(backup_config)")
+    backup_files+=("$(backup_secrets)")
+    backup_files+=("$(backup_audit_logs)")
+    
+    # Create manifest
+    local manifest_file="${BACKUP_DIR}/$(generate_backup_name "manifest").json"
+    create_manifest "${manifest_file}" "${backup_files[@]}"
+    
+    log_info "Full backup completed"
+    printf '%s\n' "${backup_files[@]}"
+}
+
+# Encrypt file
+encrypt_file() {
+    local file="$1"
+    local encrypted_file="${file}.gpg"
+    
+    gpg --batch --yes \
+        --symmetric \
+        --cipher-algo AES256 \
+        --passphrase-file /etc/{{IME_PROJEKTA_SLUG}}/backup-key \
+        --output "${encrypted_file}" \
+        "${file}" || error_exit "Encryption failed for: ${file}"
+    
+    # Remove unencrypted file
+    rm -f "${file}"
+}
+
+# Create backup manifest
+create_manifest() {
+    local manifest_file="$1"
+    shift
+    local files=("$@")
+    
+    cat > "${manifest_file}" << EOF
+{
+    "project": "{{IME_PROJEKTA}}",
+    "version": "{{VERZIJA}}",
+    "timestamp": "${TIMESTAMP}",
+    "type": "${BACKUP_TYPE}",
+    "tag": "${BACKUP_TAG}",
+    "encrypted": ${ENCRYPT},
+    "files": [
+EOF
+    
+    local first=true
+    for file in "${files[@]}"; do
+        local checksum
+        checksum="$(sha256sum "${file}" | awk '{print $1}')"
+        local size
+        size="$(stat -c %s "${file}")"
+        
+        if [[ "${first}" == true ]]; then
+            first=false
+        else
+            echo "," >> "${manifest_file}"
+        fi
+        
+        cat >> "${manifest_file}" << EOF
+        {
+            "path": "${file}",
+            "checksum": "${checksum}",
+            "size": ${size}
+        }
+EOF
+    done
+    
+    cat >> "${manifest_file}" << EOF
+    ]
+}
+EOF
+}
+
+# Upload to S3
+upload_to_s3() {
+    local file="$1"
+    local s3_path="s3://${S3_BUCKET}/{{IME_PROJEKTA_SLUG}}/${TIMESTAMP}/$(basename "${file}")"
+    
+    log_info "Uploading to S3: ${s3_path}"
+    
+    aws s3 cp "${file}" "${s3_path}" \
+        --storage-class STANDARD_IA \
+        --sse aws:kms \
+        --sse-kms-key-id "alias/{{IME_PROJEKTA_SLUG}}-backup" || error_exit "S3 upload failed: ${file}"
+    
+    log_info "Upload completed: ${s3_path}"
+}
+
+# Verify backup
+verify_backup() {
+    local file="$1"
+    
+    log_info "Verifying backup: ${file}"
+    
+    # Verify checksum
+    local checksum_file="${file}.sha256"
+    if [[ -f "${checksum_file}" ]]; then
+        if ! sha256sum -c "${checksum_file}" &> /dev/null; then
+            error_exit "Checksum verification failed: ${file}"
+        fi
+        log_info "Checksum verification passed"
+    fi
+    
+    # Verify encryption
+    if [[ "${file}" == *.gpg ]]; then
+        if ! gpg --batch --list-packets "${file}" &> /dev/null; then
+            error_exit "Encryption verification failed: ${file}"
+        fi
+        log_info "Encryption verification passed"
+    fi
+    
+    # Verify archive integrity
+    if [[ "${file}" == *.tar.gz ]]; then
+        if ! tar -tzf "${file}" &> /dev/null; then
+            error_exit "Archive integrity check failed: ${file}"
+        fi
+        log_info "Archive integrity check passed"
+    fi
+    
+    log_info "Backup verification completed: ${file}"
+}
+
+# Cleanup old backups
+cleanup_old_backups() {
+    log_info "Cleaning up backups older than ${RETENTION_DAYS} days..."
+    
+    # Local cleanup
+    find "${BACKUP_DIR}" -type f -mtime "+${RETENTION_DAYS}" -delete
+    
+    # S3 cleanup (using lifecycle policy is preferred, but manual cleanup as fallback)
+    local cutoff_date
+    cutoff_date="$(date -u -d "-${RETENTION_DAYS} days" +%Y-%m-%d)"
+    
+    aws s3 ls "s3://${S3_BUCKET}/{{IME_PROJEKTA_SLUG}}/" | while read -r line; do
+        local folder_date
+        folder_date="$(echo "${line}" | awk '{print $2}' | tr -d '/')"
+        if [[ "${folder_date}" < "${cutoff_date}" ]]; then
+            log_info "Deleting old backup: ${folder_date}"
+            aws s3 rm "s3://${S3_BUCKET}/{{IME_PROJEKTA_SLUG}}/${folder_date}/" --recursive
+        fi
+    done
+    
+    log_info "Cleanup completed"
+}
+
+# Send notification
+send_notification() {
+    local status="$1"
+    local message="$2"
+    
+    if [[ "${NOTIFY}" != true ]]; then
+        return
+    fi
+    
+    local payload
+    payload=$(cat << EOF
+{
+    "project": "{{IME_PROJEKTA}}",
+    "operation": "backup",
+    "type": "${BACKUP_TYPE}",
+    "status": "${status}",
+    "message": "${message}",
+    "timestamp": "${TIMESTAMP}"
+}
+EOF
+)
+    
+    # Send to webhook
+    curl -s -X POST \
+        -H "Content-Type: application/json" \
+        -d "${payload}" \
+        "{{WEBHOOK_URL}}/backup-notification" || log_warn "Failed to send notification"
+}
+
+# Main function
+main() {
+    parse_args "$@"
+    
+    log_info "Starting backup process..."
+    log_info "Type: ${BACKUP_TYPE}"
+    log_info "Tag: ${BACKUP_TAG:-none}"
+    log_info "Encryption: ${ENCRYPT}"
+    
+    # Create log directory
+    mkdir -p "$(dirname "${LOG_FILE}")"
+    
+    # Validate environment
+    validate_environment
+    
+    # Perform backup based on type
+    local backup_files=()
+    case "${BACKUP_TYPE}" in
+        full)
+            mapfile -t backup_files < <(backup_full)
+            ;;
+        database)
+            backup_files+=("$(backup_database)")
+            ;;
+        config)
+            backup_files+=("$(backup_config)")
+            ;;
+        secrets)
+            backup_files+=("$(backup_secrets)")
+            ;;
+        audit)
+            backup_files+=("$(backup_audit_logs)")
+            ;;
+        *)
+            error_exit "Unknown backup type: ${BACKUP_TYPE}"
+            ;;
+    esac
+    
+    # Verify backups
+    if [[ "${VERIFY}" == true ]]; then
+        for file in "${backup_files[@]}"; do
+            verify_backup "${file}"
+        done
+    fi
+    
+    # Upload to S3
+    for file in "${backup_files[@]}"; do
+        upload_to_s3 "${file}"
+    done
+    
+    # Cleanup old backups
+    cleanup_old_backups
+    
+    # Send success notification
+    send_notification "SUCCESS" "Backup completed successfully"
+    
+    log_info "Backup process completed successfully"
+}
+
+# Run main
+main "$@"

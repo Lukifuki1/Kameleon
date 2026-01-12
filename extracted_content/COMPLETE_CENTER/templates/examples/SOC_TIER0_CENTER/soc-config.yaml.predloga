@@ -1,0 +1,231 @@
+# {{IME_PROJEKTA}} - Tier 0 SOC Configuration
+# _traceability: ZAH-SEC-001, DSN-SEC-001
+
+soc:
+  name: "{{IME_PROJEKTA}}"
+  tier: 0
+  classification: TOP_SECRET
+  organization: "{{ORGANIZACIJA}}"
+  
+  operations:
+    red_team:
+      enabled: true
+      capabilities:
+        - reconnaissance
+        - vulnerability_scanning
+        - exploitation
+        - persistence
+        - lateral_movement
+        - command_control
+        - data_exfiltration
+      tools:
+        - custom_scanners
+        - exploit_frameworks
+        - c2_infrastructure
+        - payload_generators
+        
+    blue_team:
+      enabled: true
+      capabilities:
+        - siem_monitoring
+        - threat_detection
+        - incident_response
+        - forensic_analysis
+        - threat_hunting
+        - vulnerability_management
+      tools:
+        - log_aggregators
+        - detection_engines
+        - response_playbooks
+        - forensic_toolkits
+        
+    threat_intel:
+      enabled: true
+      feeds:
+        - stix_taxii
+        - commercial_feeds
+        - government_feeds
+        - dark_web_monitoring
+      capabilities:
+        - ioc_management
+        - attribution_analysis
+        - campaign_tracking
+        - threat_landscape_mapping
+        
+    malware_analysis:
+      enabled: true
+      capabilities:
+        - static_analysis
+        - dynamic_analysis
+        - behavioral_analysis
+        - code_reconstruction
+        - reverse_engineering
+      sandboxes:
+        - windows_sandbox
+        - linux_sandbox
+        - macos_sandbox
+        - mobile_sandbox
+        
+    forensics:
+      enabled: true
+      capabilities:
+        - device_forensics
+        - memory_forensics
+        - network_forensics
+        - disk_forensics
+        - mobile_forensics
+        - cloud_forensics
+      tools:
+        - acquisition_tools
+        - analysis_tools
+        - reporting_tools
+        
+    sigint:
+      enabled: true
+      capabilities:
+        - communications_intercept
+        - traffic_analysis
+        - metadata_analysis
+        - pattern_of_life
+        - network_mapping
+        - protocol_fingerprinting
+        
+    finint:
+      enabled: true
+      capabilities:
+        - money_laundering_detection
+        - fraud_detection
+        - transaction_monitoring
+        - sanctions_screening
+        - beneficial_ownership
+        - cryptocurrency_tracking
+        
+    osint:
+      enabled: true
+      capabilities:
+        - social_media_monitoring
+        - news_aggregation
+        - public_records_search
+        - image_geolocation
+        - facial_recognition
+        - vehicle_recognition
+        
+    counter_intel:
+      enabled: true
+      capabilities:
+        - mole_detection
+        - double_agent_management
+        - disinformation_detection
+        - counter_surveillance
+        - operational_security
+        
+  visualization:
+    2d_dashboards:
+      enabled: true
+      types:
+        - line_charts
+        - bar_charts
+        - pie_charts
+        - heatmaps
+        - sankey_diagrams
+        - radar_charts
+        - network_graphs
+        - world_maps
+        
+    3d_topology:
+      enabled: true
+      types:
+        - network_topology
+        - attack_paths
+        - infrastructure_map
+        - threat_landscape
+        - data_flows
+        
+    real_time:
+      enabled: true
+      refresh_rate_ms: 100
+      streaming: true
+      
+  stealth:
+    covert_ops:
+      enabled: true
+      capabilities:
+        - process_injection
+        - memory_evasion
+        - network_evasion
+        - timestomping
+        - log_clearing
+        - steganography
+        - edr_bypass
+        
+    anti_forensics:
+      enabled: true
+      capabilities:
+        - evidence_destruction
+        - artifact_removal
+        - timeline_manipulation
+        - encryption
+        - secure_deletion
+        
+  security:
+    authentication:
+      type: multi_factor
+      factors:
+        - hardware_token
+        - biometric
+        - smart_card
+        - password
+      session_timeout_minutes: 15
+      
+    authorization:
+      type: rbac
+      roles:
+        - soc_analyst_tier1
+        - soc_analyst_tier2
+        - soc_analyst_tier3
+        - red_team_operator
+        - blue_team_lead
+        - threat_intel_analyst
+        - malware_analyst
+        - forensic_investigator
+        - sigint_operator
+        - finint_analyst
+        - osint_analyst
+        - counter_intel_officer
+        - soc_manager
+        - ciso
+        
+    encryption:
+      at_rest: AES-256-GCM
+      in_transit: TLS-1.3
+      key_management: HSM
+      
+    audit:
+      enabled: true
+      retention_days: 2555
+      tamper_proof: true
+      
+  compliance:
+    standards:
+      - DO-178C_DAL-A
+      - IEC-61508_SIL-4
+      - ISO-26262_ASIL-D
+      - MIL-STD-882E
+      - NIST_800-53
+      - ISO_27001
+      - SOC_2_TYPE_II
+      
+  sla:
+    uptime_percent: 99.999
+    rto_minutes: 15
+    rpo_minutes: 1
+    mttr_minutes: 30
+    detection_time_seconds: 60
+    response_time_seconds: 300
+    
+  infrastructure:
+    deployment: on_premise
+    redundancy: active_active
+    disaster_recovery: enabled
+    backup_frequency: continuous
+    geographic_distribution: multi_site

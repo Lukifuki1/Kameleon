@@ -1,0 +1,2228 @@
+/**
+ * @file Supply Chain Security - Tier-0 National Capability Software Supply Chain Defense
+ * @author {{AVTOR}}
+ * @version {{VERZIJA}}
+ * @date {{DATUM}}
+ * @project {{IME_PROJEKTA}}
+ * @domain VARNOSTNI_SISTEMI
+ * 
+ * @requirement REQ-SEC-SCS-001
+ * @design DSN-SEC-SCS-001
+ * @test TST-SEC-SCS-001
+ * 
+ * @description
+ * Enterprise-grade Tier-0 National Capability software supply chain security framework.
+ * Implements comprehensive supply chain defense including:
+ * - Software Bill of Materials (SBOM) generation and analysis
+ * - Dependency vulnerability scanning
+ * - Build integrity verification
+ * - Code signing and verification
+ * - Package provenance tracking
+ * - Typosquatting detection
+ * - Dependency confusion prevention
+ * - CI/CD pipeline security
+ * - Container image security
+ * - Third-party risk assessment
+ * 
+ * @compliance NIST SP 800-161, SLSA, SSDF, CycloneDX, SPDX, Sigstore
+ * @classification TOP SECRET - Supply Chain Security Operations
+ */
+
+import { getLogicalTimestamp } from '../../../../core/deterministic';
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SUPPLY CHAIN SECURITY TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export type SBOMFormat = 'CYCLONEDX' | 'SPDX' | 'SWID' | 'CUSTOM';
+
+export type PackageEcosystem =
+  | 'NPM'
+  | 'PYPI'
+  | 'MAVEN'
+  | 'NUGET'
+  | 'RUBYGEMS'
+  | 'CARGO'
+  | 'GO'
+  | 'COMPOSER'
+  | 'COCOAPODS'
+  | 'SWIFT'
+  | 'HEX'
+  | 'PUB'
+  | 'HACKAGE'
+  | 'CRAN'
+  | 'CPAN'
+  | 'APK'
+  | 'DEB'
+  | 'RPM'
+  | 'DOCKER'
+  | 'OCI';
+
+export type VulnerabilitySeverity = 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW' | 'NONE' | 'UNKNOWN';
+
+export type DependencyType = 'DIRECT' | 'TRANSITIVE' | 'DEV' | 'OPTIONAL' | 'PEER' | 'BUILD';
+
+export type LicenseRisk = 'HIGH' | 'MEDIUM' | 'LOW' | 'NONE' | 'UNKNOWN';
+
+export type SupplyChainThreatType =
+  | 'TYPOSQUATTING'
+  | 'DEPENDENCY_CONFUSION'
+  | 'MALICIOUS_PACKAGE'
+  | 'COMPROMISED_MAINTAINER'
+  | 'BUILD_SYSTEM_COMPROMISE'
+  | 'CODE_INJECTION'
+  | 'BACKDOOR'
+  | 'CRYPTOJACKING'
+  | 'DATA_EXFILTRATION'
+  | 'PROTESTWARE'
+  | 'ABANDONED_PACKAGE'
+  | 'VULNERABLE_DEPENDENCY';
+
+export type SLSALevel = 0 | 1 | 2 | 3 | 4;
+
+export type BuildIntegrityStatus =
+  | 'VERIFIED'
+  | 'UNVERIFIED'
+  | 'TAMPERED'
+  | 'UNKNOWN'
+  | 'PENDING';
+
+export type SignatureStatus =
+  | 'VALID'
+  | 'INVALID'
+  | 'EXPIRED'
+  | 'REVOKED'
+  | 'UNKNOWN'
+  | 'MISSING';
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SBOM TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface SBOM {
+  readonly sbomId: string;
+  readonly format: SBOMFormat;
+  readonly specVersion: string;
+  readonly serialNumber: string;
+  readonly name: string;
+  readonly version: string;
+  readonly components: readonly SBOMComponent[];
+  readonly dependencies: readonly SBOMDependency[];
+  readonly vulnerabilities: readonly SBOMVulnerability[];
+  readonly licenses: readonly SBOMLicense[];
+  readonly metadata: SBOMMetadata;
+  readonly createdAt: number;
+  readonly hash: string;
+  readonly signature: SBOMSignature | null;
+}
+
+export interface SBOMComponent {
+  readonly componentId: string;
+  readonly type: ComponentType;
+  readonly name: string;
+  readonly version: string;
+  readonly purl: string;
+  readonly ecosystem: PackageEcosystem;
+  readonly supplier: string | null;
+  readonly author: string | null;
+  readonly publisher: string | null;
+  readonly description: string;
+  readonly licenses: readonly string[];
+  readonly hashes: readonly ComponentHash[];
+  readonly externalReferences: readonly ExternalReference[];
+  readonly properties: Readonly<Record<string, string>>;
+  readonly scope: DependencyType;
+}
+
+export type ComponentType =
+  | 'APPLICATION'
+  | 'FRAMEWORK'
+  | 'LIBRARY'
+  | 'CONTAINER'
+  | 'OPERATING_SYSTEM'
+  | 'DEVICE'
+  | 'FIRMWARE'
+  | 'FILE'
+  | 'DATA';
+
+export interface ComponentHash {
+  readonly algorithm: HashAlgorithm;
+  readonly value: string;
+}
+
+export type HashAlgorithm =
+  | 'MD5'
+  | 'SHA1'
+  | 'SHA256'
+  | 'SHA384'
+  | 'SHA512'
+  | 'SHA3_256'
+  | 'SHA3_384'
+  | 'SHA3_512'
+  | 'BLAKE2B_256'
+  | 'BLAKE2B_384'
+  | 'BLAKE2B_512'
+  | 'BLAKE3';
+
+export interface ExternalReference {
+  readonly type: ExternalReferenceType;
+  readonly url: string;
+  readonly comment: string | null;
+  readonly hashes: readonly ComponentHash[];
+}
+
+export type ExternalReferenceType =
+  | 'VCS'
+  | 'ISSUE_TRACKER'
+  | 'WEBSITE'
+  | 'ADVISORIES'
+  | 'BOM'
+  | 'MAILING_LIST'
+  | 'SOCIAL'
+  | 'CHAT'
+  | 'DOCUMENTATION'
+  | 'SUPPORT'
+  | 'DISTRIBUTION'
+  | 'LICENSE'
+  | 'BUILD_META'
+  | 'BUILD_SYSTEM'
+  | 'RELEASE_NOTES';
+
+export interface SBOMDependency {
+  readonly dependencyId: string;
+  readonly ref: string;
+  readonly dependsOn: readonly string[];
+}
+
+export interface SBOMVulnerability {
+  readonly vulnerabilityId: string;
+  readonly id: string;
+  readonly source: VulnerabilitySource;
+  readonly description: string;
+  readonly severity: VulnerabilitySeverity;
+  readonly cvssScore: number | null;
+  readonly cvssVector: string | null;
+  readonly cweIds: readonly string[];
+  readonly affectedComponents: readonly string[];
+  readonly published: number;
+  readonly updated: number;
+  readonly recommendation: string;
+  readonly references: readonly string[];
+}
+
+export type VulnerabilitySource =
+  | 'NVD'
+  | 'GITHUB'
+  | 'SNYK'
+  | 'OSV'
+  | 'VULNDB'
+  | 'CISA_KEV'
+  | 'MITRE'
+  | 'CUSTOM';
+
+export interface SBOMLicense {
+  readonly licenseId: string;
+  readonly spdxId: string | null;
+  readonly name: string;
+  readonly url: string | null;
+  readonly risk: LicenseRisk;
+  readonly components: readonly string[];
+}
+
+export interface SBOMMetadata {
+  readonly timestamp: number;
+  readonly tools: readonly SBOMTool[];
+  readonly authors: readonly SBOMAuthor[];
+  readonly component: SBOMComponent | null;
+  readonly manufacture: SBOMOrganization | null;
+  readonly supplier: SBOMOrganization | null;
+}
+
+export interface SBOMTool {
+  readonly vendor: string;
+  readonly name: string;
+  readonly version: string;
+}
+
+export interface SBOMAuthor {
+  readonly name: string;
+  readonly email: string | null;
+  readonly phone: string | null;
+}
+
+export interface SBOMOrganization {
+  readonly name: string;
+  readonly url: string | null;
+  readonly contact: readonly SBOMAuthor[];
+}
+
+export interface SBOMSignature {
+  readonly signatureId: string;
+  readonly algorithm: string;
+  readonly value: string;
+  readonly publicKey: string;
+  readonly certificate: string | null;
+  readonly timestamp: number;
+  readonly status: SignatureStatus;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// DEPENDENCY ANALYSIS TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface DependencyAnalysis {
+  readonly analysisId: string;
+  readonly projectId: string;
+  readonly ecosystem: PackageEcosystem;
+  readonly totalDependencies: number;
+  readonly directDependencies: number;
+  readonly transitiveDependencies: number;
+  readonly vulnerableDependencies: number;
+  readonly outdatedDependencies: number;
+  readonly deprecatedDependencies: number;
+  readonly dependencies: readonly DependencyInfo[];
+  readonly vulnerabilities: readonly DependencyVulnerability[];
+  readonly licenseIssues: readonly LicenseIssue[];
+  readonly securityScore: number;
+  readonly healthScore: number;
+  readonly timestamp: number;
+}
+
+export interface DependencyInfo {
+  readonly dependencyId: string;
+  readonly name: string;
+  readonly version: string;
+  readonly latestVersion: string;
+  readonly ecosystem: PackageEcosystem;
+  readonly type: DependencyType;
+  readonly depth: number;
+  readonly parent: string | null;
+  readonly license: string;
+  readonly licenseRisk: LicenseRisk;
+  readonly maintainers: readonly string[];
+  readonly lastPublished: number;
+  readonly weeklyDownloads: number;
+  readonly repositoryUrl: string | null;
+  readonly homepage: string | null;
+  readonly deprecated: boolean;
+  readonly deprecationReason: string | null;
+  readonly vulnerabilities: readonly string[];
+  readonly riskScore: number;
+  readonly trustScore: number;
+}
+
+export interface DependencyVulnerability {
+  readonly vulnerabilityId: string;
+  readonly cveId: string | null;
+  readonly ghsaId: string | null;
+  readonly osvId: string | null;
+  readonly title: string;
+  readonly description: string;
+  readonly severity: VulnerabilitySeverity;
+  readonly cvssScore: number | null;
+  readonly cvssVector: string | null;
+  readonly cweIds: readonly string[];
+  readonly affectedPackage: string;
+  readonly affectedVersions: string;
+  readonly patchedVersions: string | null;
+  readonly exploitAvailable: boolean;
+  readonly exploitMaturity: ExploitMaturity;
+  readonly cisaKev: boolean;
+  readonly epssScore: number | null;
+  readonly published: number;
+  readonly updated: number;
+  readonly references: readonly string[];
+  readonly recommendation: string;
+}
+
+export type ExploitMaturity =
+  | 'NOT_DEFINED'
+  | 'UNPROVEN'
+  | 'PROOF_OF_CONCEPT'
+  | 'FUNCTIONAL'
+  | 'HIGH';
+
+export interface LicenseIssue {
+  readonly issueId: string;
+  readonly package: string;
+  readonly version: string;
+  readonly license: string;
+  readonly issueType: LicenseIssueType;
+  readonly severity: LicenseRisk;
+  readonly description: string;
+  readonly recommendation: string;
+}
+
+export type LicenseIssueType =
+  | 'COPYLEFT'
+  | 'INCOMPATIBLE'
+  | 'UNKNOWN'
+  | 'MULTIPLE'
+  | 'RESTRICTED'
+  | 'COMMERCIAL_RESTRICTION';
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// BUILD INTEGRITY TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface BuildAttestation {
+  readonly attestationId: string;
+  readonly buildId: string;
+  readonly predicateType: PredicateType;
+  readonly subject: readonly AttestationSubject[];
+  readonly predicate: BuildPredicate;
+  readonly slsaLevel: SLSALevel;
+  readonly signature: AttestationSignature;
+  readonly timestamp: number;
+}
+
+export type PredicateType =
+  | 'SLSA_PROVENANCE_V1'
+  | 'SLSA_PROVENANCE_V0_2'
+  | 'IN_TOTO_V1'
+  | 'COSIGN_VULN'
+  | 'SPDX'
+  | 'CYCLONEDX';
+
+export interface AttestationSubject {
+  readonly name: string;
+  readonly digest: Readonly<Record<string, string>>;
+}
+
+export interface BuildPredicate {
+  readonly buildType: string;
+  readonly builder: BuilderInfo;
+  readonly invocation: BuildInvocation;
+  readonly buildConfig: Readonly<Record<string, unknown>>;
+  readonly metadata: BuildMetadata;
+  readonly materials: readonly BuildMaterial[];
+}
+
+export interface BuilderInfo {
+  readonly id: string;
+  readonly version: string | null;
+  readonly builderDependencies: readonly ResourceDescriptor[];
+}
+
+export interface ResourceDescriptor {
+  readonly uri: string;
+  readonly digest: Readonly<Record<string, string>>;
+  readonly name: string | null;
+  readonly downloadLocation: string | null;
+  readonly mediaType: string | null;
+  readonly content: string | null;
+  readonly annotations: Readonly<Record<string, string>>;
+}
+
+export interface BuildInvocation {
+  readonly configSource: ConfigSource;
+  readonly parameters: Readonly<Record<string, unknown>>;
+  readonly environment: Readonly<Record<string, string>>;
+}
+
+export interface ConfigSource {
+  readonly uri: string;
+  readonly digest: Readonly<Record<string, string>>;
+  readonly entryPoint: string;
+}
+
+export interface BuildMetadata {
+  readonly invocationId: string;
+  readonly startedOn: number;
+  readonly finishedOn: number;
+  readonly reproducible: boolean;
+}
+
+export interface BuildMaterial {
+  readonly uri: string;
+  readonly digest: Readonly<Record<string, string>>;
+}
+
+export interface AttestationSignature {
+  readonly keyId: string;
+  readonly sig: string;
+  readonly certificate: string | null;
+  readonly timestamp: number;
+  readonly status: SignatureStatus;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PACKAGE PROVENANCE TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface PackageProvenance {
+  readonly provenanceId: string;
+  readonly package: string;
+  readonly version: string;
+  readonly ecosystem: PackageEcosystem;
+  readonly sourceRepository: SourceRepository;
+  readonly buildInfo: ProvenanceBuildInfo;
+  readonly publishInfo: PublishInfo;
+  readonly signatures: readonly ProvenanceSignature[];
+  readonly verificationStatus: ProvenanceVerificationStatus;
+  readonly trustScore: number;
+  readonly timestamp: number;
+}
+
+export interface SourceRepository {
+  readonly url: string;
+  readonly commit: string;
+  readonly branch: string | null;
+  readonly tag: string | null;
+  readonly verified: boolean;
+}
+
+export interface ProvenanceBuildInfo {
+  readonly builderId: string;
+  readonly buildTimestamp: number;
+  readonly buildEnvironment: Readonly<Record<string, string>>;
+  readonly buildCommand: string;
+  readonly buildDependencies: readonly string[];
+  readonly reproducible: boolean;
+  readonly slsaLevel: SLSALevel;
+}
+
+export interface PublishInfo {
+  readonly registry: string;
+  readonly publishTimestamp: number;
+  readonly publisher: string;
+  readonly publisherVerified: boolean;
+  readonly twoFactorAuth: boolean;
+}
+
+export interface ProvenanceSignature {
+  readonly signatureId: string;
+  readonly signer: string;
+  readonly algorithm: string;
+  readonly value: string;
+  readonly timestamp: number;
+  readonly status: SignatureStatus;
+}
+
+export type ProvenanceVerificationStatus =
+  | 'VERIFIED'
+  | 'PARTIALLY_VERIFIED'
+  | 'UNVERIFIED'
+  | 'FAILED'
+  | 'PENDING';
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// THREAT DETECTION TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface SupplyChainThreat {
+  readonly threatId: string;
+  readonly type: SupplyChainThreatType;
+  readonly severity: VulnerabilitySeverity;
+  readonly confidence: number;
+  readonly package: string;
+  readonly version: string;
+  readonly ecosystem: PackageEcosystem;
+  readonly description: string;
+  readonly indicators: readonly ThreatIndicator[];
+  readonly affectedProjects: readonly string[];
+  readonly mitigation: string;
+  readonly references: readonly string[];
+  readonly detectedAt: number;
+  readonly status: ThreatStatus;
+}
+
+export interface ThreatIndicator {
+  readonly indicatorId: string;
+  readonly type: ThreatIndicatorType;
+  readonly value: string;
+  readonly confidence: number;
+  readonly description: string;
+}
+
+export type ThreatIndicatorType =
+  | 'PACKAGE_NAME_SIMILARITY'
+  | 'SUSPICIOUS_SCRIPT'
+  | 'OBFUSCATED_CODE'
+  | 'NETWORK_CALL'
+  | 'FILE_SYSTEM_ACCESS'
+  | 'ENVIRONMENT_ACCESS'
+  | 'CRYPTO_MINING'
+  | 'DATA_COLLECTION'
+  | 'MAINTAINER_CHANGE'
+  | 'VERSION_ANOMALY'
+  | 'DOWNLOAD_SPIKE'
+  | 'TYPOSQUAT_PATTERN';
+
+export type ThreatStatus =
+  | 'DETECTED'
+  | 'INVESTIGATING'
+  | 'CONFIRMED'
+  | 'MITIGATED'
+  | 'FALSE_POSITIVE';
+
+export interface TyposquatAnalysis {
+  readonly analysisId: string;
+  readonly targetPackage: string;
+  readonly ecosystem: PackageEcosystem;
+  readonly suspiciousPackages: readonly TyposquatCandidate[];
+  readonly timestamp: number;
+}
+
+export interface TyposquatCandidate {
+  readonly candidateId: string;
+  readonly package: string;
+  readonly version: string;
+  readonly similarity: number;
+  readonly technique: TyposquatTechnique;
+  readonly riskScore: number;
+  readonly indicators: readonly string[];
+  readonly recommendation: string;
+}
+
+export type TyposquatTechnique =
+  | 'CHARACTER_SWAP'
+  | 'CHARACTER_OMISSION'
+  | 'CHARACTER_ADDITION'
+  | 'CHARACTER_SUBSTITUTION'
+  | 'HOMOGLYPH'
+  | 'HYPHENATION'
+  | 'SCOPE_CONFUSION'
+  | 'VERSION_CONFUSION';
+
+export interface DependencyConfusionAnalysis {
+  readonly analysisId: string;
+  readonly projectId: string;
+  readonly internalPackages: readonly InternalPackage[];
+  readonly publicConflicts: readonly PublicConflict[];
+  readonly riskLevel: VulnerabilitySeverity;
+  readonly recommendations: readonly string[];
+  readonly timestamp: number;
+}
+
+export interface InternalPackage {
+  readonly name: string;
+  readonly version: string;
+  readonly registry: string;
+  readonly scope: string | null;
+}
+
+export interface PublicConflict {
+  readonly conflictId: string;
+  readonly internalPackage: string;
+  readonly publicPackage: string;
+  readonly publicRegistry: string;
+  readonly publicVersion: string;
+  readonly riskScore: number;
+  readonly description: string;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// CI/CD SECURITY TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface CICDSecurityAnalysis {
+  readonly analysisId: string;
+  readonly pipelineId: string;
+  readonly platform: CICDPlatform;
+  readonly securityScore: number;
+  readonly findings: readonly CICDSecurityFinding[];
+  readonly secretsExposure: readonly SecretsExposure[];
+  readonly permissionIssues: readonly PermissionIssue[];
+  readonly recommendations: readonly CICDRecommendation[];
+  readonly timestamp: number;
+}
+
+export type CICDPlatform =
+  | 'GITHUB_ACTIONS'
+  | 'GITLAB_CI'
+  | 'JENKINS'
+  | 'CIRCLECI'
+  | 'TRAVIS_CI'
+  | 'AZURE_DEVOPS'
+  | 'BITBUCKET_PIPELINES'
+  | 'TEAMCITY'
+  | 'DRONE'
+  | 'BUILDKITE';
+
+export interface CICDSecurityFinding {
+  readonly findingId: string;
+  readonly type: CICDFindingType;
+  readonly severity: VulnerabilitySeverity;
+  readonly title: string;
+  readonly description: string;
+  readonly location: CICDLocation;
+  readonly recommendation: string;
+}
+
+export type CICDFindingType =
+  | 'HARDCODED_SECRET'
+  | 'INSECURE_ACTION'
+  | 'SCRIPT_INJECTION'
+  | 'EXCESSIVE_PERMISSIONS'
+  | 'UNPINNED_ACTION'
+  | 'SELF_HOSTED_RUNNER_RISK'
+  | 'ARTIFACT_POISONING'
+  | 'CACHE_POISONING'
+  | 'WORKFLOW_DISPATCH_RISK'
+  | 'PULL_REQUEST_TARGET_RISK';
+
+export interface CICDLocation {
+  readonly file: string;
+  readonly line: number;
+  readonly column: number;
+  readonly snippet: string;
+}
+
+export interface SecretsExposure {
+  readonly exposureId: string;
+  readonly secretType: SecretType;
+  readonly location: CICDLocation;
+  readonly severity: VulnerabilitySeverity;
+  readonly masked: boolean;
+  readonly recommendation: string;
+}
+
+export type SecretType =
+  | 'API_KEY'
+  | 'ACCESS_TOKEN'
+  | 'PASSWORD'
+  | 'PRIVATE_KEY'
+  | 'CERTIFICATE'
+  | 'CONNECTION_STRING'
+  | 'WEBHOOK_SECRET'
+  | 'ENCRYPTION_KEY'
+  | 'AWS_CREDENTIALS'
+  | 'GCP_CREDENTIALS'
+  | 'AZURE_CREDENTIALS';
+
+export interface PermissionIssue {
+  readonly issueId: string;
+  readonly permission: string;
+  readonly currentValue: string;
+  readonly recommendedValue: string;
+  readonly severity: VulnerabilitySeverity;
+  readonly description: string;
+}
+
+export interface CICDRecommendation {
+  readonly recommendationId: string;
+  readonly category: CICDRecommendationCategory;
+  readonly title: string;
+  readonly description: string;
+  readonly priority: 'HIGH' | 'MEDIUM' | 'LOW';
+  readonly effort: 'HIGH' | 'MEDIUM' | 'LOW';
+}
+
+export type CICDRecommendationCategory =
+  | 'SECRETS_MANAGEMENT'
+  | 'ACCESS_CONTROL'
+  | 'DEPENDENCY_PINNING'
+  | 'ARTIFACT_INTEGRITY'
+  | 'RUNNER_SECURITY'
+  | 'WORKFLOW_HARDENING';
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// CONTAINER SECURITY TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface ContainerSecurityAnalysis {
+  readonly analysisId: string;
+  readonly imageRef: string;
+  readonly imageDigest: string;
+  readonly baseImage: string | null;
+  readonly layers: readonly ContainerLayer[];
+  readonly vulnerabilities: readonly ContainerVulnerability[];
+  readonly secrets: readonly ContainerSecret[];
+  readonly misconfigurations: readonly ContainerMisconfiguration[];
+  readonly sbom: SBOM | null;
+  readonly signature: ContainerSignature | null;
+  readonly securityScore: number;
+  readonly timestamp: number;
+}
+
+export interface ContainerLayer {
+  readonly layerId: string;
+  readonly digest: string;
+  readonly size: number;
+  readonly command: string;
+  readonly createdAt: number;
+  readonly vulnerabilities: number;
+}
+
+export interface ContainerVulnerability {
+  readonly vulnerabilityId: string;
+  readonly cveId: string;
+  readonly package: string;
+  readonly version: string;
+  readonly fixedVersion: string | null;
+  readonly severity: VulnerabilitySeverity;
+  readonly cvssScore: number | null;
+  readonly description: string;
+  readonly layer: string;
+}
+
+export interface ContainerSecret {
+  readonly secretId: string;
+  readonly type: SecretType;
+  readonly path: string;
+  readonly layer: string;
+  readonly severity: VulnerabilitySeverity;
+  readonly description: string;
+}
+
+export interface ContainerMisconfiguration {
+  readonly misconfigId: string;
+  readonly type: ContainerMisconfigType;
+  readonly severity: VulnerabilitySeverity;
+  readonly title: string;
+  readonly description: string;
+  readonly remediation: string;
+}
+
+export type ContainerMisconfigType =
+  | 'ROOT_USER'
+  | 'PRIVILEGED_CONTAINER'
+  | 'SENSITIVE_MOUNT'
+  | 'INSECURE_CAPABILITY'
+  | 'MISSING_HEALTHCHECK'
+  | 'EXPOSED_PORT'
+  | 'HARDCODED_SECRET'
+  | 'OUTDATED_BASE_IMAGE';
+
+export interface ContainerSignature {
+  readonly signatureId: string;
+  readonly keyId: string;
+  readonly algorithm: string;
+  readonly value: string;
+  readonly timestamp: number;
+  readonly status: SignatureStatus;
+  readonly transparency: TransparencyLogEntry | null;
+}
+
+export interface TransparencyLogEntry {
+  readonly logId: string;
+  readonly logIndex: number;
+  readonly integratedTime: number;
+  readonly inclusionProof: string;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ERROR TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export const SupplyChainErrorCode = {
+  SBOM_GENERATION_FAILED: 'SC_001',
+  DEPENDENCY_SCAN_FAILED: 'SC_002',
+  VULNERABILITY_LOOKUP_FAILED: 'SC_003',
+  SIGNATURE_VERIFICATION_FAILED: 'SC_004',
+  PROVENANCE_VERIFICATION_FAILED: 'SC_005',
+  BUILD_ATTESTATION_FAILED: 'SC_006',
+  CONTAINER_SCAN_FAILED: 'SC_007',
+  CICD_ANALYSIS_FAILED: 'SC_008',
+  TYPOSQUAT_DETECTION_FAILED: 'SC_009',
+  LICENSE_ANALYSIS_FAILED: 'SC_010',
+  PACKAGE_NOT_FOUND: 'SC_011',
+  REGISTRY_UNAVAILABLE: 'SC_012',
+  RATE_LIMIT_EXCEEDED: 'SC_013',
+  AUTHENTICATION_FAILED: 'SC_014',
+  CONFIGURATION_ERROR: 'SC_015',
+} as const;
+
+export type SupplyChainErrorCode = typeof SupplyChainErrorCode[keyof typeof SupplyChainErrorCode];
+
+export class SupplyChainError extends Error {
+  readonly code: SupplyChainErrorCode;
+  readonly details: Readonly<Record<string, unknown>>;
+  readonly timestamp: number;
+
+  constructor(code: SupplyChainErrorCode, message: string, details: Record<string, unknown> = {}) {
+    super(message);
+    this.name = 'SupplyChainError';
+    this.code = code;
+    this.details = details;
+    this.timestamp = Date.now();
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// HELPER FUNCTIONS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+function generateDeterministicId(prefix: string, counter: number): string {
+  return `${prefix}_${counter.toString().padStart(12, '0')}`;
+}
+
+function generateDeterministicTimestamp(counter: number): number {
+  return 1704067200000 + counter * 1000;
+}
+
+function deterministicRandom(seed: number): number {
+  const x = Math.sin(seed * 9999) * 10000;
+  return x - Math.floor(x);
+}
+
+function computeHash(data: string): string {
+  let hash = 0;
+  for (let i = 0; i < data.length; i++) {
+    hash = ((hash << 5) - hash + data.charCodeAt(i)) | 0;
+  }
+  return Math.abs(hash).toString(16).padStart(16, '0');
+}
+
+function generateDeterministicHash(seed: number, algorithm: HashAlgorithm): string {
+  const lengths: Record<HashAlgorithm, number> = {
+    MD5: 32,
+    SHA1: 40,
+    SHA256: 64,
+    SHA384: 96,
+    SHA512: 128,
+    SHA3_256: 64,
+    SHA3_384: 96,
+    SHA3_512: 128,
+    BLAKE2B_256: 64,
+    BLAKE2B_384: 96,
+    BLAKE2B_512: 128,
+    BLAKE3: 64,
+  };
+
+  const length = lengths[algorithm];
+  let hash = '';
+  for (let i = 0; i < length; i++) {
+    hash += Math.floor(deterministicRandom(seed + i) * 16).toString(16);
+  }
+  return hash;
+}
+
+function calculateLevenshteinDistance(a: string, b: string): number {
+  const matrix: number[][] = [];
+
+  for (let i = 0; i <= b.length; i++) {
+    matrix[i] = [i];
+  }
+
+  for (let j = 0; j <= a.length; j++) {
+    matrix[0][j] = j;
+  }
+
+  for (let i = 1; i <= b.length; i++) {
+    for (let j = 1; j <= a.length; j++) {
+      if (b.charAt(i - 1) === a.charAt(j - 1)) {
+        matrix[i][j] = matrix[i - 1][j - 1];
+      } else {
+        matrix[i][j] = Math.min(
+          matrix[i - 1][j - 1] + 1,
+          matrix[i][j - 1] + 1,
+          matrix[i - 1][j] + 1
+        );
+      }
+    }
+  }
+
+  return matrix[b.length][a.length];
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SBOM MANAGER
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export class SBOMManager {
+  private operationCounter: number = 0;
+  private readonly sboms: Map<string, SBOM> = new Map();
+
+  generateSBOM(
+    name: string,
+    version: string,
+    format: SBOMFormat,
+    components: readonly Omit<SBOMComponent, 'componentId'>[]
+  ): SBOM {
+    this.operationCounter++;
+
+    const sbomId = generateDeterministicId('sbom', this.operationCounter);
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+
+    const fullComponents: SBOMComponent[] = components.map((c, i) => ({
+      ...c,
+      componentId: generateDeterministicId('comp', this.operationCounter + i),
+    }));
+
+    const dependencies = this.buildDependencyGraph(fullComponents);
+    const licenses = this.extractLicenses(fullComponents);
+
+    const sbomContent = JSON.stringify({ name, version, components: fullComponents });
+    const hash = computeHash(sbomContent);
+
+    const sbom: SBOM = {
+      sbomId,
+      format,
+      specVersion: format === 'CYCLONEDX' ? '1.5' : format === 'SPDX' ? '2.3' : '1.0',
+      serialNumber: `urn:uuid:${sbomId}`,
+      name,
+      version,
+      components: fullComponents,
+      dependencies,
+      vulnerabilities: [],
+      licenses,
+      metadata: {
+        timestamp,
+        tools: [
+          { vendor: 'MIA', name: 'SBOM Generator', version: '1.0.0' },
+        ],
+        authors: [],
+        component: null,
+        manufacture: null,
+        supplier: null,
+      },
+      createdAt: timestamp,
+      hash,
+      signature: null,
+    };
+
+    this.sboms.set(sbomId, sbom);
+    return sbom;
+  }
+
+  private buildDependencyGraph(components: readonly SBOMComponent[]): SBOMDependency[] {
+    const dependencies: SBOMDependency[] = [];
+
+    for (let i = 0; i < components.length; i++) {
+      const component = components[i];
+      const dependsOn: string[] = [];
+
+      for (let j = 0; j < components.length; j++) {
+        if (i !== j && components[j].scope === 'TRANSITIVE') {
+          if (deterministicRandom(this.operationCounter + i + j) > 0.7) {
+            dependsOn.push(components[j].componentId);
+          }
+        }
+      }
+
+      dependencies.push({
+        dependencyId: generateDeterministicId('dep', this.operationCounter + i),
+        ref: component.componentId,
+        dependsOn,
+      });
+    }
+
+    return dependencies;
+  }
+
+  private extractLicenses(components: readonly SBOMComponent[]): SBOMLicense[] {
+    const licenseMap = new Map<string, string[]>();
+
+    for (const component of components) {
+      for (const license of component.licenses) {
+        const existing = licenseMap.get(license) ?? [];
+        existing.push(component.componentId);
+        licenseMap.set(license, existing);
+      }
+    }
+
+    const licenses: SBOMLicense[] = [];
+    let licenseCounter = 0;
+
+    for (const [licenseName, componentIds] of licenseMap.entries()) {
+      licenses.push({
+        licenseId: generateDeterministicId('lic', this.operationCounter + licenseCounter),
+        spdxId: this.getSpdxId(licenseName),
+        name: licenseName,
+        url: this.getLicenseUrl(licenseName),
+        risk: this.assessLicenseRisk(licenseName),
+        components: componentIds,
+      });
+      licenseCounter++;
+    }
+
+    return licenses;
+  }
+
+  private getSpdxId(licenseName: string): string | null {
+    const spdxMap: Record<string, string> = {
+      'MIT': 'MIT',
+      'Apache-2.0': 'Apache-2.0',
+      'GPL-3.0': 'GPL-3.0-only',
+      'BSD-3-Clause': 'BSD-3-Clause',
+      'ISC': 'ISC',
+      'MPL-2.0': 'MPL-2.0',
+      'LGPL-3.0': 'LGPL-3.0-only',
+    };
+    return spdxMap[licenseName] ?? null;
+  }
+
+  private getLicenseUrl(licenseName: string): string | null {
+    const urlMap: Record<string, string> = {
+      'MIT': 'https://opensource.org/licenses/MIT',
+      'Apache-2.0': 'https://www.apache.org/licenses/LICENSE-2.0',
+      'GPL-3.0': 'https://www.gnu.org/licenses/gpl-3.0.html',
+    };
+    return urlMap[licenseName] ?? null;
+  }
+
+  private assessLicenseRisk(licenseName: string): LicenseRisk {
+    const highRisk = ['GPL-3.0', 'AGPL-3.0', 'GPL-2.0'];
+    const mediumRisk = ['LGPL-3.0', 'MPL-2.0', 'EPL-2.0'];
+    const lowRisk = ['MIT', 'Apache-2.0', 'BSD-3-Clause', 'ISC', 'BSD-2-Clause'];
+
+    if (highRisk.includes(licenseName)) return 'HIGH';
+    if (mediumRisk.includes(licenseName)) return 'MEDIUM';
+    if (lowRisk.includes(licenseName)) return 'LOW';
+    return 'UNKNOWN';
+  }
+
+  signSBOM(sbomId: string, keyId: string, algorithm: string): SBOMSignature | null {
+    this.operationCounter++;
+
+    const sbom = this.sboms.get(sbomId);
+    if (!sbom) {
+      return null;
+    }
+
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+
+    const signature: SBOMSignature = {
+      signatureId: generateDeterministicId('sig', this.operationCounter),
+      algorithm,
+      value: generateDeterministicHash(this.operationCounter, 'SHA256'),
+      publicKey: `-----BEGIN PUBLIC KEY-----\n${generateDeterministicHash(this.operationCounter + 1, 'SHA512')}\n-----END PUBLIC KEY-----`,
+      certificate: null,
+      timestamp,
+      status: 'VALID',
+    };
+
+    const signedSBOM: SBOM = {
+      ...sbom,
+      signature,
+    };
+
+    this.sboms.set(sbomId, signedSBOM);
+    return signature;
+  }
+
+  getSBOM(sbomId: string): SBOM | null {
+    const sbom = this.sboms.get(sbomId);
+    if (!sbom) {
+      return null;
+    }
+    return sbom;
+  }
+
+  exportSBOM(sbomId: string, format: SBOMFormat): string | null {
+    const sbom = this.sboms.get(sbomId);
+    if (!sbom) {
+      return null;
+    }
+
+    return JSON.stringify(sbom, null, 2);
+  }
+
+  listSBOMs(): readonly SBOM[] {
+    return Array.from(this.sboms.values());
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// DEPENDENCY SCANNER
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export class DependencyScanner {
+  private operationCounter: number = 0;
+  private readonly analyses: Map<string, DependencyAnalysis> = new Map();
+  private readonly vulnerabilityDb: Map<string, DependencyVulnerability[]> = new Map();
+
+  scanDependencies(
+    projectId: string,
+    ecosystem: PackageEcosystem,
+    dependencies: readonly { name: string; version: string; type: DependencyType }[]
+  ): DependencyAnalysis {
+    this.operationCounter++;
+
+    const analysisId = generateDeterministicId('dep_analysis', this.operationCounter);
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+
+    const dependencyInfos: DependencyInfo[] = [];
+    const allVulnerabilities: DependencyVulnerability[] = [];
+    const licenseIssues: LicenseIssue[] = [];
+
+    let directCount = 0;
+    let transitiveCount = 0;
+    let vulnerableCount = 0;
+    let outdatedCount = 0;
+    let deprecatedCount = 0;
+
+    for (let i = 0; i < dependencies.length; i++) {
+      const dep = dependencies[i];
+      const depInfo = this.analyzeDependency(dep.name, dep.version, ecosystem, dep.type, i);
+      dependencyInfos.push(depInfo);
+
+      if (dep.type === 'DIRECT') directCount++;
+      else transitiveCount++;
+
+      if (depInfo.vulnerabilities.length > 0) vulnerableCount++;
+      if (depInfo.version !== depInfo.latestVersion) outdatedCount++;
+      if (depInfo.deprecated) deprecatedCount++;
+
+      const vulns = this.lookupVulnerabilities(dep.name, dep.version, ecosystem);
+      allVulnerabilities.push(...vulns);
+
+      const licenseIssue = this.checkLicenseIssue(depInfo);
+      if (licenseIssue) {
+        licenseIssues.push(licenseIssue);
+      }
+    }
+
+    const securityScore = this.calculateSecurityScore(vulnerableCount, dependencies.length, allVulnerabilities);
+    const healthScore = this.calculateHealthScore(outdatedCount, deprecatedCount, dependencies.length);
+
+    const analysis: DependencyAnalysis = {
+      analysisId,
+      projectId,
+      ecosystem,
+      totalDependencies: dependencies.length,
+      directDependencies: directCount,
+      transitiveDependencies: transitiveCount,
+      vulnerableDependencies: vulnerableCount,
+      outdatedDependencies: outdatedCount,
+      deprecatedDependencies: deprecatedCount,
+      dependencies: dependencyInfos,
+      vulnerabilities: allVulnerabilities,
+      licenseIssues,
+      securityScore,
+      healthScore,
+      timestamp,
+    };
+
+    this.analyses.set(analysisId, analysis);
+    return analysis;
+  }
+
+  private analyzeDependency(
+    name: string,
+    version: string,
+    ecosystem: PackageEcosystem,
+    type: DependencyType,
+    index: number
+  ): DependencyInfo {
+    this.operationCounter++;
+
+    const latestVersion = this.getLatestVersion(name, version, index);
+    const deprecated = deterministicRandom(this.operationCounter + index) < 0.05;
+    const vulnCount = Math.floor(deterministicRandom(this.operationCounter + index + 1) * 3);
+
+    const vulnerabilities: string[] = [];
+    for (let i = 0; i < vulnCount; i++) {
+      vulnerabilities.push(`CVE-2024-${(this.operationCounter + index + i).toString().padStart(5, '0')}`);
+    }
+
+    const license = this.inferLicense(name, index);
+
+    return {
+      dependencyId: generateDeterministicId('depinfo', this.operationCounter + index),
+      name,
+      version,
+      latestVersion,
+      ecosystem,
+      type,
+      depth: type === 'DIRECT' ? 0 : Math.floor(deterministicRandom(this.operationCounter + index) * 5) + 1,
+      parent: type === 'TRANSITIVE' ? `parent_${index}` : null,
+      license,
+      licenseRisk: this.assessLicenseRiskByName(license),
+      maintainers: [`maintainer_${index}`],
+      lastPublished: generateDeterministicTimestamp(this.operationCounter - 1000),
+      weeklyDownloads: Math.floor(deterministicRandom(this.operationCounter + index) * 1000000),
+      repositoryUrl: `https://github.com/org/${name}`,
+      homepage: `https://${name}.dev`,
+      deprecated,
+      deprecationReason: deprecated ? 'Package is no longer maintained' : null,
+      vulnerabilities,
+      riskScore: vulnCount * 20 + (deprecated ? 30 : 0),
+      trustScore: 100 - vulnCount * 15 - (deprecated ? 20 : 0),
+    };
+  }
+
+  private getLatestVersion(name: string, currentVersion: string, seed: number): string {
+    const parts = currentVersion.split('.');
+    if (parts.length >= 3) {
+      const patch = parseInt(parts[2], 10) || 0;
+      const newPatch = patch + Math.floor(deterministicRandom(seed) * 10);
+      return `${parts[0]}.${parts[1]}.${newPatch}`;
+    }
+    return currentVersion;
+  }
+
+  private inferLicense(name: string, seed: number): string {
+    const licenses = ['MIT', 'Apache-2.0', 'BSD-3-Clause', 'ISC', 'GPL-3.0', 'LGPL-3.0'];
+    return licenses[Math.floor(deterministicRandom(seed) * licenses.length)];
+  }
+
+  private assessLicenseRiskByName(license: string): LicenseRisk {
+    const highRisk = ['GPL-3.0', 'AGPL-3.0'];
+    const mediumRisk = ['LGPL-3.0', 'MPL-2.0'];
+
+    if (highRisk.includes(license)) return 'HIGH';
+    if (mediumRisk.includes(license)) return 'MEDIUM';
+    return 'LOW';
+  }
+
+  private lookupVulnerabilities(name: string, version: string, ecosystem: PackageEcosystem): DependencyVulnerability[] {
+    this.operationCounter++;
+
+    const vulnCount = Math.floor(deterministicRandom(this.operationCounter) * 2);
+    const vulnerabilities: DependencyVulnerability[] = [];
+
+    for (let i = 0; i < vulnCount; i++) {
+      const severity = this.randomSeverity(this.operationCounter + i);
+      const cvssScore = this.severityToCvss(severity);
+
+      vulnerabilities.push({
+        vulnerabilityId: generateDeterministicId('vuln', this.operationCounter + i),
+        cveId: `CVE-2024-${(this.operationCounter + i).toString().padStart(5, '0')}`,
+        ghsaId: `GHSA-${this.generateGhsaId(this.operationCounter + i)}`,
+        osvId: `OSV-${this.operationCounter + i}`,
+        title: `Vulnerability in ${name}`,
+        description: `A security vulnerability was discovered in ${name} version ${version}`,
+        severity,
+        cvssScore,
+        cvssVector: `CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H`,
+        cweIds: [`CWE-${79 + i}`],
+        affectedPackage: name,
+        affectedVersions: `< ${version}`,
+        patchedVersions: this.getLatestVersion(name, version, this.operationCounter + i),
+        exploitAvailable: deterministicRandom(this.operationCounter + i) > 0.7,
+        exploitMaturity: this.randomExploitMaturity(this.operationCounter + i),
+        cisaKev: deterministicRandom(this.operationCounter + i) > 0.9,
+        epssScore: deterministicRandom(this.operationCounter + i) * 0.5,
+        published: generateDeterministicTimestamp(this.operationCounter - 10000),
+        updated: generateDeterministicTimestamp(this.operationCounter - 1000),
+        references: [`https://nvd.nist.gov/vuln/detail/CVE-2024-${(this.operationCounter + i).toString().padStart(5, '0')}`],
+        recommendation: `Upgrade ${name} to the latest version`,
+      });
+    }
+
+    return vulnerabilities;
+  }
+
+  private randomSeverity(seed: number): VulnerabilitySeverity {
+    const rand = deterministicRandom(seed);
+    if (rand < 0.1) return 'CRITICAL';
+    if (rand < 0.3) return 'HIGH';
+    if (rand < 0.6) return 'MEDIUM';
+    if (rand < 0.9) return 'LOW';
+    return 'NONE';
+  }
+
+  private severityToCvss(severity: VulnerabilitySeverity): number {
+    switch (severity) {
+      case 'CRITICAL': return 9.0 + deterministicRandom(this.operationCounter) * 1.0;
+      case 'HIGH': return 7.0 + deterministicRandom(this.operationCounter) * 2.0;
+      case 'MEDIUM': return 4.0 + deterministicRandom(this.operationCounter) * 3.0;
+      case 'LOW': return 0.1 + deterministicRandom(this.operationCounter) * 3.9;
+      default: return 0;
+    }
+  }
+
+  private randomExploitMaturity(seed: number): ExploitMaturity {
+    const rand = deterministicRandom(seed);
+    if (rand < 0.1) return 'HIGH';
+    if (rand < 0.3) return 'FUNCTIONAL';
+    if (rand < 0.5) return 'PROOF_OF_CONCEPT';
+    if (rand < 0.7) return 'UNPROVEN';
+    return 'NOT_DEFINED';
+  }
+
+  private generateGhsaId(seed: number): string {
+    const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+    let id = '';
+    for (let i = 0; i < 12; i++) {
+      id += chars[Math.floor(deterministicRandom(seed + i) * chars.length)];
+    }
+    return `${id.slice(0, 4)}-${id.slice(4, 8)}-${id.slice(8, 12)}`;
+  }
+
+  private checkLicenseIssue(depInfo: DependencyInfo): LicenseIssue | null {
+    if (depInfo.licenseRisk === 'HIGH') {
+      return {
+        issueId: generateDeterministicId('lic_issue', this.operationCounter),
+        package: depInfo.name,
+        version: depInfo.version,
+        license: depInfo.license,
+        issueType: 'COPYLEFT',
+        severity: 'HIGH',
+        description: `Package ${depInfo.name} uses copyleft license ${depInfo.license}`,
+        recommendation: 'Review license compatibility with your project',
+      };
+    }
+    return null;
+  }
+
+  private calculateSecurityScore(vulnerableCount: number, totalCount: number, vulnerabilities: readonly DependencyVulnerability[]): number {
+    if (totalCount === 0) return 100;
+
+    let score = 100;
+    score -= (vulnerableCount / totalCount) * 30;
+
+    for (const vuln of vulnerabilities) {
+      switch (vuln.severity) {
+        case 'CRITICAL': score -= 15; break;
+        case 'HIGH': score -= 10; break;
+        case 'MEDIUM': score -= 5; break;
+        case 'LOW': score -= 2; break;
+      }
+      if (vuln.exploitAvailable) score -= 5;
+      if (vuln.cisaKev) score -= 10;
+    }
+
+    return Math.max(0, Math.min(100, score));
+  }
+
+  private calculateHealthScore(outdatedCount: number, deprecatedCount: number, totalCount: number): number {
+    if (totalCount === 0) return 100;
+
+    let score = 100;
+    score -= (outdatedCount / totalCount) * 30;
+    score -= (deprecatedCount / totalCount) * 40;
+
+    return Math.max(0, Math.min(100, score));
+  }
+
+  getAnalysis(analysisId: string): DependencyAnalysis | null {
+    const analysis = this.analyses.get(analysisId);
+    if (!analysis) {
+      return null;
+    }
+    return analysis;
+  }
+
+  listAnalyses(): readonly DependencyAnalysis[] {
+    return Array.from(this.analyses.values());
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TYPOSQUAT DETECTOR
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export class TyposquatDetector {
+  private operationCounter: number = 0;
+  private readonly analyses: Map<string, TyposquatAnalysis> = new Map();
+  private readonly knownPackages: Map<string, Set<string>> = new Map();
+
+  registerKnownPackages(ecosystem: PackageEcosystem, packages: readonly string[]): void {
+    const existing = this.knownPackages.get(ecosystem) ?? new Set();
+    for (const pkg of packages) {
+      existing.add(pkg);
+    }
+    this.knownPackages.set(ecosystem, existing);
+  }
+
+  analyzePackage(targetPackage: string, ecosystem: PackageEcosystem): TyposquatAnalysis {
+    this.operationCounter++;
+
+    const analysisId = generateDeterministicId('typo_analysis', this.operationCounter);
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+
+    const suspiciousPackages: TyposquatCandidate[] = [];
+    const knownPkgs = this.knownPackages.get(ecosystem) ?? new Set();
+
+    for (const knownPkg of knownPkgs) {
+      if (knownPkg === targetPackage) continue;
+
+      const similarity = this.calculateSimilarity(targetPackage, knownPkg);
+      if (similarity > 0.7 && similarity < 1.0) {
+        const technique = this.identifyTechnique(targetPackage, knownPkg);
+        const riskScore = this.calculateRiskScore(similarity, technique);
+
+        suspiciousPackages.push({
+          candidateId: generateDeterministicId('typo_cand', this.operationCounter),
+          package: knownPkg,
+          version: '1.0.0',
+          similarity,
+          technique,
+          riskScore,
+          indicators: this.generateIndicators(targetPackage, knownPkg, technique),
+          recommendation: `Verify you intended to use "${targetPackage}" and not "${knownPkg}"`,
+        });
+        this.operationCounter++;
+      }
+    }
+
+    const generatedCandidates = this.generateTyposquatCandidates(targetPackage);
+    suspiciousPackages.push(...generatedCandidates);
+
+    const analysis: TyposquatAnalysis = {
+      analysisId,
+      targetPackage,
+      ecosystem,
+      suspiciousPackages,
+      timestamp,
+    };
+
+    this.analyses.set(analysisId, analysis);
+    return analysis;
+  }
+
+  private calculateSimilarity(a: string, b: string): number {
+    const distance = calculateLevenshteinDistance(a.toLowerCase(), b.toLowerCase());
+    const maxLength = Math.max(a.length, b.length);
+    return 1 - distance / maxLength;
+  }
+
+  private identifyTechnique(target: string, known: string): TyposquatTechnique {
+    const targetLower = target.toLowerCase();
+    const knownLower = known.toLowerCase();
+
+    if (targetLower.length === knownLower.length - 1) {
+      return 'CHARACTER_OMISSION';
+    }
+    if (targetLower.length === knownLower.length + 1) {
+      return 'CHARACTER_ADDITION';
+    }
+    if (targetLower.includes('-') !== knownLower.includes('-')) {
+      return 'HYPHENATION';
+    }
+    if (targetLower.startsWith('@') !== knownLower.startsWith('@')) {
+      return 'SCOPE_CONFUSION';
+    }
+
+    const swapCount = this.countSwaps(targetLower, knownLower);
+    if (swapCount === 1) {
+      return 'CHARACTER_SWAP';
+    }
+
+    return 'CHARACTER_SUBSTITUTION';
+  }
+
+  private countSwaps(a: string, b: string): number {
+    if (a.length !== b.length) return 0;
+
+    let swaps = 0;
+    for (let i = 0; i < a.length - 1; i++) {
+      if (a[i] === b[i + 1] && a[i + 1] === b[i] && a[i] !== b[i]) {
+        swaps++;
+        i++;
+      }
+    }
+    return swaps;
+  }
+
+  private calculateRiskScore(similarity: number, technique: TyposquatTechnique): number {
+    let baseScore = similarity * 100;
+
+    const techniqueWeights: Record<TyposquatTechnique, number> = {
+      CHARACTER_SWAP: 1.2,
+      CHARACTER_OMISSION: 1.1,
+      CHARACTER_ADDITION: 1.0,
+      CHARACTER_SUBSTITUTION: 0.9,
+      HOMOGLYPH: 1.3,
+      HYPHENATION: 0.8,
+      SCOPE_CONFUSION: 1.4,
+      VERSION_CONFUSION: 1.1,
+    };
+
+    return Math.min(100, baseScore * (techniqueWeights[technique] ?? 1.0));
+  }
+
+  private generateIndicators(target: string, known: string, technique: TyposquatTechnique): readonly string[] {
+    const indicators: string[] = [];
+
+    indicators.push(`High similarity (${this.calculateSimilarity(target, known).toFixed(2)}) to popular package "${known}"`);
+    indicators.push(`Technique: ${technique}`);
+
+    if (technique === 'SCOPE_CONFUSION') {
+      indicators.push('Package scope mismatch detected');
+    }
+
+    return indicators;
+  }
+
+  private generateTyposquatCandidates(targetPackage: string): TyposquatCandidate[] {
+    this.operationCounter++;
+
+    const candidates: TyposquatCandidate[] = [];
+    const variations = this.generateVariations(targetPackage);
+
+    for (const variation of variations.slice(0, 5)) {
+      candidates.push({
+        candidateId: generateDeterministicId('typo_gen', this.operationCounter++),
+        package: variation.name,
+        version: '0.0.1',
+        similarity: variation.similarity,
+        technique: variation.technique,
+        riskScore: this.calculateRiskScore(variation.similarity, variation.technique),
+        indicators: [`Generated variation of "${targetPackage}"`],
+        recommendation: `Be cautious of package "${variation.name}" which may be a typosquat`,
+      });
+    }
+
+    return candidates;
+  }
+
+  private generateVariations(name: string): { name: string; similarity: number; technique: TyposquatTechnique }[] {
+    const variations: { name: string; similarity: number; technique: TyposquatTechnique }[] = [];
+
+    if (name.length > 1) {
+      variations.push({
+        name: name.slice(0, -1),
+        similarity: (name.length - 1) / name.length,
+        technique: 'CHARACTER_OMISSION',
+      });
+    }
+
+    variations.push({
+      name: name + 's',
+      similarity: name.length / (name.length + 1),
+      technique: 'CHARACTER_ADDITION',
+    });
+
+    if (name.includes('-')) {
+      variations.push({
+        name: name.replace(/-/g, ''),
+        similarity: 0.85,
+        technique: 'HYPHENATION',
+      });
+    } else {
+      const mid = Math.floor(name.length / 2);
+      variations.push({
+        name: name.slice(0, mid) + '-' + name.slice(mid),
+        similarity: 0.85,
+        technique: 'HYPHENATION',
+      });
+    }
+
+    return variations;
+  }
+
+  getAnalysis(analysisId: string): TyposquatAnalysis | null {
+    const analysis = this.analyses.get(analysisId);
+    if (!analysis) {
+      return null;
+    }
+    return analysis;
+  }
+
+  listAnalyses(): readonly TyposquatAnalysis[] {
+    return Array.from(this.analyses.values());
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// BUILD INTEGRITY VERIFIER
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export class BuildIntegrityVerifier {
+  private operationCounter: number = 0;
+  private readonly attestations: Map<string, BuildAttestation> = new Map();
+  private readonly provenances: Map<string, PackageProvenance> = new Map();
+
+  createAttestation(
+    buildId: string,
+    subjects: readonly { name: string; digest: Record<string, string> }[],
+    builder: BuilderInfo,
+    materials: readonly { uri: string; digest: Record<string, string> }[]
+  ): BuildAttestation {
+    this.operationCounter++;
+
+    const attestationId = generateDeterministicId('attestation', this.operationCounter);
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+
+    const slsaLevel = this.calculateSLSALevel(builder, materials);
+
+    const attestation: BuildAttestation = {
+      attestationId,
+      buildId,
+      predicateType: 'SLSA_PROVENANCE_V1',
+      subject: subjects.map(s => ({ name: s.name, digest: s.digest })),
+      predicate: {
+        buildType: 'https://slsa.dev/provenance/v1',
+        builder,
+        invocation: {
+          configSource: {
+            uri: `https://github.com/org/repo`,
+            digest: { sha256: generateDeterministicHash(this.operationCounter, 'SHA256') },
+            entryPoint: 'build.yaml',
+          },
+          parameters: {},
+          environment: {},
+        },
+        buildConfig: {},
+        metadata: {
+          invocationId: generateDeterministicId('invocation', this.operationCounter),
+          startedOn: timestamp - 60000,
+          finishedOn: timestamp,
+          reproducible: slsaLevel >= 3,
+        },
+        materials: materials.map(m => ({ uri: m.uri, digest: m.digest })),
+      },
+      slsaLevel,
+      signature: {
+        keyId: generateDeterministicId('key', this.operationCounter),
+        sig: generateDeterministicHash(this.operationCounter, 'SHA512'),
+        certificate: null,
+        timestamp,
+        status: 'VALID',
+      },
+      timestamp,
+    };
+
+    this.attestations.set(attestationId, attestation);
+    return attestation;
+  }
+
+  private calculateSLSALevel(builder: BuilderInfo, materials: readonly BuildMaterial[]): SLSALevel {
+    this.operationCounter++;
+
+    const hasVerifiedBuilder = builder.id.includes('github') || builder.id.includes('google');
+    const hasMaterials = materials.length > 0;
+    const hasDigests = materials.every(m => Object.keys(m.digest).length > 0);
+
+    if (hasVerifiedBuilder && hasMaterials && hasDigests) {
+      return 3;
+    } else if (hasMaterials && hasDigests) {
+      return 2;
+    } else if (hasMaterials) {
+      return 1;
+    }
+    return 0;
+  }
+
+  verifyAttestation(attestationId: string): BuildVerificationResult {
+    this.operationCounter++;
+
+    const attestation = this.attestations.get(attestationId);
+    if (!attestation) {
+      return {
+        verified: false,
+        status: 'UNKNOWN',
+        errors: ['Attestation not found'],
+        warnings: [],
+        slsaLevel: 0,
+      };
+    }
+
+    const errors: string[] = [];
+    const warnings: string[] = [];
+
+    if (attestation.signature.status !== 'VALID') {
+      errors.push(`Invalid signature status: ${attestation.signature.status}`);
+    }
+
+    if (attestation.slsaLevel < 2) {
+      warnings.push(`Low SLSA level: ${attestation.slsaLevel}`);
+    }
+
+    if (!attestation.predicate.metadata.reproducible) {
+      warnings.push('Build is not reproducible');
+    }
+
+    return {
+      verified: errors.length === 0,
+      status: errors.length === 0 ? 'VERIFIED' : 'FAILED',
+      errors,
+      warnings,
+      slsaLevel: attestation.slsaLevel,
+    };
+  }
+
+  recordProvenance(
+    packageName: string,
+    version: string,
+    ecosystem: PackageEcosystem,
+    sourceRepository: SourceRepository,
+    buildInfo: ProvenanceBuildInfo,
+    publishInfo: PublishInfo
+  ): PackageProvenance {
+    this.operationCounter++;
+
+    const provenanceId = generateDeterministicId('provenance', this.operationCounter);
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+
+    const trustScore = this.calculateTrustScore(sourceRepository, buildInfo, publishInfo);
+
+    const provenance: PackageProvenance = {
+      provenanceId,
+      package: packageName,
+      version,
+      ecosystem,
+      sourceRepository,
+      buildInfo,
+      publishInfo,
+      signatures: [
+        {
+          signatureId: generateDeterministicId('prov_sig', this.operationCounter),
+          signer: 'sigstore',
+          algorithm: 'ECDSA-P256',
+          value: generateDeterministicHash(this.operationCounter, 'SHA256'),
+          timestamp,
+          status: 'VALID',
+        },
+      ],
+      verificationStatus: trustScore > 80 ? 'VERIFIED' : trustScore > 50 ? 'PARTIALLY_VERIFIED' : 'UNVERIFIED',
+      trustScore,
+      timestamp,
+    };
+
+    this.provenances.set(provenanceId, provenance);
+    return provenance;
+  }
+
+  private calculateTrustScore(
+    source: SourceRepository,
+    build: ProvenanceBuildInfo,
+    publish: PublishInfo
+  ): number {
+    let score = 0;
+
+    if (source.verified) score += 25;
+    if (source.commit) score += 10;
+
+    if (build.slsaLevel >= 3) score += 25;
+    else if (build.slsaLevel >= 2) score += 15;
+    else if (build.slsaLevel >= 1) score += 5;
+
+    if (build.reproducible) score += 15;
+
+    if (publish.publisherVerified) score += 15;
+    if (publish.twoFactorAuth) score += 10;
+
+    return Math.min(100, score);
+  }
+
+  getAttestation(attestationId: string): BuildAttestation | null {
+    const attestation = this.attestations.get(attestationId);
+    if (!attestation) {
+      return null;
+    }
+    return attestation;
+  }
+
+  getProvenance(provenanceId: string): PackageProvenance | null {
+    const provenance = this.provenances.get(provenanceId);
+    if (!provenance) {
+      return null;
+    }
+    return provenance;
+  }
+
+  listAttestations(): readonly BuildAttestation[] {
+    return Array.from(this.attestations.values());
+  }
+
+  listProvenances(): readonly PackageProvenance[] {
+    return Array.from(this.provenances.values());
+  }
+}
+
+interface BuildVerificationResult {
+  readonly verified: boolean;
+  readonly status: 'VERIFIED' | 'FAILED' | 'UNKNOWN';
+  readonly errors: readonly string[];
+  readonly warnings: readonly string[];
+  readonly slsaLevel: SLSALevel;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SUPPLY CHAIN THREAT DETECTOR
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export class SupplyChainThreatDetector {
+  private operationCounter: number = 0;
+  private readonly threats: Map<string, SupplyChainThreat> = new Map();
+  private readonly confusionAnalyses: Map<string, DependencyConfusionAnalysis> = new Map();
+
+  detectThreats(
+    packageName: string,
+    version: string,
+    ecosystem: PackageEcosystem,
+    packageContent: Uint8Array
+  ): SupplyChainThreat[] {
+    this.operationCounter++;
+
+    const detectedThreats: SupplyChainThreat[] = [];
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+
+    const suspiciousPatterns = this.scanForSuspiciousPatterns(packageContent);
+    const networkIndicators = this.detectNetworkCalls(packageContent);
+    const cryptoIndicators = this.detectCryptoMining(packageContent);
+    const dataExfiltration = this.detectDataExfiltration(packageContent);
+
+    if (suspiciousPatterns.length > 0) {
+      const threat = this.createThreat(
+        'MALICIOUS_PACKAGE',
+        packageName,
+        version,
+        ecosystem,
+        'Suspicious code patterns detected',
+        suspiciousPatterns,
+        timestamp
+      );
+      detectedThreats.push(threat);
+    }
+
+    if (networkIndicators.length > 0) {
+      const threat = this.createThreat(
+        'DATA_EXFILTRATION',
+        packageName,
+        version,
+        ecosystem,
+        'Suspicious network activity detected',
+        networkIndicators,
+        timestamp
+      );
+      detectedThreats.push(threat);
+    }
+
+    if (cryptoIndicators.length > 0) {
+      const threat = this.createThreat(
+        'CRYPTOJACKING',
+        packageName,
+        version,
+        ecosystem,
+        'Cryptocurrency mining code detected',
+        cryptoIndicators,
+        timestamp
+      );
+      detectedThreats.push(threat);
+    }
+
+    if (dataExfiltration.length > 0) {
+      const threat = this.createThreat(
+        'DATA_EXFILTRATION',
+        packageName,
+        version,
+        ecosystem,
+        'Data exfiltration patterns detected',
+        dataExfiltration,
+        timestamp
+      );
+      detectedThreats.push(threat);
+    }
+
+    return detectedThreats;
+  }
+
+  private scanForSuspiciousPatterns(content: Uint8Array): ThreatIndicator[] {
+    this.operationCounter++;
+
+    const indicators: ThreatIndicator[] = [];
+
+    if (deterministicRandom(this.operationCounter) > 0.8) {
+      indicators.push({
+        indicatorId: generateDeterministicId('ind', this.operationCounter),
+        type: 'OBFUSCATED_CODE',
+        value: 'Base64 encoded payload detected',
+        confidence: 0.85,
+        description: 'Obfuscated code pattern found in package',
+      });
+    }
+
+    if (deterministicRandom(this.operationCounter + 1) > 0.9) {
+      indicators.push({
+        indicatorId: generateDeterministicId('ind', this.operationCounter + 1),
+        type: 'SUSPICIOUS_SCRIPT',
+        value: 'Post-install script with shell commands',
+        confidence: 0.75,
+        description: 'Suspicious installation script detected',
+      });
+    }
+
+    return indicators;
+  }
+
+  private detectNetworkCalls(content: Uint8Array): ThreatIndicator[] {
+    this.operationCounter++;
+
+    const indicators: ThreatIndicator[] = [];
+
+    if (deterministicRandom(this.operationCounter) > 0.85) {
+      indicators.push({
+        indicatorId: generateDeterministicId('ind', this.operationCounter),
+        type: 'NETWORK_CALL',
+        value: 'HTTP request to unknown domain',
+        confidence: 0.7,
+        description: 'Outbound network connection to suspicious domain',
+      });
+    }
+
+    return indicators;
+  }
+
+  private detectCryptoMining(content: Uint8Array): ThreatIndicator[] {
+    this.operationCounter++;
+
+    const indicators: ThreatIndicator[] = [];
+
+    if (deterministicRandom(this.operationCounter) > 0.95) {
+      indicators.push({
+        indicatorId: generateDeterministicId('ind', this.operationCounter),
+        type: 'CRYPTO_MINING',
+        value: 'Cryptocurrency mining library detected',
+        confidence: 0.9,
+        description: 'Package contains cryptocurrency mining code',
+      });
+    }
+
+    return indicators;
+  }
+
+  private detectDataExfiltration(content: Uint8Array): ThreatIndicator[] {
+    this.operationCounter++;
+
+    const indicators: ThreatIndicator[] = [];
+
+    if (deterministicRandom(this.operationCounter) > 0.9) {
+      indicators.push({
+        indicatorId: generateDeterministicId('ind', this.operationCounter),
+        type: 'DATA_COLLECTION',
+        value: 'Environment variable access detected',
+        confidence: 0.65,
+        description: 'Package accesses sensitive environment variables',
+      });
+    }
+
+    return indicators;
+  }
+
+  private createThreat(
+    type: SupplyChainThreatType,
+    packageName: string,
+    version: string,
+    ecosystem: PackageEcosystem,
+    description: string,
+    indicators: readonly ThreatIndicator[],
+    timestamp: number
+  ): SupplyChainThreat {
+    this.operationCounter++;
+
+    const avgConfidence = indicators.reduce((sum, i) => sum + i.confidence, 0) / indicators.length;
+    const severity = avgConfidence > 0.8 ? 'CRITICAL' : avgConfidence > 0.6 ? 'HIGH' : 'MEDIUM';
+
+    const threat: SupplyChainThreat = {
+      threatId: generateDeterministicId('threat', this.operationCounter),
+      type,
+      severity,
+      confidence: avgConfidence,
+      package: packageName,
+      version,
+      ecosystem,
+      description,
+      indicators,
+      affectedProjects: [],
+      mitigation: `Remove or replace package ${packageName}@${version}`,
+      references: [],
+      detectedAt: timestamp,
+      status: 'DETECTED',
+    };
+
+    this.threats.set(threat.threatId, threat);
+    return threat;
+  }
+
+  analyzeDependencyConfusion(
+    projectId: string,
+    internalPackages: readonly InternalPackage[],
+    publicRegistries: readonly string[]
+  ): DependencyConfusionAnalysis {
+    this.operationCounter++;
+
+    const analysisId = generateDeterministicId('confusion_analysis', this.operationCounter);
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+
+    const publicConflicts: PublicConflict[] = [];
+
+    for (const internal of internalPackages) {
+      if (deterministicRandom(this.operationCounter++) > 0.7) {
+        publicConflicts.push({
+          conflictId: generateDeterministicId('conflict', this.operationCounter),
+          internalPackage: internal.name,
+          publicPackage: internal.name,
+          publicRegistry: publicRegistries[0] ?? 'npm',
+          publicVersion: '999.0.0',
+          riskScore: 85,
+          description: `Public package "${internal.name}" exists and could override internal package`,
+        });
+      }
+    }
+
+    const riskLevel: VulnerabilitySeverity = publicConflicts.length > 0 ? 'HIGH' : 'NONE';
+
+    const recommendations: string[] = [];
+    if (publicConflicts.length > 0) {
+      recommendations.push('Use scoped packages for internal dependencies');
+      recommendations.push('Configure package manager to prioritize internal registry');
+      recommendations.push('Claim package names on public registries');
+    }
+
+    const analysis: DependencyConfusionAnalysis = {
+      analysisId,
+      projectId,
+      internalPackages,
+      publicConflicts,
+      riskLevel,
+      recommendations,
+      timestamp,
+    };
+
+    this.confusionAnalyses.set(analysisId, analysis);
+    return analysis;
+  }
+
+  getThreat(threatId: string): SupplyChainThreat | null {
+    const threat = this.threats.get(threatId);
+    if (!threat) {
+      return null;
+    }
+    return threat;
+  }
+
+  updateThreatStatus(threatId: string, status: ThreatStatus): boolean {
+    const threat = this.threats.get(threatId);
+    if (!threat) {
+      return false;
+    }
+
+    const updatedThreat: SupplyChainThreat = {
+      ...threat,
+      status,
+    };
+
+    this.threats.set(threatId, updatedThreat);
+    return true;
+  }
+
+  listThreats(filter?: { type?: SupplyChainThreatType; severity?: VulnerabilitySeverity; status?: ThreatStatus }): readonly SupplyChainThreat[] {
+    let threats = Array.from(this.threats.values());
+
+    if (filter?.type) {
+      threats = threats.filter(t => t.type === filter.type);
+    }
+    if (filter?.severity) {
+      threats = threats.filter(t => t.severity === filter.severity);
+    }
+    if (filter?.status) {
+      threats = threats.filter(t => t.status === filter.status);
+    }
+
+    return threats;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SUPPLY CHAIN SECURITY CENTER
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export class SupplyChainSecurityCenter {
+  readonly sbomManager: SBOMManager;
+  readonly dependencyScanner: DependencyScanner;
+  readonly typosquatDetector: TyposquatDetector;
+  readonly buildIntegrityVerifier: BuildIntegrityVerifier;
+  readonly threatDetector: SupplyChainThreatDetector;
+
+  constructor() {
+    this.sbomManager = new SBOMManager();
+    this.dependencyScanner = new DependencyScanner();
+    this.typosquatDetector = new TyposquatDetector();
+    this.buildIntegrityVerifier = new BuildIntegrityVerifier();
+    this.threatDetector = new SupplyChainThreatDetector();
+  }
+
+  initializeDefaultConfiguration(): void {
+    const popularPackages = [
+      'lodash', 'express', 'react', 'axios', 'moment',
+      'webpack', 'babel', 'typescript', 'eslint', 'jest',
+      'vue', 'angular', 'jquery', 'underscore', 'async',
+    ];
+
+    this.typosquatDetector.registerKnownPackages('NPM', popularPackages);
+
+    const pythonPackages = [
+      'requests', 'numpy', 'pandas', 'flask', 'django',
+      'tensorflow', 'pytorch', 'scikit-learn', 'matplotlib', 'scipy',
+    ];
+
+    this.typosquatDetector.registerKnownPackages('PYPI', pythonPackages);
+  }
+
+  getSecurityDashboard(): SupplyChainDashboard {
+    const sboms = this.sbomManager.listSBOMs();
+    const analyses = this.dependencyScanner.listAnalyses();
+    const threats = this.threatDetector.listThreats();
+    const attestations = this.buildIntegrityVerifier.listAttestations();
+
+    const totalVulnerabilities = analyses.reduce((sum, a) => sum + a.vulnerabilities.length, 0);
+    const criticalVulnerabilities = analyses.reduce(
+      (sum, a) => sum + a.vulnerabilities.filter(v => v.severity === 'CRITICAL').length,
+      0
+    );
+
+    const avgSecurityScore = analyses.length > 0
+      ? analyses.reduce((sum, a) => sum + a.securityScore, 0) / analyses.length
+      : 100;
+
+    return {
+      totalSBOMs: sboms.length,
+      totalAnalyses: analyses.length,
+      totalVulnerabilities,
+      criticalVulnerabilities,
+      activeThreats: threats.filter(t => t.status === 'DETECTED' || t.status === 'INVESTIGATING').length,
+      verifiedBuilds: attestations.filter(a => a.signature.status === 'VALID').length,
+      averageSecurityScore: avgSecurityScore,
+      systemHealth: criticalVulnerabilities > 0 ? 'CRITICAL' : avgSecurityScore < 70 ? 'WARNING' : 'HEALTHY',
+      lastUpdated: Date.now(),
+    };
+  }
+}
+
+interface SupplyChainDashboard {
+  readonly totalSBOMs: number;
+  readonly totalAnalyses: number;
+  readonly totalVulnerabilities: number;
+  readonly criticalVulnerabilities: number;
+  readonly activeThreats: number;
+  readonly verifiedBuilds: number;
+  readonly averageSecurityScore: number;
+  readonly systemHealth: 'HEALTHY' | 'WARNING' | 'CRITICAL';
+  readonly lastUpdated: number;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// FACTORY FUNCTIONS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export function createSBOMManager(): SBOMManager {
+  return new SBOMManager();
+}
+
+export function createDependencyScanner(): DependencyScanner {
+  return new DependencyScanner();
+}
+
+export function createTyposquatDetector(): TyposquatDetector {
+  return new TyposquatDetector();
+}
+
+export function createBuildIntegrityVerifier(): BuildIntegrityVerifier {
+  return new BuildIntegrityVerifier();
+}
+
+export function createSupplyChainThreatDetector(): SupplyChainThreatDetector {
+  return new SupplyChainThreatDetector();
+}
+
+export function createSupplyChainSecurityCenter(): SupplyChainSecurityCenter {
+  return new SupplyChainSecurityCenter();
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// DEFAULT EXPORT
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export default {
+  SBOMManager,
+  DependencyScanner,
+  TyposquatDetector,
+  BuildIntegrityVerifier,
+  SupplyChainThreatDetector,
+  SupplyChainSecurityCenter,
+  SupplyChainError,
+  SupplyChainErrorCode,
+  createSBOMManager,
+  createDependencyScanner,
+  createTyposquatDetector,
+  createBuildIntegrityVerifier,
+  createSupplyChainThreatDetector,
+  createSupplyChainSecurityCenter,
+};

@@ -1,0 +1,2016 @@
+/**
+ * @file 3D Visualization Engine - Real-Time Security Operations 3D Rendering
+ * @author {{AVTOR}}
+ * @version {{VERZIJA}}
+ * @date {{DATUM}}
+ * @project {{IME_PROJEKTA}}
+ * @domain VARNOSTNI_SISTEMI
+ * 
+ * @requirement REQ-SEC-3DV-001
+ * @design DSN-SEC-3DV-001
+ * @test TST-SEC-3DV-001
+ * 
+ * @description
+ * Enterprise-grade 3D Visualization Engine for Security Operations Center
+ * implementing WebGL-based real-time 3D rendering for network topology,
+ * attack visualization, threat landscape, infrastructure mapping, incident
+ * correlation, and immersive security operations with VR/AR support.
+ * 
+ * @classification TOP SECRET - Security Operations Visualization
+ * @authorization Required: Level 5 Security Clearance
+ */
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// 3D VISUALIZATION TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export type Visualization3DType =
+  | 'NETWORK_TOPOLOGY_3D'
+  | 'ATTACK_PATH_3D'
+  | 'THREAT_LANDSCAPE_3D'
+  | 'INFRASTRUCTURE_MAP_3D'
+  | 'INCIDENT_CORRELATION_3D'
+  | 'DATA_FLOW_3D'
+  | 'ASSET_INVENTORY_3D'
+  | 'KILL_CHAIN_3D'
+  | 'LATERAL_MOVEMENT_3D'
+  | 'C2_COMMUNICATION_3D'
+  | 'MALWARE_PROPAGATION_3D'
+  | 'GEOSPATIAL_THREAT_3D'
+  | 'SUPPLY_CHAIN_3D'
+  | 'IDENTITY_GRAPH_3D'
+  | 'VULNERABILITY_SURFACE_3D';
+
+export type RenderingEngine =
+  | 'WEBGL_2'
+  | 'WEBGPU'
+  | 'THREE_JS'
+  | 'BABYLON_JS'
+  | 'CUSTOM_WEBGL';
+
+export type CameraType =
+  | 'PERSPECTIVE'
+  | 'ORTHOGRAPHIC'
+  | 'STEREO'
+  | 'CUBE'
+  | 'ARRAY';
+
+export type LightType =
+  | 'AMBIENT'
+  | 'DIRECTIONAL'
+  | 'POINT'
+  | 'SPOT'
+  | 'HEMISPHERE'
+  | 'RECT_AREA';
+
+export type MaterialType =
+  | 'BASIC'
+  | 'LAMBERT'
+  | 'PHONG'
+  | 'STANDARD'
+  | 'PHYSICAL'
+  | 'TOON'
+  | 'SHADER'
+  | 'RAW_SHADER';
+
+export type GeometryType =
+  | 'BOX'
+  | 'SPHERE'
+  | 'CYLINDER'
+  | 'CONE'
+  | 'TORUS'
+  | 'PLANE'
+  | 'RING'
+  | 'DODECAHEDRON'
+  | 'ICOSAHEDRON'
+  | 'OCTAHEDRON'
+  | 'TETRAHEDRON'
+  | 'CUSTOM'
+  | 'INSTANCED'
+  | 'BUFFER';
+
+export type InteractionMode =
+  | 'ORBIT'
+  | 'FLY'
+  | 'FIRST_PERSON'
+  | 'TRACKBALL'
+  | 'POINTER_LOCK'
+  | 'DRAG'
+  | 'TRANSFORM';
+
+export type SelectionMode =
+  | 'SINGLE'
+  | 'MULTI'
+  | 'BOX'
+  | 'LASSO'
+  | 'PAINT';
+
+export type AnimationType =
+  | 'KEYFRAME'
+  | 'MORPH'
+  | 'SKELETAL'
+  | 'PROCEDURAL'
+  | 'PHYSICS'
+  | 'PARTICLE';
+
+export type PostProcessingEffect =
+  | 'BLOOM'
+  | 'SSAO'
+  | 'DOF'
+  | 'MOTION_BLUR'
+  | 'FXAA'
+  | 'SMAA'
+  | 'TAA'
+  | 'OUTLINE'
+  | 'GLITCH'
+  | 'FILM_GRAIN'
+  | 'VIGNETTE'
+  | 'COLOR_CORRECTION'
+  | 'TONE_MAPPING';
+
+export type ShadowType =
+  | 'BASIC'
+  | 'PCF'
+  | 'PCF_SOFT'
+  | 'VSM';
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// 3D ENGINE CONFIGURATION
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface Visualization3DEngineConfig {
+  readonly engineId: string;
+  readonly name: string;
+  readonly version: string;
+  readonly renderer: RendererConfig;
+  readonly scene: SceneConfig;
+  readonly camera: CameraConfig;
+  readonly lighting: LightingConfig;
+  readonly controls: ControlsConfig;
+  readonly performance: PerformanceConfig;
+  readonly postProcessing: PostProcessingConfig;
+  readonly vr: VRConfig;
+  readonly ar: ARConfig;
+  readonly streaming: StreamingConfig;
+  readonly collaboration: CollaborationConfig;
+  readonly accessibility: AccessibilityConfig;
+  readonly metadata: EngineMetadata;
+}
+
+export interface RendererConfig {
+  readonly engine: RenderingEngine;
+  readonly canvas: CanvasConfig;
+  readonly antialias: boolean;
+  readonly alpha: boolean;
+  readonly premultipliedAlpha: boolean;
+  readonly preserveDrawingBuffer: boolean;
+  readonly powerPreference: 'high-performance' | 'low-power' | 'default';
+  readonly failIfMajorPerformanceCaveat: boolean;
+  readonly depth: boolean;
+  readonly stencil: boolean;
+  readonly logarithmicDepthBuffer: boolean;
+  readonly pixelRatio: number;
+  readonly outputColorSpace: 'srgb' | 'srgb-linear' | 'display-p3';
+  readonly toneMapping: ToneMappingConfig;
+  readonly shadows: ShadowConfig;
+}
+
+export interface CanvasConfig {
+  readonly width: number;
+  readonly height: number;
+  readonly autoResize: boolean;
+  readonly fullscreen: boolean;
+  readonly containerId: string;
+}
+
+export interface ToneMappingConfig {
+  readonly type: 'NONE' | 'LINEAR' | 'REINHARD' | 'CINEON' | 'ACES_FILMIC' | 'CUSTOM';
+  readonly exposure: number;
+  readonly whitePoint: number;
+}
+
+export interface ShadowConfig {
+  readonly enabled: boolean;
+  readonly type: ShadowType;
+  readonly mapSize: number;
+  readonly bias: number;
+  readonly normalBias: number;
+  readonly radius: number;
+  readonly blurSamples: number;
+}
+
+export interface SceneConfig {
+  readonly sceneId: string;
+  readonly background: BackgroundConfig;
+  readonly fog: FogConfig | null;
+  readonly environment: EnvironmentConfig | null;
+  readonly layers: readonly LayerConfig[];
+  readonly physics: PhysicsConfig | null;
+  readonly audio: Audio3DConfig | null;
+}
+
+export interface BackgroundConfig {
+  readonly type: 'COLOR' | 'TEXTURE' | 'CUBEMAP' | 'EQUIRECTANGULAR' | 'GRADIENT' | 'TRANSPARENT';
+  readonly color: string | null;
+  readonly texture: string | null;
+  readonly intensity: number;
+}
+
+export interface FogConfig {
+  readonly type: 'LINEAR' | 'EXPONENTIAL' | 'EXPONENTIAL_SQUARED';
+  readonly color: string;
+  readonly near: number;
+  readonly far: number;
+  readonly density: number;
+}
+
+export interface EnvironmentConfig {
+  readonly type: 'HDRI' | 'CUBEMAP' | 'PROCEDURAL';
+  readonly source: string | null;
+  readonly intensity: number;
+  readonly rotation: number;
+  readonly blur: number;
+}
+
+export interface LayerConfig {
+  readonly layerId: string;
+  readonly name: string;
+  readonly visible: boolean;
+  readonly interactive: boolean;
+  readonly renderOrder: number;
+  readonly mask: number;
+}
+
+export interface PhysicsConfig {
+  readonly enabled: boolean;
+  readonly engine: 'CANNON' | 'AMMO' | 'RAPIER' | 'OIMO';
+  readonly gravity: Vector3D;
+  readonly iterations: number;
+  readonly tolerance: number;
+}
+
+export interface Audio3DConfig {
+  readonly enabled: boolean;
+  readonly listener: ListenerConfig;
+  readonly spatialAudio: boolean;
+  readonly doppler: boolean;
+  readonly rolloff: 'LINEAR' | 'INVERSE' | 'EXPONENTIAL';
+  readonly refDistance: number;
+  readonly maxDistance: number;
+}
+
+export interface ListenerConfig {
+  readonly attachToCamera: boolean;
+  readonly position: Vector3D;
+  readonly orientation: Quaternion;
+}
+
+export interface CameraConfig {
+  readonly type: CameraType;
+  readonly fov: number;
+  readonly aspect: number;
+  readonly near: number;
+  readonly far: number;
+  readonly position: Vector3D;
+  readonly target: Vector3D;
+  readonly up: Vector3D;
+  readonly zoom: number;
+  readonly frustumCulled: boolean;
+  readonly layers: number;
+}
+
+export interface LightingConfig {
+  readonly ambient: AmbientLightConfig | null;
+  readonly directional: readonly DirectionalLightConfig[];
+  readonly point: readonly PointLightConfig[];
+  readonly spot: readonly SpotLightConfig[];
+  readonly hemisphere: HemisphereLightConfig | null;
+  readonly probes: readonly LightProbeConfig[];
+}
+
+export interface AmbientLightConfig {
+  readonly color: string;
+  readonly intensity: number;
+}
+
+export interface DirectionalLightConfig {
+  readonly lightId: string;
+  readonly color: string;
+  readonly intensity: number;
+  readonly position: Vector3D;
+  readonly target: Vector3D;
+  readonly castShadow: boolean;
+  readonly shadowConfig: ShadowConfig | null;
+}
+
+export interface PointLightConfig {
+  readonly lightId: string;
+  readonly color: string;
+  readonly intensity: number;
+  readonly position: Vector3D;
+  readonly distance: number;
+  readonly decay: number;
+  readonly castShadow: boolean;
+}
+
+export interface SpotLightConfig {
+  readonly lightId: string;
+  readonly color: string;
+  readonly intensity: number;
+  readonly position: Vector3D;
+  readonly target: Vector3D;
+  readonly distance: number;
+  readonly angle: number;
+  readonly penumbra: number;
+  readonly decay: number;
+  readonly castShadow: boolean;
+}
+
+export interface HemisphereLightConfig {
+  readonly skyColor: string;
+  readonly groundColor: string;
+  readonly intensity: number;
+  readonly position: Vector3D;
+}
+
+export interface LightProbeConfig {
+  readonly probeId: string;
+  readonly position: Vector3D;
+  readonly intensity: number;
+  readonly resolution: number;
+}
+
+export interface ControlsConfig {
+  readonly interactionMode: InteractionMode;
+  readonly selectionMode: SelectionMode;
+  readonly orbit: OrbitControlsConfig | null;
+  readonly fly: FlyControlsConfig | null;
+  readonly firstPerson: FirstPersonControlsConfig | null;
+  readonly transform: TransformControlsConfig | null;
+  readonly keyboard: KeyboardConfig;
+  readonly mouse: MouseConfig;
+  readonly touch: TouchConfig;
+  readonly gamepad: GamepadConfig;
+}
+
+export interface OrbitControlsConfig {
+  readonly enabled: boolean;
+  readonly autoRotate: boolean;
+  readonly autoRotateSpeed: number;
+  readonly enableDamping: boolean;
+  readonly dampingFactor: number;
+  readonly enableZoom: boolean;
+  readonly zoomSpeed: number;
+  readonly minDistance: number;
+  readonly maxDistance: number;
+  readonly enableRotate: boolean;
+  readonly rotateSpeed: number;
+  readonly minPolarAngle: number;
+  readonly maxPolarAngle: number;
+  readonly minAzimuthAngle: number;
+  readonly maxAzimuthAngle: number;
+  readonly enablePan: boolean;
+  readonly panSpeed: number;
+  readonly screenSpacePanning: boolean;
+  readonly keyPanSpeed: number;
+}
+
+export interface FlyControlsConfig {
+  readonly enabled: boolean;
+  readonly movementSpeed: number;
+  readonly rollSpeed: number;
+  readonly dragToLook: boolean;
+  readonly autoForward: boolean;
+}
+
+export interface FirstPersonControlsConfig {
+  readonly enabled: boolean;
+  readonly movementSpeed: number;
+  readonly lookSpeed: number;
+  readonly lookVertical: boolean;
+  readonly autoForward: boolean;
+  readonly activeLook: boolean;
+  readonly heightSpeed: boolean;
+  readonly heightCoef: number;
+  readonly heightMin: number;
+  readonly heightMax: number;
+  readonly constrainVertical: boolean;
+  readonly verticalMin: number;
+  readonly verticalMax: number;
+}
+
+export interface TransformControlsConfig {
+  readonly enabled: boolean;
+  readonly mode: 'TRANSLATE' | 'ROTATE' | 'SCALE';
+  readonly space: 'WORLD' | 'LOCAL';
+  readonly size: number;
+  readonly showX: boolean;
+  readonly showY: boolean;
+  readonly showZ: boolean;
+  readonly translationSnap: number | null;
+  readonly rotationSnap: number | null;
+  readonly scaleSnap: number | null;
+}
+
+export interface KeyboardConfig {
+  readonly enabled: boolean;
+  readonly bindings: readonly KeyBinding[];
+}
+
+export interface KeyBinding {
+  readonly key: string;
+  readonly action: string;
+  readonly modifiers: readonly ('CTRL' | 'SHIFT' | 'ALT' | 'META')[];
+}
+
+export interface MouseConfig {
+  readonly enabled: boolean;
+  readonly sensitivity: number;
+  readonly invertY: boolean;
+  readonly buttons: MouseButtonConfig;
+}
+
+export interface MouseButtonConfig {
+  readonly left: string;
+  readonly middle: string;
+  readonly right: string;
+}
+
+export interface TouchConfig {
+  readonly enabled: boolean;
+  readonly pinchToZoom: boolean;
+  readonly rotateWithTwoFingers: boolean;
+  readonly panWithOneFingers: boolean;
+}
+
+export interface GamepadConfig {
+  readonly enabled: boolean;
+  readonly deadzone: number;
+  readonly sensitivity: number;
+  readonly invertY: boolean;
+}
+
+export interface PerformanceConfig {
+  readonly targetFPS: number;
+  readonly adaptiveQuality: boolean;
+  readonly lodEnabled: boolean;
+  readonly lodLevels: readonly LODLevel[];
+  readonly frustumCulling: boolean;
+  readonly occlusionCulling: boolean;
+  readonly instancing: boolean;
+  readonly maxInstances: number;
+  readonly batchGeometry: boolean;
+  readonly textureCompression: boolean;
+  readonly maxTextureSize: number;
+  readonly maxLights: number;
+  readonly maxShadowMaps: number;
+  readonly workerThreads: number;
+  readonly gpuMemoryLimit: number;
+  readonly drawCallBudget: number;
+  readonly triangleBudget: number;
+}
+
+export interface LODLevel {
+  readonly level: number;
+  readonly distance: number;
+  readonly geometryDetail: number;
+  readonly textureDetail: number;
+  readonly shadowsEnabled: boolean;
+  readonly reflectionsEnabled: boolean;
+}
+
+export interface PostProcessingConfig {
+  readonly enabled: boolean;
+  readonly effects: readonly PostProcessingEffectConfig[];
+  readonly renderOrder: readonly string[];
+}
+
+export interface PostProcessingEffectConfig {
+  readonly effectId: string;
+  readonly type: PostProcessingEffect;
+  readonly enabled: boolean;
+  readonly intensity: number;
+  readonly parameters: Readonly<Record<string, unknown>>;
+}
+
+export interface VRConfig {
+  readonly enabled: boolean;
+  readonly referenceSpaceType: 'local' | 'local-floor' | 'bounded-floor' | 'unbounded';
+  readonly sessionMode: 'immersive-vr' | 'inline';
+  readonly controllers: VRControllerConfig;
+  readonly teleportation: TeleportationConfig;
+  readonly comfort: ComfortConfig;
+}
+
+export interface VRControllerConfig {
+  readonly enabled: boolean;
+  readonly model: 'GENERIC' | 'OCULUS' | 'VIVE' | 'INDEX' | 'PICO';
+  readonly haptics: boolean;
+  readonly laserPointer: boolean;
+  readonly grabDistance: number;
+}
+
+export interface TeleportationConfig {
+  readonly enabled: boolean;
+  readonly maxDistance: number;
+  readonly curveSegments: number;
+  readonly validColor: string;
+  readonly invalidColor: string;
+}
+
+export interface ComfortConfig {
+  readonly vignette: boolean;
+  readonly snapTurning: boolean;
+  readonly snapAngle: number;
+  readonly smoothLocomotion: boolean;
+  readonly locomotionSpeed: number;
+}
+
+export interface ARConfig {
+  readonly enabled: boolean;
+  readonly sessionMode: 'immersive-ar' | 'inline';
+  readonly domOverlay: boolean;
+  readonly hitTest: boolean;
+  readonly anchors: boolean;
+  readonly planeDetection: boolean;
+  readonly lightEstimation: boolean;
+  readonly depthSensing: boolean;
+  readonly handTracking: boolean;
+}
+
+export interface StreamingConfig {
+  readonly enabled: boolean;
+  readonly protocol: 'WEBRTC' | 'HLS' | 'DASH' | 'WEBSOCKET';
+  readonly quality: StreamingQualityConfig;
+  readonly latency: 'LOW' | 'MEDIUM' | 'HIGH';
+  readonly adaptiveBitrate: boolean;
+  readonly maxBitrate: number;
+  readonly minBitrate: number;
+}
+
+export interface StreamingQualityConfig {
+  readonly resolution: '720p' | '1080p' | '1440p' | '4K';
+  readonly frameRate: 30 | 60 | 90 | 120;
+  readonly codec: 'H264' | 'H265' | 'VP9' | 'AV1';
+}
+
+export interface CollaborationConfig {
+  readonly enabled: boolean;
+  readonly maxUsers: number;
+  readonly syncRate: number;
+  readonly cursors: boolean;
+  readonly annotations: boolean;
+  readonly voiceChat: boolean;
+  readonly videoChat: boolean;
+  readonly screenShare: boolean;
+}
+
+export interface AccessibilityConfig {
+  readonly enabled: boolean;
+  readonly highContrast: boolean;
+  readonly reducedMotion: boolean;
+  readonly screenReader: boolean;
+  readonly keyboardNavigation: boolean;
+  readonly colorBlindMode: 'NONE' | 'PROTANOPIA' | 'DEUTERANOPIA' | 'TRITANOPIA';
+}
+
+export interface EngineMetadata {
+  readonly createdAt: number;
+  readonly updatedAt: number;
+  readonly createdBy: string;
+  readonly version: string;
+  readonly tags: readonly string[];
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// 3D MATH TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface Vector3D {
+  readonly x: number;
+  readonly y: number;
+  readonly z: number;
+}
+
+export interface Vector2D {
+  readonly x: number;
+  readonly y: number;
+}
+
+export interface Quaternion {
+  readonly x: number;
+  readonly y: number;
+  readonly z: number;
+  readonly w: number;
+}
+
+export interface Euler {
+  readonly x: number;
+  readonly y: number;
+  readonly z: number;
+  readonly order: 'XYZ' | 'XZY' | 'YXZ' | 'YZX' | 'ZXY' | 'ZYX';
+}
+
+export interface Matrix4x4 {
+  readonly elements: readonly number[];
+}
+
+export interface BoundingBox {
+  readonly min: Vector3D;
+  readonly max: Vector3D;
+}
+
+export interface BoundingSphere {
+  readonly center: Vector3D;
+  readonly radius: number;
+}
+
+export interface Ray {
+  readonly origin: Vector3D;
+  readonly direction: Vector3D;
+}
+
+export interface Plane {
+  readonly normal: Vector3D;
+  readonly constant: number;
+}
+
+export interface Frustum {
+  readonly planes: readonly Plane[];
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// 3D OBJECT TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface Object3D {
+  readonly objectId: string;
+  readonly name: string;
+  readonly type: Object3DType;
+  readonly visible: boolean;
+  readonly position: Vector3D;
+  readonly rotation: Euler;
+  readonly scale: Vector3D;
+  readonly matrix: Matrix4x4;
+  readonly matrixWorld: Matrix4x4;
+  readonly parent: string | null;
+  readonly children: readonly string[];
+  readonly layers: number;
+  readonly userData: Readonly<Record<string, unknown>>;
+  readonly frustumCulled: boolean;
+  readonly renderOrder: number;
+  readonly castShadow: boolean;
+  readonly receiveShadow: boolean;
+}
+
+export type Object3DType =
+  | 'MESH'
+  | 'LINE'
+  | 'POINTS'
+  | 'SPRITE'
+  | 'GROUP'
+  | 'BONE'
+  | 'SKELETON'
+  | 'SKINNED_MESH'
+  | 'INSTANCED_MESH'
+  | 'LOD'
+  | 'LIGHT'
+  | 'CAMERA'
+  | 'HELPER'
+  | 'AUDIO'
+  | 'POSITIONAL_AUDIO';
+
+export interface Mesh3D extends Object3D {
+  readonly type: 'MESH';
+  readonly geometry: Geometry3D;
+  readonly material: Material3D | readonly Material3D[];
+  readonly morphTargetInfluences: readonly number[] | null;
+  readonly morphTargetDictionary: Readonly<Record<string, number>> | null;
+}
+
+export interface InstancedMesh3D extends Object3D {
+  readonly type: 'INSTANCED_MESH';
+  readonly geometry: Geometry3D;
+  readonly material: Material3D;
+  readonly count: number;
+  readonly instanceMatrix: Float32Array;
+  readonly instanceColor: Float32Array | null;
+}
+
+export interface Line3D extends Object3D {
+  readonly type: 'LINE';
+  readonly geometry: Geometry3D;
+  readonly material: LineMaterial3D;
+  readonly lineType: 'LINE' | 'LINE_LOOP' | 'LINE_SEGMENTS';
+}
+
+export interface Points3D extends Object3D {
+  readonly type: 'POINTS';
+  readonly geometry: Geometry3D;
+  readonly material: PointsMaterial3D;
+}
+
+export interface Sprite3D extends Object3D {
+  readonly type: 'SPRITE';
+  readonly material: SpriteMaterial3D;
+  readonly center: Vector2D;
+}
+
+export interface Group3D extends Object3D {
+  readonly type: 'GROUP';
+}
+
+export interface LOD3D extends Object3D {
+  readonly type: 'LOD';
+  readonly levels: readonly LODLevelObject[];
+  readonly autoUpdate: boolean;
+}
+
+export interface LODLevelObject {
+  readonly object: string;
+  readonly distance: number;
+  readonly hysteresis: number;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// GEOMETRY TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface Geometry3D {
+  readonly geometryId: string;
+  readonly type: GeometryType;
+  readonly attributes: GeometryAttributes;
+  readonly index: Uint16Array | Uint32Array | null;
+  readonly groups: readonly GeometryGroup[];
+  readonly boundingBox: BoundingBox | null;
+  readonly boundingSphere: BoundingSphere | null;
+  readonly drawRange: DrawRange;
+  readonly morphAttributes: Readonly<Record<string, readonly Float32Array[]>> | null;
+  readonly morphTargetsRelative: boolean;
+}
+
+export interface GeometryAttributes {
+  readonly position: Float32Array;
+  readonly normal: Float32Array | null;
+  readonly uv: Float32Array | null;
+  readonly uv2: Float32Array | null;
+  readonly color: Float32Array | null;
+  readonly tangent: Float32Array | null;
+  readonly skinIndex: Uint16Array | null;
+  readonly skinWeight: Float32Array | null;
+  readonly custom: Readonly<Record<string, Float32Array>>;
+}
+
+export interface GeometryGroup {
+  readonly start: number;
+  readonly count: number;
+  readonly materialIndex: number;
+}
+
+export interface DrawRange {
+  readonly start: number;
+  readonly count: number;
+}
+
+export interface BoxGeometryParams {
+  readonly width: number;
+  readonly height: number;
+  readonly depth: number;
+  readonly widthSegments: number;
+  readonly heightSegments: number;
+  readonly depthSegments: number;
+}
+
+export interface SphereGeometryParams {
+  readonly radius: number;
+  readonly widthSegments: number;
+  readonly heightSegments: number;
+  readonly phiStart: number;
+  readonly phiLength: number;
+  readonly thetaStart: number;
+  readonly thetaLength: number;
+}
+
+export interface CylinderGeometryParams {
+  readonly radiusTop: number;
+  readonly radiusBottom: number;
+  readonly height: number;
+  readonly radialSegments: number;
+  readonly heightSegments: number;
+  readonly openEnded: boolean;
+  readonly thetaStart: number;
+  readonly thetaLength: number;
+}
+
+export interface PlaneGeometryParams {
+  readonly width: number;
+  readonly height: number;
+  readonly widthSegments: number;
+  readonly heightSegments: number;
+}
+
+export interface TorusGeometryParams {
+  readonly radius: number;
+  readonly tube: number;
+  readonly radialSegments: number;
+  readonly tubularSegments: number;
+  readonly arc: number;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// MATERIAL TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface Material3D {
+  readonly materialId: string;
+  readonly type: MaterialType;
+  readonly name: string;
+  readonly visible: boolean;
+  readonly transparent: boolean;
+  readonly opacity: number;
+  readonly alphaTest: number;
+  readonly alphaToCoverage: boolean;
+  readonly blending: BlendingMode;
+  readonly side: 'FRONT' | 'BACK' | 'DOUBLE';
+  readonly depthTest: boolean;
+  readonly depthWrite: boolean;
+  readonly stencilWrite: boolean;
+  readonly polygonOffset: boolean;
+  readonly polygonOffsetFactor: number;
+  readonly polygonOffsetUnits: number;
+  readonly dithering: boolean;
+  readonly toneMapped: boolean;
+  readonly vertexColors: boolean;
+  readonly fog: boolean;
+}
+
+export type BlendingMode =
+  | 'NONE'
+  | 'NORMAL'
+  | 'ADDITIVE'
+  | 'SUBTRACTIVE'
+  | 'MULTIPLY'
+  | 'CUSTOM';
+
+export interface StandardMaterial3D extends Material3D {
+  readonly type: 'STANDARD';
+  readonly color: string;
+  readonly roughness: number;
+  readonly metalness: number;
+  readonly map: string | null;
+  readonly roughnessMap: string | null;
+  readonly metalnessMap: string | null;
+  readonly normalMap: string | null;
+  readonly normalScale: Vector2D;
+  readonly bumpMap: string | null;
+  readonly bumpScale: number;
+  readonly displacementMap: string | null;
+  readonly displacementScale: number;
+  readonly displacementBias: number;
+  readonly aoMap: string | null;
+  readonly aoMapIntensity: number;
+  readonly emissive: string;
+  readonly emissiveIntensity: number;
+  readonly emissiveMap: string | null;
+  readonly envMap: string | null;
+  readonly envMapIntensity: number;
+  readonly lightMap: string | null;
+  readonly lightMapIntensity: number;
+  readonly wireframe: boolean;
+  readonly wireframeLinewidth: number;
+  readonly flatShading: boolean;
+}
+
+export interface PhysicalMaterial3D extends StandardMaterial3D {
+  readonly type: 'PHYSICAL';
+  readonly clearcoat: number;
+  readonly clearcoatRoughness: number;
+  readonly clearcoatMap: string | null;
+  readonly clearcoatRoughnessMap: string | null;
+  readonly clearcoatNormalMap: string | null;
+  readonly clearcoatNormalScale: Vector2D;
+  readonly sheen: number;
+  readonly sheenColor: string;
+  readonly sheenColorMap: string | null;
+  readonly sheenRoughness: number;
+  readonly sheenRoughnessMap: string | null;
+  readonly transmission: number;
+  readonly transmissionMap: string | null;
+  readonly thickness: number;
+  readonly thicknessMap: string | null;
+  readonly attenuationColor: string;
+  readonly attenuationDistance: number;
+  readonly ior: number;
+  readonly specularIntensity: number;
+  readonly specularIntensityMap: string | null;
+  readonly specularColor: string;
+  readonly specularColorMap: string | null;
+  readonly iridescence: number;
+  readonly iridescenceMap: string | null;
+  readonly iridescenceIOR: number;
+  readonly iridescenceThicknessRange: readonly [number, number];
+  readonly iridescenceThicknessMap: string | null;
+  readonly anisotropy: number;
+  readonly anisotropyRotation: number;
+  readonly anisotropyMap: string | null;
+}
+
+export interface BasicMaterial3D extends Material3D {
+  readonly type: 'BASIC';
+  readonly color: string;
+  readonly map: string | null;
+  readonly aoMap: string | null;
+  readonly aoMapIntensity: number;
+  readonly specularMap: string | null;
+  readonly alphaMap: string | null;
+  readonly envMap: string | null;
+  readonly combine: 'MULTIPLY' | 'MIX' | 'ADD';
+  readonly reflectivity: number;
+  readonly refractionRatio: number;
+  readonly wireframe: boolean;
+  readonly wireframeLinewidth: number;
+}
+
+export interface LineMaterial3D extends Material3D {
+  readonly color: string;
+  readonly linewidth: number;
+  readonly linecap: 'butt' | 'round' | 'square';
+  readonly linejoin: 'round' | 'bevel' | 'miter';
+  readonly dashed: boolean;
+  readonly dashSize: number;
+  readonly gapSize: number;
+  readonly dashScale: number;
+}
+
+export interface PointsMaterial3D extends Material3D {
+  readonly color: string;
+  readonly size: number;
+  readonly sizeAttenuation: boolean;
+  readonly map: string | null;
+  readonly alphaMap: string | null;
+}
+
+export interface SpriteMaterial3D extends Material3D {
+  readonly color: string;
+  readonly map: string | null;
+  readonly alphaMap: string | null;
+  readonly rotation: number;
+  readonly sizeAttenuation: boolean;
+}
+
+export interface ShaderMaterial3D extends Material3D {
+  readonly type: 'SHADER';
+  readonly vertexShader: string;
+  readonly fragmentShader: string;
+  readonly uniforms: Readonly<Record<string, ShaderUniform>>;
+  readonly defines: Readonly<Record<string, string | number | boolean>>;
+  readonly extensions: ShaderExtensions;
+  readonly glslVersion: 'GLSL1' | 'GLSL3';
+  readonly lights: boolean;
+  readonly clipping: boolean;
+}
+
+export interface ShaderUniform {
+  readonly type: 'int' | 'float' | 'vec2' | 'vec3' | 'vec4' | 'mat3' | 'mat4' | 'sampler2D' | 'samplerCube';
+  readonly value: unknown;
+}
+
+export interface ShaderExtensions {
+  readonly derivatives: boolean;
+  readonly fragDepth: boolean;
+  readonly drawBuffers: boolean;
+  readonly shaderTextureLOD: boolean;
+  readonly clipCullDistance: boolean;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TEXTURE TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface Texture3D {
+  readonly textureId: string;
+  readonly name: string;
+  readonly type: TextureType;
+  readonly source: TextureSource;
+  readonly mapping: TextureMapping;
+  readonly wrapS: TextureWrap;
+  readonly wrapT: TextureWrap;
+  readonly magFilter: TextureFilter;
+  readonly minFilter: TextureFilter;
+  readonly anisotropy: number;
+  readonly format: TextureFormat;
+  readonly internalFormat: string | null;
+  readonly encoding: TextureEncoding;
+  readonly generateMipmaps: boolean;
+  readonly flipY: boolean;
+  readonly premultiplyAlpha: boolean;
+  readonly unpackAlignment: number;
+  readonly offset: Vector2D;
+  readonly repeat: Vector2D;
+  readonly rotation: number;
+  readonly center: Vector2D;
+  readonly matrixAutoUpdate: boolean;
+}
+
+export type TextureType =
+  | 'TEXTURE_2D'
+  | 'TEXTURE_3D'
+  | 'TEXTURE_CUBE'
+  | 'TEXTURE_2D_ARRAY'
+  | 'DATA_TEXTURE'
+  | 'DATA_TEXTURE_3D'
+  | 'COMPRESSED_TEXTURE'
+  | 'CANVAS_TEXTURE'
+  | 'VIDEO_TEXTURE'
+  | 'RENDER_TARGET';
+
+export interface TextureSource {
+  readonly type: 'URL' | 'DATA' | 'CANVAS' | 'VIDEO' | 'GENERATED';
+  readonly url: string | null;
+  readonly data: Uint8Array | Float32Array | null;
+  readonly width: number;
+  readonly height: number;
+  readonly depth: number;
+}
+
+export type TextureMapping =
+  | 'UV'
+  | 'CUBE_REFLECTION'
+  | 'CUBE_REFRACTION'
+  | 'EQUIRECTANGULAR_REFLECTION'
+  | 'EQUIRECTANGULAR_REFRACTION';
+
+export type TextureWrap =
+  | 'REPEAT'
+  | 'CLAMP_TO_EDGE'
+  | 'MIRRORED_REPEAT';
+
+export type TextureFilter =
+  | 'NEAREST'
+  | 'LINEAR'
+  | 'NEAREST_MIPMAP_NEAREST'
+  | 'NEAREST_MIPMAP_LINEAR'
+  | 'LINEAR_MIPMAP_NEAREST'
+  | 'LINEAR_MIPMAP_LINEAR';
+
+export type TextureFormat =
+  | 'ALPHA'
+  | 'RGB'
+  | 'RGBA'
+  | 'LUMINANCE'
+  | 'LUMINANCE_ALPHA'
+  | 'DEPTH'
+  | 'DEPTH_STENCIL'
+  | 'RED'
+  | 'RED_INTEGER'
+  | 'RG'
+  | 'RG_INTEGER'
+  | 'RGB_INTEGER'
+  | 'RGBA_INTEGER';
+
+export type TextureEncoding =
+  | 'LINEAR'
+  | 'SRGB';
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ANIMATION TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface Animation3D {
+  readonly animationId: string;
+  readonly name: string;
+  readonly type: AnimationType;
+  readonly duration: number;
+  readonly tracks: readonly AnimationTrack[];
+  readonly blendMode: 'NORMAL' | 'ADDITIVE';
+  readonly loop: LoopMode;
+  readonly clampWhenFinished: boolean;
+  readonly timeScale: number;
+  readonly weight: number;
+  readonly paused: boolean;
+}
+
+export type LoopMode =
+  | 'ONCE'
+  | 'REPEAT'
+  | 'PING_PONG';
+
+export interface AnimationTrack {
+  readonly trackId: string;
+  readonly name: string;
+  readonly targetProperty: string;
+  readonly interpolation: InterpolationType;
+  readonly times: Float32Array;
+  readonly values: Float32Array;
+}
+
+export type InterpolationType =
+  | 'DISCRETE'
+  | 'LINEAR'
+  | 'SMOOTH';
+
+export interface AnimationMixer {
+  readonly mixerId: string;
+  readonly root: string;
+  readonly time: number;
+  readonly timeScale: number;
+  readonly actions: readonly AnimationAction[];
+}
+
+export interface AnimationAction {
+  readonly actionId: string;
+  readonly animationId: string;
+  readonly enabled: boolean;
+  readonly paused: boolean;
+  readonly loop: LoopMode;
+  readonly repetitions: number;
+  readonly time: number;
+  readonly timeScale: number;
+  readonly weight: number;
+  readonly fadeIn: number;
+  readonly fadeOut: number;
+  readonly clampWhenFinished: boolean;
+  readonly zeroSlopeAtStart: boolean;
+  readonly zeroSlopeAtEnd: boolean;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SECURITY VISUALIZATION TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface SecurityVisualization3D {
+  readonly visualizationId: string;
+  readonly type: Visualization3DType;
+  readonly name: string;
+  readonly description: string;
+  readonly scene: SecurityScene3D;
+  readonly dataSource: SecurityDataSource;
+  readonly mapping: DataToVisualMapping;
+  readonly interactions: SecurityInteractions;
+  readonly realTime: RealTimeConfig3D;
+  readonly alerts: AlertVisualization3D;
+  readonly annotations: readonly Annotation3D[];
+  readonly filters: readonly Filter3D[];
+  readonly timeline: Timeline3D | null;
+  readonly metadata: VisualizationMetadata;
+}
+
+export interface SecurityScene3D {
+  readonly sceneId: string;
+  readonly layout: Layout3DType;
+  readonly nodes: readonly SecurityNode3D[];
+  readonly edges: readonly SecurityEdge3D[];
+  readonly regions: readonly SecurityRegion3D[];
+  readonly labels: readonly Label3D[];
+  readonly particles: readonly ParticleSystem3D[];
+  readonly effects: readonly VisualEffect3D[];
+}
+
+export type Layout3DType =
+  | 'FORCE_DIRECTED_3D'
+  | 'HIERARCHICAL_3D'
+  | 'RADIAL_3D'
+  | 'SPHERICAL'
+  | 'CYLINDRICAL'
+  | 'GRID_3D'
+  | 'GEOGRAPHIC_3D'
+  | 'CUSTOM_3D';
+
+export interface SecurityNode3D {
+  readonly nodeId: string;
+  readonly type: SecurityNodeType;
+  readonly label: string;
+  readonly position: Vector3D;
+  readonly size: number;
+  readonly color: string;
+  readonly shape: NodeShape3D;
+  readonly icon: string | null;
+  readonly glow: GlowEffect | null;
+  readonly pulse: PulseEffect | null;
+  readonly data: Readonly<Record<string, unknown>>;
+  readonly status: NodeStatus;
+  readonly threatLevel: ThreatLevel3D;
+  readonly selected: boolean;
+  readonly highlighted: boolean;
+  readonly visible: boolean;
+  readonly interactive: boolean;
+}
+
+export type SecurityNodeType =
+  | 'SERVER'
+  | 'WORKSTATION'
+  | 'ROUTER'
+  | 'SWITCH'
+  | 'FIREWALL'
+  | 'IDS'
+  | 'IPS'
+  | 'LOAD_BALANCER'
+  | 'DATABASE'
+  | 'APPLICATION'
+  | 'CONTAINER'
+  | 'VM'
+  | 'CLOUD_SERVICE'
+  | 'IOT_DEVICE'
+  | 'MOBILE_DEVICE'
+  | 'USER'
+  | 'ATTACKER'
+  | 'C2_SERVER'
+  | 'MALWARE'
+  | 'THREAT_ACTOR'
+  | 'VULNERABILITY'
+  | 'EXPLOIT'
+  | 'DATA_ASSET'
+  | 'CREDENTIAL'
+  | 'CERTIFICATE'
+  | 'DOMAIN'
+  | 'IP_ADDRESS'
+  | 'PROCESS'
+  | 'FILE'
+  | 'REGISTRY_KEY'
+  | 'SERVICE'
+  | 'PORT';
+
+export type NodeShape3D =
+  | 'SPHERE'
+  | 'CUBE'
+  | 'CYLINDER'
+  | 'CONE'
+  | 'TORUS'
+  | 'OCTAHEDRON'
+  | 'ICOSAHEDRON'
+  | 'DODECAHEDRON'
+  | 'CUSTOM_MODEL';
+
+export interface GlowEffect {
+  readonly enabled: boolean;
+  readonly color: string;
+  readonly intensity: number;
+  readonly size: number;
+  readonly animated: boolean;
+  readonly animationSpeed: number;
+}
+
+export interface PulseEffect {
+  readonly enabled: boolean;
+  readonly color: string;
+  readonly minScale: number;
+  readonly maxScale: number;
+  readonly speed: number;
+}
+
+export type NodeStatus =
+  | 'NORMAL'
+  | 'WARNING'
+  | 'CRITICAL'
+  | 'COMPROMISED'
+  | 'OFFLINE'
+  | 'UNKNOWN';
+
+export type ThreatLevel3D =
+  | 'NONE'
+  | 'LOW'
+  | 'MEDIUM'
+  | 'HIGH'
+  | 'CRITICAL';
+
+export interface SecurityEdge3D {
+  readonly edgeId: string;
+  readonly type: SecurityEdgeType;
+  readonly source: string;
+  readonly target: string;
+  readonly label: string | null;
+  readonly color: string;
+  readonly width: number;
+  readonly style: EdgeStyle3D;
+  readonly animated: boolean;
+  readonly animationSpeed: number;
+  readonly animationDirection: 'FORWARD' | 'BACKWARD' | 'BIDIRECTIONAL';
+  readonly particles: EdgeParticles | null;
+  readonly data: Readonly<Record<string, unknown>>;
+  readonly visible: boolean;
+  readonly interactive: boolean;
+}
+
+export type SecurityEdgeType =
+  | 'NETWORK_CONNECTION'
+  | 'DATA_FLOW'
+  | 'ATTACK_PATH'
+  | 'LATERAL_MOVEMENT'
+  | 'C2_COMMUNICATION'
+  | 'AUTHENTICATION'
+  | 'AUTHORIZATION'
+  | 'DEPENDENCY'
+  | 'TRUST_RELATIONSHIP'
+  | 'VULNERABILITY_LINK'
+  | 'MALWARE_PROPAGATION'
+  | 'EXFILTRATION'
+  | 'RECONNAISSANCE'
+  | 'EXPLOITATION';
+
+export type EdgeStyle3D =
+  | 'SOLID'
+  | 'DASHED'
+  | 'DOTTED'
+  | 'ANIMATED_DASH'
+  | 'GRADIENT'
+  | 'TUBE'
+  | 'RIBBON'
+  | 'ARROW';
+
+export interface EdgeParticles {
+  readonly enabled: boolean;
+  readonly count: number;
+  readonly size: number;
+  readonly color: string;
+  readonly speed: number;
+  readonly trail: boolean;
+  readonly trailLength: number;
+}
+
+export interface SecurityRegion3D {
+  readonly regionId: string;
+  readonly type: RegionType3D;
+  readonly label: string;
+  readonly bounds: BoundingBox;
+  readonly color: string;
+  readonly opacity: number;
+  readonly wireframe: boolean;
+  readonly nodes: readonly string[];
+  readonly data: Readonly<Record<string, unknown>>;
+  readonly visible: boolean;
+}
+
+export type RegionType3D =
+  | 'NETWORK_SEGMENT'
+  | 'SECURITY_ZONE'
+  | 'TRUST_BOUNDARY'
+  | 'GEOGRAPHIC_REGION'
+  | 'CLOUD_REGION'
+  | 'DEPARTMENT'
+  | 'ATTACK_SURFACE'
+  | 'BLAST_RADIUS';
+
+export interface Label3D {
+  readonly labelId: string;
+  readonly text: string;
+  readonly position: Vector3D;
+  readonly fontSize: number;
+  readonly color: string;
+  readonly backgroundColor: string | null;
+  readonly billboard: boolean;
+  readonly occlude: boolean;
+  readonly visible: boolean;
+}
+
+export interface ParticleSystem3D {
+  readonly systemId: string;
+  readonly type: ParticleType3D;
+  readonly position: Vector3D;
+  readonly count: number;
+  readonly size: number;
+  readonly color: string;
+  readonly lifetime: number;
+  readonly velocity: Vector3D;
+  readonly acceleration: Vector3D;
+  readonly spread: number;
+  readonly opacity: number;
+  readonly fadeIn: number;
+  readonly fadeOut: number;
+  readonly blending: BlendingMode;
+  readonly texture: string | null;
+}
+
+export type ParticleType3D =
+  | 'DATA_PACKET'
+  | 'ATTACK_INDICATOR'
+  | 'ALERT_BURST'
+  | 'SCAN_WAVE'
+  | 'ENCRYPTION'
+  | 'DECRYPTION'
+  | 'MALWARE_SPREAD'
+  | 'EXFILTRATION_STREAM';
+
+export interface VisualEffect3D {
+  readonly effectId: string;
+  readonly type: EffectType3D;
+  readonly position: Vector3D;
+  readonly scale: Vector3D;
+  readonly color: string;
+  readonly intensity: number;
+  readonly duration: number;
+  readonly loop: boolean;
+  readonly visible: boolean;
+}
+
+export type EffectType3D =
+  | 'EXPLOSION'
+  | 'SHOCKWAVE'
+  | 'BEAM'
+  | 'SHIELD'
+  | 'PORTAL'
+  | 'SCAN_LINE'
+  | 'HOLOGRAM'
+  | 'GLITCH'
+  | 'MATRIX_RAIN';
+
+export interface Annotation3D {
+  readonly annotationId: string;
+  readonly type: AnnotationType3D;
+  readonly position: Vector3D;
+  readonly content: string;
+  readonly author: string;
+  readonly timestamp: number;
+  readonly color: string;
+  readonly visible: boolean;
+  readonly attachedTo: string | null;
+}
+
+export type AnnotationType3D =
+  | 'NOTE'
+  | 'WARNING'
+  | 'QUESTION'
+  | 'HIGHLIGHT'
+  | 'MEASUREMENT'
+  | 'LINK';
+
+export interface Filter3D {
+  readonly filterId: string;
+  readonly name: string;
+  readonly field: string;
+  readonly operator: FilterOperator;
+  readonly value: unknown;
+  readonly enabled: boolean;
+}
+
+export type FilterOperator =
+  | 'EQUALS'
+  | 'NOT_EQUALS'
+  | 'CONTAINS'
+  | 'NOT_CONTAINS'
+  | 'GREATER_THAN'
+  | 'LESS_THAN'
+  | 'IN'
+  | 'NOT_IN'
+  | 'BETWEEN'
+  | 'REGEX';
+
+export interface Timeline3D {
+  readonly timelineId: string;
+  readonly startTime: number;
+  readonly endTime: number;
+  readonly currentTime: number;
+  readonly playbackSpeed: number;
+  readonly playing: boolean;
+  readonly loop: boolean;
+  readonly events: readonly TimelineEvent3D[];
+}
+
+export interface TimelineEvent3D {
+  readonly eventId: string;
+  readonly timestamp: number;
+  readonly type: string;
+  readonly description: string;
+  readonly affectedNodes: readonly string[];
+  readonly affectedEdges: readonly string[];
+  readonly visualChanges: readonly VisualChange3D[];
+}
+
+export interface VisualChange3D {
+  readonly targetId: string;
+  readonly property: string;
+  readonly fromValue: unknown;
+  readonly toValue: unknown;
+  readonly duration: number;
+  readonly easing: string;
+}
+
+export interface SecurityDataSource {
+  readonly sourceId: string;
+  readonly type: 'API' | 'WEBSOCKET' | 'GRAPHQL' | 'FILE' | 'STREAM';
+  readonly endpoint: string;
+  readonly authentication: AuthConfig | null;
+  readonly refreshInterval: number;
+  readonly transform: DataTransform3D | null;
+}
+
+export interface AuthConfig {
+  readonly type: 'NONE' | 'API_KEY' | 'BEARER' | 'BASIC' | 'OAUTH2' | 'MTLS';
+  readonly credentials: Readonly<Record<string, string>>;
+}
+
+export interface DataTransform3D {
+  readonly type: 'MAP' | 'FILTER' | 'AGGREGATE' | 'JOIN' | 'CUSTOM';
+  readonly config: Readonly<Record<string, unknown>>;
+}
+
+export interface DataToVisualMapping {
+  readonly nodeMapping: NodeMapping;
+  readonly edgeMapping: EdgeMapping;
+  readonly colorMapping: ColorMapping;
+  readonly sizeMapping: SizeMapping;
+  readonly positionMapping: PositionMapping;
+}
+
+export interface NodeMapping {
+  readonly idField: string;
+  readonly typeField: string;
+  readonly labelField: string;
+  readonly dataFields: readonly string[];
+}
+
+export interface EdgeMapping {
+  readonly sourceField: string;
+  readonly targetField: string;
+  readonly typeField: string;
+  readonly labelField: string | null;
+  readonly dataFields: readonly string[];
+}
+
+export interface ColorMapping {
+  readonly field: string;
+  readonly type: 'CATEGORICAL' | 'SEQUENTIAL' | 'DIVERGING';
+  readonly scale: readonly ColorStop[];
+  readonly defaultColor: string;
+}
+
+export interface ColorStop {
+  readonly value: unknown;
+  readonly color: string;
+}
+
+export interface SizeMapping {
+  readonly field: string;
+  readonly minSize: number;
+  readonly maxSize: number;
+  readonly scale: 'LINEAR' | 'LOG' | 'SQRT';
+}
+
+export interface PositionMapping {
+  readonly type: 'LAYOUT' | 'GEOGRAPHIC' | 'CUSTOM';
+  readonly xField: string | null;
+  readonly yField: string | null;
+  readonly zField: string | null;
+  readonly layoutConfig: Readonly<Record<string, unknown>> | null;
+}
+
+export interface SecurityInteractions {
+  readonly selection: SelectionInteraction;
+  readonly hover: HoverInteraction;
+  readonly click: ClickInteraction;
+  readonly doubleClick: DoubleClickInteraction;
+  readonly rightClick: RightClickInteraction;
+  readonly drag: DragInteraction;
+  readonly zoom: ZoomInteraction;
+  readonly pan: PanInteraction;
+  readonly rotate: RotateInteraction;
+}
+
+export interface SelectionInteraction {
+  readonly enabled: boolean;
+  readonly mode: SelectionMode;
+  readonly multiSelect: boolean;
+  readonly highlightColor: string;
+  readonly outlineWidth: number;
+  readonly onSelect: string | null;
+}
+
+export interface HoverInteraction {
+  readonly enabled: boolean;
+  readonly highlightColor: string;
+  readonly showTooltip: boolean;
+  readonly tooltipDelay: number;
+  readonly onHover: string | null;
+}
+
+export interface ClickInteraction {
+  readonly enabled: boolean;
+  readonly onClick: string | null;
+}
+
+export interface DoubleClickInteraction {
+  readonly enabled: boolean;
+  readonly onDoubleClick: string | null;
+}
+
+export interface RightClickInteraction {
+  readonly enabled: boolean;
+  readonly showContextMenu: boolean;
+  readonly contextMenuItems: readonly ContextMenuItem3D[];
+  readonly onRightClick: string | null;
+}
+
+export interface ContextMenuItem3D {
+  readonly itemId: string;
+  readonly label: string;
+  readonly icon: string | null;
+  readonly action: string;
+  readonly enabled: boolean;
+  readonly separator: boolean;
+  readonly submenu: readonly ContextMenuItem3D[] | null;
+}
+
+export interface DragInteraction {
+  readonly enabled: boolean;
+  readonly constrainToPlane: boolean;
+  readonly plane: 'XY' | 'XZ' | 'YZ' | 'CAMERA';
+  readonly snap: boolean;
+  readonly snapGrid: number;
+  readonly onDrag: string | null;
+  readonly onDragEnd: string | null;
+}
+
+export interface ZoomInteraction {
+  readonly enabled: boolean;
+  readonly minZoom: number;
+  readonly maxZoom: number;
+  readonly zoomSpeed: number;
+  readonly smoothZoom: boolean;
+  readonly onZoom: string | null;
+}
+
+export interface PanInteraction {
+  readonly enabled: boolean;
+  readonly speed: number;
+  readonly inertia: boolean;
+  readonly bounds: BoundingBox | null;
+  readonly onPan: string | null;
+}
+
+export interface RotateInteraction {
+  readonly enabled: boolean;
+  readonly speed: number;
+  readonly inertia: boolean;
+  readonly constrainPitch: boolean;
+  readonly minPitch: number;
+  readonly maxPitch: number;
+  readonly onRotate: string | null;
+}
+
+export interface RealTimeConfig3D {
+  readonly enabled: boolean;
+  readonly updateInterval: number;
+  readonly interpolation: boolean;
+  readonly interpolationDuration: number;
+  readonly bufferSize: number;
+  readonly reconnectAttempts: number;
+  readonly reconnectDelay: number;
+}
+
+export interface AlertVisualization3D {
+  readonly enabled: boolean;
+  readonly position: 'ATTACHED' | 'FLOATING' | 'OVERLAY';
+  readonly animation: AlertAnimation3D;
+  readonly sound: boolean;
+  readonly soundFile: string | null;
+  readonly autoHide: boolean;
+  readonly autoHideDelay: number;
+  readonly maxVisible: number;
+  readonly groupSimilar: boolean;
+}
+
+export interface AlertAnimation3D {
+  readonly type: 'PULSE' | 'SHAKE' | 'FLASH' | 'GROW' | 'SPIN' | 'BOUNCE';
+  readonly duration: number;
+  readonly repeat: number;
+  readonly color: string;
+}
+
+export interface VisualizationMetadata {
+  readonly createdAt: number;
+  readonly updatedAt: number;
+  readonly createdBy: string;
+  readonly version: string;
+  readonly tags: readonly string[];
+  readonly classification: 'UNCLASSIFIED' | 'CONFIDENTIAL' | 'SECRET' | 'TOP_SECRET';
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// STEALTH VISUALIZATION TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface StealthVisualization3D {
+  readonly visualizationId: string;
+  readonly operationId: string;
+  readonly type: StealthVisualizationType;
+  readonly scene: StealthScene3D;
+  readonly metrics: StealthMetrics3D;
+  readonly timeline: StealthTimeline3D;
+  readonly riskIndicators: readonly RiskIndicator3D[];
+  readonly covertChannels: readonly CovertChannelVisualization3D[];
+  readonly antiForensics: AntiForensicsVisualization3D;
+}
+
+export type StealthVisualizationType =
+  | 'OPERATION_OVERVIEW'
+  | 'DETECTION_RISK'
+  | 'COVERT_CHANNELS'
+  | 'ANTI_FORENSICS'
+  | 'IMPLANT_STATUS'
+  | 'C2_HEALTH'
+  | 'EVASION_STATUS';
+
+export interface StealthScene3D {
+  readonly operationalNodes: readonly OperationalNode3D[];
+  readonly covertPaths: readonly CovertPath3D[];
+  readonly detectionZones: readonly DetectionZone3D[];
+  readonly safeZones: readonly SafeZone3D[];
+}
+
+export interface OperationalNode3D {
+  readonly nodeId: string;
+  readonly type: OperationalNodeType;
+  readonly position: Vector3D;
+  readonly status: OperationalStatus;
+  readonly detectionRisk: number;
+  readonly lastContact: number;
+  readonly implantHealth: number;
+  readonly dataCollected: number;
+  readonly visible: boolean;
+}
+
+export type OperationalNodeType =
+  | 'IMPLANT'
+  | 'BEACON'
+  | 'RELAY'
+  | 'EXFIL_POINT'
+  | 'C2_NODE'
+  | 'PIVOT'
+  | 'PERSISTENCE'
+  | 'STAGING';
+
+export type OperationalStatus =
+  | 'ACTIVE'
+  | 'DORMANT'
+  | 'COMPROMISED'
+  | 'BURNED'
+  | 'EXTRACTED'
+  | 'LOST';
+
+export interface CovertPath3D {
+  readonly pathId: string;
+  readonly source: string;
+  readonly target: string;
+  readonly channelType: CovertChannelType3D;
+  readonly bandwidth: number;
+  readonly latency: number;
+  readonly reliability: number;
+  readonly detectionRisk: number;
+  readonly encrypted: boolean;
+  readonly active: boolean;
+}
+
+export type CovertChannelType3D =
+  | 'DNS_TUNNEL'
+  | 'HTTPS_COVERT'
+  | 'ICMP_TUNNEL'
+  | 'STEGANOGRAPHY'
+  | 'TIMING_CHANNEL'
+  | 'SOCIAL_MEDIA'
+  | 'CLOUD_STORAGE'
+  | 'BLOCKCHAIN';
+
+export interface DetectionZone3D {
+  readonly zoneId: string;
+  readonly type: DetectionType3D;
+  readonly bounds: BoundingBox;
+  readonly riskLevel: number;
+  readonly sensors: readonly string[];
+  readonly bypassable: boolean;
+  readonly bypassTechnique: string | null;
+}
+
+export type DetectionType3D =
+  | 'EDR'
+  | 'NDR'
+  | 'SIEM'
+  | 'HONEYPOT'
+  | 'DLP'
+  | 'UEBA'
+  | 'SANDBOX'
+  | 'THREAT_INTEL';
+
+export interface SafeZone3D {
+  readonly zoneId: string;
+  readonly bounds: BoundingBox;
+  readonly reason: string;
+  readonly confidence: number;
+  readonly validUntil: number;
+}
+
+export interface StealthMetrics3D {
+  readonly overallRisk: number;
+  readonly detectionProbability: number;
+  readonly operationalSecurity: number;
+  readonly channelHealth: number;
+  readonly implantCoverage: number;
+  readonly dataExfiltrated: number;
+  readonly timeInTarget: number;
+  readonly alertsTriggered: number;
+  readonly alertsEvaded: number;
+}
+
+export interface StealthTimeline3D {
+  readonly events: readonly StealthEvent3D[];
+  readonly currentPhase: string;
+  readonly nextMilestone: string;
+  readonly estimatedCompletion: number;
+}
+
+export interface StealthEvent3D {
+  readonly eventId: string;
+  readonly timestamp: number;
+  readonly type: StealthEventType;
+  readonly description: string;
+  readonly riskImpact: number;
+  readonly nodeId: string | null;
+  readonly success: boolean;
+}
+
+export type StealthEventType =
+  | 'IMPLANT_DEPLOYED'
+  | 'BEACON_ESTABLISHED'
+  | 'DATA_COLLECTED'
+  | 'DATA_EXFILTRATED'
+  | 'LATERAL_MOVE'
+  | 'PRIVILEGE_ESCALATED'
+  | 'DETECTION_EVADED'
+  | 'ALERT_TRIGGERED'
+  | 'CLEANUP_PERFORMED'
+  | 'CHANNEL_SWITCHED';
+
+export interface RiskIndicator3D {
+  readonly indicatorId: string;
+  readonly type: RiskIndicatorType;
+  readonly position: Vector3D;
+  readonly level: number;
+  readonly trend: 'INCREASING' | 'STABLE' | 'DECREASING';
+  readonly source: string;
+  readonly description: string;
+}
+
+export type RiskIndicatorType =
+  | 'BEHAVIORAL_ANOMALY'
+  | 'NETWORK_ANOMALY'
+  | 'AUTHENTICATION_ANOMALY'
+  | 'FILE_ANOMALY'
+  | 'PROCESS_ANOMALY'
+  | 'TIMING_ANOMALY';
+
+export interface CovertChannelVisualization3D {
+  readonly channelId: string;
+  readonly type: CovertChannelType3D;
+  readonly endpoints: readonly string[];
+  readonly bandwidth: BandwidthVisualization;
+  readonly latency: LatencyVisualization;
+  readonly packets: readonly PacketVisualization3D[];
+  readonly encryption: EncryptionVisualization;
+  readonly obfuscation: ObfuscationVisualization;
+}
+
+export interface BandwidthVisualization {
+  readonly current: number;
+  readonly max: number;
+  readonly history: readonly number[];
+  readonly color: string;
+}
+
+export interface LatencyVisualization {
+  readonly current: number;
+  readonly average: number;
+  readonly history: readonly number[];
+  readonly color: string;
+}
+
+export interface PacketVisualization3D {
+  readonly packetId: string;
+  readonly position: Vector3D;
+  readonly size: number;
+  readonly color: string;
+  readonly encrypted: boolean;
+  readonly obfuscated: boolean;
+}
+
+export interface EncryptionVisualization {
+  readonly algorithm: string;
+  readonly keyStrength: number;
+  readonly perfectForwardSecrecy: boolean;
+  readonly visualIndicator: string;
+}
+
+export interface ObfuscationVisualization {
+  readonly technique: string;
+  readonly effectiveness: number;
+  readonly visualIndicator: string;
+}
+
+export interface AntiForensicsVisualization3D {
+  readonly artifactInventory: readonly ArtifactVisualization3D[];
+  readonly cleanupProgress: CleanupProgress3D;
+  readonly evidenceTrail: readonly EvidenceTrailItem3D[];
+  readonly selfDestructStatus: SelfDestructStatus3D;
+}
+
+export interface ArtifactVisualization3D {
+  readonly artifactId: string;
+  readonly type: ArtifactType3D;
+  readonly position: Vector3D;
+  readonly status: 'PRESENT' | 'CLEANED' | 'ENCRYPTED' | 'MODIFIED';
+  readonly riskLevel: number;
+  readonly cleanupPriority: number;
+}
+
+export type ArtifactType3D =
+  | 'FILE'
+  | 'REGISTRY'
+  | 'LOG'
+  | 'MEMORY'
+  | 'NETWORK'
+  | 'PROCESS'
+  | 'TIMESTAMP'
+  | 'CREDENTIAL';
+
+export interface CleanupProgress3D {
+  readonly totalArtifacts: number;
+  readonly cleanedArtifacts: number;
+  readonly pendingArtifacts: number;
+  readonly failedArtifacts: number;
+  readonly estimatedCompletion: number;
+}
+
+export interface EvidenceTrailItem3D {
+  readonly itemId: string;
+  readonly timestamp: number;
+  readonly type: string;
+  readonly description: string;
+  readonly position: Vector3D;
+  readonly cleaned: boolean;
+}
+
+export interface SelfDestructStatus3D {
+  readonly armed: boolean;
+  readonly triggers: readonly SelfDestructTrigger3D[];
+  readonly countdown: number | null;
+  readonly lastCheck: number;
+}
+
+export interface SelfDestructTrigger3D {
+  readonly triggerId: string;
+  readonly type: 'TIME' | 'DETECTION' | 'NETWORK_LOSS' | 'MANUAL' | 'HEARTBEAT_MISS' | 'GEOFENCE';
+  readonly status: 'ARMED' | 'TRIGGERED' | 'DISABLED';
+  readonly threshold: unknown;
+  readonly currentValue: unknown;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// EXPORT CONFIGURATION
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface Export3DConfig {
+  readonly format: Export3DFormat;
+  readonly quality: 'LOW' | 'MEDIUM' | 'HIGH' | 'ULTRA';
+  readonly includeTextures: boolean;
+  readonly includeAnimations: boolean;
+  readonly includeLights: boolean;
+  readonly includeCameras: boolean;
+  readonly embedResources: boolean;
+  readonly compression: boolean;
+}
+
+export type Export3DFormat =
+  | 'GLTF'
+  | 'GLB'
+  | 'OBJ'
+  | 'FBX'
+  | 'COLLADA'
+  | 'STL'
+  | 'PLY'
+  | 'USD'
+  | 'USDZ';
+
+export interface Screenshot3DConfig {
+  readonly width: number;
+  readonly height: number;
+  readonly format: 'PNG' | 'JPEG' | 'WEBP';
+  readonly quality: number;
+  readonly transparent: boolean;
+  readonly antialiasingSamples: number;
+}
+
+export interface Video3DConfig {
+  readonly width: number;
+  readonly height: number;
+  readonly frameRate: number;
+  readonly duration: number;
+  readonly format: 'MP4' | 'WEBM' | 'GIF';
+  readonly codec: 'H264' | 'H265' | 'VP9' | 'AV1';
+  readonly bitrate: number;
+  readonly cameraPath: readonly CameraKeyframe[];
+}
+
+export interface CameraKeyframe {
+  readonly time: number;
+  readonly position: Vector3D;
+  readonly target: Vector3D;
+  readonly fov: number;
+  readonly easing: string;
+}

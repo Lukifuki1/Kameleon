@@ -1,0 +1,195 @@
+{
+  "$schema": "https://{{ORGANIZACIJA_DOMENA}}/schemas/coverage-config.json",
+  "metadata": {
+    "projectName": "{{IME_PROJEKTA}}",
+    "version": "{{VERZIJA}}",
+    "domain": "{{DOMENA_SL}}",
+    "generatedAt": "{{DATUM}}"
+  },
+  "coverage": {
+    "provider": "v8",
+    "enabled": true,
+    "all": true,
+    "clean": true,
+    "skipFull": false,
+    "perFile": true,
+    "reportOnFailure": true
+  },
+  "thresholds": {
+    "global": {
+      "statements": 90,
+      "branches": 85,
+      "functions": 90,
+      "lines": 90
+    },
+    "perFile": {
+      "statements": 80,
+      "branches": 75,
+      "functions": 80,
+      "lines": 80
+    },
+    "security": {
+      "statements": 95,
+      "branches": 90,
+      "functions": 95,
+      "lines": 95
+    }
+  },
+  "include": [
+    "src/**/*.ts"
+  ],
+  "exclude": [
+    "src/**/*.d.ts",
+    "src/**/*.test.ts",
+    "src/**/*.spec.ts",
+    "src/**/index.ts",
+    "src/**/types.ts",
+    "node_modules/**"
+  ],
+  "securityCriticalPaths": [
+    "src/security/**/*.ts",
+    "src/observability/logger.ts"
+  ],
+  "reporters": [
+    "text",
+    "text-summary",
+    "html",
+    "lcov",
+    "json",
+    "cobertura"
+  ],
+  "reportsDirectory": "./coverage",
+  "watermarks": {
+    "statements": [80, 90],
+    "branches": [75, 85],
+    "functions": [80, 90],
+    "lines": [80, 90]
+  },
+  "compliance": {
+    "DO-178C": {
+      "levelA": {
+        "mcdc": true,
+        "statementCoverage": 100,
+        "decisionCoverage": 100,
+        "modifiedConditionCoverage": 100
+      },
+      "levelB": {
+        "statementCoverage": 100,
+        "decisionCoverage": 100
+      },
+      "levelC": {
+        "statementCoverage": 100
+      }
+    },
+    "IEC-61508": {
+      "SIL4": {
+        "statementCoverage": 100,
+        "branchCoverage": 100,
+        "mcdc": true
+      },
+      "SIL3": {
+        "statementCoverage": 100,
+        "branchCoverage": 100
+      },
+      "SIL2": {
+        "statementCoverage": 95,
+        "branchCoverage": 90
+      },
+      "SIL1": {
+        "statementCoverage": 90
+      }
+    },
+    "ISO-26262": {
+      "ASIL-D": {
+        "statementCoverage": 100,
+        "branchCoverage": 100,
+        "mcdc": true
+      },
+      "ASIL-C": {
+        "statementCoverage": 100,
+        "branchCoverage": 100
+      },
+      "ASIL-B": {
+        "statementCoverage": 95,
+        "branchCoverage": 90
+      },
+      "ASIL-A": {
+        "statementCoverage": 90
+      }
+    }
+  },
+  "mutationTesting": {
+    "enabled": true,
+    "thresholds": {
+      "high": 80,
+      "low": 60,
+      "break": 50
+    },
+    "mutators": [
+      "conditionalExpression",
+      "equalityOperator",
+      "logicalOperator",
+      "stringLiteral",
+      "arrayDeclaration",
+      "blockStatement",
+      "booleanLiteral",
+      "methodExpression",
+      "objectLiteral",
+      "unaryOperator",
+      "updateOperator"
+    ],
+    "excludedMutations": [
+      "StringLiteral"
+    ],
+    "timeoutMs": 60000,
+    "maxConcurrentTestRunners": 4
+  },
+  "securityCoverage": {
+    "authentication": {
+      "required": true,
+      "minCoverage": 95,
+      "paths": [
+        "src/security/authentication.ts",
+        "src/security/mfa.ts",
+        "src/security/session.ts"
+      ]
+    },
+    "authorization": {
+      "required": true,
+      "minCoverage": 95,
+      "paths": [
+        "src/security/authorization.ts"
+      ]
+    },
+    "encryption": {
+      "required": true,
+      "minCoverage": 95,
+      "paths": [
+        "src/security/encryption.ts",
+        "src/security/secrets.ts"
+      ]
+    },
+    "audit": {
+      "required": true,
+      "minCoverage": 95,
+      "paths": [
+        "src/security/audit.ts"
+      ]
+    },
+    "inputValidation": {
+      "required": true,
+      "minCoverage": 95,
+      "paths": [
+        "src/security/input-validation.ts",
+        "src/security/validation.ts"
+      ]
+    }
+  },
+  "ci": {
+    "failOnThreshold": true,
+    "uploadToCodecov": true,
+    "uploadToSonarQube": true,
+    "generateBadge": true,
+    "commentOnPR": true
+  }
+}

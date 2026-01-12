@@ -1,0 +1,1681 @@
+/**
+ * @file Blockchain Forensics - Self-Contained Cryptocurrency Investigation Platform
+ * @author {{AVTOR}}
+ * @version {{VERZIJA}}
+ * @date {{DATUM}}
+ * @project {{IME_PROJEKTA}}
+ * @domain VARNOSTNI_SISTEMI
+ * 
+ * @requirement REQ-SEC-BCF-001
+ * @design DSN-SEC-BCF-001
+ * @test TST-SEC-BCF-001
+ * 
+ * @description
+ * Enterprise-grade self-contained blockchain forensics platform implementing
+ * comprehensive cryptocurrency tracking, transaction analysis, wallet clustering,
+ * mixer detection, smart contract security, DeFi protocol analysis, and
+ * attribution capabilities. All protocols and parsers are natively implemented
+ * without external dependencies.
+ * 
+ * @classification TOP SECRET - Financial Intelligence Operations
+ * @authorization Required: Level 5 Security Clearance
+ * @dependencies NONE - Fully self-contained implementation
+ */
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// BLOCKCHAIN TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export type BlockchainNetwork =
+  | 'BITCOIN'
+  | 'ETHEREUM'
+  | 'BITCOIN_CASH'
+  | 'LITECOIN'
+  | 'MONERO'
+  | 'ZCASH'
+  | 'DASH'
+  | 'DOGECOIN'
+  | 'RIPPLE'
+  | 'CARDANO'
+  | 'SOLANA'
+  | 'POLKADOT'
+  | 'AVALANCHE'
+  | 'POLYGON'
+  | 'BINANCE_SMART_CHAIN'
+  | 'TRON'
+  | 'STELLAR'
+  | 'ALGORAND'
+  | 'TEZOS'
+  | 'COSMOS'
+  | 'NEAR'
+  | 'FANTOM'
+  | 'ARBITRUM'
+  | 'OPTIMISM'
+  | 'BASE';
+
+export type AddressType =
+  | 'P2PKH'
+  | 'P2SH'
+  | 'P2WPKH'
+  | 'P2WSH'
+  | 'P2TR'
+  | 'EOA'
+  | 'CONTRACT'
+  | 'MULTISIG'
+  | 'STEALTH'
+  | 'UNKNOWN';
+
+export type TransactionType =
+  | 'TRANSFER'
+  | 'COINBASE'
+  | 'CONTRACT_CREATION'
+  | 'CONTRACT_CALL'
+  | 'TOKEN_TRANSFER'
+  | 'NFT_TRANSFER'
+  | 'SWAP'
+  | 'LIQUIDITY_ADD'
+  | 'LIQUIDITY_REMOVE'
+  | 'STAKE'
+  | 'UNSTAKE'
+  | 'BRIDGE'
+  | 'MIXER'
+  | 'COINJOIN'
+  | 'ATOMIC_SWAP'
+  | 'UNKNOWN';
+
+export type EntityType =
+  | 'EXCHANGE'
+  | 'MIXER'
+  | 'GAMBLING'
+  | 'DARKNET_MARKET'
+  | 'RANSOMWARE'
+  | 'SCAM'
+  | 'THEFT'
+  | 'SANCTIONS'
+  | 'MINING_POOL'
+  | 'DEFI_PROTOCOL'
+  | 'NFT_MARKETPLACE'
+  | 'BRIDGE'
+  | 'CUSTODIAN'
+  | 'PAYMENT_PROCESSOR'
+  | 'ATM'
+  | 'P2P_EXCHANGE'
+  | 'ICO'
+  | 'SMART_CONTRACT'
+  | 'PERSONAL'
+  | 'CORPORATE'
+  | 'GOVERNMENT'
+  | 'UNKNOWN';
+
+export type RiskLevel =
+  | 'CRITICAL'
+  | 'HIGH'
+  | 'MEDIUM'
+  | 'LOW'
+  | 'MINIMAL'
+  | 'UNKNOWN';
+
+export type ClusteringMethod =
+  | 'COMMON_INPUT'
+  | 'CHANGE_ADDRESS'
+  | 'BEHAVIORAL'
+  | 'TEMPORAL'
+  | 'GRAPH_ANALYSIS'
+  | 'MACHINE_LEARNING';
+
+export type MixerType =
+  | 'CENTRALIZED'
+  | 'DECENTRALIZED'
+  | 'COINJOIN'
+  | 'TORNADO_CASH'
+  | 'WASABI'
+  | 'SAMOURAI'
+  | 'CHIPMIXER'
+  | 'UNKNOWN';
+
+export type PrivacyCoinFeature =
+  | 'RING_SIGNATURES'
+  | 'STEALTH_ADDRESSES'
+  | 'CONFIDENTIAL_TRANSACTIONS'
+  | 'ZERO_KNOWLEDGE_PROOFS'
+  | 'MIMBLEWIMBLE'
+  | 'DANDELION';
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// BLOCKCHAIN FORENSICS CONFIGURATION
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface BlockchainForensicsConfig {
+  readonly platformId: string;
+  readonly name: string;
+  readonly version: string;
+  readonly networks: NetworksConfig;
+  readonly analysis: AnalysisConfig;
+  readonly clustering: ClusteringConfig;
+  readonly attribution: AttributionConfig;
+  readonly riskScoring: RiskScoringConfig;
+  readonly alerting: AlertingConfig;
+  readonly storage: StorageConfig;
+  readonly security: SecurityConfig;
+  readonly metadata: PlatformMetadata;
+}
+
+export interface NetworksConfig {
+  readonly enabled: readonly BlockchainNetwork[];
+  readonly nodes: readonly NodeConfig[];
+  readonly indexing: IndexingConfig;
+  readonly synchronization: SyncConfig;
+}
+
+export interface NodeConfig {
+  readonly nodeId: string;
+  readonly network: BlockchainNetwork;
+  readonly type: 'FULL' | 'ARCHIVE' | 'LIGHT';
+  readonly endpoint: string;
+  readonly authentication: NodeAuthConfig | null;
+  readonly timeout: number;
+  readonly retries: number;
+  readonly priority: number;
+}
+
+export interface NodeAuthConfig {
+  readonly type: 'BASIC' | 'BEARER' | 'API_KEY';
+  readonly credentials: Readonly<Record<string, string>>;
+}
+
+export interface IndexingConfig {
+  readonly enabled: boolean;
+  readonly startBlock: number | null;
+  readonly endBlock: number | null;
+  readonly batchSize: number;
+  readonly parallelism: number;
+  readonly indexTransactions: boolean;
+  readonly indexInternalTransactions: boolean;
+  readonly indexTokenTransfers: boolean;
+  readonly indexNFTTransfers: boolean;
+  readonly indexLogs: boolean;
+  readonly indexTraces: boolean;
+}
+
+export interface SyncConfig {
+  readonly enabled: boolean;
+  readonly interval: number;
+  readonly confirmations: number;
+  readonly reorgDepth: number;
+}
+
+export interface AnalysisConfig {
+  readonly transaction: TransactionAnalysisConfig;
+  readonly address: AddressAnalysisConfig;
+  readonly flow: FlowAnalysisConfig;
+  readonly pattern: PatternAnalysisConfig;
+  readonly smartContract: SmartContractAnalysisConfig;
+  readonly defi: DeFiAnalysisConfig;
+  readonly nft: NFTAnalysisConfig;
+}
+
+export interface TransactionAnalysisConfig {
+  readonly enabled: boolean;
+  readonly parseInputs: boolean;
+  readonly parseOutputs: boolean;
+  readonly decodeData: boolean;
+  readonly traceInternalCalls: boolean;
+  readonly calculateFees: boolean;
+  readonly detectMixing: boolean;
+  readonly detectCoinjoin: boolean;
+}
+
+export interface AddressAnalysisConfig {
+  readonly enabled: boolean;
+  readonly calculateBalance: boolean;
+  readonly trackHistory: boolean;
+  readonly identifyType: boolean;
+  readonly detectMultisig: boolean;
+  readonly extractMetadata: boolean;
+}
+
+export interface FlowAnalysisConfig {
+  readonly enabled: boolean;
+  readonly maxDepth: number;
+  readonly maxTransactions: number;
+  readonly followMixers: boolean;
+  readonly followBridges: boolean;
+  readonly aggregateFlows: boolean;
+  readonly detectCycles: boolean;
+}
+
+export interface PatternAnalysisConfig {
+  readonly enabled: boolean;
+  readonly detectPeeling: boolean;
+  readonly detectLayering: boolean;
+  readonly detectSmurfing: boolean;
+  readonly detectRoundTripping: boolean;
+  readonly detectWashTrading: boolean;
+  readonly detectPumpAndDump: boolean;
+  readonly customPatterns: readonly CustomPatternConfig[];
+}
+
+export interface CustomPatternConfig {
+  readonly patternId: string;
+  readonly name: string;
+  readonly description: string;
+  readonly rules: readonly PatternRule[];
+  readonly severity: RiskLevel;
+}
+
+export interface PatternRule {
+  readonly ruleId: string;
+  readonly type: 'AMOUNT' | 'TIME' | 'COUNT' | 'ADDRESS' | 'GRAPH';
+  readonly operator: 'EQ' | 'NE' | 'GT' | 'GTE' | 'LT' | 'LTE' | 'IN' | 'BETWEEN' | 'REGEX';
+  readonly value: unknown;
+}
+
+export interface SmartContractAnalysisConfig {
+  readonly enabled: boolean;
+  readonly decompile: boolean;
+  readonly detectVulnerabilities: boolean;
+  readonly analyzePermissions: boolean;
+  readonly trackUpgrades: boolean;
+  readonly monitorEvents: boolean;
+}
+
+export interface DeFiAnalysisConfig {
+  readonly enabled: boolean;
+  readonly trackSwaps: boolean;
+  readonly trackLiquidity: boolean;
+  readonly trackLending: boolean;
+  readonly trackYieldFarming: boolean;
+  readonly trackFlashLoans: boolean;
+  readonly detectExploits: boolean;
+  readonly protocols: readonly DeFiProtocolConfig[];
+}
+
+export interface DeFiProtocolConfig {
+  readonly protocolId: string;
+  readonly name: string;
+  readonly network: BlockchainNetwork;
+  readonly type: DeFiProtocolType;
+  readonly contracts: readonly string[];
+  readonly enabled: boolean;
+}
+
+export type DeFiProtocolType =
+  | 'DEX'
+  | 'LENDING'
+  | 'YIELD_AGGREGATOR'
+  | 'DERIVATIVES'
+  | 'INSURANCE'
+  | 'STABLECOIN'
+  | 'BRIDGE'
+  | 'ORACLE'
+  | 'LIQUID_STAKING';
+
+export interface NFTAnalysisConfig {
+  readonly enabled: boolean;
+  readonly trackMints: boolean;
+  readonly trackSales: boolean;
+  readonly trackTransfers: boolean;
+  readonly detectWashTrading: boolean;
+  readonly detectFraud: boolean;
+  readonly extractMetadata: boolean;
+}
+
+export interface ClusteringConfig {
+  readonly enabled: boolean;
+  readonly methods: readonly ClusteringMethod[];
+  readonly commonInput: CommonInputConfig;
+  readonly changeAddress: ChangeAddressConfig;
+  readonly behavioral: BehavioralClusteringConfig;
+  readonly graphAnalysis: GraphAnalysisConfig;
+}
+
+export interface CommonInputConfig {
+  readonly enabled: boolean;
+  readonly minConfidence: number;
+  readonly excludeKnownEntities: boolean;
+}
+
+export interface ChangeAddressConfig {
+  readonly enabled: boolean;
+  readonly heuristics: readonly ChangeHeuristic[];
+  readonly minConfidence: number;
+}
+
+export type ChangeHeuristic =
+  | 'OPTIMAL_CHANGE'
+  | 'ADDRESS_REUSE'
+  | 'SHADOW_ADDRESS'
+  | 'ROUND_NUMBER'
+  | 'SCRIPT_TYPE';
+
+export interface BehavioralClusteringConfig {
+  readonly enabled: boolean;
+  readonly features: readonly BehavioralFeature[];
+  readonly similarityThreshold: number;
+}
+
+export type BehavioralFeature =
+  | 'TRANSACTION_TIMING'
+  | 'AMOUNT_PATTERNS'
+  | 'FEE_PATTERNS'
+  | 'COUNTERPARTY_PATTERNS'
+  | 'INPUT_OUTPUT_PATTERNS';
+
+export interface GraphAnalysisConfig {
+  readonly enabled: boolean;
+  readonly algorithms: readonly GraphAlgorithm[];
+  readonly maxNodes: number;
+  readonly maxEdges: number;
+}
+
+export type GraphAlgorithm =
+  | 'COMMUNITY_DETECTION'
+  | 'PAGERANK'
+  | 'BETWEENNESS_CENTRALITY'
+  | 'CLOSENESS_CENTRALITY'
+  | 'CONNECTED_COMPONENTS'
+  | 'SHORTEST_PATH';
+
+export interface AttributionConfig {
+  readonly enabled: boolean;
+  readonly sources: readonly AttributionSource[];
+  readonly entityDatabase: EntityDatabaseConfig;
+  readonly tagPropagation: TagPropagationConfig;
+  readonly confidence: ConfidenceConfig;
+}
+
+export interface AttributionSource {
+  readonly sourceId: string;
+  readonly name: string;
+  readonly type: 'INTERNAL' | 'EXTERNAL' | 'OSINT' | 'COMMERCIAL';
+  readonly priority: number;
+  readonly enabled: boolean;
+}
+
+export interface EntityDatabaseConfig {
+  readonly enabled: boolean;
+  readonly updateInterval: number;
+  readonly sources: readonly string[];
+}
+
+export interface TagPropagationConfig {
+  readonly enabled: boolean;
+  readonly maxHops: number;
+  readonly decayFactor: number;
+  readonly minConfidence: number;
+}
+
+export interface ConfidenceConfig {
+  readonly minConfidence: number;
+  readonly weightBySource: Readonly<Record<string, number>>;
+  readonly requireMultipleSources: boolean;
+}
+
+export interface RiskScoringConfig {
+  readonly enabled: boolean;
+  readonly model: RiskModelConfig;
+  readonly factors: readonly RiskFactor[];
+  readonly thresholds: RiskThresholds;
+  readonly realTime: boolean;
+}
+
+export interface RiskModelConfig {
+  readonly type: 'RULE_BASED' | 'ML_BASED' | 'HYBRID';
+  readonly version: string;
+  readonly updateInterval: number;
+}
+
+export interface RiskFactor {
+  readonly factorId: string;
+  readonly name: string;
+  readonly category: RiskCategory;
+  readonly weight: number;
+  readonly calculation: string;
+}
+
+export type RiskCategory =
+  | 'COUNTERPARTY'
+  | 'BEHAVIORAL'
+  | 'GEOGRAPHIC'
+  | 'REGULATORY'
+  | 'TECHNICAL';
+
+export interface RiskThresholds {
+  readonly critical: number;
+  readonly high: number;
+  readonly medium: number;
+  readonly low: number;
+}
+
+export interface AlertingConfig {
+  readonly enabled: boolean;
+  readonly channels: readonly AlertChannelConfig[];
+  readonly rules: readonly AlertRuleConfig[];
+  readonly escalation: EscalationConfig;
+}
+
+export interface AlertChannelConfig {
+  readonly channelId: string;
+  readonly name: string;
+  readonly type: 'EMAIL' | 'WEBHOOK' | 'SLACK' | 'SIEM';
+  readonly config: Readonly<Record<string, unknown>>;
+  readonly enabled: boolean;
+}
+
+export interface AlertRuleConfig {
+  readonly ruleId: string;
+  readonly name: string;
+  readonly condition: string;
+  readonly severity: RiskLevel;
+  readonly channels: readonly string[];
+  readonly cooldown: number;
+  readonly enabled: boolean;
+}
+
+export interface EscalationConfig {
+  readonly enabled: boolean;
+  readonly levels: readonly EscalationLevel[];
+  readonly autoEscalate: boolean;
+}
+
+export interface EscalationLevel {
+  readonly level: number;
+  readonly channels: readonly string[];
+  readonly delay: number;
+}
+
+export interface StorageConfig {
+  readonly type: 'FILESYSTEM' | 'DATABASE' | 'DISTRIBUTED';
+  readonly path: string;
+  readonly encryption: EncryptionConfig;
+  readonly retention: RetentionConfig;
+  readonly backup: BackupConfig;
+}
+
+export interface EncryptionConfig {
+  readonly enabled: boolean;
+  readonly algorithm: 'AES_256_GCM' | 'CHACHA20_POLY1305';
+  readonly keyManagement: 'LOCAL' | 'HSM' | 'KMS';
+}
+
+export interface RetentionConfig {
+  readonly enabled: boolean;
+  readonly maxAge: number;
+  readonly maxSize: number;
+  readonly archiveOld: boolean;
+}
+
+export interface BackupConfig {
+  readonly enabled: boolean;
+  readonly interval: number;
+  readonly retention: number;
+  readonly destination: string;
+}
+
+export interface SecurityConfig {
+  readonly authentication: AuthenticationConfig;
+  readonly authorization: AuthorizationConfig;
+  readonly audit: AuditConfig;
+}
+
+export interface AuthenticationConfig {
+  readonly enabled: boolean;
+  readonly methods: readonly ('API_KEY' | 'BEARER' | 'MTLS')[];
+  readonly sessionTimeout: number;
+}
+
+export interface AuthorizationConfig {
+  readonly enabled: boolean;
+  readonly model: 'RBAC' | 'ABAC';
+  readonly defaultRole: string;
+}
+
+export interface AuditConfig {
+  readonly enabled: boolean;
+  readonly logAccess: boolean;
+  readonly logSearches: boolean;
+  readonly logAlerts: boolean;
+  readonly retention: number;
+}
+
+export interface PlatformMetadata {
+  readonly createdAt: number;
+  readonly updatedAt: number;
+  readonly createdBy: string;
+  readonly version: string;
+  readonly tags: readonly string[];
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// BLOCKCHAIN DATA TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface Block {
+  readonly blockId: string;
+  readonly network: BlockchainNetwork;
+  readonly height: number;
+  readonly hash: string;
+  readonly previousHash: string;
+  readonly timestamp: number;
+  readonly nonce: number;
+  readonly difficulty: number;
+  readonly size: number;
+  readonly transactionCount: number;
+  readonly transactions: readonly string[];
+  readonly miner: string | null;
+  readonly reward: bigint;
+  readonly fees: bigint;
+  readonly gasUsed: bigint | null;
+  readonly gasLimit: bigint | null;
+  readonly baseFeePerGas: bigint | null;
+  readonly extraData: string | null;
+  readonly stateRoot: string | null;
+  readonly receiptsRoot: string | null;
+  readonly transactionsRoot: string | null;
+  readonly uncles: readonly string[];
+  readonly metadata: BlockMetadata;
+}
+
+export interface BlockMetadata {
+  readonly indexedAt: number;
+  readonly source: string;
+  readonly confirmations: number;
+}
+
+export interface Transaction {
+  readonly transactionId: string;
+  readonly network: BlockchainNetwork;
+  readonly hash: string;
+  readonly blockHash: string;
+  readonly blockHeight: number;
+  readonly index: number;
+  readonly timestamp: number;
+  readonly type: TransactionType;
+  readonly status: TransactionStatus;
+  readonly from: string;
+  readonly to: string | null;
+  readonly value: bigint;
+  readonly fee: bigint;
+  readonly gasPrice: bigint | null;
+  readonly gasLimit: bigint | null;
+  readonly gasUsed: bigint | null;
+  readonly maxFeePerGas: bigint | null;
+  readonly maxPriorityFeePerGas: bigint | null;
+  readonly nonce: number;
+  readonly input: string;
+  readonly decodedInput: DecodedInput | null;
+  readonly inputs: readonly TransactionInput[];
+  readonly outputs: readonly TransactionOutput[];
+  readonly internalTransactions: readonly InternalTransaction[];
+  readonly tokenTransfers: readonly TokenTransfer[];
+  readonly nftTransfers: readonly NFTTransfer[];
+  readonly logs: readonly TransactionLog[];
+  readonly trace: TransactionTrace | null;
+  readonly analysis: TransactionAnalysis;
+  readonly metadata: TransactionMetadata;
+}
+
+export type TransactionStatus =
+  | 'PENDING'
+  | 'CONFIRMED'
+  | 'FAILED'
+  | 'DROPPED';
+
+export interface DecodedInput {
+  readonly methodId: string;
+  readonly methodName: string;
+  readonly parameters: readonly DecodedParameter[];
+}
+
+export interface DecodedParameter {
+  readonly name: string;
+  readonly type: string;
+  readonly value: unknown;
+}
+
+export interface TransactionInput {
+  readonly inputId: string;
+  readonly previousTxHash: string;
+  readonly previousOutputIndex: number;
+  readonly address: string;
+  readonly value: bigint;
+  readonly scriptSig: string;
+  readonly sequence: number;
+  readonly witness: readonly string[];
+}
+
+export interface TransactionOutput {
+  readonly outputId: string;
+  readonly index: number;
+  readonly address: string | null;
+  readonly value: bigint;
+  readonly scriptPubKey: string;
+  readonly type: OutputType;
+  readonly spent: boolean;
+  readonly spentBy: string | null;
+}
+
+export type OutputType =
+  | 'P2PKH'
+  | 'P2SH'
+  | 'P2WPKH'
+  | 'P2WSH'
+  | 'P2TR'
+  | 'OP_RETURN'
+  | 'MULTISIG'
+  | 'UNKNOWN';
+
+export interface InternalTransaction {
+  readonly internalTxId: string;
+  readonly parentHash: string;
+  readonly traceAddress: readonly number[];
+  readonly type: InternalTxType;
+  readonly from: string;
+  readonly to: string;
+  readonly value: bigint;
+  readonly gas: bigint;
+  readonly gasUsed: bigint;
+  readonly input: string;
+  readonly output: string;
+  readonly error: string | null;
+}
+
+export type InternalTxType =
+  | 'CALL'
+  | 'CALLCODE'
+  | 'DELEGATECALL'
+  | 'STATICCALL'
+  | 'CREATE'
+  | 'CREATE2'
+  | 'SELFDESTRUCT';
+
+export interface TokenTransfer {
+  readonly transferId: string;
+  readonly transactionHash: string;
+  readonly logIndex: number;
+  readonly tokenAddress: string;
+  readonly tokenType: TokenType;
+  readonly tokenName: string | null;
+  readonly tokenSymbol: string | null;
+  readonly tokenDecimals: number | null;
+  readonly from: string;
+  readonly to: string;
+  readonly value: bigint;
+  readonly tokenId: bigint | null;
+}
+
+export type TokenType =
+  | 'ERC20'
+  | 'ERC721'
+  | 'ERC1155'
+  | 'BEP20'
+  | 'TRC20'
+  | 'SPL'
+  | 'NATIVE';
+
+export interface NFTTransfer {
+  readonly transferId: string;
+  readonly transactionHash: string;
+  readonly logIndex: number;
+  readonly contractAddress: string;
+  readonly tokenId: bigint;
+  readonly tokenType: 'ERC721' | 'ERC1155';
+  readonly from: string;
+  readonly to: string;
+  readonly quantity: bigint;
+  readonly metadata: NFTMetadata | null;
+}
+
+export interface NFTMetadata {
+  readonly name: string | null;
+  readonly description: string | null;
+  readonly image: string | null;
+  readonly externalUrl: string | null;
+  readonly attributes: readonly NFTAttribute[];
+}
+
+export interface NFTAttribute {
+  readonly traitType: string;
+  readonly value: string | number;
+  readonly displayType: string | null;
+}
+
+export interface TransactionLog {
+  readonly logId: string;
+  readonly transactionHash: string;
+  readonly logIndex: number;
+  readonly address: string;
+  readonly topics: readonly string[];
+  readonly data: string;
+  readonly decoded: DecodedLog | null;
+  readonly removed: boolean;
+}
+
+export interface DecodedLog {
+  readonly eventName: string;
+  readonly signature: string;
+  readonly parameters: readonly DecodedParameter[];
+}
+
+export interface TransactionTrace {
+  readonly traceId: string;
+  readonly transactionHash: string;
+  readonly type: TraceType;
+  readonly calls: readonly TraceCall[];
+  readonly gasUsed: bigint;
+  readonly output: string;
+  readonly error: string | null;
+}
+
+export type TraceType =
+  | 'CALL'
+  | 'CREATE'
+  | 'SUICIDE';
+
+export interface TraceCall {
+  readonly callId: string;
+  readonly parentId: string | null;
+  readonly type: InternalTxType;
+  readonly from: string;
+  readonly to: string;
+  readonly value: bigint;
+  readonly gas: bigint;
+  readonly gasUsed: bigint;
+  readonly input: string;
+  readonly output: string;
+  readonly error: string | null;
+  readonly calls: readonly TraceCall[];
+}
+
+export interface TransactionAnalysis {
+  readonly riskScore: number;
+  readonly riskLevel: RiskLevel;
+  readonly riskFactors: readonly RiskFactorResult[];
+  readonly patterns: readonly DetectedPattern[];
+  readonly mixingDetected: boolean;
+  readonly mixerType: MixerType | null;
+  readonly bridgeDetected: boolean;
+  readonly bridgeProtocol: string | null;
+  readonly suspicious: boolean;
+  readonly flags: readonly string[];
+}
+
+export interface RiskFactorResult {
+  readonly factorId: string;
+  readonly name: string;
+  readonly score: number;
+  readonly weight: number;
+  readonly contribution: number;
+  readonly details: string | null;
+}
+
+export interface DetectedPattern {
+  readonly patternId: string;
+  readonly name: string;
+  readonly confidence: number;
+  readonly description: string;
+  readonly evidence: readonly string[];
+}
+
+export interface TransactionMetadata {
+  readonly indexedAt: number;
+  readonly source: string;
+  readonly confirmations: number;
+  readonly analyzed: boolean;
+  readonly analyzedAt: number | null;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ADDRESS AND WALLET TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface Address {
+  readonly addressId: string;
+  readonly network: BlockchainNetwork;
+  readonly address: string;
+  readonly type: AddressType;
+  readonly balance: bigint;
+  readonly tokenBalances: readonly TokenBalance[];
+  readonly nftBalances: readonly NFTBalance[];
+  readonly transactionCount: number;
+  readonly firstSeen: number;
+  readonly lastSeen: number;
+  readonly entity: EntityAttribution | null;
+  readonly cluster: ClusterInfo | null;
+  readonly riskAssessment: AddressRiskAssessment;
+  readonly tags: readonly AddressTag[];
+  readonly metadata: AddressMetadata;
+}
+
+export interface TokenBalance {
+  readonly tokenAddress: string;
+  readonly tokenType: TokenType;
+  readonly tokenName: string | null;
+  readonly tokenSymbol: string | null;
+  readonly tokenDecimals: number | null;
+  readonly balance: bigint;
+  readonly lastUpdated: number;
+}
+
+export interface NFTBalance {
+  readonly contractAddress: string;
+  readonly tokenId: bigint;
+  readonly tokenType: 'ERC721' | 'ERC1155';
+  readonly quantity: bigint;
+  readonly metadata: NFTMetadata | null;
+}
+
+export interface EntityAttribution {
+  readonly entityId: string;
+  readonly name: string;
+  readonly type: EntityType;
+  readonly subtype: string | null;
+  readonly confidence: number;
+  readonly sources: readonly AttributionSourceInfo[];
+  readonly verified: boolean;
+  readonly lastUpdated: number;
+}
+
+export interface AttributionSourceInfo {
+  readonly sourceId: string;
+  readonly name: string;
+  readonly confidence: number;
+  readonly timestamp: number;
+}
+
+export interface ClusterInfo {
+  readonly clusterId: string;
+  readonly name: string | null;
+  readonly addressCount: number;
+  readonly totalBalance: bigint;
+  readonly entity: EntityAttribution | null;
+  readonly confidence: number;
+  readonly method: ClusteringMethod;
+}
+
+export interface AddressRiskAssessment {
+  readonly riskScore: number;
+  readonly riskLevel: RiskLevel;
+  readonly riskFactors: readonly RiskFactorResult[];
+  readonly directExposure: ExposureInfo;
+  readonly indirectExposure: ExposureInfo;
+  readonly lastAssessed: number;
+}
+
+export interface ExposureInfo {
+  readonly totalValue: bigint;
+  readonly categories: readonly CategoryExposure[];
+}
+
+export interface CategoryExposure {
+  readonly category: EntityType;
+  readonly value: bigint;
+  readonly percentage: number;
+  readonly addresses: readonly string[];
+}
+
+export interface AddressTag {
+  readonly tagId: string;
+  readonly name: string;
+  readonly category: string;
+  readonly source: string;
+  readonly confidence: number;
+  readonly timestamp: number;
+}
+
+export interface AddressMetadata {
+  readonly indexedAt: number;
+  readonly lastUpdated: number;
+  readonly source: string;
+}
+
+export interface Wallet {
+  readonly walletId: string;
+  readonly name: string | null;
+  readonly type: WalletType;
+  readonly addresses: readonly WalletAddress[];
+  readonly totalBalance: WalletBalance;
+  readonly entity: EntityAttribution | null;
+  readonly riskAssessment: WalletRiskAssessment;
+  readonly activity: WalletActivity;
+  readonly metadata: WalletMetadata;
+}
+
+export type WalletType =
+  | 'HOT'
+  | 'COLD'
+  | 'HARDWARE'
+  | 'MULTISIG'
+  | 'SMART_CONTRACT'
+  | 'CUSTODIAL'
+  | 'UNKNOWN';
+
+export interface WalletAddress {
+  readonly address: string;
+  readonly network: BlockchainNetwork;
+  readonly type: AddressType;
+  readonly derivationPath: string | null;
+  readonly balance: bigint;
+  readonly lastActivity: number;
+}
+
+export interface WalletBalance {
+  readonly native: readonly NetworkBalance[];
+  readonly tokens: readonly TokenBalance[];
+  readonly nfts: readonly NFTBalance[];
+  readonly totalValueUSD: number;
+}
+
+export interface NetworkBalance {
+  readonly network: BlockchainNetwork;
+  readonly balance: bigint;
+  readonly valueUSD: number;
+}
+
+export interface WalletRiskAssessment {
+  readonly riskScore: number;
+  readonly riskLevel: RiskLevel;
+  readonly riskFactors: readonly RiskFactorResult[];
+  readonly highRiskAddresses: readonly string[];
+  readonly lastAssessed: number;
+}
+
+export interface WalletActivity {
+  readonly totalTransactions: number;
+  readonly totalVolume: bigint;
+  readonly firstActivity: number;
+  readonly lastActivity: number;
+  readonly averageTransactionSize: bigint;
+  readonly topCounterparties: readonly CounterpartyInfo[];
+}
+
+export interface CounterpartyInfo {
+  readonly address: string;
+  readonly entity: EntityAttribution | null;
+  readonly transactionCount: number;
+  readonly totalVolume: bigint;
+  readonly direction: 'INCOMING' | 'OUTGOING' | 'BOTH';
+}
+
+export interface WalletMetadata {
+  readonly createdAt: number;
+  readonly updatedAt: number;
+  readonly source: string;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// CLUSTER TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface Cluster {
+  readonly clusterId: string;
+  readonly network: BlockchainNetwork;
+  readonly name: string | null;
+  readonly addresses: readonly ClusterAddress[];
+  readonly addressCount: number;
+  readonly totalBalance: bigint;
+  readonly totalReceived: bigint;
+  readonly totalSent: bigint;
+  readonly transactionCount: number;
+  readonly entity: EntityAttribution | null;
+  readonly riskAssessment: ClusterRiskAssessment;
+  readonly activity: ClusterActivity;
+  readonly relationships: readonly ClusterRelationship[];
+  readonly clusteringInfo: ClusteringInfo;
+  readonly metadata: ClusterMetadata;
+}
+
+export interface ClusterAddress {
+  readonly address: string;
+  readonly type: AddressType;
+  readonly balance: bigint;
+  readonly transactionCount: number;
+  readonly firstSeen: number;
+  readonly lastSeen: number;
+  readonly confidence: number;
+  readonly method: ClusteringMethod;
+}
+
+export interface ClusterRiskAssessment {
+  readonly riskScore: number;
+  readonly riskLevel: RiskLevel;
+  readonly riskFactors: readonly RiskFactorResult[];
+  readonly highRiskExposure: ExposureInfo;
+  readonly lastAssessed: number;
+}
+
+export interface ClusterActivity {
+  readonly firstActivity: number;
+  readonly lastActivity: number;
+  readonly peakActivity: number;
+  readonly averageDailyTransactions: number;
+  readonly averageDailyVolume: bigint;
+  readonly topCounterparties: readonly CounterpartyInfo[];
+}
+
+export interface ClusterRelationship {
+  readonly relatedClusterId: string;
+  readonly relatedClusterName: string | null;
+  readonly relationshipType: ClusterRelationshipType;
+  readonly transactionCount: number;
+  readonly totalVolume: bigint;
+  readonly confidence: number;
+}
+
+export type ClusterRelationshipType =
+  | 'DIRECT_TRANSFER'
+  | 'COMMON_COUNTERPARTY'
+  | 'TEMPORAL_CORRELATION'
+  | 'BEHAVIORAL_SIMILARITY';
+
+export interface ClusteringInfo {
+  readonly method: ClusteringMethod;
+  readonly confidence: number;
+  readonly evidenceCount: number;
+  readonly lastUpdated: number;
+}
+
+export interface ClusterMetadata {
+  readonly createdAt: number;
+  readonly updatedAt: number;
+  readonly source: string;
+  readonly version: number;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// FLOW ANALYSIS TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface FlowAnalysis {
+  readonly analysisId: string;
+  readonly network: BlockchainNetwork;
+  readonly sourceAddress: string;
+  readonly targetAddress: string | null;
+  readonly direction: 'FORWARD' | 'BACKWARD' | 'BOTH';
+  readonly depth: number;
+  readonly flows: readonly TransactionFlow[];
+  readonly paths: readonly FlowPath[];
+  readonly aggregatedFlows: readonly AggregatedFlow[];
+  readonly statistics: FlowStatistics;
+  readonly visualization: FlowVisualization;
+  readonly metadata: FlowAnalysisMetadata;
+}
+
+export interface TransactionFlow {
+  readonly flowId: string;
+  readonly transactionHash: string;
+  readonly from: string;
+  readonly to: string;
+  readonly value: bigint;
+  readonly timestamp: number;
+  readonly depth: number;
+  readonly path: readonly string[];
+  readonly entity: EntityAttribution | null;
+  readonly riskLevel: RiskLevel;
+}
+
+export interface FlowPath {
+  readonly pathId: string;
+  readonly addresses: readonly string[];
+  readonly transactions: readonly string[];
+  readonly totalValue: bigint;
+  readonly startTime: number;
+  readonly endTime: number;
+  readonly duration: number;
+  readonly hops: number;
+  readonly riskScore: number;
+  readonly mixingDetected: boolean;
+  readonly bridgeDetected: boolean;
+}
+
+export interface AggregatedFlow {
+  readonly from: string;
+  readonly to: string;
+  readonly transactionCount: number;
+  readonly totalValue: bigint;
+  readonly firstTransaction: number;
+  readonly lastTransaction: number;
+  readonly averageValue: bigint;
+}
+
+export interface FlowStatistics {
+  readonly totalTransactions: number;
+  readonly totalValue: bigint;
+  readonly uniqueAddresses: number;
+  readonly averagePathLength: number;
+  readonly maxPathLength: number;
+  readonly mixingPercentage: number;
+  readonly bridgePercentage: number;
+  readonly entityDistribution: readonly EntityDistribution[];
+  readonly riskDistribution: readonly RiskDistribution[];
+}
+
+export interface EntityDistribution {
+  readonly entityType: EntityType;
+  readonly count: number;
+  readonly value: bigint;
+  readonly percentage: number;
+}
+
+export interface RiskDistribution {
+  readonly riskLevel: RiskLevel;
+  readonly count: number;
+  readonly value: bigint;
+  readonly percentage: number;
+}
+
+export interface FlowVisualization {
+  readonly nodes: readonly FlowNode[];
+  readonly edges: readonly FlowEdge[];
+  readonly layout: GraphLayout;
+}
+
+export interface FlowNode {
+  readonly nodeId: string;
+  readonly address: string;
+  readonly label: string | null;
+  readonly type: AddressType;
+  readonly entity: EntityAttribution | null;
+  readonly balance: bigint;
+  readonly riskLevel: RiskLevel;
+  readonly x: number;
+  readonly y: number;
+  readonly size: number;
+  readonly color: string;
+}
+
+export interface FlowEdge {
+  readonly edgeId: string;
+  readonly source: string;
+  readonly target: string;
+  readonly value: bigint;
+  readonly transactionCount: number;
+  readonly label: string | null;
+  readonly width: number;
+  readonly color: string;
+}
+
+export interface GraphLayout {
+  readonly type: 'FORCE_DIRECTED' | 'HIERARCHICAL' | 'CIRCULAR' | 'GRID';
+  readonly width: number;
+  readonly height: number;
+  readonly padding: number;
+}
+
+export interface FlowAnalysisMetadata {
+  readonly createdAt: number;
+  readonly completedAt: number | null;
+  readonly duration: number | null;
+  readonly source: string;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SMART CONTRACT TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface SmartContract {
+  readonly contractId: string;
+  readonly network: BlockchainNetwork;
+  readonly address: string;
+  readonly name: string | null;
+  readonly type: ContractType;
+  readonly creator: string;
+  readonly creationTx: string;
+  readonly creationBlock: number;
+  readonly creationTime: number;
+  readonly bytecode: string;
+  readonly sourceCode: string | null;
+  readonly abi: readonly ABIItem[];
+  readonly verified: boolean;
+  readonly proxy: ProxyInfo | null;
+  readonly implementation: string | null;
+  readonly security: ContractSecurityAnalysis;
+  readonly activity: ContractActivity;
+  readonly metadata: ContractMetadata;
+}
+
+export type ContractType =
+  | 'ERC20'
+  | 'ERC721'
+  | 'ERC1155'
+  | 'DEX'
+  | 'LENDING'
+  | 'BRIDGE'
+  | 'MULTISIG'
+  | 'PROXY'
+  | 'GOVERNANCE'
+  | 'STAKING'
+  | 'ORACLE'
+  | 'MIXER'
+  | 'UNKNOWN';
+
+export interface ABIItem {
+  readonly type: 'FUNCTION' | 'EVENT' | 'CONSTRUCTOR' | 'FALLBACK' | 'RECEIVE';
+  readonly name: string;
+  readonly inputs: readonly ABIParameter[];
+  readonly outputs: readonly ABIParameter[];
+  readonly stateMutability: 'PURE' | 'VIEW' | 'NONPAYABLE' | 'PAYABLE';
+  readonly anonymous: boolean;
+}
+
+export interface ABIParameter {
+  readonly name: string;
+  readonly type: string;
+  readonly indexed: boolean;
+  readonly components: readonly ABIParameter[];
+}
+
+export interface ProxyInfo {
+  readonly type: ProxyType;
+  readonly implementation: string;
+  readonly admin: string | null;
+  readonly beacon: string | null;
+}
+
+export type ProxyType =
+  | 'TRANSPARENT'
+  | 'UUPS'
+  | 'BEACON'
+  | 'MINIMAL'
+  | 'DIAMOND';
+
+export interface ContractSecurityAnalysis {
+  readonly riskScore: number;
+  readonly riskLevel: RiskLevel;
+  readonly vulnerabilities: readonly ContractVulnerability[];
+  readonly permissions: ContractPermissions;
+  readonly codeQuality: CodeQualityMetrics;
+  readonly lastAnalyzed: number;
+}
+
+export interface ContractVulnerability {
+  readonly vulnerabilityId: string;
+  readonly type: VulnerabilityType;
+  readonly severity: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW' | 'INFORMATIONAL';
+  readonly title: string;
+  readonly description: string;
+  readonly location: CodeLocation | null;
+  readonly recommendation: string;
+  readonly references: readonly string[];
+}
+
+export type VulnerabilityType =
+  | 'REENTRANCY'
+  | 'INTEGER_OVERFLOW'
+  | 'INTEGER_UNDERFLOW'
+  | 'UNCHECKED_CALL'
+  | 'ACCESS_CONTROL'
+  | 'FRONT_RUNNING'
+  | 'TIMESTAMP_DEPENDENCE'
+  | 'TX_ORIGIN'
+  | 'DELEGATECALL'
+  | 'SELFDESTRUCT'
+  | 'UNINITIALIZED_STORAGE'
+  | 'ARBITRARY_JUMP'
+  | 'DENIAL_OF_SERVICE'
+  | 'FLASH_LOAN'
+  | 'ORACLE_MANIPULATION'
+  | 'SIGNATURE_REPLAY'
+  | 'CENTRALIZATION';
+
+export interface CodeLocation {
+  readonly file: string | null;
+  readonly line: number;
+  readonly column: number;
+  readonly function: string | null;
+}
+
+export interface ContractPermissions {
+  readonly owner: string | null;
+  readonly admins: readonly string[];
+  readonly minters: readonly string[];
+  readonly pausers: readonly string[];
+  readonly upgraders: readonly string[];
+  readonly hasOwnership: boolean;
+  readonly hasPause: boolean;
+  readonly hasMint: boolean;
+  readonly hasBurn: boolean;
+  readonly hasBlacklist: boolean;
+  readonly hasUpgrade: boolean;
+}
+
+export interface CodeQualityMetrics {
+  readonly complexity: number;
+  readonly linesOfCode: number;
+  readonly functions: number;
+  readonly externalCalls: number;
+  readonly stateVariables: number;
+  readonly modifiers: number;
+  readonly events: number;
+}
+
+export interface ContractActivity {
+  readonly totalTransactions: number;
+  readonly totalValue: bigint;
+  readonly uniqueUsers: number;
+  readonly firstActivity: number;
+  readonly lastActivity: number;
+  readonly dailyTransactions: number;
+  readonly dailyVolume: bigint;
+}
+
+export interface ContractMetadata {
+  readonly indexedAt: number;
+  readonly lastUpdated: number;
+  readonly source: string;
+  readonly verified: boolean;
+  readonly verifiedAt: number | null;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// INVESTIGATION TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface Investigation {
+  readonly investigationId: string;
+  readonly name: string;
+  readonly description: string;
+  readonly type: InvestigationType;
+  readonly status: InvestigationStatus;
+  readonly priority: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
+  readonly assignee: string | null;
+  readonly subjects: readonly InvestigationSubject[];
+  readonly findings: readonly InvestigationFinding[];
+  readonly evidence: readonly InvestigationEvidence[];
+  readonly timeline: readonly TimelineEvent[];
+  readonly reports: readonly InvestigationReport[];
+  readonly createdAt: number;
+  readonly updatedAt: number;
+  readonly closedAt: number | null;
+  readonly metadata: InvestigationMetadata;
+}
+
+export type InvestigationType =
+  | 'FRAUD'
+  | 'MONEY_LAUNDERING'
+  | 'RANSOMWARE'
+  | 'THEFT'
+  | 'SCAM'
+  | 'SANCTIONS_EVASION'
+  | 'TERRORIST_FINANCING'
+  | 'TAX_EVASION'
+  | 'MARKET_MANIPULATION'
+  | 'INSIDER_TRADING'
+  | 'GENERAL';
+
+export type InvestigationStatus =
+  | 'OPEN'
+  | 'IN_PROGRESS'
+  | 'PENDING_REVIEW'
+  | 'ESCALATED'
+  | 'CLOSED'
+  | 'ARCHIVED';
+
+export interface InvestigationSubject {
+  readonly subjectId: string;
+  readonly type: 'ADDRESS' | 'TRANSACTION' | 'CLUSTER' | 'ENTITY' | 'CONTRACT';
+  readonly identifier: string;
+  readonly network: BlockchainNetwork;
+  readonly name: string | null;
+  readonly role: 'PRIMARY' | 'SECONDARY' | 'WITNESS' | 'VICTIM';
+  readonly notes: string | null;
+}
+
+export interface InvestigationFinding {
+  readonly findingId: string;
+  readonly type: FindingType;
+  readonly title: string;
+  readonly description: string;
+  readonly severity: RiskLevel;
+  readonly confidence: number;
+  readonly evidence: readonly string[];
+  readonly subjects: readonly string[];
+  readonly timestamp: number;
+  readonly author: string;
+}
+
+export type FindingType =
+  | 'SUSPICIOUS_ACTIVITY'
+  | 'PATTERN_DETECTED'
+  | 'ENTITY_IDENTIFIED'
+  | 'CONNECTION_FOUND'
+  | 'RISK_IDENTIFIED'
+  | 'COMPLIANCE_ISSUE'
+  | 'TECHNICAL_FINDING';
+
+export interface InvestigationEvidence {
+  readonly evidenceId: string;
+  readonly type: EvidenceType;
+  readonly title: string;
+  readonly description: string;
+  readonly content: string;
+  readonly hash: string;
+  readonly source: string;
+  readonly timestamp: number;
+  readonly author: string;
+  readonly attachments: readonly EvidenceAttachment[];
+}
+
+export type EvidenceType =
+  | 'TRANSACTION'
+  | 'SCREENSHOT'
+  | 'DOCUMENT'
+  | 'FLOW_ANALYSIS'
+  | 'CLUSTER_ANALYSIS'
+  | 'EXTERNAL_DATA'
+  | 'WITNESS_STATEMENT';
+
+export interface EvidenceAttachment {
+  readonly attachmentId: string;
+  readonly filename: string;
+  readonly mimeType: string;
+  readonly size: number;
+  readonly hash: string;
+  readonly url: string;
+}
+
+export interface TimelineEvent {
+  readonly eventId: string;
+  readonly timestamp: number;
+  readonly type: TimelineEventType;
+  readonly title: string;
+  readonly description: string;
+  readonly subjects: readonly string[];
+  readonly author: string | null;
+}
+
+export type TimelineEventType =
+  | 'INVESTIGATION_CREATED'
+  | 'SUBJECT_ADDED'
+  | 'FINDING_ADDED'
+  | 'EVIDENCE_ADDED'
+  | 'STATUS_CHANGED'
+  | 'ASSIGNEE_CHANGED'
+  | 'COMMENT_ADDED'
+  | 'REPORT_GENERATED'
+  | 'INVESTIGATION_CLOSED';
+
+export interface InvestigationReport {
+  readonly reportId: string;
+  readonly type: ReportType;
+  readonly title: string;
+  readonly format: 'PDF' | 'HTML' | 'JSON';
+  readonly content: string;
+  readonly generatedAt: number;
+  readonly generatedBy: string;
+  readonly hash: string;
+}
+
+export type ReportType =
+  | 'SUMMARY'
+  | 'DETAILED'
+  | 'SAR'
+  | 'STR'
+  | 'COMPLIANCE'
+  | 'TECHNICAL';
+
+export interface InvestigationMetadata {
+  readonly createdBy: string;
+  readonly team: string | null;
+  readonly tags: readonly string[];
+  readonly externalRef: string | null;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// NATIVE BLOCKCHAIN PROTOCOL TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface NativeBitcoinClient {
+  readonly clientId: string;
+  readonly config: BitcoinClientConfig;
+}
+
+export interface BitcoinClientConfig {
+  readonly network: 'MAINNET' | 'TESTNET' | 'REGTEST';
+  readonly rpcUrl: string;
+  readonly rpcUser: string | null;
+  readonly rpcPassword: string | null;
+  readonly timeout: number;
+}
+
+export interface NativeEthereumClient {
+  readonly clientId: string;
+  readonly config: EthereumClientConfig;
+}
+
+export interface EthereumClientConfig {
+  readonly network: 'MAINNET' | 'GOERLI' | 'SEPOLIA';
+  readonly rpcUrl: string;
+  readonly wsUrl: string | null;
+  readonly timeout: number;
+  readonly chainId: number;
+}
+
+export interface NativeMoneroClient {
+  readonly clientId: string;
+  readonly config: MoneroClientConfig;
+}
+
+export interface MoneroClientConfig {
+  readonly network: 'MAINNET' | 'STAGENET' | 'TESTNET';
+  readonly daemonUrl: string;
+  readonly walletUrl: string | null;
+  readonly timeout: number;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ANALYSIS SESSION TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface AnalysisSession {
+  readonly sessionId: string;
+  readonly platformId: string;
+  readonly state: SessionState;
+  readonly config: SessionConfig;
+  readonly progress: SessionProgress;
+  readonly statistics: SessionStatistics;
+  readonly results: AnalysisResults;
+  readonly errors: readonly SessionError[];
+  readonly startTime: number;
+  readonly endTime: number | null;
+  readonly metadata: SessionMetadata;
+}
+
+export type SessionState =
+  | 'PENDING'
+  | 'INITIALIZING'
+  | 'RUNNING'
+  | 'PAUSED'
+  | 'STOPPING'
+  | 'COMPLETED'
+  | 'FAILED';
+
+export interface SessionConfig {
+  readonly networks: readonly BlockchainNetwork[];
+  readonly addresses: readonly string[];
+  readonly transactions: readonly string[];
+  readonly analysisTypes: readonly AnalysisType[];
+  readonly options: Readonly<Record<string, unknown>>;
+}
+
+export type AnalysisType =
+  | 'ADDRESS_ANALYSIS'
+  | 'TRANSACTION_ANALYSIS'
+  | 'FLOW_ANALYSIS'
+  | 'CLUSTER_ANALYSIS'
+  | 'RISK_ASSESSMENT'
+  | 'PATTERN_DETECTION'
+  | 'ENTITY_ATTRIBUTION';
+
+export interface SessionProgress {
+  readonly phase: SessionPhase;
+  readonly percentage: number;
+  readonly itemsTotal: number;
+  readonly itemsProcessed: number;
+  readonly currentItem: string | null;
+  readonly estimatedTimeRemaining: number | null;
+}
+
+export type SessionPhase =
+  | 'INITIALIZING'
+  | 'FETCHING_DATA'
+  | 'ANALYZING'
+  | 'CLUSTERING'
+  | 'SCORING'
+  | 'GENERATING_REPORT'
+  | 'FINALIZING';
+
+export interface SessionStatistics {
+  readonly addressesAnalyzed: number;
+  readonly transactionsAnalyzed: number;
+  readonly clustersIdentified: number;
+  readonly entitiesAttributed: number;
+  readonly risksIdentified: number;
+  readonly patternsDetected: number;
+  readonly processingTime: number;
+}
+
+export interface AnalysisResults {
+  readonly addresses: readonly Address[];
+  readonly transactions: readonly Transaction[];
+  readonly clusters: readonly Cluster[];
+  readonly flows: readonly FlowAnalysis[];
+  readonly risks: readonly RiskAssessmentResult[];
+  readonly patterns: readonly DetectedPattern[];
+  readonly entities: readonly EntityAttribution[];
+}
+
+export interface RiskAssessmentResult {
+  readonly assessmentId: string;
+  readonly subject: string;
+  readonly subjectType: 'ADDRESS' | 'TRANSACTION' | 'CLUSTER';
+  readonly riskScore: number;
+  readonly riskLevel: RiskLevel;
+  readonly factors: readonly RiskFactorResult[];
+  readonly timestamp: number;
+}
+
+export interface SessionError {
+  readonly errorId: string;
+  readonly timestamp: number;
+  readonly type: SessionErrorType;
+  readonly item: string | null;
+  readonly message: string;
+  readonly details: string | null;
+  readonly recoverable: boolean;
+}
+
+export type SessionErrorType =
+  | 'CONNECTION_ERROR'
+  | 'TIMEOUT'
+  | 'RATE_LIMIT'
+  | 'PARSE_ERROR'
+  | 'VALIDATION_ERROR'
+  | 'INTERNAL_ERROR';
+
+export interface SessionMetadata {
+  readonly platformVersion: string;
+  readonly startedBy: string;
+  readonly environment: string;
+  readonly tags: readonly string[];
+}

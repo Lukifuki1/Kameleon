@@ -1,0 +1,286 @@
+{
+  "$schema": "https://{{ORGANIZACIJA_DOMENA}}/schemas/logging-config.json",
+  "metadata": {
+    "projectName": "{{IME_PROJEKTA}}",
+    "version": "{{VERZIJA}}",
+    "domain": "{{DOMENA_SL}}",
+    "generatedAt": "{{DATUM}}"
+  },
+  "logging": {
+    "level": "info",
+    "format": "json",
+    "timestamp": {
+      "format": "ISO8601",
+      "timezone": "UTC"
+    },
+    "prettyPrint": false,
+    "colorize": false
+  },
+  "levels": {
+    "debug": 10,
+    "info": 20,
+    "warn": 30,
+    "error": 40,
+    "fatal": 50,
+    "security": 60,
+    "audit": 70
+  },
+  "transports": [
+    {
+      "type": "console",
+      "enabled": true,
+      "level": "info",
+      "format": "json"
+    },
+    {
+      "type": "file",
+      "enabled": true,
+      "level": "debug",
+      "filename": "/var/log/{{IME_PROJEKTA_SLUG}}/app.log",
+      "maxSize": "100m",
+      "maxFiles": 10,
+      "compress": true,
+      "format": "json"
+    },
+    {
+      "type": "file",
+      "enabled": true,
+      "level": "error",
+      "filename": "/var/log/{{IME_PROJEKTA_SLUG}}/error.log",
+      "maxSize": "100m",
+      "maxFiles": 30,
+      "compress": true,
+      "format": "json"
+    },
+    {
+      "type": "file",
+      "enabled": true,
+      "level": "security",
+      "filename": "/var/log/{{IME_PROJEKTA_SLUG}}/security.log",
+      "maxSize": "100m",
+      "maxFiles": 90,
+      "compress": true,
+      "format": "json"
+    },
+    {
+      "type": "file",
+      "enabled": true,
+      "level": "audit",
+      "filename": "/var/log/{{IME_PROJEKTA_SLUG}}/audit.log",
+      "maxSize": "100m",
+      "maxFiles": 365,
+      "compress": true,
+      "format": "json"
+    },
+    {
+      "type": "syslog",
+      "enabled": true,
+      "level": "info",
+      "host": "syslog.{{ORGANIZACIJA_DOMENA}}",
+      "port": 514,
+      "protocol": "tcp",
+      "facility": "local0",
+      "appName": "{{IME_PROJEKTA_SLUG}}"
+    }
+  ],
+  "masking": {
+    "enabled": true,
+    "maskCharacter": "*",
+    "preserveLength": false,
+    "patterns": [
+      {
+        "name": "password",
+        "pattern": "password",
+        "replacement": "[REDACTED]"
+      },
+      {
+        "name": "token",
+        "pattern": "(Bearer\\s+)[A-Za-z0-9\\-_]+\\.[A-Za-z0-9\\-_]+\\.[A-Za-z0-9\\-_]+",
+        "replacement": "$1[REDACTED]"
+      },
+      {
+        "name": "apiKey",
+        "pattern": "(api[_-]?key[\"']?\\s*[:=]\\s*[\"']?)[A-Za-z0-9\\-_]+",
+        "replacement": "$1[REDACTED]"
+      },
+      {
+        "name": "creditCard",
+        "pattern": "\\b(?:\\d{4}[\\s-]?){3}\\d{4}\\b",
+        "replacement": "****-****-****-****"
+      },
+      {
+        "name": "ssn",
+        "pattern": "\\b\\d{3}-\\d{2}-\\d{4}\\b",
+        "replacement": "***-**-****"
+      },
+      {
+        "name": "email",
+        "pattern": "([a-zA-Z0-9._%+-]+)@([a-zA-Z0-9.-]+\\.[a-zA-Z]{2,})",
+        "replacement": "***@$2"
+      },
+      {
+        "name": "ipAddress",
+        "pattern": "\\b(?:\\d{1,3}\\.){3}\\d{1,3}\\b",
+        "replacement": "[IP_REDACTED]",
+        "excludeFields": ["sourceIp", "clientIp", "remoteAddr"]
+      },
+      {
+        "name": "privateKey",
+        "pattern": "-----BEGIN.*PRIVATE KEY-----[\\s\\S]*?-----END.*PRIVATE KEY-----",
+        "replacement": "[PRIVATE_KEY_REDACTED]"
+      }
+    ],
+    "fields": [
+      "password",
+      "secret",
+      "token",
+      "apiKey",
+      "api_key",
+      "authorization",
+      "cookie",
+      "creditCard",
+      "credit_card",
+      "ssn",
+      "socialSecurityNumber",
+      "privateKey",
+      "private_key",
+      "cipherSecret",
+      "cipher_secret"
+    ]
+  },
+  "contextFields": {
+    "always": [
+      "timestamp",
+      "level",
+      "message",
+      "service",
+      "version",
+      "environment"
+    ],
+    "request": [
+      "requestId",
+      "correlationId",
+      "traceId",
+      "spanId",
+      "method",
+      "path",
+      "statusCode",
+      "duration"
+    ],
+    "user": [
+      "userId",
+      "sessionId",
+      "roles"
+    ],
+    "security": [
+      "eventType",
+      "category",
+      "severity",
+      "outcome",
+      "sourceIp",
+      "userAgent"
+    ]
+  },
+  "securityLogging": {
+    "enabled": true,
+    "events": [
+      {
+        "type": "authentication",
+        "level": "security",
+        "includeFields": ["userId", "outcome", "sourceIp", "userAgent", "mfaUsed"]
+      },
+      {
+        "type": "authorization",
+        "level": "security",
+        "includeFields": ["userId", "resource", "action", "outcome", "reason"]
+      },
+      {
+        "type": "dataAccess",
+        "level": "audit",
+        "includeFields": ["userId", "resource", "action", "recordCount"]
+      },
+      {
+        "type": "configChange",
+        "level": "audit",
+        "includeFields": ["userId", "setting", "oldValue", "newValue"]
+      },
+      {
+        "type": "keyOperation",
+        "level": "audit",
+        "includeFields": ["userId", "keyId", "operation", "outcome"]
+      },
+      {
+        "type": "threatDetection",
+        "level": "security",
+        "includeFields": ["threatType", "severity", "sourceIp", "indicators", "mitigation"]
+      }
+    ],
+    "hashChain": {
+      "enabled": true,
+      "algorithm": "SHA-256",
+      "includeFields": ["timestamp", "eventType", "userId", "outcome"]
+    }
+  },
+  "auditLogging": {
+    "enabled": true,
+    "format": "CEF",
+    "version": "0",
+    "vendor": "{{ORGANIZACIJA}}",
+    "product": "{{IME_PROJEKTA}}",
+    "productVersion": "{{VERZIJA}}",
+    "retention": {
+      "days": 2555,
+      "archiveAfterDays": 90,
+      "archiveDestination": "s3://{{IME_PROJEKTA_SLUG}}-audit-archive/"
+    },
+    "integrity": {
+      "enabled": true,
+      "algorithm": "SHA-256",
+      "signLogs": true,
+      "verifyOnRead": true
+    }
+  },
+  "siemIntegration": {
+    "enabled": true,
+    "format": "CEF",
+    "endpoints": [
+      {
+        "name": "primary-siem",
+        "type": "syslog",
+        "host": "siem.{{ORGANIZACIJA_DOMENA}}",
+        "port": 514,
+        "protocol": "tcp-tls",
+        "certificate": "/etc/ssl/siem-client.crt",
+        "key": "/etc/ssl/siem-client.key",
+        "ca": "/etc/ssl/siem-ca.crt"
+      },
+      {
+        "name": "backup-siem",
+        "type": "http",
+        "url": "https://siem-backup.{{ORGANIZACIJA_DOMENA}}/api/logs",
+        "headers": {
+          "Authorization": "Bearer {{SIEM_API_TOKEN}}"
+        },
+        "batchSize": 100,
+        "flushInterval": "5s"
+      }
+    ]
+  },
+  "sampling": {
+    "enabled": false,
+    "rate": 1.0,
+    "excludeLevels": ["error", "fatal", "security", "audit"]
+  },
+  "buffering": {
+    "enabled": true,
+    "size": 1000,
+    "flushInterval": "1s",
+    "flushOnLevel": ["error", "fatal", "security"]
+  },
+  "errorHandling": {
+    "onTransportError": "fallback",
+    "fallbackTransport": "console",
+    "maxRetries": 3,
+    "retryDelay": "1s"
+  }
+}

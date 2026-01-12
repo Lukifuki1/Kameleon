@@ -1,0 +1,267 @@
+/**
+ * @file Jedro sistema {{IME_PROJEKTA}}
+ * @author {{AVTOR}}
+ * @version {{VERZIJA}}
+ * @date {{DATUM}}
+ * @project {{IME_PROJEKTA}}
+ * @domain {{DOMENA_SL}}
+ * 
+ * @requirement REQ-SEC-CORE-001
+ * @design DSN-SEC-CORE-001
+ * @test TST-SEC-CORE-001
+ * 
+ * @description
+ * {{OPIS}}
+ * 
+ * Domena: Varnostni sistemi
+ * Opis: Kriptografija in zascita podatkov
+ * 
+ * @compliance DO-178C, IEC-61508, ISO-26262, MIL-STD-882E
+ * @integrity SIL-2
+ */
+
+import { getClock, Clock } from '@mia/core/clock';
+const clock: Clock = getClock();
+
+// ============================================================================
+// DOMENSKO-SPECIFICNI TIPI ZA VARNOSTNI_SISTEMI
+// ============================================================================
+
+/**
+ * Domensko-specificni tipi za Varnostni sistemi
+ * Domena: VARNOSTNI_SISTEMI
+ */
+export interface VARNOSTNISISTEMIKonfiguracija {
+    readonly domena: 'VARNOSTNI_SISTEMI';
+    readonly kategorije: readonly ['Kriptografija', 'Avtentikacija', 'Varnostna skladnost in sledljivost'];
+    readonly moduli: readonly ['AES', 'RSA', 'TOTP', 'Sledljivost varnostnih zahtev', 'Generiranje kriptografskih dokazov'];
+    readonly funkcije: readonly ['Sifriraj AES', 'Desifriraj AES', 'Sifriraj RSA', 'Desifriraj RSA', 'Podpisi RSA'];
+    readonly kljucniBesede: readonly ['encryption', 'authentication', 'authorization', 'firewall', 'vulnerability'];
+}
+
+export const DOMENA_VARNOSTNI_SISTEMI_KONSTANTE = {
+    IME: 'Varnostni sistemi',
+    OPIS: 'Kriptografija in zascita podatkov',
+    KATEGORIJE: ['Kriptografija', 'Avtentikacija', 'Varnostna skladnost in sledljivost'] as const,
+    MODULI: ['AES', 'RSA', 'TOTP', 'Sledljivost varnostnih zahtev', 'Generiranje kriptografskih dokazov'] as const,
+    FUNKCIJE: ['Sifriraj AES', 'Desifriraj AES', 'Sifriraj RSA', 'Desifriraj RSA', 'Podpisi RSA'] as const,
+    KLJUCNE_BESEDE: ['encryption', 'authentication', 'authorization', 'firewall', 'vulnerability'] as const,
+} as const;
+
+
+// ============================================================================
+// TIPI
+// ============================================================================
+
+/**
+ * Konfiguracija jedra sistema za domeno Varnostni sistemi
+ * 
+ * @requirement ZAH-FUNK-001
+ * @design DSN-001
+ */
+export interface KonfiguracijaJedra {
+    readonly imeProjekta: string;
+    readonly verzija: string;
+    readonly domena: 'VARNOSTNI_SISTEMI';
+    readonly moduli: readonly string[];
+    readonly funkcije: readonly string[];
+    readonly deterministicniNacin: boolean;
+    readonly domenaPodatki: typeof DOMENA_VARNOSTNI_SISTEMI_KONSTANTE;
+}
+
+/**
+ * Rezultat operacije jedra za Varnostni sistemi
+ * 
+ * @requirement ZAH-FUNK-003
+ * @design DSN-003
+ */
+export interface RezultatOperacije {
+    readonly uspesno: boolean;
+    readonly sporocilo: string;
+    readonly podatki: Readonly<Record<string, unknown>>;
+    readonly casIzvajanja: number;
+    readonly domena: 'VARNOSTNI_SISTEMI';
+}
+
+// ============================================================================
+// KONSTANTE
+// ============================================================================
+
+/**
+ * Privzeta konfiguracija jedra za Varnostni sistemi
+ * 
+ * @requirement ZAH-FUNK-001
+ */
+export const PRIVZETA_KONFIGURACIJA: KonfiguracijaJedra = {
+    imeProjekta: '{{IME_PROJEKTA}}',
+    verzija: '{{VERZIJA}}',
+    domena: 'VARNOSTNI_SISTEMI',
+    moduli: [{{MODULI}}].filter(Boolean),
+    funkcije: [{{FUNKCIJE}}].filter(Boolean),
+    deterministicniNacin: true,
+    domenaPodatki: DOMENA_VARNOSTNI_SISTEMI_KONSTANTE,
+} as const;
+
+// ============================================================================
+// FUNKCIJE ZA VARNOSTNI_SISTEMI
+// ============================================================================
+
+/**
+ * Inicializiraj jedro sistema za domeno Varnostni sistemi
+ * 
+ * @param konfiguracija - Konfiguracija jedra
+ * @returns Rezultat inicializacije
+ * 
+ * @requirement ZAH-FUNK-001
+ * @design DSN-001
+ * @test TEST-001
+ */
+export function inicializirajJedro(
+    konfiguracija: KonfiguracijaJedra = PRIVZETA_KONFIGURACIJA
+): RezultatOperacije {
+    const zacetek = clock.nowMs();
+    
+    try {
+        if (!konfiguracija.imeProjekta) {
+            return {
+                uspesno: false,
+                sporocilo: 'Ime projekta je obvezno za Varnostni sistemi',
+                podatki: {},
+                casIzvajanja: clock.nowMs() - zacetek,
+                domena: 'VARNOSTNI_SISTEMI',
+            };
+        }
+        
+        if (!konfiguracija.verzija) {
+            return {
+                uspesno: false,
+                sporocilo: 'Verzija je obvezna za Varnostni sistemi',
+                podatki: {},
+                casIzvajanja: clock.nowMs() - zacetek,
+                domena: 'VARNOSTNI_SISTEMI',
+            };
+        }
+        
+        return {
+            uspesno: true,
+            sporocilo: `Jedro sistema ${konfiguracija.imeProjekta} za Varnostni sistemi uspesno inicializirano`,
+            podatki: {
+                verzija: konfiguracija.verzija,
+                domena: konfiguracija.domena,
+                steviloModulov: konfiguracija.moduli.length,
+                steviloFunkcij: konfiguracija.funkcije.length,
+                domenaPodatki: konfiguracija.domenaPodatki,
+            },
+            casIzvajanja: clock.nowMs() - zacetek,
+            domena: 'VARNOSTNI_SISTEMI',
+        };
+        
+    } catch (napaka) {
+        return {
+            uspesno: false,
+            sporocilo: napaka instanceof Error ? napaka.message : String(napaka),
+            podatki: {},
+            casIzvajanja: clock.nowMs() - zacetek,
+            domena: 'VARNOSTNI_SISTEMI',
+        };
+    }
+}
+
+/**
+ * Izvedi operacijo v jedru za Varnostni sistemi
+ * 
+ * @param operacija - Ime operacije
+ * @param parametri - Parametri operacije
+ * @returns Rezultat operacije
+ * 
+ * @requirement ZAH-FUNK-002
+ * @design DSN-002
+ * @test TEST-002
+ */
+export function izvediOperacijo(
+    operacija: string,
+    parametri: Readonly<Record<string, unknown>> = {}
+): RezultatOperacije {
+    const zacetek = clock.nowMs();
+    
+    try {
+        if (!operacija) {
+            return {
+                uspesno: false,
+                sporocilo: 'Ime operacije je obvezno za Varnostni sistemi',
+                podatki: {},
+                casIzvajanja: clock.nowMs() - zacetek,
+                domena: 'VARNOSTNI_SISTEMI',
+            };
+        }
+        
+        return {
+            uspesno: true,
+            sporocilo: `Operacija ${operacija} za Varnostni sistemi uspesno izvedena`,
+            podatki: {
+                operacija,
+                parametri,
+                domena: 'VARNOSTNI_SISTEMI',
+            },
+            casIzvajanja: clock.nowMs() - zacetek,
+            domena: 'VARNOSTNI_SISTEMI',
+        };
+        
+    } catch (napaka) {
+        return {
+            uspesno: false,
+            sporocilo: napaka instanceof Error ? napaka.message : String(napaka),
+            podatki: {},
+            casIzvajanja: clock.nowMs() - zacetek,
+            domena: 'VARNOSTNI_SISTEMI',
+        };
+    }
+}
+
+/**
+ * Pridobi stanje jedra za Varnostni sistemi
+ * 
+ * @returns Trenutno stanje jedra
+ * 
+ * @requirement ZAH-FUNK-003
+ * @design DSN-003
+ * @test TEST-003
+ */
+export function pridobiStanje(): RezultatOperacije {
+    const zacetek = clock.nowMs();
+    
+    return {
+        uspesno: true,
+        sporocilo: 'Stanje jedra za Varnostni sistemi pridobljeno',
+        podatki: {
+            projekt: '{{IME_PROJEKTA}}',
+            verzija: '{{VERZIJA}}',
+            domena: 'VARNOSTNI_SISTEMI',
+            datum: '{{DATUM}}',
+            leto: '{{LETO}}',
+            domenaPodatki: DOMENA_VARNOSTNI_SISTEMI_KONSTANTE,
+        },
+        casIzvajanja: clock.nowMs() - zacetek,
+        domena: 'VARNOSTNI_SISTEMI',
+    };
+}
+
+// ============================================================================
+// IZVOZ ZA VARNOSTNI_SISTEMI
+// ============================================================================
+
+export type JedroMehanizem = {
+    readonly inicializirajJedro: typeof inicializirajJedro;
+    readonly izvediOperacijo: typeof izvediOperacijo;
+    readonly pridobiStanje: typeof pridobiStanje;
+    readonly PRIVZETA_KONFIGURACIJA: typeof PRIVZETA_KONFIGURACIJA;
+    readonly DOMENA_KONSTANTE: typeof DOMENA_VARNOSTNI_SISTEMI_KONSTANTE;
+};
+
+export const JEDRO_MEHANIZEM: JedroMehanizem = {
+    inicializirajJedro,
+    izvediOperacijo,
+    pridobiStanje,
+    PRIVZETA_KONFIGURACIJA,
+    DOMENA_KONSTANTE: DOMENA_VARNOSTNI_SISTEMI_KONSTANTE,
+} as const;

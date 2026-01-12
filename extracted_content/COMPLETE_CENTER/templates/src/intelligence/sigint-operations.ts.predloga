@@ -1,0 +1,1460 @@
+/**
+ * @file SIGINT Operations - Self-Contained Signals Intelligence Platform
+ * @author {{AVTOR}}
+ * @version {{VERZIJA}}
+ * @date {{DATUM}}
+ * @project {{IME_PROJEKTA}}
+ * @domain VARNOSTNI_SISTEMI
+ * 
+ * @requirement REQ-SEC-SIG-001
+ * @design DSN-SEC-SIG-001
+ * @test TST-SEC-SIG-001
+ * 
+ * @description
+ * Enterprise-grade self-contained signals intelligence platform implementing
+ * communications interception, traffic analysis, metadata analysis, pattern
+ * of life analysis, network mapping, and protocol fingerprinting. All signal
+ * processing algorithms are natively implemented without external dependencies.
+ * 
+ * @classification TOP SECRET - SIGINT Operations
+ * @authorization Required: Level 5 Security Clearance
+ * @dependencies NONE - Fully self-contained implementation
+ */
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SIGINT OPERATIONS TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export type SIGINTDiscipline =
+  | 'COMINT'
+  | 'ELINT'
+  | 'FISINT'
+  | 'MASINT'
+  | 'TECHINT';
+
+export type CommunicationType =
+  | 'VOICE'
+  | 'DATA'
+  | 'VIDEO'
+  | 'FAX'
+  | 'TELEMETRY'
+  | 'RADAR'
+  | 'BEACON'
+  | 'NAVIGATION'
+  | 'IDENTIFICATION';
+
+export type TransmissionMedium =
+  | 'HF'
+  | 'VHF'
+  | 'UHF'
+  | 'SHF'
+  | 'EHF'
+  | 'MICROWAVE'
+  | 'SATELLITE'
+  | 'CELLULAR'
+  | 'WIFI'
+  | 'BLUETOOTH'
+  | 'FIBER_OPTIC'
+  | 'CABLE'
+  | 'INTERNET';
+
+export type ProtocolType =
+  | 'TCP'
+  | 'UDP'
+  | 'ICMP'
+  | 'HTTP'
+  | 'HTTPS'
+  | 'FTP'
+  | 'SMTP'
+  | 'POP3'
+  | 'IMAP'
+  | 'DNS'
+  | 'SSH'
+  | 'TLS'
+  | 'SIP'
+  | 'RTP'
+  | 'RTSP'
+  | 'XMPP'
+  | 'MQTT'
+  | 'COAP'
+  | 'CUSTOM';
+
+export type EncryptionStatus =
+  | 'UNENCRYPTED'
+  | 'WEAKLY_ENCRYPTED'
+  | 'STRONGLY_ENCRYPTED'
+  | 'QUANTUM_RESISTANT'
+  | 'UNKNOWN';
+
+export type TargetType =
+  | 'INDIVIDUAL'
+  | 'ORGANIZATION'
+  | 'NETWORK'
+  | 'DEVICE'
+  | 'LOCATION'
+  | 'COMMUNICATION_CHANNEL';
+
+export type CollectionMethod =
+  | 'PASSIVE'
+  | 'ACTIVE'
+  | 'COOPERATIVE'
+  | 'COVERT';
+
+export type AnalysisType =
+  | 'TRAFFIC_ANALYSIS'
+  | 'CONTENT_ANALYSIS'
+  | 'METADATA_ANALYSIS'
+  | 'PATTERN_ANALYSIS'
+  | 'NETWORK_ANALYSIS'
+  | 'BEHAVIORAL_ANALYSIS'
+  | 'GEOLOCATION'
+  | 'ATTRIBUTION';
+
+export type PriorityLevel =
+  | 'CRITICAL'
+  | 'HIGH'
+  | 'MEDIUM'
+  | 'LOW'
+  | 'ROUTINE';
+
+export type ClassificationLevel =
+  | 'TOP_SECRET_SCI'
+  | 'TOP_SECRET'
+  | 'SECRET'
+  | 'CONFIDENTIAL'
+  | 'UNCLASSIFIED';
+
+export type OperationalMode =
+  | 'COLLECTION'
+  | 'PROCESSING'
+  | 'ANALYSIS'
+  | 'DISSEMINATION'
+  | 'FULL_CYCLE';
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SIGINT OPERATIONS CONFIGURATION
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface SIGINTOperationsConfig {
+  readonly platformId: string;
+  readonly name: string;
+  readonly version: string;
+  readonly mode: OperationalMode;
+  readonly collection: CollectionConfig;
+  readonly processing: ProcessingConfig;
+  readonly analysis: AnalysisConfig;
+  readonly targeting: TargetingConfig;
+  readonly cryptanalysis: CryptanalysisConfig;
+  readonly geolocation: GeolocationConfig;
+  readonly attribution: AttributionConfig;
+  readonly dissemination: DisseminationConfig;
+  readonly storage: StorageConfig;
+  readonly security: SecurityConfig;
+  readonly compliance: ComplianceConfig;
+  readonly metadata: PlatformMetadata;
+}
+
+export interface CollectionConfig {
+  readonly enabled: boolean;
+  readonly comint: COMINTConfig;
+  readonly elint: ELINTConfig;
+  readonly networkCollection: NetworkCollectionConfig;
+  readonly satelliteCollection: SatelliteCollectionConfig;
+  readonly mobileCollection: MobileCollectionConfig;
+}
+
+export interface COMINTConfig {
+  readonly enabled: boolean;
+  readonly voiceInterception: VoiceInterceptionConfig;
+  readonly dataInterception: DataInterceptionConfig;
+  readonly messagingInterception: MessagingInterceptionConfig;
+  readonly emailInterception: EmailInterceptionConfig;
+}
+
+export interface VoiceInterceptionConfig {
+  readonly enabled: boolean;
+  readonly protocols: readonly VoiceProtocol[];
+  readonly codecs: readonly AudioCodec[];
+  readonly transcription: TranscriptionConfig;
+  readonly speakerIdentification: SpeakerIdentificationConfig;
+  readonly languageDetection: LanguageDetectionConfig;
+}
+
+export type VoiceProtocol =
+  | 'PSTN'
+  | 'VOIP'
+  | 'SIP'
+  | 'H323'
+  | 'ISDN'
+  | 'GSM'
+  | 'CDMA'
+  | 'LTE_VOLTE'
+  | 'SATELLITE';
+
+export type AudioCodec =
+  | 'G711'
+  | 'G729'
+  | 'G722'
+  | 'OPUS'
+  | 'AMR'
+  | 'AMR_WB'
+  | 'EVRC'
+  | 'SILK'
+  | 'SPEEX';
+
+export interface TranscriptionConfig {
+  readonly enabled: boolean;
+  readonly languages: readonly string[];
+  readonly realTime: boolean;
+  readonly accuracy: 'HIGH' | 'MEDIUM' | 'LOW';
+}
+
+export interface SpeakerIdentificationConfig {
+  readonly enabled: boolean;
+  readonly voiceprintMatching: boolean;
+  readonly speakerDiarization: boolean;
+  readonly emotionDetection: boolean;
+}
+
+export interface LanguageDetectionConfig {
+  readonly enabled: boolean;
+  readonly autoDetect: boolean;
+  readonly supportedLanguages: readonly string[];
+}
+
+export interface DataInterceptionConfig {
+  readonly enabled: boolean;
+  readonly protocols: readonly ProtocolType[];
+  readonly deepPacketInspection: boolean;
+  readonly sessionReconstruction: boolean;
+  readonly fileExtraction: boolean;
+}
+
+export interface MessagingInterceptionConfig {
+  readonly enabled: boolean;
+  readonly platforms: readonly MessagingPlatform[];
+  readonly contentExtraction: boolean;
+  readonly metadataExtraction: boolean;
+}
+
+export type MessagingPlatform =
+  | 'SMS'
+  | 'MMS'
+  | 'XMPP'
+  | 'IRC'
+  | 'PROPRIETARY';
+
+export interface EmailInterceptionConfig {
+  readonly enabled: boolean;
+  readonly protocols: readonly ('SMTP' | 'POP3' | 'IMAP')[];
+  readonly headerExtraction: boolean;
+  readonly bodyExtraction: boolean;
+  readonly attachmentExtraction: boolean;
+}
+
+export interface ELINTConfig {
+  readonly enabled: boolean;
+  readonly radarInterception: RadarInterceptionConfig;
+  readonly beaconInterception: BeaconInterceptionConfig;
+  readonly navigationInterception: NavigationInterceptionConfig;
+}
+
+export interface RadarInterceptionConfig {
+  readonly enabled: boolean;
+  readonly frequencyRange: FrequencyRange;
+  readonly pulseAnalysis: boolean;
+  readonly waveformAnalysis: boolean;
+  readonly emitterIdentification: boolean;
+}
+
+export interface FrequencyRange {
+  readonly minFrequency: number;
+  readonly maxFrequency: number;
+  readonly unit: 'HZ' | 'KHZ' | 'MHZ' | 'GHZ';
+}
+
+export interface BeaconInterceptionConfig {
+  readonly enabled: boolean;
+  readonly types: readonly BeaconType[];
+  readonly identification: boolean;
+  readonly tracking: boolean;
+}
+
+export type BeaconType =
+  | 'IFF'
+  | 'TACAN'
+  | 'VOR'
+  | 'NDB'
+  | 'DME'
+  | 'ADS_B'
+  | 'EPIRB'
+  | 'PLB';
+
+export interface NavigationInterceptionConfig {
+  readonly enabled: boolean;
+  readonly systems: readonly NavigationSystem[];
+  readonly spoofingDetection: boolean;
+}
+
+export type NavigationSystem =
+  | 'GPS'
+  | 'GLONASS'
+  | 'GALILEO'
+  | 'BEIDOU'
+  | 'IRNSS'
+  | 'QZSS';
+
+export interface NetworkCollectionConfig {
+  readonly enabled: boolean;
+  readonly tapPoints: readonly TapPointConfig[];
+  readonly protocols: readonly ProtocolType[];
+  readonly flowCollection: FlowCollectionConfig;
+  readonly packetCollection: PacketCollectionConfig;
+}
+
+export interface TapPointConfig {
+  readonly tapId: string;
+  readonly name: string;
+  readonly type: 'SPAN' | 'TAP' | 'INLINE' | 'PROXY';
+  readonly location: string;
+  readonly capacity: number;
+}
+
+export interface FlowCollectionConfig {
+  readonly enabled: boolean;
+  readonly formats: readonly ('NETFLOW' | 'SFLOW' | 'IPFIX')[];
+  readonly sampling: SamplingConfig;
+}
+
+export interface SamplingConfig {
+  readonly enabled: boolean;
+  readonly rate: number;
+  readonly method: 'RANDOM' | 'DETERMINISTIC' | 'ADAPTIVE';
+}
+
+export interface PacketCollectionConfig {
+  readonly enabled: boolean;
+  readonly fullCapture: boolean;
+  readonly headerOnly: boolean;
+  readonly maxPacketSize: number;
+  readonly filtering: PacketFilterConfig;
+}
+
+export interface PacketFilterConfig {
+  readonly enabled: boolean;
+  readonly bpfFilters: readonly string[];
+  readonly protocolFilters: readonly ProtocolType[];
+}
+
+export interface SatelliteCollectionConfig {
+  readonly enabled: boolean;
+  readonly bands: readonly SatelliteBand[];
+  readonly downlinkInterception: boolean;
+  readonly uplinkInterception: boolean;
+  readonly transponderAnalysis: boolean;
+}
+
+export type SatelliteBand =
+  | 'L_BAND'
+  | 'S_BAND'
+  | 'C_BAND'
+  | 'X_BAND'
+  | 'KU_BAND'
+  | 'KA_BAND';
+
+export interface MobileCollectionConfig {
+  readonly enabled: boolean;
+  readonly technologies: readonly MobileTechnology[];
+  readonly imsiCollection: boolean;
+  readonly locationTracking: boolean;
+  readonly callInterception: boolean;
+  readonly dataInterception: boolean;
+}
+
+export type MobileTechnology =
+  | 'GSM'
+  | 'CDMA'
+  | 'UMTS'
+  | 'LTE'
+  | 'NR_5G';
+
+export interface ProcessingConfig {
+  readonly enabled: boolean;
+  readonly decoding: DecodingConfig;
+  readonly demodulation: DemodulationConfig;
+  readonly decryption: DecryptionConfig;
+  readonly normalization: NormalizationConfig;
+  readonly enrichment: EnrichmentConfig;
+}
+
+export interface DecodingConfig {
+  readonly enabled: boolean;
+  readonly protocols: readonly ProtocolType[];
+  readonly customDecoders: readonly CustomDecoderConfig[];
+  readonly autoDetection: boolean;
+}
+
+export interface CustomDecoderConfig {
+  readonly decoderId: string;
+  readonly name: string;
+  readonly protocol: string;
+  readonly specification: string;
+}
+
+export interface DemodulationConfig {
+  readonly enabled: boolean;
+  readonly modulations: readonly ModulationType[];
+  readonly autoDetection: boolean;
+  readonly adaptiveDemodulation: boolean;
+}
+
+export type ModulationType =
+  | 'AM'
+  | 'FM'
+  | 'PM'
+  | 'ASK'
+  | 'FSK'
+  | 'PSK'
+  | 'QAM'
+  | 'OFDM'
+  | 'SPREAD_SPECTRUM';
+
+export interface DecryptionConfig {
+  readonly enabled: boolean;
+  readonly knownKeys: boolean;
+  readonly cryptanalysis: boolean;
+  readonly weakCipherExploitation: boolean;
+}
+
+export interface NormalizationConfig {
+  readonly enabled: boolean;
+  readonly timestampNormalization: boolean;
+  readonly identifierNormalization: boolean;
+  readonly formatNormalization: boolean;
+}
+
+export interface EnrichmentConfig {
+  readonly enabled: boolean;
+  readonly geolocation: boolean;
+  readonly identityResolution: boolean;
+  readonly threatIntelligence: boolean;
+  readonly contextualData: boolean;
+}
+
+export interface AnalysisConfig {
+  readonly enabled: boolean;
+  readonly trafficAnalysis: TrafficAnalysisConfig;
+  readonly contentAnalysis: ContentAnalysisConfig;
+  readonly metadataAnalysis: MetadataAnalysisConfig;
+  readonly patternAnalysis: PatternAnalysisConfig;
+  readonly networkAnalysis: NetworkAnalysisConfig;
+  readonly behavioralAnalysis: BehavioralAnalysisConfig;
+}
+
+export interface TrafficAnalysisConfig {
+  readonly enabled: boolean;
+  readonly volumeAnalysis: boolean;
+  readonly timingAnalysis: boolean;
+  readonly flowAnalysis: boolean;
+  readonly protocolDistribution: boolean;
+  readonly anomalyDetection: boolean;
+}
+
+export interface ContentAnalysisConfig {
+  readonly enabled: boolean;
+  readonly textAnalysis: TextAnalysisConfig;
+  readonly imageAnalysis: ImageAnalysisConfig;
+  readonly audioAnalysis: AudioAnalysisConfig;
+  readonly videoAnalysis: VideoAnalysisConfig;
+}
+
+export interface TextAnalysisConfig {
+  readonly enabled: boolean;
+  readonly keywordExtraction: boolean;
+  readonly entityExtraction: boolean;
+  readonly sentimentAnalysis: boolean;
+  readonly topicModeling: boolean;
+  readonly languageTranslation: boolean;
+}
+
+export interface ImageAnalysisConfig {
+  readonly enabled: boolean;
+  readonly objectDetection: boolean;
+  readonly faceRecognition: boolean;
+  readonly textExtraction: boolean;
+  readonly geolocationExtraction: boolean;
+}
+
+export interface AudioAnalysisConfig {
+  readonly enabled: boolean;
+  readonly speechToText: boolean;
+  readonly speakerRecognition: boolean;
+  readonly languageIdentification: boolean;
+  readonly keywordSpotting: boolean;
+}
+
+export interface VideoAnalysisConfig {
+  readonly enabled: boolean;
+  readonly frameExtraction: boolean;
+  readonly objectTracking: boolean;
+  readonly activityRecognition: boolean;
+}
+
+export interface MetadataAnalysisConfig {
+  readonly enabled: boolean;
+  readonly headerAnalysis: boolean;
+  readonly routingAnalysis: boolean;
+  readonly timingAnalysis: boolean;
+  readonly sizeAnalysis: boolean;
+  readonly correlationAnalysis: boolean;
+}
+
+export interface PatternAnalysisConfig {
+  readonly enabled: boolean;
+  readonly patternOfLife: PatternOfLifeConfig;
+  readonly communicationPatterns: CommunicationPatternsConfig;
+  readonly temporalPatterns: TemporalPatternsConfig;
+  readonly spatialPatterns: SpatialPatternsConfig;
+}
+
+export interface PatternOfLifeConfig {
+  readonly enabled: boolean;
+  readonly activitySchedule: boolean;
+  readonly locationHistory: boolean;
+  readonly contactNetwork: boolean;
+  readonly behaviorBaseline: boolean;
+}
+
+export interface CommunicationPatternsConfig {
+  readonly enabled: boolean;
+  readonly frequencyAnalysis: boolean;
+  readonly durationAnalysis: boolean;
+  readonly recipientAnalysis: boolean;
+  readonly contentPatterns: boolean;
+}
+
+export interface TemporalPatternsConfig {
+  readonly enabled: boolean;
+  readonly periodicityDetection: boolean;
+  readonly burstDetection: boolean;
+  readonly trendAnalysis: boolean;
+  readonly seasonalityAnalysis: boolean;
+}
+
+export interface SpatialPatternsConfig {
+  readonly enabled: boolean;
+  readonly movementPatterns: boolean;
+  readonly locationClustering: boolean;
+  readonly routeAnalysis: boolean;
+  readonly proximityAnalysis: boolean;
+}
+
+export interface NetworkAnalysisConfig {
+  readonly enabled: boolean;
+  readonly topologyMapping: TopologyMappingConfig;
+  readonly communityDetection: CommunityDetectionConfig;
+  readonly centralityAnalysis: CentralityAnalysisConfig;
+  readonly pathAnalysis: PathAnalysisConfig;
+}
+
+export interface TopologyMappingConfig {
+  readonly enabled: boolean;
+  readonly nodeDiscovery: boolean;
+  readonly linkDiscovery: boolean;
+  readonly hierarchyDetection: boolean;
+}
+
+export interface CommunityDetectionConfig {
+  readonly enabled: boolean;
+  readonly algorithm: 'LOUVAIN' | 'GIRVAN_NEWMAN' | 'LABEL_PROPAGATION' | 'INFOMAP';
+  readonly resolution: number;
+}
+
+export interface CentralityAnalysisConfig {
+  readonly enabled: boolean;
+  readonly degreeCentrality: boolean;
+  readonly betweennessCentrality: boolean;
+  readonly closenessCentrality: boolean;
+  readonly eigenvectorCentrality: boolean;
+  readonly pageRank: boolean;
+}
+
+export interface PathAnalysisConfig {
+  readonly enabled: boolean;
+  readonly shortestPath: boolean;
+  readonly allPaths: boolean;
+  readonly criticalPaths: boolean;
+}
+
+export interface BehavioralAnalysisConfig {
+  readonly enabled: boolean;
+  readonly baselineBehavior: boolean;
+  readonly anomalyDetection: boolean;
+  readonly intentAnalysis: boolean;
+  readonly threatAssessment: boolean;
+}
+
+export interface TargetingConfig {
+  readonly enabled: boolean;
+  readonly selectors: SelectorConfig;
+  readonly prioritization: PrioritizationConfig;
+  readonly tasking: TaskingConfig;
+  readonly deconfliction: DeconflictionConfig;
+}
+
+export interface SelectorConfig {
+  readonly enabled: boolean;
+  readonly types: readonly SelectorType[];
+  readonly management: SelectorManagementConfig;
+}
+
+export type SelectorType =
+  | 'PHONE_NUMBER'
+  | 'EMAIL_ADDRESS'
+  | 'IP_ADDRESS'
+  | 'MAC_ADDRESS'
+  | 'IMSI'
+  | 'IMEI'
+  | 'USERNAME'
+  | 'DOMAIN'
+  | 'URL'
+  | 'KEYWORD'
+  | 'VOICEPRINT'
+  | 'FACEPRINT'
+  | 'LOCATION'
+  | 'DEVICE_ID';
+
+export interface SelectorManagementConfig {
+  readonly enabled: boolean;
+  readonly validation: boolean;
+  readonly deduplication: boolean;
+  readonly expiration: boolean;
+  readonly auditTrail: boolean;
+}
+
+export interface PrioritizationConfig {
+  readonly enabled: boolean;
+  readonly criteria: readonly PrioritizationCriterion[];
+  readonly dynamicPrioritization: boolean;
+}
+
+export interface PrioritizationCriterion {
+  readonly criterionId: string;
+  readonly name: string;
+  readonly weight: number;
+  readonly evaluation: string;
+}
+
+export interface TaskingConfig {
+  readonly enabled: boolean;
+  readonly workflow: TaskingWorkflowConfig;
+  readonly allocation: ResourceAllocationConfig;
+}
+
+export interface TaskingWorkflowConfig {
+  readonly approval: boolean;
+  readonly validation: boolean;
+  readonly tracking: boolean;
+  readonly reporting: boolean;
+}
+
+export interface ResourceAllocationConfig {
+  readonly enabled: boolean;
+  readonly automatic: boolean;
+  readonly loadBalancing: boolean;
+  readonly priorityBased: boolean;
+}
+
+export interface DeconflictionConfig {
+  readonly enabled: boolean;
+  readonly internalDeconfliction: boolean;
+  readonly externalDeconfliction: boolean;
+  readonly alertOnConflict: boolean;
+}
+
+export interface CryptanalysisConfig {
+  readonly enabled: boolean;
+  readonly cipherIdentification: CipherIdentificationConfig;
+  readonly keyRecovery: KeyRecoveryConfig;
+  readonly protocolAnalysis: ProtocolAnalysisConfig;
+}
+
+export interface CipherIdentificationConfig {
+  readonly enabled: boolean;
+  readonly knownCiphers: boolean;
+  readonly unknownCiphers: boolean;
+  readonly strengthAssessment: boolean;
+}
+
+export interface KeyRecoveryConfig {
+  readonly enabled: boolean;
+  readonly bruteForce: boolean;
+  readonly dictionaryAttack: boolean;
+  readonly sidechannelAnalysis: boolean;
+  readonly knownPlaintext: boolean;
+}
+
+export interface ProtocolAnalysisConfig {
+  readonly enabled: boolean;
+  readonly handshakeAnalysis: boolean;
+  readonly keyExchangeAnalysis: boolean;
+  readonly vulnerabilityDetection: boolean;
+}
+
+export interface GeolocationConfig {
+  readonly enabled: boolean;
+  readonly methods: GeolocationMethodsConfig;
+  readonly accuracy: GeolocationAccuracyConfig;
+  readonly tracking: GeolocationTrackingConfig;
+}
+
+export interface GeolocationMethodsConfig {
+  readonly cellTower: boolean;
+  readonly wifi: boolean;
+  readonly gps: boolean;
+  readonly ipGeolocation: boolean;
+  readonly rfDirection: boolean;
+  readonly tdoa: boolean;
+}
+
+export interface GeolocationAccuracyConfig {
+  readonly minAccuracy: number;
+  readonly confidenceLevel: number;
+  readonly multiSourceFusion: boolean;
+}
+
+export interface GeolocationTrackingConfig {
+  readonly enabled: boolean;
+  readonly realTime: boolean;
+  readonly historical: boolean;
+  readonly predictive: boolean;
+}
+
+export interface AttributionConfig {
+  readonly enabled: boolean;
+  readonly identityResolution: IdentityResolutionConfig;
+  readonly organizationalAttribution: OrganizationalAttributionConfig;
+  readonly technicalAttribution: TechnicalAttributionConfig;
+}
+
+export interface IdentityResolutionConfig {
+  readonly enabled: boolean;
+  readonly crossPlatform: boolean;
+  readonly temporalCorrelation: boolean;
+  readonly behavioralCorrelation: boolean;
+}
+
+export interface OrganizationalAttributionConfig {
+  readonly enabled: boolean;
+  readonly structureAnalysis: boolean;
+  readonly affiliationDetection: boolean;
+  readonly hierarchyMapping: boolean;
+}
+
+export interface TechnicalAttributionConfig {
+  readonly enabled: boolean;
+  readonly infrastructureAnalysis: boolean;
+  readonly toolAnalysis: boolean;
+  readonly ttpAnalysis: boolean;
+}
+
+export interface DisseminationConfig {
+  readonly enabled: boolean;
+  readonly products: ProductsConfig;
+  readonly distribution: DistributionConfig;
+  readonly feedback: FeedbackConfig;
+}
+
+export interface ProductsConfig {
+  readonly enabled: boolean;
+  readonly types: readonly ProductType[];
+  readonly templates: readonly ProductTemplate[];
+}
+
+export type ProductType =
+  | 'INTELLIGENCE_REPORT'
+  | 'TECHNICAL_REPORT'
+  | 'SUMMARY'
+  | 'ALERT'
+  | 'ASSESSMENT'
+  | 'RAW_DATA';
+
+export interface ProductTemplate {
+  readonly templateId: string;
+  readonly name: string;
+  readonly type: ProductType;
+  readonly format: 'PDF' | 'HTML' | 'JSON' | 'XML';
+  readonly sections: readonly string[];
+}
+
+export interface DistributionConfig {
+  readonly enabled: boolean;
+  readonly channels: readonly DistributionChannel[];
+  readonly accessControl: AccessControlConfig;
+}
+
+export interface DistributionChannel {
+  readonly channelId: string;
+  readonly name: string;
+  readonly type: 'EMAIL' | 'PORTAL' | 'API' | 'SECURE_MESSAGING';
+  readonly classification: ClassificationLevel;
+}
+
+export interface AccessControlConfig {
+  readonly enabled: boolean;
+  readonly needToKnow: boolean;
+  readonly compartmentalization: boolean;
+  readonly auditAccess: boolean;
+}
+
+export interface FeedbackConfig {
+  readonly enabled: boolean;
+  readonly collection: boolean;
+  readonly analysis: boolean;
+  readonly incorporation: boolean;
+}
+
+export interface StorageConfig {
+  readonly type: 'DATABASE' | 'DATA_LAKE' | 'HYBRID';
+  readonly encryption: EncryptionConfig;
+  readonly retention: RetentionConfig;
+  readonly backup: BackupConfig;
+}
+
+export interface EncryptionConfig {
+  readonly enabled: boolean;
+  readonly algorithm: 'AES_256_GCM' | 'CHACHA20_POLY1305';
+  readonly keyManagement: 'LOCAL' | 'HSM' | 'KMS';
+  readonly atRest: boolean;
+  readonly inTransit: boolean;
+}
+
+export interface RetentionConfig {
+  readonly enabled: boolean;
+  readonly rawData: number;
+  readonly processedData: number;
+  readonly products: number;
+  readonly metadata: number;
+}
+
+export interface BackupConfig {
+  readonly enabled: boolean;
+  readonly frequency: number;
+  readonly encryption: boolean;
+  readonly offsite: boolean;
+}
+
+export interface SecurityConfig {
+  readonly authentication: AuthenticationConfig;
+  readonly authorization: AuthorizationConfig;
+  readonly audit: AuditConfig;
+  readonly classification: ClassificationConfig;
+}
+
+export interface AuthenticationConfig {
+  readonly enabled: boolean;
+  readonly methods: readonly ('PKI' | 'CAC' | 'BIOMETRIC' | 'MFA')[];
+  readonly sessionTimeout: number;
+}
+
+export interface AuthorizationConfig {
+  readonly enabled: boolean;
+  readonly model: 'RBAC' | 'ABAC' | 'MAC';
+  readonly clearanceRequired: boolean;
+  readonly compartments: readonly string[];
+}
+
+export interface AuditConfig {
+  readonly enabled: boolean;
+  readonly logAllAccess: boolean;
+  readonly logAllOperations: boolean;
+  readonly logAllQueries: boolean;
+  readonly retention: number;
+}
+
+export interface ClassificationConfig {
+  readonly enabled: boolean;
+  readonly defaultLevel: ClassificationLevel;
+  readonly autoClassification: boolean;
+  readonly markingRequired: boolean;
+}
+
+export interface ComplianceConfig {
+  readonly enabled: boolean;
+  readonly legalFramework: LegalFrameworkConfig;
+  readonly oversight: OversightConfig;
+  readonly minimization: MinimizationConfig;
+}
+
+export interface LegalFrameworkConfig {
+  readonly enabled: boolean;
+  readonly authorities: readonly string[];
+  readonly restrictions: readonly string[];
+  readonly reporting: boolean;
+}
+
+export interface OversightConfig {
+  readonly enabled: boolean;
+  readonly internalOversight: boolean;
+  readonly externalOversight: boolean;
+  readonly auditSchedule: number;
+}
+
+export interface MinimizationConfig {
+  readonly enabled: boolean;
+  readonly procedures: readonly string[];
+  readonly retention: number;
+  readonly destruction: boolean;
+}
+
+export interface PlatformMetadata {
+  readonly createdAt: number;
+  readonly updatedAt: number;
+  readonly createdBy: string;
+  readonly version: string;
+  readonly tags: readonly string[];
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// INTERCEPT TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface Intercept {
+  readonly interceptId: string;
+  readonly timestamp: number;
+  readonly type: CommunicationType;
+  readonly medium: TransmissionMedium;
+  readonly source: InterceptSource;
+  readonly target: InterceptTarget;
+  readonly content: InterceptContent;
+  readonly metadata: InterceptMetadata;
+  readonly processing: ProcessingStatus;
+  readonly classification: ClassificationInfo;
+}
+
+export interface InterceptSource {
+  readonly sourceId: string;
+  readonly type: 'SENSOR' | 'TAP' | 'COOPERATIVE' | 'THIRD_PARTY';
+  readonly location: GeoLocation | null;
+  readonly capabilities: readonly string[];
+}
+
+export interface GeoLocation {
+  readonly latitude: number;
+  readonly longitude: number;
+  readonly altitude: number | null;
+  readonly accuracy: number;
+  readonly timestamp: number;
+}
+
+export interface InterceptTarget {
+  readonly targetId: string | null;
+  readonly selectors: readonly SelectorMatch[];
+  readonly identifiers: TargetIdentifiers;
+  readonly attribution: TargetAttribution | null;
+}
+
+export interface SelectorMatch {
+  readonly selectorId: string;
+  readonly type: SelectorType;
+  readonly value: string;
+  readonly confidence: number;
+}
+
+export interface TargetIdentifiers {
+  readonly phoneNumbers: readonly string[];
+  readonly emailAddresses: readonly string[];
+  readonly ipAddresses: readonly string[];
+  readonly imsis: readonly string[];
+  readonly imeis: readonly string[];
+  readonly usernames: readonly string[];
+  readonly deviceIds: readonly string[];
+}
+
+export interface TargetAttribution {
+  readonly entityId: string | null;
+  readonly entityName: string | null;
+  readonly entityType: 'INDIVIDUAL' | 'ORGANIZATION' | 'UNKNOWN';
+  readonly confidence: number;
+  readonly basis: readonly string[];
+}
+
+export interface InterceptContent {
+  readonly type: ContentType;
+  readonly format: string;
+  readonly size: number;
+  readonly encrypted: boolean;
+  readonly encryptionInfo: EncryptionInfo | null;
+  readonly rawData: Uint8Array;
+  readonly decodedData: DecodedContent | null;
+}
+
+export type ContentType =
+  | 'VOICE'
+  | 'TEXT'
+  | 'IMAGE'
+  | 'VIDEO'
+  | 'FILE'
+  | 'STRUCTURED_DATA'
+  | 'BINARY';
+
+export interface EncryptionInfo {
+  readonly algorithm: string;
+  readonly strength: EncryptionStatus;
+  readonly keyInfo: string | null;
+  readonly decryptable: boolean;
+}
+
+export interface DecodedContent {
+  readonly text: string | null;
+  readonly transcript: string | null;
+  readonly extractedEntities: readonly ExtractedEntity[];
+  readonly extractedFiles: readonly ExtractedFile[];
+  readonly analysis: ContentAnalysis;
+}
+
+export interface ExtractedEntity {
+  readonly entityId: string;
+  readonly type: string;
+  readonly value: string;
+  readonly confidence: number;
+  readonly context: string | null;
+}
+
+export interface ExtractedFile {
+  readonly fileId: string;
+  readonly name: string;
+  readonly type: string;
+  readonly size: number;
+  readonly hash: string;
+}
+
+export interface ContentAnalysis {
+  readonly language: string | null;
+  readonly sentiment: SentimentResult | null;
+  readonly topics: readonly string[];
+  readonly keywords: readonly string[];
+  readonly summary: string | null;
+}
+
+export interface SentimentResult {
+  readonly score: number;
+  readonly label: 'POSITIVE' | 'NEGATIVE' | 'NEUTRAL';
+  readonly confidence: number;
+}
+
+export interface InterceptMetadata {
+  readonly protocol: ProtocolType;
+  readonly headers: Readonly<Record<string, string>>;
+  readonly routing: RoutingInfo;
+  readonly timing: TimingInfo;
+  readonly quality: QualityInfo;
+}
+
+export interface RoutingInfo {
+  readonly sourceAddress: string;
+  readonly destinationAddress: string;
+  readonly hops: readonly string[];
+  readonly path: string | null;
+}
+
+export interface TimingInfo {
+  readonly startTime: number;
+  readonly endTime: number;
+  readonly duration: number;
+  readonly latency: number | null;
+}
+
+export interface QualityInfo {
+  readonly signalStrength: number | null;
+  readonly snr: number | null;
+  readonly errorRate: number | null;
+  readonly completeness: number;
+}
+
+export interface ProcessingStatus {
+  readonly state: ProcessingState;
+  readonly stages: readonly ProcessingStage[];
+  readonly errors: readonly ProcessingError[];
+}
+
+export type ProcessingState =
+  | 'RAW'
+  | 'DECODED'
+  | 'DECRYPTED'
+  | 'ANALYZED'
+  | 'ENRICHED'
+  | 'COMPLETE'
+  | 'FAILED';
+
+export interface ProcessingStage {
+  readonly stageId: string;
+  readonly name: string;
+  readonly status: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'FAILED' | 'SKIPPED';
+  readonly startTime: number | null;
+  readonly endTime: number | null;
+  readonly output: Readonly<Record<string, unknown>> | null;
+}
+
+export interface ProcessingError {
+  readonly errorId: string;
+  readonly stage: string;
+  readonly message: string;
+  readonly timestamp: number;
+  readonly recoverable: boolean;
+}
+
+export interface ClassificationInfo {
+  readonly level: ClassificationLevel;
+  readonly caveats: readonly string[];
+  readonly releasability: readonly string[];
+  readonly handlingInstructions: readonly string[];
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ANALYSIS RESULT TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface TrafficAnalysisResult {
+  readonly analysisId: string;
+  readonly timestamp: number;
+  readonly period: TimePeriod;
+  readonly statistics: TrafficStatistics;
+  readonly patterns: readonly TrafficPattern[];
+  readonly anomalies: readonly TrafficAnomaly[];
+  readonly metadata: AnalysisMetadata;
+}
+
+export interface TimePeriod {
+  readonly start: number;
+  readonly end: number;
+  readonly duration: number;
+}
+
+export interface TrafficStatistics {
+  readonly totalVolume: number;
+  readonly totalPackets: number;
+  readonly totalFlows: number;
+  readonly uniqueSources: number;
+  readonly uniqueDestinations: number;
+  readonly protocolDistribution: Readonly<Record<string, number>>;
+  readonly portDistribution: Readonly<Record<string, number>>;
+}
+
+export interface TrafficPattern {
+  readonly patternId: string;
+  readonly type: string;
+  readonly description: string;
+  readonly frequency: number;
+  readonly confidence: number;
+  readonly examples: readonly string[];
+}
+
+export interface TrafficAnomaly {
+  readonly anomalyId: string;
+  readonly type: string;
+  readonly severity: PriorityLevel;
+  readonly description: string;
+  readonly evidence: readonly string[];
+  readonly timestamp: number;
+}
+
+export interface AnalysisMetadata {
+  readonly analyst: string | null;
+  readonly method: string;
+  readonly confidence: number;
+  readonly processingTime: number;
+}
+
+export interface NetworkMapResult {
+  readonly mapId: string;
+  readonly timestamp: number;
+  readonly nodes: readonly NetworkNode[];
+  readonly edges: readonly NetworkEdge[];
+  readonly communities: readonly NetworkCommunity[];
+  readonly metrics: NetworkMetrics;
+  readonly metadata: AnalysisMetadata;
+}
+
+export interface NetworkNode {
+  readonly nodeId: string;
+  readonly type: string;
+  readonly identifier: string;
+  readonly attributes: Readonly<Record<string, unknown>>;
+  readonly centrality: CentralityScores;
+  readonly community: string | null;
+}
+
+export interface CentralityScores {
+  readonly degree: number;
+  readonly betweenness: number;
+  readonly closeness: number;
+  readonly eigenvector: number;
+  readonly pageRank: number;
+}
+
+export interface NetworkEdge {
+  readonly edgeId: string;
+  readonly source: string;
+  readonly target: string;
+  readonly type: string;
+  readonly weight: number;
+  readonly attributes: Readonly<Record<string, unknown>>;
+}
+
+export interface NetworkCommunity {
+  readonly communityId: string;
+  readonly name: string | null;
+  readonly members: readonly string[];
+  readonly density: number;
+  readonly modularity: number;
+}
+
+export interface NetworkMetrics {
+  readonly nodeCount: number;
+  readonly edgeCount: number;
+  readonly density: number;
+  readonly averageDegree: number;
+  readonly clusteringCoefficient: number;
+  readonly diameter: number;
+  readonly modularity: number;
+}
+
+export interface PatternOfLifeResult {
+  readonly profileId: string;
+  readonly targetId: string;
+  readonly period: TimePeriod;
+  readonly schedule: ActivitySchedule;
+  readonly locations: readonly LocationPattern[];
+  readonly contacts: readonly ContactPattern[];
+  readonly behaviors: readonly BehaviorPattern[];
+  readonly anomalies: readonly BehaviorAnomaly[];
+  readonly metadata: AnalysisMetadata;
+}
+
+export interface ActivitySchedule {
+  readonly dailyPattern: readonly HourlyActivity[];
+  readonly weeklyPattern: readonly DailyActivity[];
+  readonly regularEvents: readonly RegularEvent[];
+}
+
+export interface HourlyActivity {
+  readonly hour: number;
+  readonly activityLevel: number;
+  readonly dominantActivity: string | null;
+}
+
+export interface DailyActivity {
+  readonly dayOfWeek: number;
+  readonly activityLevel: number;
+  readonly dominantActivity: string | null;
+}
+
+export interface RegularEvent {
+  readonly eventId: string;
+  readonly type: string;
+  readonly schedule: string;
+  readonly confidence: number;
+}
+
+export interface LocationPattern {
+  readonly locationId: string;
+  readonly name: string | null;
+  readonly coordinates: GeoLocation;
+  readonly frequency: number;
+  readonly typicalDuration: number;
+  readonly typicalTimes: readonly number[];
+}
+
+export interface ContactPattern {
+  readonly contactId: string;
+  readonly identifier: string;
+  readonly type: string;
+  readonly frequency: number;
+  readonly typicalDuration: number;
+  readonly relationship: string | null;
+}
+
+export interface BehaviorPattern {
+  readonly patternId: string;
+  readonly type: string;
+  readonly description: string;
+  readonly frequency: number;
+  readonly confidence: number;
+}
+
+export interface BehaviorAnomaly {
+  readonly anomalyId: string;
+  readonly type: string;
+  readonly description: string;
+  readonly deviation: number;
+  readonly timestamp: number;
+  readonly significance: PriorityLevel;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// INTELLIGENCE PRODUCT TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface IntelligenceProduct {
+  readonly productId: string;
+  readonly type: ProductType;
+  readonly title: string;
+  readonly classification: ClassificationInfo;
+  readonly summary: string;
+  readonly content: ProductContent;
+  readonly sources: readonly SourceReference[];
+  readonly dissemination: DisseminationInfo;
+  readonly metadata: ProductMetadata;
+}
+
+export interface ProductContent {
+  readonly sections: readonly ProductSection[];
+  readonly attachments: readonly ProductAttachment[];
+  readonly visualizations: readonly ProductVisualization[];
+}
+
+export interface ProductSection {
+  readonly sectionId: string;
+  readonly title: string;
+  readonly content: string;
+  readonly classification: ClassificationLevel;
+}
+
+export interface ProductAttachment {
+  readonly attachmentId: string;
+  readonly name: string;
+  readonly type: string;
+  readonly size: number;
+  readonly classification: ClassificationLevel;
+}
+
+export interface ProductVisualization {
+  readonly visualizationId: string;
+  readonly type: 'CHART' | 'MAP' | 'NETWORK' | 'TIMELINE';
+  readonly title: string;
+  readonly data: Readonly<Record<string, unknown>>;
+}
+
+export interface SourceReference {
+  readonly sourceId: string;
+  readonly type: string;
+  readonly reliability: 'A' | 'B' | 'C' | 'D' | 'E' | 'F';
+  readonly credibility: '1' | '2' | '3' | '4' | '5' | '6';
+  readonly classification: ClassificationLevel;
+}
+
+export interface DisseminationInfo {
+  readonly recipients: readonly string[];
+  readonly channels: readonly string[];
+  readonly restrictions: readonly string[];
+  readonly disseminatedAt: number | null;
+}
+
+export interface ProductMetadata {
+  readonly createdAt: number;
+  readonly createdBy: string;
+  readonly approvedBy: string | null;
+  readonly approvedAt: number | null;
+  readonly version: string;
+  readonly tags: readonly string[];
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SESSION TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface SIGINTSession {
+  readonly sessionId: string;
+  readonly platformId: string;
+  readonly state: SessionState;
+  readonly config: SessionConfig;
+  readonly progress: SessionProgress;
+  readonly statistics: SessionStatistics;
+  readonly intercepts: readonly Intercept[];
+  readonly analyses: readonly AnalysisResult[];
+  readonly products: readonly IntelligenceProduct[];
+  readonly errors: readonly SessionError[];
+  readonly startTime: number;
+  readonly endTime: number | null;
+  readonly metadata: SessionMetadata;
+}
+
+export type SessionState =
+  | 'PENDING'
+  | 'INITIALIZING'
+  | 'COLLECTING'
+  | 'PROCESSING'
+  | 'ANALYZING'
+  | 'DISSEMINATING'
+  | 'COMPLETED'
+  | 'FAILED';
+
+export interface SessionConfig {
+  readonly mode: OperationalMode;
+  readonly targets: readonly string[];
+  readonly selectors: readonly string[];
+  readonly timeRange: TimePeriod | null;
+  readonly options: Readonly<Record<string, unknown>>;
+}
+
+export interface SessionProgress {
+  readonly phase: SessionPhase;
+  readonly percentage: number;
+  readonly interceptsCollected: number;
+  readonly interceptsProcessed: number;
+  readonly currentTask: string | null;
+  readonly estimatedTimeRemaining: number | null;
+}
+
+export type SessionPhase =
+  | 'INITIALIZING'
+  | 'COLLECTING'
+  | 'DECODING'
+  | 'DECRYPTING'
+  | 'ANALYZING'
+  | 'PRODUCING'
+  | 'DISSEMINATING'
+  | 'FINALIZING';
+
+export interface SessionStatistics {
+  readonly interceptsTotal: number;
+  readonly interceptsProcessed: number;
+  readonly interceptsDecrypted: number;
+  readonly analysesCompleted: number;
+  readonly productsGenerated: number;
+  readonly processingTime: number;
+  readonly dataVolume: number;
+}
+
+export interface AnalysisResult {
+  readonly analysisId: string;
+  readonly type: AnalysisType;
+  readonly result: TrafficAnalysisResult | NetworkMapResult | PatternOfLifeResult;
+}
+
+export interface SessionError {
+  readonly errorId: string;
+  readonly timestamp: number;
+  readonly type: SessionErrorType;
+  readonly message: string;
+  readonly details: string | null;
+  readonly recoverable: boolean;
+}
+
+export type SessionErrorType =
+  | 'COLLECTION_ERROR'
+  | 'PROCESSING_ERROR'
+  | 'ANALYSIS_ERROR'
+  | 'DISSEMINATION_ERROR'
+  | 'TIMEOUT'
+  | 'RESOURCE_ERROR'
+  | 'INTERNAL_ERROR';
+
+export interface SessionMetadata {
+  readonly platformVersion: string;
+  readonly startedBy: string;
+  readonly authorization: string;
+  readonly classification: ClassificationLevel;
+  readonly tags: readonly string[];
+}

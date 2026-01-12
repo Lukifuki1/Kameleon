@@ -1,0 +1,947 @@
+openapi: 3.1.0
+info:
+  title: "{{IME_PROJEKTA}} API"
+  description: |
+    API za varnostni sistem {{IME_PROJEKTA}}.
+    
+    ## Avtentikacija
+    
+    Vsi API klici zahtevajo veljavni JWT token v Authorization glavi:
+    ```
+    Authorization: Bearer <jwt_token>
+    ```
+    
+    ## Skladnost
+    
+    Ta API je skladen z naslednjimi standardi:
+    - DO-178C - Software Considerations in Airborne Systems
+    - IEC 61508 - Functional Safety
+    - ISO 26262 - Road Vehicles Functional Safety
+    - ISO 27001 - Information Security Management
+    - OWASP API Security Top 10
+  version: "{{VERZIJA}}"
+  contact:
+    name: "{{AVTOR}}"
+    email: "security@{{ORGANIZACIJA_DOMENA}}"
+  license:
+    name: Proprietary
+    url: "https://{{ORGANIZACIJA_DOMENA}}/license"
+
+servers:
+  - url: "https://api.{{IME_PROJEKTA_SLUG}}.{{ORGANIZACIJA_DOMENA}}/v1"
+    description: Produkcija
+  - url: "https://api-staging.{{IME_PROJEKTA_SLUG}}.{{ORGANIZACIJA_DOMENA}}/v1"
+    description: Staging
+  - url: "https://localhost:8443/v1"
+    description: Lokalni razvoj
+
+tags:
+  - name: auth
+    description: Avtentikacija in upravljanje sej
+  - name: authz
+    description: Avtorizacija in dovoljenja
+  - name: audit
+    description: Revizijska sled
+  - name: keys
+    description: Upravljanje kriptografskih ključev
+  - name: threats
+    description: Zaznavanje in upravljanje groženj
+  - name: health
+    description: Zdravje sistema
+
+security:
+  - bearerAuth: []
+
+paths:
+  /auth/login:
+    post:
+      tags:
+        - auth
+      summary: Prijava uporabnika
+      description: Avtenticira uporabnika in vrne JWT token
+      operationId: login
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Uspešna prijava
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/AccountLocked'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+
+  /auth/logout:
+    post:
+      tags:
+        - auth
+      summary: Odjava uporabnika
+      description: Odjavi uporabnika in razveljavi token
+      operationId: logout
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LogoutRequest'
+      responses:
+        '200':
+          description: Uspešna odjava
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /auth/refresh:
+    post:
+      tags:
+        - auth
+      summary: Osveži token
+      description: Osveži dostopni token z refresh tokenom
+      operationId: refreshToken
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefreshRequest'
+      responses:
+        '200':
+          description: Token osvežen
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RefreshResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /auth/mfa/setup:
+    post:
+      tags:
+        - auth
+      summary: Nastavi MFA
+      description: Nastavi večfaktorsko avtentikacijo
+      operationId: setupMfa
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MfaSetupRequest'
+      responses:
+        '200':
+          description: MFA nastavljen
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MfaSetupResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /auth/mfa/verify:
+    post:
+      tags:
+        - auth
+      summary: Preveri MFA kodo
+      description: Preveri večfaktorsko avtentikacijsko kodo
+      operationId: verifyMfa
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MfaVerifyRequest'
+      responses:
+        '200':
+          description: MFA preverjen
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MfaVerifyResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /authz/permissions:
+    get:
+      tags:
+        - authz
+      summary: Pridobi dovoljenja
+      description: Vrne dovoljenja trenutnega uporabnika
+      operationId: getPermissions
+      responses:
+        '200':
+          description: Seznam dovoljenj
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PermissionsResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /authz/check:
+    post:
+      tags:
+        - authz
+      summary: Preveri dovoljenje
+      description: Preveri ali ima uporabnik dovoljenje za akcijo
+      operationId: checkPermission
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PermissionCheckRequest'
+      responses:
+        '200':
+          description: Rezultat preverjanja
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PermissionCheckResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /audit/logs:
+    get:
+      tags:
+        - audit
+      summary: Pridobi revizijske zapise
+      description: Vrne revizijske zapise s filtriranjem in paginacijo
+      operationId: getAuditLogs
+      parameters:
+        - name: startDate
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: endDate
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: userId
+          in: query
+          schema:
+            type: string
+        - name: action
+          in: query
+          schema:
+            type: string
+        - name: severity
+          in: query
+          schema:
+            type: string
+            enum: [INFO, WARNING, ERROR, CRITICAL]
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 50
+            maximum: 100
+      responses:
+        '200':
+          description: Seznam revizijskih zapisov
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuditLogsResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /audit/export:
+    post:
+      tags:
+        - audit
+      summary: Izvozi revizijske zapise
+      description: Izvozi revizijske zapise v izbranem formatu
+      operationId: exportAuditLogs
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuditExportRequest'
+      responses:
+        '202':
+          description: Izvoz sprejet
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuditExportResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /keys:
+    get:
+      tags:
+        - keys
+      summary: Seznam ključev
+      description: Vrne seznam kriptografskih ključev
+      operationId: listKeys
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [active, deprecated, revoked]
+        - name: expiresWithin
+          in: query
+          schema:
+            type: string
+            description: "Npr. 30d za ključe ki potečejo v 30 dneh"
+      responses:
+        '200':
+          description: Seznam ključev
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KeysResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /keys/{keyId}/rotate:
+    post:
+      tags:
+        - keys
+      summary: Rotiraj ključ
+      description: Rotira kriptografski ključ
+      operationId: rotateKey
+      parameters:
+        - name: keyId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/KeyRotateRequest'
+      responses:
+        '200':
+          description: Ključ rotiran
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KeyRotateResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /threats:
+    get:
+      tags:
+        - threats
+      summary: Seznam groženj
+      description: Vrne zaznane grožnje
+      operationId: listThreats
+      parameters:
+        - name: severity
+          in: query
+          schema:
+            type: string
+            enum: [critical, high, medium, low]
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [active, mitigated, false_positive]
+        - name: startDate
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: endDate
+          in: query
+          schema:
+            type: string
+            format: date-time
+      responses:
+        '200':
+          description: Seznam groženj
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ThreatsResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /threats/{threatId}/mitigate:
+    post:
+      tags:
+        - threats
+      summary: Mitigiraj grožnjo
+      description: Uporabi mitigacijo za grožnjo
+      operationId: mitigateThreat
+      parameters:
+        - name: threatId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ThreatMitigateRequest'
+      responses:
+        '200':
+          description: Grožnja mitigirana
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ThreatMitigateResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /health:
+    get:
+      tags:
+        - health
+      summary: Zdravje sistema
+      description: Vrne stanje zdravja sistema
+      operationId: getHealth
+      security: []
+      responses:
+        '200':
+          description: Sistem zdrav
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+        '503':
+          description: Sistem ni zdrav
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+
+  /health/live:
+    get:
+      tags:
+        - health
+      summary: Liveness probe
+      description: Kubernetes liveness probe
+      operationId: getLiveness
+      security: []
+      responses:
+        '200':
+          description: Sistem živ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LivenessResponse'
+
+  /health/ready:
+    get:
+      tags:
+        - health
+      summary: Readiness probe
+      description: Kubernetes readiness probe
+      operationId: getReadiness
+      security: []
+      responses:
+        '200':
+          description: Sistem pripravljen
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReadinessResponse'
+        '503':
+          description: Sistem ni pripravljen
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReadinessResponse'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    LoginRequest:
+      type: object
+      required:
+        - username
+        - password
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+          format: password
+        mfaCode:
+          type: string
+
+    LoginResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          type: object
+          properties:
+            accessToken:
+              type: string
+            refreshToken:
+              type: string
+            expiresIn:
+              type: integer
+            tokenType:
+              type: string
+            mfaRequired:
+              type: boolean
+
+    LogoutRequest:
+      type: object
+      required:
+        - refreshToken
+      properties:
+        refreshToken:
+          type: string
+
+    RefreshRequest:
+      type: object
+      required:
+        - refreshToken
+      properties:
+        refreshToken:
+          type: string
+
+    RefreshResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          type: object
+          properties:
+            accessToken:
+              type: string
+            expiresIn:
+              type: integer
+
+    MfaSetupRequest:
+      type: object
+      required:
+        - type
+      properties:
+        type:
+          type: string
+          enum: [totp, sms, email]
+
+    MfaSetupResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          type: object
+          properties:
+            secret:
+              type: string
+            qrCode:
+              type: string
+            backupCodes:
+              type: array
+              items:
+                type: string
+
+    MfaVerifyRequest:
+      type: object
+      required:
+        - code
+        - type
+      properties:
+        code:
+          type: string
+        type:
+          type: string
+          enum: [totp, sms, email]
+
+    MfaVerifyResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          type: object
+          properties:
+            verified:
+              type: boolean
+
+    PermissionsResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          type: object
+          properties:
+            userId:
+              type: string
+            roles:
+              type: array
+              items:
+                type: string
+            permissions:
+              type: array
+              items:
+                type: string
+
+    PermissionCheckRequest:
+      type: object
+      required:
+        - resource
+        - action
+      properties:
+        resource:
+          type: string
+        action:
+          type: string
+        resourceId:
+          type: string
+
+    PermissionCheckResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          type: object
+          properties:
+            allowed:
+              type: boolean
+            reason:
+              type: string
+
+    AuditLogsResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          type: object
+          properties:
+            logs:
+              type: array
+              items:
+                $ref: '#/components/schemas/AuditLog'
+            pagination:
+              $ref: '#/components/schemas/Pagination'
+
+    AuditLog:
+      type: object
+      properties:
+        id:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        userId:
+          type: string
+        action:
+          type: string
+        resource:
+          type: string
+        severity:
+          type: string
+        outcome:
+          type: string
+        hash:
+          type: string
+        previousHash:
+          type: string
+
+    AuditExportRequest:
+      type: object
+      required:
+        - startDate
+        - endDate
+        - format
+      properties:
+        startDate:
+          type: string
+          format: date-time
+        endDate:
+          type: string
+          format: date-time
+        format:
+          type: string
+          enum: [json, csv, syslog]
+        includeHash:
+          type: boolean
+
+    AuditExportResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          type: object
+          properties:
+            exportId:
+              type: string
+            status:
+              type: string
+            estimatedCompletion:
+              type: string
+              format: date-time
+
+    KeysResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          type: object
+          properties:
+            keys:
+              type: array
+              items:
+                $ref: '#/components/schemas/Key'
+
+    Key:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        algorithm:
+          type: string
+        purpose:
+          type: string
+        status:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        expiresAt:
+          type: string
+          format: date-time
+
+    KeyRotateRequest:
+      type: object
+      required:
+        - reason
+      properties:
+        reason:
+          type: string
+          enum: [scheduled, compromised, policy]
+
+    KeyRotateResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          type: object
+          properties:
+            oldKeyId:
+              type: string
+            newKeyId:
+              type: string
+            rotatedAt:
+              type: string
+              format: date-time
+
+    ThreatsResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          type: object
+          properties:
+            threats:
+              type: array
+              items:
+                $ref: '#/components/schemas/Threat'
+
+    Threat:
+      type: object
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+        severity:
+          type: string
+        status:
+          type: string
+        detectedAt:
+          type: string
+          format: date-time
+
+    ThreatMitigateRequest:
+      type: object
+      required:
+        - action
+      properties:
+        action:
+          type: string
+          enum: [block_ip, block_user, require_mfa, alert_only]
+        duration:
+          type: string
+        reason:
+          type: string
+
+    ThreatMitigateResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          type: object
+          properties:
+            threatId:
+              type: string
+            mitigation:
+              type: object
+
+    HealthResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [healthy, degraded, unhealthy]
+        version:
+          type: string
+        uptime:
+          type: integer
+        checks:
+          type: object
+
+    LivenessResponse:
+      type: object
+      properties:
+        status:
+          type: string
+
+    ReadinessResponse:
+      type: object
+      properties:
+        status:
+          type: string
+
+    SuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          type: object
+
+    ErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+            message:
+              type: string
+            details:
+              type: string
+            requestId:
+              type: string
+
+    Pagination:
+      type: object
+      properties:
+        page:
+          type: integer
+        limit:
+          type: integer
+        total:
+          type: integer
+        totalPages:
+          type: integer
+
+  responses:
+    Unauthorized:
+      description: Nepooblaščen dostop
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+    Forbidden:
+      description: Prepovedan dostop
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+    NotFound:
+      description: Vir ni najden
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+    AccountLocked:
+      description: Račun zaklenjen
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+    TooManyRequests:
+      description: Preveč zahtev
+      headers:
+        X-RateLimit-Limit:
+          schema:
+            type: integer
+        X-RateLimit-Remaining:
+          schema:
+            type: integer
+        X-RateLimit-Reset:
+          schema:
+            type: integer
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'

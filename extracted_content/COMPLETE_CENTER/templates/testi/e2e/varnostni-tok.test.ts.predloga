@@ -1,0 +1,462 @@
+/**
+ * @file E2E testi za varnostni tok {{IME_PROJEKTA}}
+ * @author {{AVTOR}}
+ * @version {{VERZIJA}}
+ * @date {{DATUM}}
+ * @domain {{DOMENA_SL}}
+ * 
+ * @description
+ * End-to-end testi za varnostni sistem:
+ * - Celoten tok avtentikacije
+ * - Celoten tok avtorizacije
+ * - Celoten tok upravljanja sej
+ * - Celoten tok revizijskega sledenja
+ * - Celoten tok odziva na incidente
+ * 
+ * @compliance DO-178C, IEC-61508, ISO-26262, MIL-STD-882E
+ * @security ISO-27001, NIST-800-53, SOC-2
+ * @meta_atom TST_004 - E2E Testing
+ * @requirement REQ-GEN-TST-VARNOSTNI_TOK-001
+ * @design DSN-GEN-TST-VARNOSTNI_TOK-001
+ * @test TST-GEN-TST-VARNOSTNI_TOK-001
+ */
+
+import { describe, it, expect, beforeAll, afterAll, beforeEach, afterEach } from 'vitest';
+
+// ============================================================================
+// TESTNO OKOLJE
+// ============================================================================
+
+interface VarnostniSistem {
+    avtentikacija: AvtentikacijskiModul;
+    avtorizacija: AvtorizacijskiModul;
+    revizija: RevizijskiModul;
+    incidenti: IncidentniModul;
+}
+
+interface AvtentikacijskiModul {
+    prijava(uporabniskoIme: string, geslo: string): Promise<PrijavaRezultat>;
+    odjava(sejaId: string): Promise<boolean>;
+    osvezi(refreshToken: string): Promise<PrijavaRezultat | null>;
+    preveriMFA(sejaId: string, koda: string): Promise<boolean>;
+}
+
+interface AvtorizacijskiModul {
+    preveriDovoljenje(sejaId: string, vir: string, akcija: string): Promise<boolean>;
+    pridobiVloge(uporabnikId: string): Promise<string[]>;
+    dodajVlogo(uporabnikId: string, vloga: string): Promise<boolean>;
+    odstraniVlogo(uporabnikId: string, vloga: string): Promise<boolean>;
+}
+
+interface RevizijskiModul {
+    zabelezi(dogodek: RevizijskiDogodek): Promise<string>;
+    poisci(filter: RevizijskiFilter): Promise<RevizijskiDogodek[]>;
+}
+
+interface IncidentniModul {
+    prijavi(incident: VarnostniIncident): Promise<string>;
+    posodobi(incidentId: string, status: string): Promise<boolean>;
+    pridobiAktivne(): Promise<VarnostniIncident[]>;
+}
+
+interface PrijavaRezultat {
+    uspesno: boolean;
+    sejaId: string | null;
+    token: string | null;
+    refreshToken: string | null;
+    potrebujeMFA: boolean;
+    napaka: string | null;
+}
+
+interface RevizijskiDogodek {
+    id?: string;
+    tip: string;
+    uporabnikId: string;
+    akcija: string;
+    vir: string;
+    rezultat: 'uspeh' | 'neuspeh';
+    casovniZig: number;
+    podrobnosti: Record<string, unknown>;
+}
+
+interface RevizijskiFilter {
+    uporabnikId?: string;
+    tip?: string;
+    odDatuma?: number;
+    doDatuma?: number;
+}
+
+interface VarnostniIncident {
+    id?: string;
+    tip: string;
+    resnost: 'nizka' | 'srednja' | 'visoka' | 'kriticna';
+    opis: string;
+    status: 'odprt' | 'v_obravnavi' | 'razresen' | 'zaprt';
+    casZaznave: number;
+}
+
+// ============================================================================
+// TEST_DOUBLE IMPLEMENTACIJA
+// ============================================================================
+
+let mockSeje: Map<string, { uporabnikId: string; token: string; refreshToken: string; mfaPreverjeno: boolean }>;
+let mockUporabniki: Map<string, { geslo: string; vloge: string[]; mfaOmogocen: boolean }>;
+let mockRevizija: RevizijskiDogodek[];
+let mockIncidenti: Map<string, VarnostniIncident>;
+let eventCounter: number;
+
+function inicializirajMock(): void {
+    mockSeje = new Map();
+    mockUporabniki = new Map([
+        ['admin', { geslo: 'admin123', vloge: ['admin', 'uporabnik'], mfaOmogocen: true }],
+        ['uporabnik', { geslo: 'user123', vloge: ['uporabnik'], mfaOmogocen: false }],
+        ['bralec', { geslo: 'read123', vloge: ['bralec'], mfaOmogocen: false }],
+    ]);
+    mockRevizija = [];
+    mockIncidenti = new Map();
+    eventCounter = 0;
+}
+
+const mockSistem: VarnostniSistem = {
+    avtentikacija: {
+        async prijava(uporabniskoIme: string, geslo: string): Promise<PrijavaRezultat> {
+            const uporabnik = mockUporabniki.get(uporabniskoIme);
+            if (!uporabnik || uporabnik.geslo !== geslo) {
+                return { uspesno: false, sejaId: null, token: null, refreshToken: null, potrebujeMFA: false, napaka: 'Neveljavne poverilnice' };
+            }
+            
+            const sejaId = `seja-${Date.now()}`;
+            const token = `token-${sejaId}`;
+            const refreshToken = `refresh-${sejaId}`;
+            
+            mockSeje.set(sejaId, { uporabnikId: uporabniskoIme, token, refreshToken, mfaPreverjeno: !uporabnik.mfaOmogocen });
+            
+            return {
+                uspesno: true,
+                sejaId,
+                token,
+                refreshToken,
+                potrebujeMFA: uporabnik.mfaOmogocen,
+                napaka: null,
+            };
+        },
+        
+        async odjava(sejaId: string): Promise<boolean> {
+            return mockSeje.delete(sejaId);
+        },
+        
+        async osvezi(refreshToken: string): Promise<PrijavaRezultat | null> {
+            for (const [sejaId, seja] of mockSeje) {
+                if (seja.refreshToken === refreshToken) {
+                    const novaSeja = `seja-${Date.now()}`;
+                    const novToken = `token-${novaSeja}`;
+                    const novRefresh = `refresh-${novaSeja}`;
+                    
+                    mockSeje.delete(sejaId);
+                    mockSeje.set(novaSeja, { ...seja, token: novToken, refreshToken: novRefresh });
+                    
+                    return { uspesno: true, sejaId: novaSeja, token: novToken, refreshToken: novRefresh, potrebujeMFA: false, napaka: null };
+                }
+            }
+            return null;
+        },
+        
+        async preveriMFA(sejaId: string, koda: string): Promise<boolean> {
+            const seja = mockSeje.get(sejaId);
+            if (!seja) return false;
+            
+            if (koda === '123456') {
+                seja.mfaPreverjeno = true;
+                return true;
+            }
+            return false;
+        },
+    },
+    
+    avtorizacija: {
+        async preveriDovoljenje(sejaId: string, vir: string, akcija: string): Promise<boolean> {
+            const seja = mockSeje.get(sejaId);
+            if (!seja || !seja.mfaPreverjeno) return false;
+            
+            const uporabnik = mockUporabniki.get(seja.uporabnikId);
+            if (!uporabnik) return false;
+            
+            if (uporabnik.vloge.includes('admin')) return true;
+            if (akcija === 'beri' && uporabnik.vloge.includes('bralec')) return true;
+            if (uporabnik.vloge.includes('uporabnik') && ['beri', 'pisi'].includes(akcija)) return true;
+            
+            return false;
+        },
+        
+        async pridobiVloge(uporabnikId: string): Promise<string[]> {
+            const uporabnik = mockUporabniki.get(uporabnikId);
+            return uporabnik ? [...uporabnik.vloge] : [];
+        },
+        
+        async dodajVlogo(uporabnikId: string, vloga: string): Promise<boolean> {
+            const uporabnik = mockUporabniki.get(uporabnikId);
+            if (!uporabnik) return false;
+            if (!uporabnik.vloge.includes(vloga)) {
+                uporabnik.vloge.push(vloga);
+            }
+            return true;
+        },
+        
+        async odstraniVlogo(uporabnikId: string, vloga: string): Promise<boolean> {
+            const uporabnik = mockUporabniki.get(uporabnikId);
+            if (!uporabnik) return false;
+            const index = uporabnik.vloge.indexOf(vloga);
+            if (index > -1) {
+                uporabnik.vloge.splice(index, 1);
+            }
+            return true;
+        },
+    },
+    
+    revizija: {
+        async zabelezi(dogodek: RevizijskiDogodek): Promise<string> {
+            const id = `rev-${++eventCounter}`;
+            mockRevizija.push({ ...dogodek, id });
+            return id;
+        },
+        
+        async poisci(filter: RevizijskiFilter): Promise<RevizijskiDogodek[]> {
+            return mockRevizija.filter(d => {
+                if (filter.uporabnikId && d.uporabnikId !== filter.uporabnikId) return false;
+                if (filter.tip && d.tip !== filter.tip) return false;
+                if (filter.odDatuma && d.casovniZig < filter.odDatuma) return false;
+                if (filter.doDatuma && d.casovniZig > filter.doDatuma) return false;
+                return true;
+            });
+        },
+    },
+    
+    incidenti: {
+        async prijavi(incident: VarnostniIncident): Promise<string> {
+            const id = `inc-${++eventCounter}`;
+            mockIncidenti.set(id, { ...incident, id });
+            return id;
+        },
+        
+        async posodobi(incidentId: string, status: string): Promise<boolean> {
+            const incident = mockIncidenti.get(incidentId);
+            if (!incident) return false;
+            incident.status = status as VarnostniIncident['status'];
+            return true;
+        },
+        
+        async pridobiAktivne(): Promise<VarnostniIncident[]> {
+            return Array.from(mockIncidenti.values()).filter(i => i.status !== 'zaprt');
+        },
+    },
+};
+
+// ============================================================================
+// E2E TESTI - AVTENTIKACIJSKI TOK
+// ============================================================================
+
+describe('E2E - Avtentikacijski tok', () => {
+    beforeAll(() => {
+        inicializirajMock();
+    });
+    
+    afterEach(() => {
+        mockSeje.clear();
+    });
+    
+    it('naj izvede celoten tok prijave brez MFA', async () => {
+        // 1. Prijava
+        const prijavaRezultat = await mockSistem.avtentikacija.prijava('uporabnik', 'user123');
+        expect(prijavaRezultat.uspesno).toBe(true);
+        expect(prijavaRezultat.sejaId).not.toBeNull();
+        expect(prijavaRezultat.potrebujeMFA).toBe(false);
+        
+        // 2. Preveri dovoljenje
+        const imaDovoljenje = await mockSistem.avtorizacija.preveriDovoljenje(
+            prijavaRezultat.sejaId!,
+            'dokument',
+            'beri'
+        );
+        expect(imaDovoljenje).toBe(true);
+        
+        // 3. Odjava
+        const odjavaRezultat = await mockSistem.avtentikacija.odjava(prijavaRezultat.sejaId!);
+        expect(odjavaRezultat).toBe(true);
+    });
+    
+    it('naj izvede celoten tok prijave z MFA', async () => {
+        // 1. Prijava
+        const prijavaRezultat = await mockSistem.avtentikacija.prijava('admin', 'admin123');
+        expect(prijavaRezultat.uspesno).toBe(true);
+        expect(prijavaRezultat.potrebujeMFA).toBe(true);
+        
+        // 2. Preveri dovoljenje pred MFA - naj zavrne
+        const dovoljenjePreMFA = await mockSistem.avtorizacija.preveriDovoljenje(
+            prijavaRezultat.sejaId!,
+            'dokument',
+            'beri'
+        );
+        expect(dovoljenjePreMFA).toBe(false);
+        
+        // 3. Preveri MFA
+        const mfaRezultat = await mockSistem.avtentikacija.preveriMFA(prijavaRezultat.sejaId!, '123456');
+        expect(mfaRezultat).toBe(true);
+        
+        // 4. Preveri dovoljenje po MFA - naj dovoli
+        const dovoljenjePoMFA = await mockSistem.avtorizacija.preveriDovoljenje(
+            prijavaRezultat.sejaId!,
+            'dokument',
+            'beri'
+        );
+        expect(dovoljenjePoMFA).toBe(true);
+        
+        // 5. Odjava
+        const odjavaRezultat = await mockSistem.avtentikacija.odjava(prijavaRezultat.sejaId!);
+        expect(odjavaRezultat).toBe(true);
+    });
+    
+    it('naj zavrne prijavo z napacnimi poverilnicami', async () => {
+        const prijavaRezultat = await mockSistem.avtentikacija.prijava('uporabnik', 'napacno');
+        expect(prijavaRezultat.uspesno).toBe(false);
+        expect(prijavaRezultat.napaka).toBe('Neveljavne poverilnice');
+    });
+    
+    it('naj osvezi token', async () => {
+        // 1. Prijava
+        const prijavaRezultat = await mockSistem.avtentikacija.prijava('uporabnik', 'user123');
+        const starToken = prijavaRezultat.token;
+        const refreshToken = prijavaRezultat.refreshToken;
+        
+        // 2. Osvezi
+        const novaSeja = await mockSistem.avtentikacija.osvezi(refreshToken!);
+        expect(novaSeja).not.toBeNull();
+        expect(novaSeja!.token).not.toBe(starToken);
+    });
+});
+
+// ============================================================================
+// E2E TESTI - AVTORIZACIJSKI TOK
+// ============================================================================
+
+describe('E2E - Avtorizacijski tok', () => {
+    beforeAll(() => {
+        inicializirajMock();
+    });
+    
+    afterEach(() => {
+        mockSeje.clear();
+    });
+    
+    it('naj admin ima vsa dovoljenja', async () => {
+        const prijava = await mockSistem.avtentikacija.prijava('admin', 'admin123');
+        await mockSistem.avtentikacija.preveriMFA(prijava.sejaId!, '123456');
+        
+        const beri = await mockSistem.avtorizacija.preveriDovoljenje(prijava.sejaId!, 'dokument', 'beri');
+        const pisi = await mockSistem.avtorizacija.preveriDovoljenje(prijava.sejaId!, 'dokument', 'pisi');
+        const brisi = await mockSistem.avtorizacija.preveriDovoljenje(prijava.sejaId!, 'dokument', 'brisi');
+        
+        expect(beri).toBe(true);
+        expect(pisi).toBe(true);
+        expect(brisi).toBe(true);
+    });
+    
+    it('naj bralec ima samo bralna dovoljenja', async () => {
+        const prijava = await mockSistem.avtentikacija.prijava('bralec', 'read123');
+        
+        const beri = await mockSistem.avtorizacija.preveriDovoljenje(prijava.sejaId!, 'dokument', 'beri');
+        const pisi = await mockSistem.avtorizacija.preveriDovoljenje(prijava.sejaId!, 'dokument', 'pisi');
+        
+        expect(beri).toBe(true);
+        expect(pisi).toBe(false);
+    });
+    
+    it('naj upravljanje vlog deluje', async () => {
+        const vloge = await mockSistem.avtorizacija.pridobiVloge('uporabnik');
+        expect(vloge).toContain('uporabnik');
+        
+        await mockSistem.avtorizacija.dodajVlogo('uporabnik', 'moderator');
+        const noveVloge = await mockSistem.avtorizacija.pridobiVloge('uporabnik');
+        expect(noveVloge).toContain('moderator');
+        
+        await mockSistem.avtorizacija.odstraniVlogo('uporabnik', 'moderator');
+        const koncneVloge = await mockSistem.avtorizacija.pridobiVloge('uporabnik');
+        expect(koncneVloge).not.toContain('moderator');
+    });
+});
+
+// ============================================================================
+// E2E TESTI - REVIZIJSKI TOK
+// ============================================================================
+
+describe('E2E - Revizijski tok', () => {
+    beforeAll(() => {
+        inicializirajMock();
+    });
+    
+    it('naj zabelezi in poisci revizijske dogodke', async () => {
+        // 1. Zabelezi dogodke
+        await mockSistem.revizija.zabelezi({
+            tip: 'prijava',
+            uporabnikId: 'admin',
+            akcija: 'prijava',
+            vir: 'web',
+            rezultat: 'uspeh',
+            casovniZig: Date.now(),
+            podrobnosti: { ip: '192.168.1.1' },
+        });
+        
+        await mockSistem.revizija.zabelezi({
+            tip: 'dostop',
+            uporabnikId: 'admin',
+            akcija: 'beri',
+            vir: 'dokument-123',
+            rezultat: 'uspeh',
+            casovniZig: Date.now(),
+            podrobnosti: {},
+        });
+        
+        // 2. Poisci po uporabniku
+        const dogodki = await mockSistem.revizija.poisci({ uporabnikId: 'admin' });
+        expect(dogodki.length).toBe(2);
+        
+        // 3. Poisci po tipu
+        const prijave = await mockSistem.revizija.poisci({ tip: 'prijava' });
+        expect(prijave.length).toBe(1);
+    });
+});
+
+// ============================================================================
+// E2E TESTI - INCIDENTNI TOK
+// ============================================================================
+
+describe('E2E - Incidentni tok', () => {
+    beforeAll(() => {
+        inicializirajMock();
+    });
+    
+    it('naj upravlja z varnostnimi incidenti', async () => {
+        // 1. Prijavi incident
+        const incidentId = await mockSistem.incidenti.prijavi({
+            tip: 'nepooblascen_dostop',
+            resnost: 'visoka',
+            opis: 'Zaznan poskus nepooblascenega dostopa',
+            status: 'odprt',
+            casZaznave: Date.now(),
+        });
+        expect(incidentId).toBeTruthy();
+        
+        // 2. Pridobi aktivne incidente
+        const aktivni = await mockSistem.incidenti.pridobiAktivne();
+        expect(aktivni.length).toBe(1);
+        
+        // 3. Posodobi status
+        await mockSistem.incidenti.posodobi(incidentId, 'v_obravnavi');
+        const posodobljeni = await mockSistem.incidenti.pridobiAktivne();
+        expect(posodobljeni[0].status).toBe('v_obravnavi');
+        
+        // 4. Zapri incident
+        await mockSistem.incidenti.posodobi(incidentId, 'zaprt');
+        const koncni = await mockSistem.incidenti.pridobiAktivne();
+        expect(koncni.length).toBe(0);
+    });
+});

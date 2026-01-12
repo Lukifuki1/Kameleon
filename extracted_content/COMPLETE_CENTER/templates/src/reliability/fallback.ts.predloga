@@ -1,0 +1,670 @@
+/**
+ * {{IME_PROJEKTA}} - Fallback System
+ * Domain: {{DOMENA_SL}}
+ * 
+ * @requirement REQ-SEC-FB-001
+ * @design DSN-SEC-FB-001
+ * @test TST-SEC-FB-001
+ * 
+ * Sistem za nadomestne operacije v primeru napak.
+ * Skladen z DO-178C, IEC 61508, ISO 26262, MIL-STD-882E standardi.
+ * 
+ * @module reliability/fallback
+ */
+
+// ============================================================================
+// TIPI IN VMESNIKI
+// ============================================================================
+
+/**
+ * Strategija nadomestne operacije
+ */
+export enum FallbackStrategy {
+    /** Vrni privzeto vrednost */
+    DEFAULT_VALUE = 'default_value',
+    /** Vrni zadnjo znano vrednost */
+    LAST_KNOWN_VALUE = 'last_known_value',
+    /** Izvedi alternativno operacijo */
+    ALTERNATIVE_OPERATION = 'alternative_operation',
+    /** Vrni degradirano vrednost */
+    DEGRADED_VALUE = 'degraded_value',
+    /** Fail-secure - zavrni dostop */
+    FAIL_SECURE = 'fail_secure',
+    /** Fail-open - dovoli dostop (samo za nekritične operacije) */
+    FAIL_OPEN = 'fail_open'
+}
+
+/**
+ * Rezultat nadomestne operacije
+ */
+export interface FallbackResult<T> {
+    /** Vrednost */
+    readonly value: T;
+    /** Ali je bila uporabljena nadomestna operacija */
+    readonly isFallback: boolean;
+    /** Uporabljena strategija */
+    readonly strategy: FallbackStrategy;
+    /** Razlog za nadomestno operacijo */
+    readonly reason?: string;
+    /** Čas izvršitve */
+    readonly executedAt: Date;
+    /** Trajanje (ms) */
+    readonly duration: number;
+}
+
+/**
+ * Konfiguracija nadomestne operacije
+ */
+export interface FallbackConfig<T> {
+    /** Ime operacije */
+    readonly name: string;
+    /** Strategija */
+    readonly strategy: FallbackStrategy;
+    /** Privzeta vrednost */
+    readonly defaultValue?: T;
+    /** Alternativna funkcija */
+    readonly alternativeFunction?: () => Promise<T>;
+    /** Degradirana vrednost */
+    readonly degradedValue?: T;
+    /** Timeout (ms) */
+    readonly timeout: number;
+    /** Ali je kritična operacija */
+    readonly critical: boolean;
+    /** Callback ob uporabi nadomestne operacije */
+    readonly onFallback?: (reason: string, strategy: FallbackStrategy) => void;
+}
+
+/**
+ * Statistika nadomestnih operacij
+ */
+export interface FallbackStatistics {
+    /** Skupno število klicev */
+    readonly totalCalls: number;
+    /** Število uspešnih klicev */
+    readonly successfulCalls: number;
+    /** Število nadomestnih operacij */
+    readonly fallbackCalls: number;
+    /** Število napak */
+    readonly errorCalls: number;
+    /** Povprečni čas izvršitve (ms) */
+    readonly averageDuration: number;
+    /** Razmerje nadomestnih operacij */
+    readonly fallbackRatio: number;
+}
+
+// ============================================================================
+// POMOŽNE FUNKCIJE
+// ============================================================================
+
+/**
+ * Izvede funkcijo s timeoutom
+ */
+async function withTimeout<T>(
+    promise: Promise<T>,
+    timeoutMs: number,
+    errorMessage: string
+): Promise<T> {
+    let timeoutHandle: ReturnType<typeof setTimeout>;
+    
+    const timeoutPromise = new Promise<never>((_, reject) => {
+        timeoutHandle = setTimeout(() => {
+            reject(new Error(errorMessage));
+        }, timeoutMs);
+    });
+
+    try {
+        const result = await Promise.race([promise, timeoutPromise]);
+        clearTimeout(timeoutHandle!);
+        return result;
+    } catch (error) {
+        clearTimeout(timeoutHandle!);
+        throw error;
+    }
+}
+
+// ============================================================================
+// GLAVNA IMPLEMENTACIJA
+// ============================================================================
+
+/**
+ * Upravljalec nadomestnih operacij
+ * 
+ * Implementira fail-secure in fail-safe vzorce za varnostne sisteme.
+ */
+export class FallbackManager<T> {
+    private readonly config: FallbackConfig<T>;
+    private lastKnownValue: T | undefined;
+    private statistics: {
+        totalCalls: number;
+        successfulCalls: number;
+        fallbackCalls: number;
+        errorCalls: number;
+        totalDuration: number;
+    };
+
+    constructor(config: FallbackConfig<T>) {
+        this.config = config;
+        this.lastKnownValue = undefined;
+        this.statistics = {
+            totalCalls: 0,
+            successfulCalls: 0,
+            fallbackCalls: 0,
+            errorCalls: 0,
+            totalDuration: 0
+        };
+    }
+
+    /**
+     * Izvede operacijo z nadomestno strategijo
+     */
+    async execute(
+        operation: () => Promise<T>
+    ): Promise<FallbackResult<T>> {
+        const startTime = Date.now();
+        this.statistics.totalCalls++;
+
+        try {
+            // Izvedi operacijo s timeoutom
+            const value = await withTimeout(
+                operation(),
+                this.config.timeout,
+                `Operation '${this.config.name}' timed out after ${this.config.timeout}ms`
+            );
+
+            // Shrani zadnjo znano vrednost
+            this.lastKnownValue = value;
+            this.statistics.successfulCalls++;
+
+            const duration = Date.now() - startTime;
+            this.statistics.totalDuration += duration;
+
+            return {
+                value,
+                isFallback: false,
+                strategy: this.config.strategy,
+                executedAt: new Date(),
+                duration
+            };
+        } catch (error) {
+            const reason = error instanceof Error ? error.message : 'Unknown error';
+            return this.handleFallback(reason, startTime);
+        }
+    }
+
+    /**
+     * Izvede nadomestno operacijo
+     */
+    private async handleFallback(
+        reason: string,
+        startTime: number
+    ): Promise<FallbackResult<T>> {
+        this.statistics.fallbackCalls++;
+
+        // Obvesti o uporabi nadomestne operacije
+        if (this.config.onFallback !== undefined) {
+            this.config.onFallback(reason, this.config.strategy);
+        }
+
+        const duration = Date.now() - startTime;
+        this.statistics.totalDuration += duration;
+
+        switch (this.config.strategy) {
+            case FallbackStrategy.DEFAULT_VALUE:
+                return this.handleDefaultValue(reason, duration);
+
+            case FallbackStrategy.LAST_KNOWN_VALUE:
+                return this.handleLastKnownValue(reason, duration);
+
+            case FallbackStrategy.ALTERNATIVE_OPERATION:
+                return this.handleAlternativeOperation(reason, startTime);
+
+            case FallbackStrategy.DEGRADED_VALUE:
+                return this.handleDegradedValue(reason, duration);
+
+            case FallbackStrategy.FAIL_SECURE:
+                return this.handleFailSecure(reason, duration);
+
+            case FallbackStrategy.FAIL_OPEN:
+                return this.handleFailOpen(reason, duration);
+
+            default:
+                throw new Error(`Unknown fallback strategy: ${this.config.strategy}`);
+        }
+    }
+
+    /**
+     * Vrne privzeto vrednost
+     */
+    private handleDefaultValue(
+        reason: string,
+        duration: number
+    ): FallbackResult<T> {
+        if (this.config.defaultValue === undefined) {
+            this.statistics.errorCalls++;
+            throw new Error(`No default value configured for '${this.config.name}'`);
+        }
+
+        return {
+            value: this.config.defaultValue,
+            isFallback: true,
+            strategy: FallbackStrategy.DEFAULT_VALUE,
+            reason,
+            executedAt: new Date(),
+            duration
+        };
+    }
+
+    /**
+     * Vrne zadnjo znano vrednost
+     */
+    private handleLastKnownValue(
+        reason: string,
+        duration: number
+    ): FallbackResult<T> {
+        if (this.lastKnownValue === undefined) {
+            // Če ni zadnje znane vrednosti, uporabi privzeto
+            if (this.config.defaultValue !== undefined) {
+                return {
+                    value: this.config.defaultValue,
+                    isFallback: true,
+                    strategy: FallbackStrategy.DEFAULT_VALUE,
+                    reason: `${reason} (no last known value, using default)`,
+                    executedAt: new Date(),
+                    duration
+                };
+            }
+
+            this.statistics.errorCalls++;
+            throw new Error(`No last known value available for '${this.config.name}'`);
+        }
+
+        return {
+            value: this.lastKnownValue,
+            isFallback: true,
+            strategy: FallbackStrategy.LAST_KNOWN_VALUE,
+            reason,
+            executedAt: new Date(),
+            duration
+        };
+    }
+
+    /**
+     * Izvede alternativno operacijo
+     */
+    private async handleAlternativeOperation(
+        reason: string,
+        startTime: number
+    ): Promise<FallbackResult<T>> {
+        if (this.config.alternativeFunction === undefined) {
+            this.statistics.errorCalls++;
+            throw new Error(`No alternative function configured for '${this.config.name}'`);
+        }
+
+        try {
+            const value = await withTimeout(
+                this.config.alternativeFunction(),
+                this.config.timeout,
+                `Alternative operation for '${this.config.name}' timed out`
+            );
+
+            const duration = Date.now() - startTime;
+
+            return {
+                value,
+                isFallback: true,
+                strategy: FallbackStrategy.ALTERNATIVE_OPERATION,
+                reason,
+                executedAt: new Date(),
+                duration
+            };
+        } catch (alternativeError) {
+            // Če tudi alternativna operacija ne uspe, uporabi privzeto vrednost
+            if (this.config.defaultValue !== undefined) {
+                const duration = Date.now() - startTime;
+                return {
+                    value: this.config.defaultValue,
+                    isFallback: true,
+                    strategy: FallbackStrategy.DEFAULT_VALUE,
+                    reason: `${reason} (alternative also failed)`,
+                    executedAt: new Date(),
+                    duration
+                };
+            }
+
+            this.statistics.errorCalls++;
+            throw alternativeError;
+        }
+    }
+
+    /**
+     * Vrne degradirano vrednost
+     */
+    private handleDegradedValue(
+        reason: string,
+        duration: number
+    ): FallbackResult<T> {
+        if (this.config.degradedValue === undefined) {
+            // Uporabi privzeto vrednost kot degradirano
+            if (this.config.defaultValue !== undefined) {
+                return {
+                    value: this.config.defaultValue,
+                    isFallback: true,
+                    strategy: FallbackStrategy.DEGRADED_VALUE,
+                    reason,
+                    executedAt: new Date(),
+                    duration
+                };
+            }
+
+            this.statistics.errorCalls++;
+            throw new Error(`No degraded value configured for '${this.config.name}'`);
+        }
+
+        return {
+            value: this.config.degradedValue,
+            isFallback: true,
+            strategy: FallbackStrategy.DEGRADED_VALUE,
+            reason,
+            executedAt: new Date(),
+            duration
+        };
+    }
+
+    /**
+     * Fail-secure - zavrne dostop
+     */
+    private handleFailSecure(
+        reason: string,
+        duration: number
+    ): FallbackResult<T> {
+        this.statistics.errorCalls++;
+        
+        // Za varnostne sisteme je fail-secure privzeto obnašanje
+        // Vrže napako, ki jo mora klicatelj obravnavati
+        throw new SecurityFallbackError(
+            `Fail-secure triggered for '${this.config.name}': ${reason}`,
+            this.config.name,
+            FallbackStrategy.FAIL_SECURE,
+            duration
+        );
+    }
+
+    /**
+     * Fail-open - dovoli dostop (samo za nekritične operacije)
+     */
+    private handleFailOpen(
+        reason: string,
+        duration: number
+    ): FallbackResult<T> {
+        // OPOZORILO: Fail-open je nevaren za varnostne sisteme
+        // Uporabi samo za nekritične operacije
+        if (this.config.critical) {
+            // Za kritične operacije vedno uporabi fail-secure
+            return this.handleFailSecure(reason, duration);
+        }
+
+        if (this.config.defaultValue === undefined) {
+            this.statistics.errorCalls++;
+            throw new Error(`No default value for fail-open in '${this.config.name}'`);
+        }
+
+        return {
+            value: this.config.defaultValue,
+            isFallback: true,
+            strategy: FallbackStrategy.FAIL_OPEN,
+            reason,
+            executedAt: new Date(),
+            duration
+        };
+    }
+
+    /**
+     * Pridobi statistiko
+     */
+    getStatistics(): FallbackStatistics {
+        const totalCalls = this.statistics.totalCalls;
+        const fallbackRatio = totalCalls > 0 
+            ? this.statistics.fallbackCalls / totalCalls 
+            : 0;
+        const averageDuration = totalCalls > 0 
+            ? this.statistics.totalDuration / totalCalls 
+            : 0;
+
+        return {
+            totalCalls,
+            successfulCalls: this.statistics.successfulCalls,
+            fallbackCalls: this.statistics.fallbackCalls,
+            errorCalls: this.statistics.errorCalls,
+            averageDuration,
+            fallbackRatio
+        };
+    }
+
+    /**
+     * Ponastavi statistiko
+     */
+    resetStatistics(): void {
+        this.statistics = {
+            totalCalls: 0,
+            successfulCalls: 0,
+            fallbackCalls: 0,
+            errorCalls: 0,
+            totalDuration: 0
+        };
+    }
+
+    /**
+     * Nastavi zadnjo znano vrednost
+     */
+    setLastKnownValue(value: T): void {
+        this.lastKnownValue = value;
+    }
+
+    /**
+     * Pridobi zadnjo znano vrednost
+     */
+    getLastKnownValue(): T | undefined {
+        return this.lastKnownValue;
+    }
+}
+
+// ============================================================================
+// NAPAKA ZA FAIL-SECURE
+// ============================================================================
+
+/**
+ * Napaka za fail-secure scenarije
+ */
+export class SecurityFallbackError extends Error {
+    readonly operationName: string;
+    readonly strategy: FallbackStrategy;
+    readonly duration: number;
+
+    constructor(
+        message: string,
+        operationName: string,
+        strategy: FallbackStrategy,
+        duration: number
+    ) {
+        super(message);
+        this.name = 'SecurityFallbackError';
+        this.operationName = operationName;
+        this.strategy = strategy;
+        this.duration = duration;
+    }
+}
+
+// ============================================================================
+// SPECIALIZIRANE NADOMESTNE OPERACIJE ZA VARNOSTNE SISTEME
+// ============================================================================
+
+/**
+ * Nadomestna operacija za avtentikacijo
+ * 
+ * VEDNO fail-secure - zavrne avtentikacijo ob napaki
+ */
+export function createAuthenticationFallback<T>(
+    name: string,
+    defaultDeniedValue: T,
+    timeout: number = 5000
+): FallbackManager<T> {
+    return new FallbackManager<T>({
+        name,
+        strategy: FallbackStrategy.FAIL_SECURE,
+        defaultValue: defaultDeniedValue,
+        timeout,
+        critical: true,
+        onFallback: (reason, strategy) => {
+            console.error(`[SECURITY] Authentication fallback triggered: ${reason}`);
+        }
+    });
+}
+
+/**
+ * Nadomestna operacija za avtorizacijo
+ * 
+ * VEDNO fail-secure - zavrne dostop ob napaki
+ */
+export function createAuthorizationFallback<T>(
+    name: string,
+    defaultDeniedValue: T,
+    timeout: number = 3000
+): FallbackManager<T> {
+    return new FallbackManager<T>({
+        name,
+        strategy: FallbackStrategy.FAIL_SECURE,
+        defaultValue: defaultDeniedValue,
+        timeout,
+        critical: true,
+        onFallback: (reason, strategy) => {
+            console.error(`[SECURITY] Authorization fallback triggered: ${reason}`);
+        }
+    });
+}
+
+/**
+ * Nadomestna operacija za šifriranje
+ * 
+ * VEDNO fail-secure - ne šifrira ob napaki
+ */
+export function createEncryptionFallback<T>(
+    name: string,
+    timeout: number = 10000
+): FallbackManager<T> {
+    return new FallbackManager<T>({
+        name,
+        strategy: FallbackStrategy.FAIL_SECURE,
+        timeout,
+        critical: true,
+        onFallback: (reason, strategy) => {
+            console.error(`[SECURITY] Encryption fallback triggered: ${reason}`);
+        }
+    });
+}
+
+/**
+ * Nadomestna operacija za revizijsko sled
+ * 
+ * Uporabi alternativno shranjevanje ob napaki
+ */
+export function createAuditFallback<T>(
+    name: string,
+    alternativeStorage: () => Promise<T>,
+    timeout: number = 5000
+): FallbackManager<T> {
+    return new FallbackManager<T>({
+        name,
+        strategy: FallbackStrategy.ALTERNATIVE_OPERATION,
+        alternativeFunction: alternativeStorage,
+        timeout,
+        critical: true,
+        onFallback: (reason, strategy) => {
+            console.warn(`[AUDIT] Audit fallback triggered: ${reason}`);
+        }
+    });
+}
+
+/**
+ * Nadomestna operacija za pridobivanje ključev
+ * 
+ * Uporabi zadnji znani ključ ob napaki (z omejitvami)
+ */
+export function createKeyRetrievalFallback<T>(
+    name: string,
+    timeout: number = 5000
+): FallbackManager<T> {
+    return new FallbackManager<T>({
+        name,
+        strategy: FallbackStrategy.LAST_KNOWN_VALUE,
+        timeout,
+        critical: true,
+        onFallback: (reason, strategy) => {
+            console.warn(`[SECURITY] Key retrieval fallback triggered: ${reason}`);
+        }
+    });
+}
+
+/**
+ * Nadomestna operacija za preverjanje groženj
+ * 
+ * Fail-secure - blokira ob napaki
+ */
+export function createThreatCheckFallback<T>(
+    name: string,
+    defaultBlockValue: T,
+    timeout: number = 3000
+): FallbackManager<T> {
+    return new FallbackManager<T>({
+        name,
+        strategy: FallbackStrategy.FAIL_SECURE,
+        defaultValue: defaultBlockValue,
+        timeout,
+        critical: true,
+        onFallback: (reason, strategy) => {
+            console.error(`[SECURITY] Threat check fallback triggered: ${reason}`);
+        }
+    });
+}
+
+/**
+ * Nadomestna operacija za nekritične operacije
+ * 
+ * Uporabi degradirano vrednost ob napaki
+ */
+export function createNonCriticalFallback<T>(
+    name: string,
+    defaultValue: T,
+    degradedValue: T,
+    timeout: number = 5000
+): FallbackManager<T> {
+    return new FallbackManager<T>({
+        name,
+        strategy: FallbackStrategy.DEGRADED_VALUE,
+        defaultValue,
+        degradedValue,
+        timeout,
+        critical: false,
+        onFallback: (reason, strategy) => {
+            console.info(`[INFO] Non-critical fallback triggered: ${reason}`);
+        }
+    });
+}
+
+// ============================================================================
+// TOVARNIŠKA FUNKCIJA
+// ============================================================================
+
+/**
+ * Ustvari upravljalca nadomestnih operacij
+ */
+export function createFallbackManager<T>(
+    config: FallbackConfig<T>
+): FallbackManager<T> {
+    return new FallbackManager<T>(config);
+}
+
+// ============================================================================
+// IZVOZ
+// ============================================================================
+
+export default FallbackManager;

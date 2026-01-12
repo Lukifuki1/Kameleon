@@ -1,0 +1,388 @@
+{
+  "_metadata": {
+    "template_version": "1.0.0",
+    "template_type": "stride_threat_analysis",
+    "domain_id": "DOMENA_08",
+    "domain_name": "VARNOSTNI_SISTEMI",
+    "compliance_standards": ["ISO-27001", "NIST-CSF", "SOC-2", "PCI-DSS", "GDPR"],
+    "generated_at": "2026-01-10T00:00:00Z"
+  },
+  "_traceability": {
+    "requirement_id": "REQ-VARNOSTNI_SISTEMI-STRIDE-001",
+    "design_id": "DES-VARNOSTNI_SISTEMI-STRIDE-001",
+    "test_id": "TST-VARNOSTNI_SISTEMI-STRIDE-001"
+  },
+  "stride_analysis": {
+    "document_id": "STRIDE-DOMENA08-1.0.0",
+    "title_sl": "STRIDE analiza grozenj za varnostne sisteme",
+    "revision": "1.0.0",
+    "status": "ACTIVE",
+    "threat_categories": [
+      {
+        "category_id": "STRIDE-S",
+        "category_name": "Spoofing (Lazno predstavljanje)",
+        "description_sl": "Napadalec se lazno predstavlja kot legitimen uporabnik ali sistem",
+        "threats": [
+          {
+            "threat_id": "THR-08-S-001",
+            "name_sl": "Kraja identitete uporabnika",
+            "description_sl": "Napadalec pridobi poverilnice legitimnega uporabnika in se predstavlja kot ta uporabnik",
+            "attack_vector": "Phishing, keylogger, credential stuffing, brute force",
+            "affected_component": "Avtentikacijski modul",
+            "likelihood": "HIGH",
+            "impact": "CRITICAL",
+            "risk_level": "CRITICAL",
+            "mitigations": [
+              {
+                "mitigation_id": "MIT-08-S-001-01",
+                "description_sl": "Implementacija vecfaktorske avtentikacije (MFA)",
+                "implementation_status": "IMPLEMENTED",
+                "effectiveness": "HIGH"
+              },
+              {
+                "mitigation_id": "MIT-08-S-001-02",
+                "description_sl": "Detekcija anomalij pri prijavi (lokacija, naprava, cas)",
+                "implementation_status": "IMPLEMENTED",
+                "effectiveness": "MEDIUM"
+              },
+              {
+                "mitigation_id": "MIT-08-S-001-03",
+                "description_sl": "Omejevanje poskusov prijave (rate limiting)",
+                "implementation_status": "IMPLEMENTED",
+                "effectiveness": "MEDIUM"
+              }
+            ],
+            "residual_risk": "LOW"
+          },
+          {
+            "threat_id": "THR-08-S-002",
+            "name_sl": "Lazno predstavljanje storitve",
+            "description_sl": "Napadalec postavi lazno storitev, ki se predstavlja kot legitimna",
+            "attack_vector": "DNS spoofing, ARP poisoning, rogue access point",
+            "affected_component": "Komunikacijski modul",
+            "likelihood": "MEDIUM",
+            "impact": "HIGH",
+            "risk_level": "HIGH",
+            "mitigations": [
+              {
+                "mitigation_id": "MIT-08-S-002-01",
+                "description_sl": "Vzajemna TLS avtentikacija (mTLS)",
+                "implementation_status": "IMPLEMENTED",
+                "effectiveness": "HIGH"
+              },
+              {
+                "mitigation_id": "MIT-08-S-002-02",
+                "description_sl": "Certificate pinning",
+                "implementation_status": "IMPLEMENTED",
+                "effectiveness": "HIGH"
+              }
+            ],
+            "residual_risk": "LOW"
+          }
+        ]
+      },
+      {
+        "category_id": "STRIDE-T",
+        "category_name": "Tampering (Poseganje)",
+        "description_sl": "Nepooblasceno spreminjanje podatkov ali kode",
+        "threats": [
+          {
+            "threat_id": "THR-08-T-001",
+            "name_sl": "Manipulacija podatkov v prenosu",
+            "description_sl": "Napadalec spremeni podatke med prenosom med odjemalcem in streznikom",
+            "attack_vector": "Man-in-the-middle, packet injection",
+            "affected_component": "Komunikacijski modul",
+            "likelihood": "MEDIUM",
+            "impact": "HIGH",
+            "risk_level": "HIGH",
+            "mitigations": [
+              {
+                "mitigation_id": "MIT-08-T-001-01",
+                "description_sl": "TLS 1.3 sifriranje vseh komunikacij",
+                "implementation_status": "IMPLEMENTED",
+                "effectiveness": "HIGH"
+              },
+              {
+                "mitigation_id": "MIT-08-T-001-02",
+                "description_sl": "Digitalno podpisovanje kriticnih sporocil",
+                "implementation_status": "IMPLEMENTED",
+                "effectiveness": "HIGH"
+              }
+            ],
+            "residual_risk": "LOW"
+          },
+          {
+            "threat_id": "THR-08-T-002",
+            "name_sl": "Manipulacija shranjenih podatkov",
+            "description_sl": "Napadalec spremeni podatke v bazi ali datotecnem sistemu",
+            "attack_vector": "SQL injection, direkten dostop do baze, privilege escalation",
+            "affected_component": "Podatkovni sloj",
+            "likelihood": "MEDIUM",
+            "impact": "CRITICAL",
+            "risk_level": "CRITICAL",
+            "mitigations": [
+              {
+                "mitigation_id": "MIT-08-T-002-01",
+                "description_sl": "Sifriranje podatkov v mirovanju (AES-256)",
+                "implementation_status": "IMPLEMENTED",
+                "effectiveness": "HIGH"
+              },
+              {
+                "mitigation_id": "MIT-08-T-002-02",
+                "description_sl": "Integriteta podatkov z HMAC",
+                "implementation_status": "IMPLEMENTED",
+                "effectiveness": "HIGH"
+              },
+              {
+                "mitigation_id": "MIT-08-T-002-03",
+                "description_sl": "Revizijska sled vseh sprememb",
+                "implementation_status": "IMPLEMENTED",
+                "effectiveness": "MEDIUM"
+              }
+            ],
+            "residual_risk": "LOW"
+          }
+        ]
+      },
+      {
+        "category_id": "STRIDE-R",
+        "category_name": "Repudiation (Zanikanje)",
+        "description_sl": "Uporabnik zanika izvedbo dejanja",
+        "threats": [
+          {
+            "threat_id": "THR-08-R-001",
+            "name_sl": "Zanikanje transakcije",
+            "description_sl": "Uporabnik zanika, da je izvedel doloceno transakcijo ali dejanje",
+            "attack_vector": "Brisanje dnevnikov, manipulacija casovnih zigov",
+            "affected_component": "Revizijski modul",
+            "likelihood": "MEDIUM",
+            "impact": "HIGH",
+            "risk_level": "HIGH",
+            "mitigations": [
+              {
+                "mitigation_id": "MIT-08-R-001-01",
+                "description_sl": "Nespremenljivi revizijski dnevniki (append-only)",
+                "implementation_status": "IMPLEMENTED",
+                "effectiveness": "HIGH"
+              },
+              {
+                "mitigation_id": "MIT-08-R-001-02",
+                "description_sl": "Digitalno podpisovanje dnevniskih zapisov",
+                "implementation_status": "IMPLEMENTED",
+                "effectiveness": "HIGH"
+              },
+              {
+                "mitigation_id": "MIT-08-R-001-03",
+                "description_sl": "Centralizirano zbiranje dnevnikov z zascito integritete",
+                "implementation_status": "IMPLEMENTED",
+                "effectiveness": "HIGH"
+              }
+            ],
+            "residual_risk": "LOW"
+          }
+        ]
+      },
+      {
+        "category_id": "STRIDE-I",
+        "category_name": "Information Disclosure (Razkritje informacij)",
+        "description_sl": "Nepooblascen dostop do zaupnih informacij",
+        "threats": [
+          {
+            "threat_id": "THR-08-I-001",
+            "name_sl": "Uhajanje obcutljivih podatkov",
+            "description_sl": "Obcutljivi podatki so razkriti nepooblascenim osebam",
+            "attack_vector": "SQL injection, insecure direct object reference, misconfiguration",
+            "affected_component": "API vmesnik",
+            "likelihood": "HIGH",
+            "impact": "CRITICAL",
+            "risk_level": "CRITICAL",
+            "mitigations": [
+              {
+                "mitigation_id": "MIT-08-I-001-01",
+                "description_sl": "Stroga avtorizacija na ravni objektov",
+                "implementation_status": "IMPLEMENTED",
+                "effectiveness": "HIGH"
+              },
+              {
+                "mitigation_id": "MIT-08-I-001-02",
+                "description_sl": "Maskiranje obcutljivih podatkov v odgovorih",
+                "implementation_status": "IMPLEMENTED",
+                "effectiveness": "MEDIUM"
+              },
+              {
+                "mitigation_id": "MIT-08-I-001-03",
+                "description_sl": "Parametrizirane poizvedbe (prepared statements)",
+                "implementation_status": "IMPLEMENTED",
+                "effectiveness": "HIGH"
+              }
+            ],
+            "residual_risk": "LOW"
+          },
+          {
+            "threat_id": "THR-08-I-002",
+            "name_sl": "Uhajanje kriptografskih kljucev",
+            "description_sl": "Kriptografski kljuci so razkriti napadalcu",
+            "attack_vector": "Memory dump, side-channel attack, insecure storage",
+            "affected_component": "Kriptografski modul",
+            "likelihood": "LOW",
+            "impact": "CRITICAL",
+            "risk_level": "HIGH",
+            "mitigations": [
+              {
+                "mitigation_id": "MIT-08-I-002-01",
+                "description_sl": "Uporaba HSM za shranjevanje kljucev",
+                "implementation_status": "IMPLEMENTED",
+                "effectiveness": "HIGH"
+              },
+              {
+                "mitigation_id": "MIT-08-I-002-02",
+                "description_sl": "Rotacija kljucev po urniku",
+                "implementation_status": "IMPLEMENTED",
+                "effectiveness": "MEDIUM"
+              }
+            ],
+            "residual_risk": "LOW"
+          }
+        ]
+      },
+      {
+        "category_id": "STRIDE-D",
+        "category_name": "Denial of Service (Zavrnitev storitve)",
+        "description_sl": "Onemogocanje dostopa do storitve legitimnim uporabnikom",
+        "threats": [
+          {
+            "threat_id": "THR-08-D-001",
+            "name_sl": "Volumetricni DDoS napad",
+            "description_sl": "Napadalec preplavi sistem z velikim stevilom zahtevkov",
+            "attack_vector": "Botnet, amplification attack, SYN flood",
+            "affected_component": "Omrezna infrastruktura",
+            "likelihood": "HIGH",
+            "impact": "HIGH",
+            "risk_level": "HIGH",
+            "mitigations": [
+              {
+                "mitigation_id": "MIT-08-D-001-01",
+                "description_sl": "CDN z DDoS zascito",
+                "implementation_status": "IMPLEMENTED",
+                "effectiveness": "HIGH"
+              },
+              {
+                "mitigation_id": "MIT-08-D-001-02",
+                "description_sl": "Rate limiting na API ravni",
+                "implementation_status": "IMPLEMENTED",
+                "effectiveness": "MEDIUM"
+              },
+              {
+                "mitigation_id": "MIT-08-D-001-03",
+                "description_sl": "Avtomatsko skaliranje infrastrukture",
+                "implementation_status": "IMPLEMENTED",
+                "effectiveness": "MEDIUM"
+              }
+            ],
+            "residual_risk": "MEDIUM"
+          },
+          {
+            "threat_id": "THR-08-D-002",
+            "name_sl": "Aplikacijski DoS napad",
+            "description_sl": "Napadalec izkorista ranljivost za izcrpanje virov",
+            "attack_vector": "ReDoS, resource exhaustion, algorithmic complexity attack",
+            "affected_component": "Aplikacijski sloj",
+            "likelihood": "MEDIUM",
+            "impact": "HIGH",
+            "risk_level": "HIGH",
+            "mitigations": [
+              {
+                "mitigation_id": "MIT-08-D-002-01",
+                "description_sl": "Omejitev velikosti zahtevkov",
+                "implementation_status": "IMPLEMENTED",
+                "effectiveness": "MEDIUM"
+              },
+              {
+                "mitigation_id": "MIT-08-D-002-02",
+                "description_sl": "Timeout za vse operacije",
+                "implementation_status": "IMPLEMENTED",
+                "effectiveness": "MEDIUM"
+              }
+            ],
+            "residual_risk": "MEDIUM"
+          }
+        ]
+      },
+      {
+        "category_id": "STRIDE-E",
+        "category_name": "Elevation of Privilege (Povisanje pravic)",
+        "description_sl": "Pridobitev visjih pravic kot so dodeljene",
+        "threats": [
+          {
+            "threat_id": "THR-08-E-001",
+            "name_sl": "Vertikalno povisanje pravic",
+            "description_sl": "Navaden uporabnik pridobi administratorske pravice",
+            "attack_vector": "Privilege escalation vulnerability, IDOR, broken access control",
+            "affected_component": "Avtorizacijski modul",
+            "likelihood": "MEDIUM",
+            "impact": "CRITICAL",
+            "risk_level": "CRITICAL",
+            "mitigations": [
+              {
+                "mitigation_id": "MIT-08-E-001-01",
+                "description_sl": "Princip najmanjsih pravic (least privilege)",
+                "implementation_status": "IMPLEMENTED",
+                "effectiveness": "HIGH"
+              },
+              {
+                "mitigation_id": "MIT-08-E-001-02",
+                "description_sl": "Stroga validacija vlog in dovoljenj na strezniku",
+                "implementation_status": "IMPLEMENTED",
+                "effectiveness": "HIGH"
+              },
+              {
+                "mitigation_id": "MIT-08-E-001-03",
+                "description_sl": "Locitev administratorskih funkcij",
+                "implementation_status": "IMPLEMENTED",
+                "effectiveness": "HIGH"
+              }
+            ],
+            "residual_risk": "LOW"
+          },
+          {
+            "threat_id": "THR-08-E-002",
+            "name_sl": "Horizontalno povisanje pravic",
+            "description_sl": "Uporabnik dostopa do podatkov drugega uporabnika",
+            "attack_vector": "IDOR, parameter tampering, session hijacking",
+            "affected_component": "Avtorizacijski modul",
+            "likelihood": "MEDIUM",
+            "impact": "HIGH",
+            "risk_level": "HIGH",
+            "mitigations": [
+              {
+                "mitigation_id": "MIT-08-E-002-01",
+                "description_sl": "Preverjanje lastnistva virov pri vsakem dostopu",
+                "implementation_status": "IMPLEMENTED",
+                "effectiveness": "HIGH"
+              },
+              {
+                "mitigation_id": "MIT-08-E-002-02",
+                "description_sl": "Uporaba nepredvidljivih identifikatorjev",
+                "implementation_status": "IMPLEMENTED",
+                "effectiveness": "MEDIUM"
+              }
+            ],
+            "residual_risk": "LOW"
+          }
+        ]
+      }
+    ],
+    "analysis_summary": {
+      "total_threats": 11,
+      "critical_threats": 4,
+      "high_threats": 6,
+      "medium_threats": 1,
+      "low_threats": 0,
+      "mitigated_threats": 11,
+      "residual_critical": 0,
+      "residual_high": 0,
+      "residual_medium": 2,
+      "residual_low": 9
+    }
+  }
+}

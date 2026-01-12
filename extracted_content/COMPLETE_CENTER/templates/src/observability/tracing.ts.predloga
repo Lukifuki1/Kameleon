@@ -1,0 +1,508 @@
+/**
+ * @file Varnostno sledenje (tracing) modul za {{IME_PROJEKTA}}
+ * @author {{AVTOR}}
+ * @version {{VERZIJA}}
+ * @date {{DATUM}}
+ * @domain {{DOMENA_SL}}
+ * 
+ * @requirement REQ-SEC-TRC-001
+ * @design DSN-SEC-TRC-001
+ * @test TST-SEC-TRC-001
+ * 
+ * @description
+ * Specializiran modul za sledenje varnostnih operacij:
+ * - Sledenje avtentikacijskih tokov
+ * - Sledenje avtorizacijskih odlocitev
+ * - Sledenje dostopa do obcutljivih podatkov
+ * - Forenzicno sledenje za varnostne incidente
+ * - Korelacija med varnostnimi dogodki
+ * 
+ * @compliance DO-178C, IEC-61508, ISO-26262, MIL-STD-882E
+ * @security ISO-27001, NIST-800-53, SOC-2
+ * @meta_atom OBS_003 - Distributed Tracing
+ */
+
+import { getClock, Clock } from '@mia/core/clock';
+import { generateDeterministicId } from '@mia/core/deterministic';
+const clock: Clock = getClock();
+
+// ============================================================================
+// TIPI
+// ============================================================================
+
+/**
+ * Status varnostnega spana
+ */
+export type SecuritySpanStatus = 'OK' | 'ERROR' | 'BLOCKED' | 'SUSPICIOUS';
+
+/**
+ * Tip varnostne operacije
+ */
+export type SecurityOperationType =
+    | 'authentication'
+    | 'authorization'
+    | 'access_check'
+    | 'encryption'
+    | 'decryption'
+    | 'key_rotation'
+    | 'audit_log'
+    | 'threat_detection'
+    | 'vulnerability_scan'
+    | 'incident_response';
+
+/**
+ * Varnostni span
+ */
+export interface SecuritySpan {
+    /** Unikatni ID spana */
+    readonly spanId: string;
+    /** ID nadrejenega spana */
+    readonly parentSpanId: string | null;
+    /** Trace ID za korelacijo */
+    readonly traceId: string;
+    /** Ime operacije */
+    readonly operationName: string;
+    /** Tip varnostne operacije */
+    readonly operationType: SecurityOperationType;
+    /** Cas zacetka v ms */
+    readonly startTime: number;
+    /** Cas konca v ms */
+    readonly endTime: number | null;
+    /** Trajanje v ms */
+    readonly duration: number | null;
+    /** Status */
+    readonly status: SecuritySpanStatus;
+    /** Oznake */
+    readonly tags: Readonly<Record<string, string>>;
+    /** Logi znotraj spana */
+    readonly logs: readonly SpanLog[];
+    /** Varnostni kontekst */
+    readonly securityContext: SecurityContext;
+}
+
+/**
+ * Log znotraj spana
+ */
+export interface SpanLog {
+    /** Casovni zig */
+    readonly timestamp: number;
+    /** Sporocilo */
+    readonly message: string;
+    /** Nivo */
+    readonly level: 'info' | 'warn' | 'error';
+    /** Dodatni podatki */
+    readonly fields: Readonly<Record<string, unknown>>;
+}
+
+/**
+ * Varnostni kontekst
+ */
+export interface SecurityContext {
+    /** ID uporabnika */
+    readonly userId: string | null;
+    /** ID seje */
+    readonly sessionId: string | null;
+    /** IP naslov */
+    readonly ipAddress: string | null;
+    /** User agent */
+    readonly userAgent: string | null;
+    /** Nivo tveganja */
+    readonly riskLevel: 'low' | 'medium' | 'high' | 'critical';
+    /** Ali je privilegirana operacija */
+    readonly privilegedOperation: boolean;
+}
+
+/**
+ * Konfiguracija sledenja
+ */
+export interface SecurityTracingConfig {
+    /** Ime storitve */
+    readonly service: string;
+    /** Ali je omogoceno */
+    readonly enabled: boolean;
+    /** Vzorcenje (0-1) */
+    readonly samplingRate: number;
+    /** Endpoint za izvoz */
+    readonly exporterEndpoint: string | null;
+    /** Privzete oznake */
+    readonly defaultTags: Readonly<Record<string, string>>;
+}
+
+// ============================================================================
+// KONSTANTE
+// ============================================================================
+
+const DEFAULT_CONFIG: SecurityTracingConfig = {
+    service: '{{IME_PROJEKTA}}',
+    enabled: true,
+    samplingRate: 1.0,
+    exporterEndpoint: null,
+    defaultTags: {
+        service: '{{IME_PROJEKTA}}',
+        version: '{{VERZIJA}}',
+        domain: '{{DOMENA_SL}}',
+    },
+};
+
+const DEFAULT_SECURITY_CONTEXT: SecurityContext = {
+    userId: null,
+    sessionId: null,
+    ipAddress: null,
+    userAgent: null,
+    riskLevel: 'low',
+    privilegedOperation: false,
+};
+
+// ============================================================================
+// STANJE
+// ============================================================================
+
+let currentConfig: SecurityTracingConfig = DEFAULT_CONFIG;
+let currentTraceId: string | null = null;
+let currentSpanId: string | null = null;
+let currentSecurityContext: SecurityContext = DEFAULT_SECURITY_CONTEXT;
+const activeSpans: Map<string, MutableSpan> = new Map();
+const completedSpans: SecuritySpan[] = [];
+let spanCounter = 0;
+
+interface MutableSpan {
+    spanId: string;
+    parentSpanId: string | null;
+    traceId: string;
+    operationName: string;
+    operationType: SecurityOperationType;
+    startTime: number;
+    endTime: number | null;
+    status: SecuritySpanStatus;
+    tags: Record<string, string>;
+    logs: SpanLog[];
+    securityContext: SecurityContext;
+}
+
+// ============================================================================
+// FUNKCIJE
+// ============================================================================
+
+/**
+ * Nastavi konfiguracijo sledenja
+ */
+export function configureTracing(config: Partial<SecurityTracingConfig>): void {
+    currentConfig = { ...currentConfig, ...config };
+}
+
+/**
+ * Nastavi varnostni kontekst
+ */
+export function setSecurityContext(context: Partial<SecurityContext>): void {
+    currentSecurityContext = { ...currentSecurityContext, ...context };
+}
+
+/**
+ * Generiraj nov trace ID
+ */
+export function generateTraceId(): string {
+    return generateDeterministicId('trace', spanCounter++);
+}
+
+/**
+ * Generiraj nov span ID
+ */
+export function generateSpanId(): string {
+    return generateDeterministicId('span', spanCounter++);
+}
+
+/**
+ * Zacni nov trace
+ */
+export function startTrace(
+    operationName: string,
+    operationType: SecurityOperationType,
+    tags: Record<string, string> = {}
+): string {
+    if (!currentConfig.enabled) {
+        return '';
+    }
+    
+    const traceId = generateTraceId();
+    currentTraceId = traceId;
+    
+    return startSpan(operationName, operationType, tags);
+}
+
+/**
+ * Zacni nov span
+ */
+export function startSpan(
+    operationName: string,
+    operationType: SecurityOperationType,
+    tags: Record<string, string> = {}
+): string {
+    if (!currentConfig.enabled) {
+        return '';
+    }
+    
+    const spanId = generateSpanId();
+    const parentSpanId = currentSpanId;
+    
+    if (!currentTraceId) {
+        currentTraceId = generateTraceId();
+    }
+    
+    const span: MutableSpan = {
+        spanId,
+        parentSpanId,
+        traceId: currentTraceId,
+        operationName,
+        operationType,
+        startTime: clock.nowMs(),
+        endTime: null,
+        status: 'OK',
+        tags: { ...currentConfig.defaultTags, ...tags },
+        logs: [],
+        securityContext: { ...currentSecurityContext },
+    };
+    
+    activeSpans.set(spanId, span);
+    currentSpanId = spanId;
+    
+    return spanId;
+}
+
+/**
+ * Dodaj log v span
+ */
+export function addSpanLog(
+    spanId: string,
+    message: string,
+    level: 'info' | 'warn' | 'error' = 'info',
+    fields: Record<string, unknown> = {}
+): void {
+    const span = activeSpans.get(spanId);
+    if (!span) return;
+    
+    span.logs.push({
+        timestamp: clock.nowMs(),
+        message,
+        level,
+        fields,
+    });
+}
+
+/**
+ * Nastavi oznako v spanu
+ */
+export function setSpanTag(spanId: string, key: string, value: string): void {
+    const span = activeSpans.get(spanId);
+    if (!span) return;
+    
+    span.tags[key] = value;
+}
+
+/**
+ * Nastavi status spana
+ */
+export function setSpanStatus(spanId: string, status: SecuritySpanStatus): void {
+    const span = activeSpans.get(spanId);
+    if (!span) return;
+    
+    span.status = status;
+}
+
+/**
+ * Zakljuci span
+ */
+export function endSpan(spanId: string, status?: SecuritySpanStatus): SecuritySpan | null {
+    const span = activeSpans.get(spanId);
+    if (!span) return null;
+    
+    span.endTime = clock.nowMs();
+    if (status) {
+        span.status = status;
+    }
+    
+    const completedSpan: SecuritySpan = {
+        spanId: span.spanId,
+        parentSpanId: span.parentSpanId,
+        traceId: span.traceId,
+        operationName: span.operationName,
+        operationType: span.operationType,
+        startTime: span.startTime,
+        endTime: span.endTime,
+        duration: span.endTime - span.startTime,
+        status: span.status,
+        tags: span.tags,
+        logs: span.logs,
+        securityContext: span.securityContext,
+    };
+    
+    completedSpans.push(completedSpan);
+    activeSpans.delete(spanId);
+    
+    if (currentSpanId === spanId) {
+        currentSpanId = span.parentSpanId;
+    }
+    
+    return completedSpan;
+}
+
+/**
+ * Zakljuci trace
+ */
+export function endTrace(): readonly SecuritySpan[] {
+    const traceSpans = completedSpans.filter(s => s.traceId === currentTraceId);
+    currentTraceId = null;
+    currentSpanId = null;
+    return traceSpans;
+}
+
+// ============================================================================
+// VARNOSTNO SPECIFICNE FUNKCIJE
+// ============================================================================
+
+/**
+ * Sledi avtentikaciji
+ */
+export function traceAuthentication(
+    method: string,
+    userId: string | null,
+    success: boolean,
+    tags: Record<string, string> = {}
+): string {
+    const spanId = startSpan(
+        `auth.${method}`,
+        'authentication',
+        { ...tags, method, success: String(success) }
+    );
+    
+    if (userId) {
+        setSecurityContext({ userId });
+    }
+    
+    if (!success) {
+        setSpanStatus(spanId, 'BLOCKED');
+        addSpanLog(spanId, 'Avtentikacija neuspesna', 'warn', { method, userId });
+    }
+    
+    return spanId;
+}
+
+/**
+ * Sledi avtorizaciji
+ */
+export function traceAuthorization(
+    resource: string,
+    action: string,
+    allowed: boolean,
+    tags: Record<string, string> = {}
+): string {
+    const spanId = startSpan(
+        `authz.${resource}.${action}`,
+        'authorization',
+        { ...tags, resource, action, allowed: String(allowed) }
+    );
+    
+    if (!allowed) {
+        setSpanStatus(spanId, 'BLOCKED');
+        addSpanLog(spanId, 'Dostop zavrnjen', 'warn', { resource, action });
+    }
+    
+    return spanId;
+}
+
+/**
+ * Sledi dostopu do obcutljivih podatkov
+ */
+export function traceSensitiveDataAccess(
+    dataType: string,
+    operation: string,
+    tags: Record<string, string> = {}
+): string {
+    setSecurityContext({ privilegedOperation: true });
+    
+    const spanId = startSpan(
+        `data.${dataType}.${operation}`,
+        'access_check',
+        { ...tags, data_type: dataType, operation, sensitive: 'true' }
+    );
+    
+    addSpanLog(spanId, 'Dostop do obcutljivih podatkov', 'info', { dataType, operation });
+    
+    return spanId;
+}
+
+/**
+ * Sledi zaznavi groznjo
+ */
+export function traceThreatDetection(
+    threatType: string,
+    severity: string,
+    tags: Record<string, string> = {}
+): string {
+    const spanId = startSpan(
+        `threat.${threatType}`,
+        'threat_detection',
+        { ...tags, threat_type: threatType, severity }
+    );
+    
+    setSpanStatus(spanId, 'SUSPICIOUS');
+    addSpanLog(spanId, 'Zaznana groznjo', 'error', { threatType, severity });
+    
+    return spanId;
+}
+
+// ============================================================================
+// IZVOZ
+// ============================================================================
+
+/**
+ * Pridobi vse zakljucene spane
+ */
+export function getCompletedSpans(): readonly SecuritySpan[] {
+    return [...completedSpans];
+}
+
+/**
+ * Pridobi trenutni trace ID
+ */
+export function getCurrentTraceId(): string | null {
+    return currentTraceId;
+}
+
+/**
+ * Pridobi trenutni span ID
+ */
+export function getCurrentSpanId(): string | null {
+    return currentSpanId;
+}
+
+/**
+ * Ponastavi sledenje
+ */
+export function resetTracing(): void {
+    activeSpans.clear();
+    completedSpans.length = 0;
+    currentTraceId = null;
+    currentSpanId = null;
+    currentSecurityContext = DEFAULT_SECURITY_CONTEXT;
+    spanCounter = 0;
+}
+
+export const SecurityTracing = {
+    configure: configureTracing,
+    setSecurityContext,
+    startTrace,
+    startSpan,
+    addSpanLog,
+    setSpanTag,
+    setSpanStatus,
+    endSpan,
+    endTrace,
+    traceAuthentication,
+    traceAuthorization,
+    traceSensitiveDataAccess,
+    traceThreatDetection,
+    getCompletedSpans,
+    getCurrentTraceId,
+    getCurrentSpanId,
+    reset: resetTracing,
+};

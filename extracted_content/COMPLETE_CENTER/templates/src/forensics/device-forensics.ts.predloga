@@ -1,0 +1,1229 @@
+/**
+ * @file Device Forensics - Self-Contained Device Forensic Analysis Platform
+ * @author {{AVTOR}}
+ * @version {{VERZIJA}}
+ * @date {{DATUM}}
+ * @project {{IME_PROJEKTA}}
+ * @domain VARNOSTNI_SISTEMI
+ * 
+ * @requirement REQ-SEC-DFR-001
+ * @design DSN-SEC-DFR-001
+ * @test TST-SEC-DFR-001
+ * 
+ * @description
+ * Enterprise-grade self-contained device forensic analysis platform implementing
+ * comprehensive forensic acquisition, analysis, and reporting for mobile devices,
+ * IoT devices, computers, embedded systems, and specialized hardware. All forensic
+ * algorithms are natively implemented without external dependencies.
+ * 
+ * @classification TOP SECRET - Device Forensics Operations
+ * @authorization Required: Level 5 Security Clearance
+ * @dependencies NONE - Fully self-contained implementation
+ */
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// DEVICE FORENSICS TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export type DeviceType =
+  | 'MOBILE_PHONE'
+  | 'TABLET'
+  | 'LAPTOP'
+  | 'DESKTOP'
+  | 'SERVER'
+  | 'IOT_DEVICE'
+  | 'EMBEDDED_SYSTEM'
+  | 'NETWORK_DEVICE'
+  | 'STORAGE_DEVICE'
+  | 'WEARABLE'
+  | 'VEHICLE_SYSTEM'
+  | 'INDUSTRIAL_CONTROLLER'
+  | 'MEDICAL_DEVICE'
+  | 'DRONE'
+  | 'SMART_HOME';
+
+export type OperatingSystem =
+  | 'ANDROID'
+  | 'IOS'
+  | 'WINDOWS'
+  | 'MACOS'
+  | 'LINUX'
+  | 'FREEBSD'
+  | 'RTOS'
+  | 'EMBEDDED_LINUX'
+  | 'PROPRIETARY'
+  | 'UNKNOWN';
+
+export type AcquisitionType =
+  | 'PHYSICAL'
+  | 'LOGICAL'
+  | 'FILE_SYSTEM'
+  | 'CHIP_OFF'
+  | 'JTAG'
+  | 'ISP'
+  | 'LIVE'
+  | 'MEMORY_DUMP'
+  | 'NETWORK_CAPTURE';
+
+export type AcquisitionMethod =
+  | 'DIRECT_CONNECTION'
+  | 'BOOTLOADER'
+  | 'RECOVERY_MODE'
+  | 'DFU_MODE'
+  | 'ADB'
+  | 'FASTBOOT'
+  | 'JTAG_INTERFACE'
+  | 'SWD_INTERFACE'
+  | 'CHIP_REMOVAL'
+  | 'NETWORK_TAP';
+
+export type FileSystemType =
+  | 'NTFS'
+  | 'FAT32'
+  | 'EXFAT'
+  | 'EXT4'
+  | 'EXT3'
+  | 'APFS'
+  | 'HFS_PLUS'
+  | 'F2FS'
+  | 'YAFFS2'
+  | 'JFFS2'
+  | 'UBIFS'
+  | 'SQUASHFS'
+  | 'BTRFS'
+  | 'XFS'
+  | 'ZFS';
+
+export type EncryptionType =
+  | 'BITLOCKER'
+  | 'FILEVAULT'
+  | 'LUKS'
+  | 'VERACRYPT'
+  | 'ANDROID_FDE'
+  | 'ANDROID_FBE'
+  | 'IOS_DATA_PROTECTION'
+  | 'HARDWARE_ENCRYPTION'
+  | 'CUSTOM'
+  | 'NONE';
+
+export type EvidenceType =
+  | 'FILE'
+  | 'DELETED_FILE'
+  | 'REGISTRY'
+  | 'LOG'
+  | 'DATABASE'
+  | 'MESSAGE'
+  | 'CALL_RECORD'
+  | 'CONTACT'
+  | 'LOCATION'
+  | 'BROWSER_HISTORY'
+  | 'APPLICATION_DATA'
+  | 'MEDIA'
+  | 'DOCUMENT'
+  | 'EMAIL'
+  | 'SOCIAL_MEDIA'
+  | 'CRYPTOCURRENCY'
+  | 'MEMORY_ARTIFACT';
+
+export type AnalysisType =
+  | 'TIMELINE'
+  | 'KEYWORD_SEARCH'
+  | 'HASH_ANALYSIS'
+  | 'SIGNATURE_ANALYSIS'
+  | 'CARVING'
+  | 'METADATA_EXTRACTION'
+  | 'RELATIONSHIP_MAPPING'
+  | 'GEOLOCATION'
+  | 'COMMUNICATION_ANALYSIS'
+  | 'MALWARE_ANALYSIS'
+  | 'ENCRYPTION_ANALYSIS';
+
+export type IntegrityStatus =
+  | 'VERIFIED'
+  | 'MODIFIED'
+  | 'CORRUPTED'
+  | 'UNKNOWN';
+
+export type ChainOfCustodyStatus =
+  | 'INTACT'
+  | 'BROKEN'
+  | 'PENDING_VERIFICATION';
+
+export type ForensicMode =
+  | 'ACQUISITION'
+  | 'ANALYSIS'
+  | 'REPORTING'
+  | 'FULL_INVESTIGATION';
+
+export type SecurityLevel =
+  | 'TOP_SECRET'
+  | 'SECRET'
+  | 'CONFIDENTIAL'
+  | 'UNCLASSIFIED';
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// DEVICE FORENSICS CONFIGURATION
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface DeviceForensicsConfig {
+  readonly platformId: string;
+  readonly name: string;
+  readonly version: string;
+  readonly mode: ForensicMode;
+  readonly acquisition: AcquisitionConfig;
+  readonly mobileForensics: MobileForensicsConfig;
+  readonly computerForensics: ComputerForensicsConfig;
+  readonly iotForensics: IoTForensicsConfig;
+  readonly memoryForensics: MemoryForensicsConfig;
+  readonly networkForensics: NetworkForensicsConfig;
+  readonly analysis: AnalysisConfig;
+  readonly decryption: DecryptionConfig;
+  readonly carving: CarvingConfig;
+  readonly timeline: TimelineConfig;
+  readonly reporting: ReportingConfig;
+  readonly chainOfCustody: ChainOfCustodyConfig;
+  readonly storage: StorageConfig;
+  readonly security: SecurityConfig;
+  readonly metadata: PlatformMetadata;
+}
+
+export interface AcquisitionConfig {
+  readonly enabled: boolean;
+  readonly types: AcquisitionTypesConfig;
+  readonly verification: VerificationConfig;
+  readonly imaging: ImagingConfig;
+  readonly writeBlocking: WriteBlockingConfig;
+}
+
+export interface AcquisitionTypesConfig {
+  readonly physical: boolean;
+  readonly logical: boolean;
+  readonly fileSystem: boolean;
+  readonly chipOff: boolean;
+  readonly jtag: boolean;
+  readonly isp: boolean;
+  readonly live: boolean;
+  readonly memoryDump: boolean;
+}
+
+export interface VerificationConfig {
+  readonly enabled: boolean;
+  readonly hashAlgorithms: readonly HashAlgorithm[];
+  readonly verifyOnAcquisition: boolean;
+  readonly verifyOnAnalysis: boolean;
+}
+
+export type HashAlgorithm =
+  | 'MD5'
+  | 'SHA1'
+  | 'SHA256'
+  | 'SHA512'
+  | 'BLAKE2'
+  | 'BLAKE3';
+
+export interface ImagingConfig {
+  readonly enabled: boolean;
+  readonly formats: readonly ImageFormat[];
+  readonly compression: boolean;
+  readonly splitting: boolean;
+  readonly splitSize: number;
+}
+
+export type ImageFormat =
+  | 'RAW'
+  | 'E01'
+  | 'AFF4'
+  | 'DD'
+  | 'SMART'
+  | 'EX01';
+
+export interface WriteBlockingConfig {
+  readonly enabled: boolean;
+  readonly hardware: boolean;
+  readonly software: boolean;
+  readonly verification: boolean;
+}
+
+export interface MobileForensicsConfig {
+  readonly enabled: boolean;
+  readonly android: AndroidForensicsConfig;
+  readonly ios: iOSForensicsConfig;
+  readonly extraction: MobileExtractionConfig;
+  readonly applications: ApplicationAnalysisConfig;
+}
+
+export interface AndroidForensicsConfig {
+  readonly enabled: boolean;
+  readonly adbExtraction: boolean;
+  readonly rootExtraction: boolean;
+  readonly bootloaderExtraction: boolean;
+  readonly chipOffSupport: boolean;
+  readonly jtagSupport: boolean;
+  readonly partitions: readonly AndroidPartition[];
+}
+
+export type AndroidPartition =
+  | 'SYSTEM'
+  | 'DATA'
+  | 'CACHE'
+  | 'BOOT'
+  | 'RECOVERY'
+  | 'VENDOR'
+  | 'USERDATA'
+  | 'METADATA';
+
+export interface iOSForensicsConfig {
+  readonly enabled: boolean;
+  readonly backupExtraction: boolean;
+  readonly dfuExtraction: boolean;
+  readonly jailbreakExtraction: boolean;
+  readonly checkm8Support: boolean;
+  readonly keychain: KeychainExtractionConfig;
+}
+
+export interface KeychainExtractionConfig {
+  readonly enabled: boolean;
+  readonly passwords: boolean;
+  readonly certificates: boolean;
+  readonly keys: boolean;
+}
+
+export interface MobileExtractionConfig {
+  readonly enabled: boolean;
+  readonly contacts: boolean;
+  readonly messages: boolean;
+  readonly callLogs: boolean;
+  readonly media: boolean;
+  readonly applications: boolean;
+  readonly locations: boolean;
+  readonly browserData: boolean;
+  readonly socialMedia: boolean;
+}
+
+export interface ApplicationAnalysisConfig {
+  readonly enabled: boolean;
+  readonly messaging: readonly string[];
+  readonly socialMedia: readonly string[];
+  readonly financial: readonly string[];
+  readonly email: readonly string[];
+  readonly browsers: readonly string[];
+  readonly custom: readonly string[];
+}
+
+export interface ComputerForensicsConfig {
+  readonly enabled: boolean;
+  readonly windows: WindowsForensicsConfig;
+  readonly macos: MacOSForensicsConfig;
+  readonly linux: LinuxForensicsConfig;
+  readonly artifacts: ComputerArtifactsConfig;
+}
+
+export interface WindowsForensicsConfig {
+  readonly enabled: boolean;
+  readonly registry: RegistryAnalysisConfig;
+  readonly eventLogs: EventLogAnalysisConfig;
+  readonly prefetch: boolean;
+  readonly amcache: boolean;
+  readonly shimcache: boolean;
+  readonly usnjrnl: boolean;
+  readonly mft: boolean;
+  readonly shellbags: boolean;
+  readonly jumpLists: boolean;
+  readonly lnkFiles: boolean;
+  readonly recycledBin: boolean;
+  readonly volumeShadowCopies: boolean;
+}
+
+export interface RegistryAnalysisConfig {
+  readonly enabled: boolean;
+  readonly hives: readonly RegistryHive[];
+  readonly userActivity: boolean;
+  readonly systemConfig: boolean;
+  readonly networkConfig: boolean;
+  readonly installedSoftware: boolean;
+}
+
+export type RegistryHive =
+  | 'SAM'
+  | 'SECURITY'
+  | 'SOFTWARE'
+  | 'SYSTEM'
+  | 'NTUSER'
+  | 'USRCLASS';
+
+export interface EventLogAnalysisConfig {
+  readonly enabled: boolean;
+  readonly logs: readonly EventLogType[];
+  readonly correlation: boolean;
+  readonly anomalyDetection: boolean;
+}
+
+export type EventLogType =
+  | 'SECURITY'
+  | 'SYSTEM'
+  | 'APPLICATION'
+  | 'POWERSHELL'
+  | 'SYSMON'
+  | 'DEFENDER';
+
+export interface MacOSForensicsConfig {
+  readonly enabled: boolean;
+  readonly unifiedLogs: boolean;
+  readonly spotlight: boolean;
+  readonly fsevents: boolean;
+  readonly quarantine: boolean;
+  readonly knowledgeC: boolean;
+  readonly keychain: boolean;
+  readonly timeMachine: boolean;
+}
+
+export interface LinuxForensicsConfig {
+  readonly enabled: boolean;
+  readonly syslog: boolean;
+  readonly journald: boolean;
+  readonly authLog: boolean;
+  readonly bashHistory: boolean;
+  readonly cronJobs: boolean;
+  readonly systemdServices: boolean;
+  readonly procFilesystem: boolean;
+}
+
+export interface ComputerArtifactsConfig {
+  readonly enabled: boolean;
+  readonly browserHistory: boolean;
+  readonly browserCache: boolean;
+  readonly browserCookies: boolean;
+  readonly browserPasswords: boolean;
+  readonly emailClients: boolean;
+  readonly instantMessaging: boolean;
+  readonly cloudStorage: boolean;
+  readonly recentDocuments: boolean;
+  readonly thumbnailCache: boolean;
+}
+
+export interface IoTForensicsConfig {
+  readonly enabled: boolean;
+  readonly smartHome: SmartHomeForensicsConfig;
+  readonly wearables: WearableForensicsConfig;
+  readonly vehicles: VehicleForensicsConfig;
+  readonly industrial: IndustrialForensicsConfig;
+  readonly medical: MedicalDeviceForensicsConfig;
+}
+
+export interface SmartHomeForensicsConfig {
+  readonly enabled: boolean;
+  readonly voiceAssistants: boolean;
+  readonly smartSpeakers: boolean;
+  readonly securityCameras: boolean;
+  readonly smartLocks: boolean;
+  readonly thermostats: boolean;
+  readonly smartTVs: boolean;
+}
+
+export interface WearableForensicsConfig {
+  readonly enabled: boolean;
+  readonly smartwatches: boolean;
+  readonly fitnessTrackers: boolean;
+  readonly healthData: boolean;
+  readonly locationHistory: boolean;
+  readonly notifications: boolean;
+}
+
+export interface VehicleForensicsConfig {
+  readonly enabled: boolean;
+  readonly infotainment: boolean;
+  readonly telematics: boolean;
+  readonly eventDataRecorder: boolean;
+  readonly canBus: boolean;
+  readonly gpsNavigation: boolean;
+  readonly dashcam: boolean;
+}
+
+export interface IndustrialForensicsConfig {
+  readonly enabled: boolean;
+  readonly plc: boolean;
+  readonly scada: boolean;
+  readonly hmi: boolean;
+  readonly rtu: boolean;
+  readonly historian: boolean;
+}
+
+export interface MedicalDeviceForensicsConfig {
+  readonly enabled: boolean;
+  readonly pacemakers: boolean;
+  readonly insulinPumps: boolean;
+  readonly imagingDevices: boolean;
+  readonly patientMonitors: boolean;
+  readonly infusionPumps: boolean;
+}
+
+export interface MemoryForensicsConfig {
+  readonly enabled: boolean;
+  readonly acquisition: MemoryAcquisitionConfig;
+  readonly analysis: MemoryAnalysisConfig;
+  readonly volatility: VolatilityConfig;
+}
+
+export interface MemoryAcquisitionConfig {
+  readonly enabled: boolean;
+  readonly methods: readonly MemoryAcquisitionMethod[];
+  readonly compression: boolean;
+  readonly encryption: boolean;
+}
+
+export type MemoryAcquisitionMethod =
+  | 'LIVE_DUMP'
+  | 'CRASH_DUMP'
+  | 'HIBERNATION'
+  | 'PAGEFILE'
+  | 'FIREWIRE'
+  | 'THUNDERBOLT'
+  | 'COLD_BOOT';
+
+export interface MemoryAnalysisConfig {
+  readonly enabled: boolean;
+  readonly processes: boolean;
+  readonly threads: boolean;
+  readonly handles: boolean;
+  readonly dlls: boolean;
+  readonly drivers: boolean;
+  readonly network: boolean;
+  readonly registry: boolean;
+  readonly malware: boolean;
+}
+
+export interface VolatilityConfig {
+  readonly enabled: boolean;
+  readonly profiles: readonly string[];
+  readonly plugins: readonly string[];
+  readonly customPlugins: boolean;
+}
+
+export interface NetworkForensicsConfig {
+  readonly enabled: boolean;
+  readonly packetCapture: PacketCaptureConfig;
+  readonly flowAnalysis: FlowAnalysisConfig;
+  readonly protocolAnalysis: ProtocolAnalysisConfig;
+  readonly sessionReconstruction: SessionReconstructionConfig;
+}
+
+export interface PacketCaptureConfig {
+  readonly enabled: boolean;
+  readonly interfaces: readonly string[];
+  readonly filters: readonly string[];
+  readonly ringBuffer: boolean;
+  readonly maxSize: number;
+}
+
+export interface FlowAnalysisConfig {
+  readonly enabled: boolean;
+  readonly netflow: boolean;
+  readonly sflow: boolean;
+  readonly ipfix: boolean;
+  readonly statistics: boolean;
+}
+
+export interface ProtocolAnalysisConfig {
+  readonly enabled: boolean;
+  readonly protocols: readonly string[];
+  readonly deepInspection: boolean;
+  readonly decryption: boolean;
+}
+
+export interface SessionReconstructionConfig {
+  readonly enabled: boolean;
+  readonly tcp: boolean;
+  readonly http: boolean;
+  readonly smtp: boolean;
+  readonly ftp: boolean;
+  readonly voip: boolean;
+}
+
+export interface AnalysisConfig {
+  readonly enabled: boolean;
+  readonly keywordSearch: KeywordSearchConfig;
+  readonly hashAnalysis: HashAnalysisConfig;
+  readonly signatureAnalysis: SignatureAnalysisConfig;
+  readonly metadataExtraction: MetadataExtractionConfig;
+  readonly relationshipMapping: RelationshipMappingConfig;
+}
+
+export interface KeywordSearchConfig {
+  readonly enabled: boolean;
+  readonly indexing: boolean;
+  readonly regex: boolean;
+  readonly fuzzy: boolean;
+  readonly multilingual: boolean;
+  readonly encoding: readonly string[];
+}
+
+export interface HashAnalysisConfig {
+  readonly enabled: boolean;
+  readonly knownGood: boolean;
+  readonly knownBad: boolean;
+  readonly customHashSets: readonly string[];
+  readonly fuzzyHashing: boolean;
+}
+
+export interface SignatureAnalysisConfig {
+  readonly enabled: boolean;
+  readonly fileTypes: boolean;
+  readonly malware: boolean;
+  readonly customSignatures: readonly string[];
+}
+
+export interface MetadataExtractionConfig {
+  readonly enabled: boolean;
+  readonly exif: boolean;
+  readonly office: boolean;
+  readonly pdf: boolean;
+  readonly audio: boolean;
+  readonly video: boolean;
+}
+
+export interface RelationshipMappingConfig {
+  readonly enabled: boolean;
+  readonly contacts: boolean;
+  readonly communications: boolean;
+  readonly locations: boolean;
+  readonly timeline: boolean;
+}
+
+export interface DecryptionConfig {
+  readonly enabled: boolean;
+  readonly passwordRecovery: PasswordRecoveryConfig;
+  readonly keyRecovery: KeyRecoveryConfig;
+  readonly encryptionDetection: EncryptionDetectionConfig;
+}
+
+export interface PasswordRecoveryConfig {
+  readonly enabled: boolean;
+  readonly dictionary: boolean;
+  readonly bruteForce: boolean;
+  readonly rainbow: boolean;
+  readonly gpu: boolean;
+  readonly distributed: boolean;
+}
+
+export interface KeyRecoveryConfig {
+  readonly enabled: boolean;
+  readonly memorySearch: boolean;
+  readonly keyfileSearch: boolean;
+  readonly escrowKeys: boolean;
+}
+
+export interface EncryptionDetectionConfig {
+  readonly enabled: boolean;
+  readonly entropyAnalysis: boolean;
+  readonly signatureDetection: boolean;
+  readonly containerDetection: boolean;
+}
+
+export interface CarvingConfig {
+  readonly enabled: boolean;
+  readonly fileTypes: readonly string[];
+  readonly fragmentedFiles: boolean;
+  readonly embeddedFiles: boolean;
+  readonly slackSpace: boolean;
+  readonly unallocatedSpace: boolean;
+}
+
+export interface TimelineConfig {
+  readonly enabled: boolean;
+  readonly sources: TimelineSourcesConfig;
+  readonly visualization: TimelineVisualizationConfig;
+  readonly filtering: TimelineFilteringConfig;
+}
+
+export interface TimelineSourcesConfig {
+  readonly fileSystem: boolean;
+  readonly registry: boolean;
+  readonly eventLogs: boolean;
+  readonly browserHistory: boolean;
+  readonly communications: boolean;
+  readonly applications: boolean;
+}
+
+export interface TimelineVisualizationConfig {
+  readonly enabled: boolean;
+  readonly graphical: boolean;
+  readonly interactive: boolean;
+  readonly export: readonly string[];
+}
+
+export interface TimelineFilteringConfig {
+  readonly enabled: boolean;
+  readonly dateRange: boolean;
+  readonly eventTypes: boolean;
+  readonly sources: boolean;
+  readonly keywords: boolean;
+}
+
+export interface ReportingConfig {
+  readonly enabled: boolean;
+  readonly formats: readonly ReportFormat[];
+  readonly templates: readonly ReportTemplate[];
+  readonly automation: ReportAutomationConfig;
+}
+
+export type ReportFormat =
+  | 'PDF'
+  | 'HTML'
+  | 'DOCX'
+  | 'XML'
+  | 'JSON'
+  | 'CSV';
+
+export interface ReportTemplate {
+  readonly templateId: string;
+  readonly name: string;
+  readonly type: 'TECHNICAL' | 'EXECUTIVE' | 'LEGAL' | 'CUSTOM';
+  readonly sections: readonly string[];
+}
+
+export interface ReportAutomationConfig {
+  readonly enabled: boolean;
+  readonly scheduling: boolean;
+  readonly triggers: readonly string[];
+  readonly distribution: boolean;
+}
+
+export interface ChainOfCustodyConfig {
+  readonly enabled: boolean;
+  readonly tracking: CustodyTrackingConfig;
+  readonly documentation: CustodyDocumentationConfig;
+  readonly verification: CustodyVerificationConfig;
+}
+
+export interface CustodyTrackingConfig {
+  readonly enabled: boolean;
+  readonly timestamps: boolean;
+  readonly handlers: boolean;
+  readonly locations: boolean;
+  readonly actions: boolean;
+}
+
+export interface CustodyDocumentationConfig {
+  readonly enabled: boolean;
+  readonly forms: readonly string[];
+  readonly signatures: boolean;
+  readonly photographs: boolean;
+}
+
+export interface CustodyVerificationConfig {
+  readonly enabled: boolean;
+  readonly hashVerification: boolean;
+  readonly signatureVerification: boolean;
+  readonly auditTrail: boolean;
+}
+
+export interface StorageConfig {
+  readonly type: 'DATABASE' | 'FILE_SYSTEM' | 'HYBRID';
+  readonly encryption: StorageEncryptionConfig;
+  readonly retention: RetentionConfig;
+  readonly backup: BackupConfig;
+}
+
+export interface StorageEncryptionConfig {
+  readonly enabled: boolean;
+  readonly algorithm: 'AES_256_GCM' | 'CHACHA20_POLY1305';
+  readonly keyManagement: 'LOCAL' | 'HSM' | 'KMS';
+}
+
+export interface RetentionConfig {
+  readonly enabled: boolean;
+  readonly evidence: number;
+  readonly reports: number;
+  readonly logs: number;
+}
+
+export interface BackupConfig {
+  readonly enabled: boolean;
+  readonly frequency: number;
+  readonly encryption: boolean;
+  readonly offsite: boolean;
+}
+
+export interface SecurityConfig {
+  readonly authentication: AuthenticationConfig;
+  readonly authorization: AuthorizationConfig;
+  readonly audit: AuditConfig;
+  readonly classification: ClassificationConfig;
+}
+
+export interface AuthenticationConfig {
+  readonly enabled: boolean;
+  readonly methods: readonly ('PKI' | 'CAC' | 'BIOMETRIC' | 'MFA')[];
+  readonly sessionTimeout: number;
+}
+
+export interface AuthorizationConfig {
+  readonly enabled: boolean;
+  readonly model: 'RBAC' | 'ABAC' | 'MAC';
+  readonly clearanceRequired: boolean;
+}
+
+export interface AuditConfig {
+  readonly enabled: boolean;
+  readonly logAllAccess: boolean;
+  readonly logAllOperations: boolean;
+  readonly retention: number;
+}
+
+export interface ClassificationConfig {
+  readonly enabled: boolean;
+  readonly defaultLevel: SecurityLevel;
+  readonly autoClassification: boolean;
+}
+
+export interface PlatformMetadata {
+  readonly createdAt: number;
+  readonly updatedAt: number;
+  readonly createdBy: string;
+  readonly version: string;
+  readonly tags: readonly string[];
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// DEVICE TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface ForensicDevice {
+  readonly deviceId: string;
+  readonly type: DeviceType;
+  readonly manufacturer: string;
+  readonly model: string;
+  readonly serialNumber: string | null;
+  readonly operatingSystem: OperatingSystemInfo;
+  readonly hardware: HardwareInfo;
+  readonly storage: StorageInfo;
+  readonly security: DeviceSecurityInfo;
+  readonly acquisition: AcquisitionInfo | null;
+  readonly chainOfCustody: ChainOfCustody;
+  readonly metadata: DeviceMetadata;
+}
+
+export interface OperatingSystemInfo {
+  readonly type: OperatingSystem;
+  readonly version: string;
+  readonly build: string | null;
+  readonly architecture: 'X86' | 'X64' | 'ARM' | 'ARM64' | 'MIPS' | 'OTHER';
+  readonly installDate: number | null;
+  readonly lastBoot: number | null;
+}
+
+export interface HardwareInfo {
+  readonly processor: ProcessorInfo;
+  readonly memory: MemoryInfo;
+  readonly storage: readonly StorageDeviceInfo[];
+  readonly network: readonly NetworkInterfaceInfo[];
+  readonly peripherals: readonly PeripheralInfo[];
+}
+
+export interface ProcessorInfo {
+  readonly manufacturer: string;
+  readonly model: string;
+  readonly cores: number;
+  readonly architecture: string;
+}
+
+export interface MemoryInfo {
+  readonly total: number;
+  readonly type: string;
+  readonly modules: readonly MemoryModuleInfo[];
+}
+
+export interface MemoryModuleInfo {
+  readonly slot: string;
+  readonly size: number;
+  readonly type: string;
+  readonly speed: number;
+}
+
+export interface StorageDeviceInfo {
+  readonly deviceId: string;
+  readonly type: 'HDD' | 'SSD' | 'NVME' | 'EMMC' | 'SD' | 'USB' | 'OTHER';
+  readonly manufacturer: string;
+  readonly model: string;
+  readonly serialNumber: string | null;
+  readonly capacity: number;
+  readonly interface: string;
+  readonly partitions: readonly PartitionInfo[];
+}
+
+export interface PartitionInfo {
+  readonly partitionId: string;
+  readonly name: string;
+  readonly fileSystem: FileSystemType;
+  readonly size: number;
+  readonly offset: number;
+  readonly encrypted: boolean;
+}
+
+export interface NetworkInterfaceInfo {
+  readonly interfaceId: string;
+  readonly type: 'ETHERNET' | 'WIFI' | 'BLUETOOTH' | 'CELLULAR' | 'OTHER';
+  readonly macAddress: string;
+  readonly ipAddresses: readonly string[];
+}
+
+export interface PeripheralInfo {
+  readonly peripheralId: string;
+  readonly type: string;
+  readonly manufacturer: string;
+  readonly model: string;
+  readonly serialNumber: string | null;
+}
+
+export interface StorageInfo {
+  readonly totalCapacity: number;
+  readonly usedSpace: number;
+  readonly freeSpace: number;
+  readonly devices: readonly StorageDeviceInfo[];
+}
+
+export interface DeviceSecurityInfo {
+  readonly encryption: EncryptionInfo;
+  readonly authentication: DeviceAuthenticationInfo;
+  readonly lockStatus: LockStatus;
+}
+
+export interface EncryptionInfo {
+  readonly enabled: boolean;
+  readonly type: EncryptionType;
+  readonly algorithm: string | null;
+  readonly keySize: number | null;
+  readonly status: 'ENCRYPTED' | 'DECRYPTED' | 'PARTIAL' | 'UNKNOWN';
+}
+
+export interface DeviceAuthenticationInfo {
+  readonly type: 'PIN' | 'PASSWORD' | 'PATTERN' | 'BIOMETRIC' | 'NONE' | 'UNKNOWN';
+  readonly complexity: 'HIGH' | 'MEDIUM' | 'LOW' | 'UNKNOWN';
+  readonly bypassed: boolean;
+}
+
+export interface LockStatus {
+  readonly locked: boolean;
+  readonly lockType: string | null;
+  readonly failedAttempts: number | null;
+  readonly wipePending: boolean;
+}
+
+export interface AcquisitionInfo {
+  readonly acquisitionId: string;
+  readonly type: AcquisitionType;
+  readonly method: AcquisitionMethod;
+  readonly startTime: number;
+  readonly endTime: number;
+  readonly status: 'COMPLETED' | 'PARTIAL' | 'FAILED';
+  readonly image: ImageInfo;
+  readonly verification: VerificationInfo;
+}
+
+export interface ImageInfo {
+  readonly imageId: string;
+  readonly format: ImageFormat;
+  readonly path: string;
+  readonly size: number;
+  readonly compressed: boolean;
+  readonly split: boolean;
+  readonly segments: readonly string[];
+}
+
+export interface VerificationInfo {
+  readonly verified: boolean;
+  readonly hashes: readonly HashInfo[];
+  readonly timestamp: number;
+  readonly verifiedBy: string;
+}
+
+export interface HashInfo {
+  readonly algorithm: HashAlgorithm;
+  readonly value: string;
+  readonly verified: boolean;
+}
+
+export interface ChainOfCustody {
+  readonly status: ChainOfCustodyStatus;
+  readonly entries: readonly CustodyEntry[];
+  readonly currentHandler: string;
+  readonly currentLocation: string;
+}
+
+export interface CustodyEntry {
+  readonly entryId: string;
+  readonly timestamp: number;
+  readonly action: CustodyAction;
+  readonly handler: string;
+  readonly location: string;
+  readonly notes: string | null;
+  readonly signature: string | null;
+}
+
+export type CustodyAction =
+  | 'SEIZED'
+  | 'RECEIVED'
+  | 'TRANSFERRED'
+  | 'ANALYZED'
+  | 'STORED'
+  | 'RETURNED'
+  | 'DESTROYED';
+
+export interface DeviceMetadata {
+  readonly createdAt: number;
+  readonly updatedAt: number;
+  readonly createdBy: string;
+  readonly caseId: string | null;
+  readonly classification: SecurityLevel;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// EVIDENCE TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface ForensicEvidence {
+  readonly evidenceId: string;
+  readonly deviceId: string;
+  readonly type: EvidenceType;
+  readonly category: string;
+  readonly source: EvidenceSource;
+  readonly content: EvidenceContent;
+  readonly metadata: EvidenceMetadata;
+  readonly analysis: EvidenceAnalysis;
+  readonly integrity: IntegrityInfo;
+  readonly classification: SecurityLevel;
+}
+
+export interface EvidenceSource {
+  readonly path: string;
+  readonly partition: string | null;
+  readonly offset: number | null;
+  readonly size: number;
+  readonly deleted: boolean;
+  readonly carved: boolean;
+}
+
+export interface EvidenceContent {
+  readonly type: string;
+  readonly encoding: string | null;
+  readonly preview: string | null;
+  readonly extracted: boolean;
+  readonly extractedPath: string | null;
+}
+
+export interface EvidenceMetadata {
+  readonly created: number | null;
+  readonly modified: number | null;
+  readonly accessed: number | null;
+  readonly owner: string | null;
+  readonly permissions: string | null;
+  readonly attributes: Readonly<Record<string, unknown>>;
+}
+
+export interface EvidenceAnalysis {
+  readonly analyzed: boolean;
+  readonly analysisType: readonly AnalysisType[];
+  readonly findings: readonly AnalysisFinding[];
+  readonly tags: readonly string[];
+  readonly notes: string | null;
+}
+
+export interface AnalysisFinding {
+  readonly findingId: string;
+  readonly type: string;
+  readonly description: string;
+  readonly significance: 'HIGH' | 'MEDIUM' | 'LOW';
+  readonly confidence: number;
+  readonly evidence: readonly string[];
+}
+
+export interface IntegrityInfo {
+  readonly status: IntegrityStatus;
+  readonly hashes: readonly HashInfo[];
+  readonly verified: boolean;
+  readonly verifiedAt: number | null;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ANALYSIS RESULT TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface TimelineResult {
+  readonly timelineId: string;
+  readonly deviceId: string;
+  readonly period: TimePeriod;
+  readonly events: readonly TimelineEvent[];
+  readonly statistics: TimelineStatistics;
+  readonly metadata: AnalysisResultMetadata;
+}
+
+export interface TimePeriod {
+  readonly start: number;
+  readonly end: number;
+}
+
+export interface TimelineEvent {
+  readonly eventId: string;
+  readonly timestamp: number;
+  readonly type: string;
+  readonly source: string;
+  readonly description: string;
+  readonly evidence: readonly string[];
+  readonly significance: 'HIGH' | 'MEDIUM' | 'LOW';
+}
+
+export interface TimelineStatistics {
+  readonly totalEvents: number;
+  readonly eventsByType: Readonly<Record<string, number>>;
+  readonly eventsBySource: Readonly<Record<string, number>>;
+  readonly peakActivity: number;
+}
+
+export interface AnalysisResultMetadata {
+  readonly analyzedAt: number;
+  readonly analyzedBy: string;
+  readonly duration: number;
+  readonly version: string;
+}
+
+export interface KeywordSearchResult {
+  readonly searchId: string;
+  readonly deviceId: string;
+  readonly query: string;
+  readonly hits: readonly KeywordHit[];
+  readonly statistics: SearchStatistics;
+  readonly metadata: AnalysisResultMetadata;
+}
+
+export interface KeywordHit {
+  readonly hitId: string;
+  readonly evidenceId: string;
+  readonly path: string;
+  readonly offset: number;
+  readonly context: string;
+  readonly encoding: string;
+}
+
+export interface SearchStatistics {
+  readonly totalHits: number;
+  readonly filesSearched: number;
+  readonly bytesSearched: number;
+  readonly duration: number;
+}
+
+export interface MalwareAnalysisResult {
+  readonly analysisId: string;
+  readonly deviceId: string;
+  readonly detections: readonly MalwareDetection[];
+  readonly indicators: readonly MalwareIndicator[];
+  readonly statistics: MalwareStatistics;
+  readonly metadata: AnalysisResultMetadata;
+}
+
+export interface MalwareDetection {
+  readonly detectionId: string;
+  readonly evidenceId: string;
+  readonly name: string;
+  readonly type: string;
+  readonly family: string | null;
+  readonly confidence: number;
+  readonly signatures: readonly string[];
+}
+
+export interface MalwareIndicator {
+  readonly indicatorId: string;
+  readonly type: 'HASH' | 'IP' | 'DOMAIN' | 'URL' | 'REGISTRY' | 'FILE' | 'BEHAVIOR';
+  readonly value: string;
+  readonly confidence: number;
+  readonly source: string;
+}
+
+export interface MalwareStatistics {
+  readonly totalDetections: number;
+  readonly detectionsByType: Readonly<Record<string, number>>;
+  readonly filesScanned: number;
+  readonly cleanFiles: number;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SESSION TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface ForensicSession {
+  readonly sessionId: string;
+  readonly platformId: string;
+  readonly state: SessionState;
+  readonly config: SessionConfig;
+  readonly progress: SessionProgress;
+  readonly devices: readonly ForensicDevice[];
+  readonly evidence: readonly ForensicEvidence[];
+  readonly analyses: readonly AnalysisResult[];
+  readonly errors: readonly SessionError[];
+  readonly startTime: number;
+  readonly endTime: number | null;
+  readonly metadata: SessionMetadata;
+}
+
+export type SessionState =
+  | 'PENDING'
+  | 'INITIALIZING'
+  | 'ACQUIRING'
+  | 'ANALYZING'
+  | 'REPORTING'
+  | 'COMPLETED'
+  | 'FAILED';
+
+export interface SessionConfig {
+  readonly mode: ForensicMode;
+  readonly devices: readonly string[];
+  readonly analysisTypes: readonly AnalysisType[];
+  readonly options: Readonly<Record<string, unknown>>;
+}
+
+export interface SessionProgress {
+  readonly phase: SessionPhase;
+  readonly percentage: number;
+  readonly currentTask: string | null;
+  readonly estimatedTimeRemaining: number | null;
+}
+
+export type SessionPhase =
+  | 'INITIALIZING'
+  | 'DEVICE_IDENTIFICATION'
+  | 'ACQUISITION'
+  | 'VERIFICATION'
+  | 'ANALYSIS'
+  | 'REPORTING'
+  | 'FINALIZING';
+
+export interface AnalysisResult {
+  readonly resultId: string;
+  readonly type: AnalysisType;
+  readonly result: TimelineResult | KeywordSearchResult | MalwareAnalysisResult;
+}
+
+export interface SessionError {
+  readonly errorId: string;
+  readonly timestamp: number;
+  readonly type: SessionErrorType;
+  readonly message: string;
+  readonly details: string | null;
+  readonly recoverable: boolean;
+}
+
+export type SessionErrorType =
+  | 'ACQUISITION_ERROR'
+  | 'ANALYSIS_ERROR'
+  | 'DECRYPTION_ERROR'
+  | 'VERIFICATION_ERROR'
+  | 'TIMEOUT'
+  | 'RESOURCE_ERROR'
+  | 'INTERNAL_ERROR';
+
+export interface SessionMetadata {
+  readonly platformVersion: string;
+  readonly startedBy: string;
+  readonly caseId: string | null;
+  readonly classification: SecurityLevel;
+  readonly tags: readonly string[];
+}

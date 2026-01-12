@@ -1,0 +1,335 @@
+# Rollback Procedure - {{IME_PROJEKTA}}
+
+## Pregled
+
+Ta dokument opisuje postopke za varen rollback varnostnega sistema {{IME_PROJEKTA}} na prejsnjo verzijo. Rollback je kriticna operacija, ki zahteva skrbno izvedbo za ohranitev varnosti in integritete podatkov.
+
+**Verzija:** {{VERZIJA}}
+**Datum:** {{DATUM}}
+**Avtor:** {{AVTOR}}
+**Domena:** {{DOMENA_SL}}
+
+## Skladnost
+
+- **DO-178C** - Software Considerations in Airborne Systems
+- **IEC 61508** - Functional Safety
+- **ISO 27001** - Information Security Management
+- **ITIL v4** - Change Management
+
+## Kdaj Izvesti Rollback
+
+### Indikacije za Rollback
+
+1. **Kriticne Varnostne Ranljivosti**
+   - Odkrita ranljivost v novi verziji
+   - Kompromitirana avtentikacija
+   - Puščanje občutljivih podatkov
+
+2. **Funkcionalne Napake**
+   - Neuspešna avtentikacija za vse uporabnike
+   - Napake pri pisanju revizijske sledi
+   - Nedelujoče upravljanje ključev
+
+3. **Performančne Težave**
+   - Latenca > 5x normalne vrednosti
+   - Error rate > 5%
+   - Timeout rate > 10%
+
+4. **Skladnostne Kršitve**
+   - Kršitev regulatornih zahtev
+   - Neuspešen compliance audit
+   - Kršitev SLA
+
+### Kontraindikacije za Rollback
+
+- Rollback bi povzročil izgubo kritičnih podatkov
+- Nova verzija vsebuje varnostne popravke za aktivno izkoriščano ranljivost
+- Rollback ni možen zaradi nekompatibilnih sprememb sheme
+
+## Pred-Rollback Preverjanja
+
+### Checklist
+
+```markdown
+[ ] Potrjena odločitev za rollback (CISO/CTO odobritev)
+[ ] Identificirana ciljna verzija za rollback
+[ ] Preverjena kompatibilnost podatkovne sheme
+[ ] Preverjena razpoložljivost backup-ov
+[ ] Obveščena varnostna ekipa
+[ ] Obveščena on-call ekipa
+[ ] Pripravljen komunikacijski načrt
+[ ] Dokumentiran razlog za rollback
+```
+
+### Preverjanje Kompatibilnosti
+
+```bash
+# Preveri trenutno verzijo
+kubectl get deployment {{IME_PROJEKTA_SLUG}} -n {{IME_PROJEKTA_SLUG}} -o jsonpath='{.spec.template.spec.containers[0].image}'
+
+# Preveri zgodovino deploymentov
+kubectl rollout history deployment/{{IME_PROJEKTA_SLUG}} -n {{IME_PROJEKTA_SLUG}}
+
+# Preveri shemo podatkovne baze
+kubectl exec -n {{IME_PROJEKTA_SLUG}} postgres-0 -- \
+  psql -U {{IME_PROJEKTA_SLUG}} -c "SELECT version FROM schema_migrations ORDER BY version DESC LIMIT 5;"
+```
+
+### Preverjanje Backup-ov
+
+```bash
+# Seznam razpoložljivih backup-ov
+./skripta/backup-list.sh --type=all --last=10
+
+# Preveri integriteto zadnjega backup-a
+./skripta/backup-verify.sh --id=<backup_id>
+```
+
+## Rollback Postopki
+
+### Postopek 1: Kubernetes Rolling Rollback
+
+**Uporaba:** Ko je potreben hiter rollback brez sprememb podatkovne sheme.
+
+**Trajanje:** 5-15 minut
+
+```bash
+# 1. Dokumentiraj trenutno stanje
+kubectl get deployment {{IME_PROJEKTA_SLUG}} -n {{IME_PROJEKTA_SLUG}} -o yaml > /tmp/deployment-before-rollback.yaml
+
+# 2. Izvedi rollback na prejšnjo revizijo
+kubectl rollout undo deployment/{{IME_PROJEKTA_SLUG}} -n {{IME_PROJEKTA_SLUG}}
+
+# 3. Spremljaj rollback
+kubectl rollout status deployment/{{IME_PROJEKTA_SLUG}} -n {{IME_PROJEKTA_SLUG}} --timeout=5m
+
+# 4. Preveri zdravje
+curl -s https://api.{{IME_PROJEKTA_SLUG}}.{{ORGANIZACIJA_DOMENA}}/health | jq
+
+# 5. Preveri loge za napake
+kubectl logs -n {{IME_PROJEKTA_SLUG}} -l app={{IME_PROJEKTA_SLUG}} --tail=100 | grep -i error
+```
+
+### Postopek 2: Rollback na Specifično Verzijo
+
+**Uporaba:** Ko je potreben rollback na specifično verzijo (ne nujno prejšnjo).
+
+**Trajanje:** 10-20 minut
+
+```bash
+# 1. Identificiraj ciljno revizijo
+kubectl rollout history deployment/{{IME_PROJEKTA_SLUG}} -n {{IME_PROJEKTA_SLUG}}
+
+# 2. Preveri podrobnosti revizije
+kubectl rollout history deployment/{{IME_PROJEKTA_SLUG}} -n {{IME_PROJEKTA_SLUG}} --revision=<revision>
+
+# 3. Izvedi rollback na specifično revizijo
+kubectl rollout undo deployment/{{IME_PROJEKTA_SLUG}} -n {{IME_PROJEKTA_SLUG}} --to-revision=<revision>
+
+# 4. Spremljaj rollback
+kubectl rollout status deployment/{{IME_PROJEKTA_SLUG}} -n {{IME_PROJEKTA_SLUG}} --timeout=5m
+
+# 5. Verifikacija
+./skripta/verify-deployment.sh --version=<expected_version>
+```
+
+### Postopek 3: Rollback z Database Migration Rollback
+
+**Uporaba:** Ko nova verzija vsebuje spremembe podatkovne sheme, ki jih je potrebno razveljaviti.
+
+**Trajanje:** 30-60 minut
+
+**OPOZORILO:** Ta postopek lahko povzroči izgubo podatkov. Izvajaj samo z odobritvijo CISO/CTO.
+
+```bash
+# 1. Ustavi aplikacijo
+kubectl scale deployment {{IME_PROJEKTA_SLUG}} -n {{IME_PROJEKTA_SLUG}} --replicas=0
+
+# 2. Ustvari backup pred rollbackom
+./skripta/backup.sh --type=database --tag=pre-rollback-$(date +%Y%m%d%H%M%S)
+
+# 3. Rollback database migracije
+kubectl exec -n {{IME_PROJEKTA_SLUG}} -it deploy/{{IME_PROJEKTA_SLUG}}-migrations -- \
+  npm run migrate:rollback -- --to=<target_migration>
+
+# 4. Preveri stanje sheme
+kubectl exec -n {{IME_PROJEKTA_SLUG}} postgres-0 -- \
+  psql -U {{IME_PROJEKTA_SLUG}} -c "SELECT version FROM schema_migrations ORDER BY version DESC LIMIT 5;"
+
+# 5. Deploy prejšnje verzije aplikacije
+kubectl set image deployment/{{IME_PROJEKTA_SLUG}} -n {{IME_PROJEKTA_SLUG}} \
+  {{IME_PROJEKTA_SLUG}}=ghcr.io/{{ORGANIZACIJA_SLUG}}/{{IME_PROJEKTA_SLUG}}:<target_version>
+
+# 6. Počakaj na deployment
+kubectl rollout status deployment/{{IME_PROJEKTA_SLUG}} -n {{IME_PROJEKTA_SLUG}} --timeout=10m
+
+# 7. Skaliraj nazaj
+kubectl scale deployment {{IME_PROJEKTA_SLUG}} -n {{IME_PROJEKTA_SLUG}} --replicas=3
+
+# 8. Verifikacija
+./skripta/verify-deployment.sh --full
+```
+
+### Postopek 4: Popoln Restore iz Backup-a
+
+**Uporaba:** Ko je potrebna popolna obnovitev sistema na prejšnje stanje.
+
+**Trajanje:** 1-2 uri
+
+**OPOZORILO:** Ta postopek povzroči izgubo vseh podatkov po času backup-a.
+
+```bash
+# 1. Pridobi odobritev (CISO + CTO)
+echo "Odobritev pridobljena: $(date)" >> /tmp/rollback-approval.log
+
+# 2. Ustavi vse instance
+kubectl scale deployment {{IME_PROJEKTA_SLUG}} -n {{IME_PROJEKTA_SLUG}} --replicas=0
+
+# 3. Ustvari backup trenutnega stanja (za forenziko)
+./skripta/backup.sh --type=all --tag=forensic-$(date +%Y%m%d%H%M%S)
+
+# 4. Restore podatkovne baze
+./skripta/restore.sh --type=database --source=<backup_id> --confirm
+
+# 5. Restore konfiguracije
+./skripta/restore.sh --type=config --source=<backup_id> --confirm
+
+# 6. Deploy ustrezne verzije aplikacije
+kubectl set image deployment/{{IME_PROJEKTA_SLUG}} -n {{IME_PROJEKTA_SLUG}} \
+  {{IME_PROJEKTA_SLUG}}=ghcr.io/{{ORGANIZACIJA_SLUG}}/{{IME_PROJEKTA_SLUG}}:<backup_version>
+
+# 7. Skaliraj
+kubectl scale deployment {{IME_PROJEKTA_SLUG}} -n {{IME_PROJEKTA_SLUG}} --replicas=3
+
+# 8. Počakaj na deployment
+kubectl rollout status deployment/{{IME_PROJEKTA_SLUG}} -n {{IME_PROJEKTA_SLUG}} --timeout=10m
+
+# 9. Popolna verifikacija
+./skripta/verify-deployment.sh --full
+./skripta/integrity-check.sh --full
+```
+
+## Po-Rollback Aktivnosti
+
+### Takojšnje Aktivnosti
+
+```bash
+# 1. Preveri zdravje vseh komponent
+curl -s https://api.{{IME_PROJEKTA_SLUG}}.{{ORGANIZACIJA_DOMENA}}/health | jq
+
+# 2. Preveri revizijsko sled
+curl -s https://api.{{IME_PROJEKTA_SLUG}}.{{ORGANIZACIJA_DOMENA}}/v1/audit/logs?limit=10 \
+  -H "Authorization: Bearer $ADMIN_TOKEN" | jq
+
+# 3. Preveri aktivne seje (če so bile prekinjene)
+curl -s https://api.{{IME_PROJEKTA_SLUG}}.{{ORGANIZACIJA_DOMENA}}/v1/admin/sessions/stats \
+  -H "Authorization: Bearer $ADMIN_TOKEN" | jq
+
+# 4. Preveri metrike
+curl -s https://api.{{IME_PROJEKTA_SLUG}}.{{ORGANIZACIJA_DOMENA}}:9090/metrics | \
+  grep -E "^(http_requests_total|http_request_duration)"
+```
+
+### Dokumentacija
+
+```markdown
+## Rollback Report
+
+**Datum:** <datum>
+**Čas začetka:** <čas>
+**Čas zaključka:** <čas>
+**Izvajalec:** <ime>
+**Odobritelj:** <ime>
+
+### Razlog za Rollback
+<opis razloga>
+
+### Verzije
+- Verzija pred rollbackom: <verzija>
+- Verzija po rollbacku: <verzija>
+
+### Postopek
+<kateri postopek je bil uporabljen>
+
+### Vpliv
+- Trajanje izpada: <trajanje>
+- Prizadeti uporabniki: <število>
+- Izgubljeni podatki: <opis ali "nobeni">
+
+### Verifikacija
+- [ ] Zdravje sistema: OK
+- [ ] Avtentikacija: OK
+- [ ] Revizijska sled: OK
+- [ ] Metrike: OK
+
+### Naslednji Koraki
+<opis nadaljnjih aktivnosti>
+```
+
+### Komunikacija
+
+1. **Interna Komunikacija**
+   - Obvesti vse prizadete ekipe
+   - Posodobi incident ticket
+   - Načrtuj post-mortem
+
+2. **Zunanja Komunikacija (če potrebno)**
+   - Posodobi status stran
+   - Obvesti prizadete stranke
+   - Pripravi poročilo za regulatorje (če potrebno)
+
+## Varnostne Posebnosti
+
+### Rollback Ključev
+
+Če je potreben rollback kriptografskih ključev:
+
+```bash
+# OPOZORILO: To je izjemno občutljiva operacija
+
+# 1. Aktiviraj backup ključe iz escrow
+./skripta/key-escrow-restore.sh --key-version=<version> --approval-id=<id>
+
+# 2. Re-enkriptiraj podatke z obnovljenimi ključi
+./skripta/data-reencrypt.sh --key-version=<version>
+
+# 3. Preveri integriteto
+./skripta/encryption-verify.sh --full
+```
+
+### Rollback Certifikatov
+
+```bash
+# 1. Obnovi prejšnje certifikate
+./skripta/cert-restore.sh --version=<version>
+
+# 2. Ponovno naloži certifikate
+kubectl rollout restart deployment/{{IME_PROJEKTA_SLUG}} -n {{IME_PROJEKTA_SLUG}}
+
+# 3. Preveri TLS
+openssl s_client -connect api.{{IME_PROJEKTA_SLUG}}.{{ORGANIZACIJA_DOMENA}}:443 -servername api.{{IME_PROJEKTA_SLUG}}.{{ORGANIZACIJA_DOMENA}} < /dev/null 2>/dev/null | openssl x509 -noout -dates
+```
+
+## Eskalacija
+
+| Situacija | Eskalacija |
+|-----------|------------|
+| Rollback neuspešen | On-call → Varnostna ekipa → CISO |
+| Izguba podatkov | CISO → CTO → Pravna služba |
+| Varnostni incident | Varnostna ekipa → CISO → Regulatorji |
+| Podaljšan izpad | On-call → Vodstvo → Stranke |
+
+## Kontakti
+
+| Vloga | Kontakt |
+|-------|---------|
+| On-call | PagerDuty |
+| Varnostna ekipa | security@{{ORGANIZACIJA_DOMENA}} |
+| CISO | ciso@{{ORGANIZACIJA_DOMENA}} |
+| CTO | cto@{{ORGANIZACIJA_DOMENA}} |
+
+## Revizija Dokumenta
+
+| Verzija | Datum | Avtor | Spremembe |
+|---------|-------|-------|-----------|
+| 1.0 | {{DATUM}} | {{AVTOR}} | Začetna verzija |

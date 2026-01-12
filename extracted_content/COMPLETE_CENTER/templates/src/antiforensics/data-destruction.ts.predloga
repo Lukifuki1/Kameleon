@@ -1,0 +1,825 @@
+/**
+ * @file Data Destruction - Self-Contained Secure Data Destruction Platform
+ * @author {{AVTOR}}
+ * @version {{VERZIJA}}
+ * @date {{DATUM}}
+ * @project {{IME_PROJEKTA}}
+ * @domain VARNOSTNI_SISTEMI
+ * 
+ * @requirement REQ-SEC-DDS-001
+ * @design DSN-SEC-DDS-001
+ * @test TST-SEC-DDS-001
+ * 
+ * @description
+ * Enterprise-grade self-contained secure data destruction platform implementing
+ * comprehensive data sanitization, secure deletion, media destruction, and
+ * anti-forensics capabilities. All destruction algorithms are natively
+ * implemented without external dependencies.
+ * 
+ * @classification TOP SECRET - Data Destruction
+ * @authorization Required: Level 5 Security Clearance
+ * @dependencies NONE - Fully self-contained implementation
+ */
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// DATA DESTRUCTION TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export type DestructionType =
+  | 'LOGICAL'
+  | 'CRYPTOGRAPHIC'
+  | 'PHYSICAL'
+  | 'DEGAUSSING'
+  | 'SHREDDING'
+  | 'INCINERATION';
+
+export type SanitizationStandard =
+  | 'DOD_5220_22_M'
+  | 'NIST_800_88'
+  | 'GUTMANN'
+  | 'SCHNEIER'
+  | 'RCMP_TSSIT_OPS_II'
+  | 'HMG_IS5'
+  | 'AFSSI_5020'
+  | 'AR_380_19'
+  | 'NAVSO_P_5239_26'
+  | 'CUSTOM';
+
+export type MediaType =
+  | 'HDD'
+  | 'SSD'
+  | 'NVME'
+  | 'USB'
+  | 'SD_CARD'
+  | 'OPTICAL'
+  | 'TAPE'
+  | 'FLASH'
+  | 'RAM'
+  | 'NVRAM';
+
+export type DataType =
+  | 'FILE'
+  | 'DIRECTORY'
+  | 'PARTITION'
+  | 'VOLUME'
+  | 'DISK'
+  | 'MEMORY'
+  | 'DATABASE'
+  | 'LOG'
+  | 'REGISTRY'
+  | 'ARTIFACT';
+
+export type VerificationMethod =
+  | 'READ_VERIFY'
+  | 'PATTERN_VERIFY'
+  | 'HASH_VERIFY'
+  | 'FORENSIC_VERIFY'
+  | 'CERTIFICATE';
+
+export type SecurityLevel =
+  | 'TOP_SECRET'
+  | 'SECRET'
+  | 'CONFIDENTIAL'
+  | 'UNCLASSIFIED';
+
+export type OperationalMode =
+  | 'STANDARD'
+  | 'EMERGENCY'
+  | 'SCHEDULED'
+  | 'AUTOMATED';
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// DATA DESTRUCTION CONFIGURATION
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface DataDestructionConfig {
+  readonly platformId: string;
+  readonly name: string;
+  readonly version: string;
+  readonly mode: OperationalMode;
+  readonly logical: LogicalDestructionConfig;
+  readonly cryptographic: CryptographicDestructionConfig;
+  readonly physical: PhysicalDestructionConfig;
+  readonly memory: MemoryDestructionConfig;
+  readonly artifacts: ArtifactDestructionConfig;
+  readonly verification: VerificationConfig;
+  readonly compliance: ComplianceConfig;
+  readonly emergency: EmergencyDestructionConfig;
+  readonly reporting: ReportingConfig;
+  readonly storage: StorageConfig;
+  readonly security: SecurityConfig;
+  readonly metadata: PlatformMetadata;
+}
+
+export interface LogicalDestructionConfig {
+  readonly enabled: boolean;
+  readonly overwrite: OverwriteConfig;
+  readonly deletion: SecureDeletionConfig;
+  readonly filesystem: FilesystemDestructionConfig;
+  readonly database: DatabaseDestructionConfig;
+}
+
+export interface OverwriteConfig {
+  readonly enabled: boolean;
+  readonly standards: readonly SanitizationStandard[];
+  readonly patterns: OverwritePatternConfig;
+  readonly passes: PassConfig;
+  readonly verification: boolean;
+}
+
+export interface OverwritePatternConfig {
+  readonly enabled: boolean;
+  readonly zeros: boolean;
+  readonly ones: boolean;
+  readonly random: boolean;
+  readonly complement: boolean;
+  readonly custom: readonly number[];
+}
+
+export interface PassConfig {
+  readonly minimum: number;
+  readonly maximum: number;
+  readonly default: number;
+  readonly byClassification: Readonly<Record<SecurityLevel, number>>;
+}
+
+export interface SecureDeletionConfig {
+  readonly enabled: boolean;
+  readonly methods: readonly DeletionMethod[];
+  readonly slackSpace: boolean;
+  readonly fileNames: boolean;
+  readonly metadata: boolean;
+  readonly timestamps: boolean;
+}
+
+export type DeletionMethod =
+  | 'UNLINK'
+  | 'TRUNCATE'
+  | 'OVERWRITE_DELETE'
+  | 'SECURE_ERASE'
+  | 'TRIM';
+
+export interface FilesystemDestructionConfig {
+  readonly enabled: boolean;
+  readonly journalClearing: boolean;
+  readonly mftClearing: boolean;
+  readonly slackSpaceWiping: boolean;
+  readonly freeSpaceWiping: boolean;
+  readonly alternateDataStreams: boolean;
+}
+
+export interface DatabaseDestructionConfig {
+  readonly enabled: boolean;
+  readonly recordDeletion: boolean;
+  readonly tableDeletion: boolean;
+  readonly logClearing: boolean;
+  readonly vacuuming: boolean;
+  readonly encryption: boolean;
+}
+
+export interface CryptographicDestructionConfig {
+  readonly enabled: boolean;
+  readonly keyDestruction: KeyDestructionConfig;
+  readonly cryptoErasure: CryptoErasureConfig;
+  readonly keyManagement: KeyManagementConfig;
+}
+
+export interface KeyDestructionConfig {
+  readonly enabled: boolean;
+  readonly methods: readonly KeyDestructionMethod[];
+  readonly verification: boolean;
+  readonly multipleOverwrite: boolean;
+}
+
+export type KeyDestructionMethod =
+  | 'OVERWRITE'
+  | 'ZEROIZE'
+  | 'CRYPTO_SHRED'
+  | 'HSM_DESTROY';
+
+export interface CryptoErasureConfig {
+  readonly enabled: boolean;
+  readonly algorithms: readonly string[];
+  readonly keyRotation: boolean;
+  readonly immediateDestruction: boolean;
+}
+
+export interface KeyManagementConfig {
+  readonly enabled: boolean;
+  readonly escrow: boolean;
+  readonly recovery: boolean;
+  readonly auditTrail: boolean;
+}
+
+export interface PhysicalDestructionConfig {
+  readonly enabled: boolean;
+  readonly degaussing: DegaussingConfig;
+  readonly shredding: ShreddingConfig;
+  readonly disintegration: DisintegrationConfig;
+  readonly incineration: IncinerationConfig;
+}
+
+export interface DegaussingConfig {
+  readonly enabled: boolean;
+  readonly fieldStrength: number;
+  readonly mediaTypes: readonly MediaType[];
+  readonly verification: boolean;
+  readonly certification: boolean;
+}
+
+export interface ShreddingConfig {
+  readonly enabled: boolean;
+  readonly particleSize: ParticleSizeConfig;
+  readonly mediaTypes: readonly MediaType[];
+  readonly crossCut: boolean;
+  readonly verification: boolean;
+}
+
+export interface ParticleSizeConfig {
+  readonly standard: number;
+  readonly highSecurity: number;
+  readonly topSecret: number;
+}
+
+export interface DisintegrationConfig {
+  readonly enabled: boolean;
+  readonly particleSize: number;
+  readonly mediaTypes: readonly MediaType[];
+  readonly verification: boolean;
+}
+
+export interface IncinerationConfig {
+  readonly enabled: boolean;
+  readonly temperature: number;
+  readonly duration: number;
+  readonly mediaTypes: readonly MediaType[];
+  readonly verification: boolean;
+}
+
+export interface MemoryDestructionConfig {
+  readonly enabled: boolean;
+  readonly ram: RAMDestructionConfig;
+  readonly swap: SwapDestructionConfig;
+  readonly cache: CacheDestructionConfig;
+  readonly registers: RegisterDestructionConfig;
+}
+
+export interface RAMDestructionConfig {
+  readonly enabled: boolean;
+  readonly overwrite: boolean;
+  readonly patterns: readonly number[];
+  readonly passes: number;
+  readonly verification: boolean;
+}
+
+export interface SwapDestructionConfig {
+  readonly enabled: boolean;
+  readonly clearing: boolean;
+  readonly encryption: boolean;
+  readonly disabling: boolean;
+}
+
+export interface CacheDestructionConfig {
+  readonly enabled: boolean;
+  readonly cpuCache: boolean;
+  readonly diskCache: boolean;
+  readonly applicationCache: boolean;
+  readonly browserCache: boolean;
+}
+
+export interface RegisterDestructionConfig {
+  readonly enabled: boolean;
+  readonly cpuRegisters: boolean;
+  readonly gpuRegisters: boolean;
+  readonly dmaRegisters: boolean;
+}
+
+export interface ArtifactDestructionConfig {
+  readonly enabled: boolean;
+  readonly logs: LogDestructionConfig;
+  readonly registry: RegistryDestructionConfig;
+  readonly browser: BrowserDestructionConfig;
+  readonly application: ApplicationDestructionConfig;
+  readonly system: SystemDestructionConfig;
+}
+
+export interface LogDestructionConfig {
+  readonly enabled: boolean;
+  readonly eventLogs: boolean;
+  readonly securityLogs: boolean;
+  readonly applicationLogs: boolean;
+  readonly systemLogs: boolean;
+  readonly auditLogs: boolean;
+}
+
+export interface RegistryDestructionConfig {
+  readonly enabled: boolean;
+  readonly userKeys: boolean;
+  readonly systemKeys: boolean;
+  readonly softwareKeys: boolean;
+  readonly mruLists: boolean;
+}
+
+export interface BrowserDestructionConfig {
+  readonly enabled: boolean;
+  readonly history: boolean;
+  readonly cookies: boolean;
+  readonly cache: boolean;
+  readonly passwords: boolean;
+  readonly formData: boolean;
+  readonly downloads: boolean;
+}
+
+export interface ApplicationDestructionConfig {
+  readonly enabled: boolean;
+  readonly recentFiles: boolean;
+  readonly tempFiles: boolean;
+  readonly configFiles: boolean;
+  readonly cacheFiles: boolean;
+}
+
+export interface SystemDestructionConfig {
+  readonly enabled: boolean;
+  readonly prefetch: boolean;
+  readonly superfetch: boolean;
+  readonly thumbCache: boolean;
+  readonly shellBags: boolean;
+  readonly jumpLists: boolean;
+  readonly lnkFiles: boolean;
+}
+
+export interface VerificationConfig {
+  readonly enabled: boolean;
+  readonly methods: readonly VerificationMethod[];
+  readonly sampling: SamplingConfig;
+  readonly forensic: ForensicVerificationConfig;
+  readonly certification: CertificationConfig;
+}
+
+export interface SamplingConfig {
+  readonly enabled: boolean;
+  readonly percentage: number;
+  readonly random: boolean;
+  readonly critical: boolean;
+}
+
+export interface ForensicVerificationConfig {
+  readonly enabled: boolean;
+  readonly tooling: readonly string[];
+  readonly depth: 'BASIC' | 'STANDARD' | 'COMPREHENSIVE';
+  readonly reporting: boolean;
+}
+
+export interface CertificationConfig {
+  readonly enabled: boolean;
+  readonly format: 'PDF' | 'XML' | 'JSON';
+  readonly signing: boolean;
+  readonly timestamping: boolean;
+}
+
+export interface ComplianceConfig {
+  readonly enabled: boolean;
+  readonly standards: readonly ComplianceStandard[];
+  readonly auditing: AuditingConfig;
+  readonly documentation: DocumentationConfig;
+}
+
+export type ComplianceStandard =
+  | 'NIST_800_88'
+  | 'DOD_5220_22_M'
+  | 'ISO_27001'
+  | 'HIPAA'
+  | 'PCI_DSS'
+  | 'GDPR'
+  | 'SOX';
+
+export interface AuditingConfig {
+  readonly enabled: boolean;
+  readonly logging: boolean;
+  readonly reporting: boolean;
+  readonly retention: number;
+}
+
+export interface DocumentationConfig {
+  readonly enabled: boolean;
+  readonly certificates: boolean;
+  readonly chainOfCustody: boolean;
+  readonly witnessing: boolean;
+}
+
+export interface EmergencyDestructionConfig {
+  readonly enabled: boolean;
+  readonly triggers: EmergencyTriggerConfig;
+  readonly procedures: EmergencyProcedureConfig;
+  readonly failsafe: FailsafeConfig;
+}
+
+export interface EmergencyTriggerConfig {
+  readonly enabled: boolean;
+  readonly manual: boolean;
+  readonly automated: boolean;
+  readonly remote: boolean;
+  readonly timer: boolean;
+  readonly tamper: boolean;
+}
+
+export interface EmergencyProcedureConfig {
+  readonly enabled: boolean;
+  readonly prioritization: boolean;
+  readonly parallelization: boolean;
+  readonly verification: boolean;
+  readonly notification: boolean;
+}
+
+export interface FailsafeConfig {
+  readonly enabled: boolean;
+  readonly redundancy: boolean;
+  readonly fallback: boolean;
+  readonly confirmation: boolean;
+}
+
+export interface ReportingConfig {
+  readonly enabled: boolean;
+  readonly formats: readonly ReportFormat[];
+  readonly sections: readonly ReportSection[];
+  readonly automation: ReportAutomationConfig;
+}
+
+export type ReportFormat =
+  | 'PDF'
+  | 'HTML'
+  | 'JSON'
+  | 'XML';
+
+export type ReportSection =
+  | 'EXECUTIVE_SUMMARY'
+  | 'DESTRUCTION_DETAILS'
+  | 'VERIFICATION_RESULTS'
+  | 'COMPLIANCE_STATUS'
+  | 'CHAIN_OF_CUSTODY'
+  | 'CERTIFICATION';
+
+export interface ReportAutomationConfig {
+  readonly enabled: boolean;
+  readonly scheduling: boolean;
+  readonly triggers: readonly string[];
+}
+
+export interface StorageConfig {
+  readonly type: 'DATABASE' | 'FILE_SYSTEM' | 'HYBRID';
+  readonly encryption: StorageEncryptionConfig;
+  readonly retention: RetentionConfig;
+  readonly backup: BackupConfig;
+}
+
+export interface StorageEncryptionConfig {
+  readonly enabled: boolean;
+  readonly algorithm: 'AES_256_GCM' | 'CHACHA20_POLY1305';
+  readonly keyManagement: 'LOCAL' | 'HSM' | 'KMS';
+}
+
+export interface RetentionConfig {
+  readonly enabled: boolean;
+  readonly certificates: number;
+  readonly logs: number;
+  readonly reports: number;
+}
+
+export interface BackupConfig {
+  readonly enabled: boolean;
+  readonly frequency: number;
+  readonly encryption: boolean;
+  readonly offsite: boolean;
+}
+
+export interface SecurityConfig {
+  readonly authentication: AuthenticationConfig;
+  readonly authorization: AuthorizationConfig;
+  readonly audit: AuditConfig;
+  readonly classification: ClassificationConfig;
+}
+
+export interface AuthenticationConfig {
+  readonly enabled: boolean;
+  readonly methods: readonly ('PKI' | 'CAC' | 'BIOMETRIC' | 'MFA')[];
+  readonly sessionTimeout: number;
+  readonly dualControl: boolean;
+}
+
+export interface AuthorizationConfig {
+  readonly enabled: boolean;
+  readonly model: 'RBAC' | 'ABAC' | 'MAC';
+  readonly clearanceRequired: boolean;
+  readonly approvalRequired: boolean;
+}
+
+export interface AuditConfig {
+  readonly enabled: boolean;
+  readonly logAllAccess: boolean;
+  readonly logAllOperations: boolean;
+  readonly retention: number;
+  readonly tamperProof: boolean;
+}
+
+export interface ClassificationConfig {
+  readonly enabled: boolean;
+  readonly defaultLevel: SecurityLevel;
+  readonly autoClassification: boolean;
+}
+
+export interface PlatformMetadata {
+  readonly createdAt: number;
+  readonly updatedAt: number;
+  readonly createdBy: string;
+  readonly version: string;
+  readonly tags: readonly string[];
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// DESTRUCTION JOB TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface DestructionJob {
+  readonly jobId: string;
+  readonly name: string;
+  readonly type: DestructionType;
+  readonly targets: readonly DestructionTarget[];
+  readonly standard: SanitizationStandard;
+  readonly configuration: JobConfiguration;
+  readonly schedule: JobSchedule | null;
+  readonly status: JobStatus;
+  readonly progress: JobProgress;
+  readonly verification: JobVerification;
+  readonly metadata: JobMetadata;
+}
+
+export interface DestructionTarget {
+  readonly targetId: string;
+  readonly type: DataType;
+  readonly path: string | null;
+  readonly mediaType: MediaType | null;
+  readonly size: number | null;
+  readonly classification: SecurityLevel;
+  readonly status: TargetStatus;
+}
+
+export type TargetStatus =
+  | 'PENDING'
+  | 'IN_PROGRESS'
+  | 'COMPLETED'
+  | 'VERIFIED'
+  | 'FAILED';
+
+export interface JobConfiguration {
+  readonly standard: SanitizationStandard;
+  readonly passes: number;
+  readonly patterns: readonly number[];
+  readonly verification: boolean;
+  readonly certification: boolean;
+  readonly emergency: boolean;
+}
+
+export interface JobSchedule {
+  readonly scheduledAt: number;
+  readonly recurring: boolean;
+  readonly interval: number | null;
+  readonly timezone: string;
+}
+
+export type JobStatus =
+  | 'PENDING'
+  | 'SCHEDULED'
+  | 'RUNNING'
+  | 'PAUSED'
+  | 'COMPLETED'
+  | 'VERIFIED'
+  | 'FAILED'
+  | 'CANCELLED';
+
+export interface JobProgress {
+  readonly phase: JobPhase;
+  readonly percentage: number;
+  readonly currentTarget: string | null;
+  readonly currentPass: number;
+  readonly totalPasses: number;
+  readonly bytesProcessed: number;
+  readonly bytesTotal: number;
+  readonly estimatedTimeRemaining: number | null;
+}
+
+export type JobPhase =
+  | 'INITIALIZING'
+  | 'PREPARING'
+  | 'DESTROYING'
+  | 'VERIFYING'
+  | 'CERTIFYING'
+  | 'FINALIZING';
+
+export interface JobVerification {
+  readonly performed: boolean;
+  readonly method: VerificationMethod | null;
+  readonly result: VerificationResult | null;
+  readonly timestamp: number | null;
+}
+
+export interface VerificationResult {
+  readonly success: boolean;
+  readonly samplesChecked: number;
+  readonly samplesPassed: number;
+  readonly samplesFailed: number;
+  readonly details: readonly VerificationDetail[];
+}
+
+export interface VerificationDetail {
+  readonly targetId: string;
+  readonly method: VerificationMethod;
+  readonly result: 'PASS' | 'FAIL';
+  readonly details: string | null;
+}
+
+export interface JobMetadata {
+  readonly createdAt: number;
+  readonly updatedAt: number;
+  readonly createdBy: string;
+  readonly approvedBy: string | null;
+  readonly classification: SecurityLevel;
+  readonly authorization: string;
+  readonly tags: readonly string[];
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// CERTIFICATE TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface DestructionCertificate {
+  readonly certificateId: string;
+  readonly jobId: string;
+  readonly type: CertificateType;
+  readonly targets: readonly CertifiedTarget[];
+  readonly standard: SanitizationStandard;
+  readonly method: DestructionType;
+  readonly verification: CertificateVerification;
+  readonly signatures: readonly CertificateSignature[];
+  readonly chainOfCustody: readonly CustodyRecord[];
+  readonly issuedAt: number;
+  readonly validUntil: number;
+  readonly metadata: CertificateMetadata;
+}
+
+export type CertificateType =
+  | 'DESTRUCTION'
+  | 'SANITIZATION'
+  | 'DEGAUSSING'
+  | 'PHYSICAL_DESTRUCTION';
+
+export interface CertifiedTarget {
+  readonly targetId: string;
+  readonly description: string;
+  readonly serialNumber: string | null;
+  readonly assetTag: string | null;
+  readonly mediaType: MediaType;
+  readonly capacity: number | null;
+  readonly destructionMethod: DestructionType;
+  readonly destructionDate: number;
+}
+
+export interface CertificateVerification {
+  readonly method: VerificationMethod;
+  readonly result: 'PASS' | 'FAIL';
+  readonly verifiedBy: string;
+  readonly verifiedAt: number;
+  readonly details: string | null;
+}
+
+export interface CertificateSignature {
+  readonly signatureId: string;
+  readonly signedBy: string;
+  readonly role: string;
+  readonly signedAt: number;
+  readonly signature: string;
+  readonly algorithm: string;
+}
+
+export interface CustodyRecord {
+  readonly recordId: string;
+  readonly action: CustodyAction;
+  readonly performedBy: string;
+  readonly performedAt: number;
+  readonly location: string | null;
+  readonly notes: string | null;
+}
+
+export type CustodyAction =
+  | 'RECEIVED'
+  | 'STORED'
+  | 'TRANSFERRED'
+  | 'DESTROYED'
+  | 'VERIFIED'
+  | 'RELEASED';
+
+export interface CertificateMetadata {
+  readonly createdAt: number;
+  readonly createdBy: string;
+  readonly classification: SecurityLevel;
+  readonly format: 'PDF' | 'XML' | 'JSON';
+  readonly hash: string;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SESSION TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface DestructionSession {
+  readonly sessionId: string;
+  readonly platformId: string;
+  readonly state: SessionState;
+  readonly config: SessionConfig;
+  readonly progress: SessionProgress;
+  readonly jobs: readonly DestructionJob[];
+  readonly certificates: readonly DestructionCertificate[];
+  readonly alerts: readonly SessionAlert[];
+  readonly errors: readonly SessionError[];
+  readonly startTime: number;
+  readonly endTime: number | null;
+  readonly metadata: SessionMetadata;
+}
+
+export type SessionState =
+  | 'PENDING'
+  | 'INITIALIZING'
+  | 'DESTROYING'
+  | 'VERIFYING'
+  | 'CERTIFYING'
+  | 'COMPLETED'
+  | 'FAILED';
+
+export interface SessionConfig {
+  readonly mode: OperationalMode;
+  readonly standard: SanitizationStandard;
+  readonly options: Readonly<Record<string, unknown>>;
+}
+
+export interface SessionProgress {
+  readonly phase: SessionPhase;
+  readonly percentage: number;
+  readonly currentJob: string | null;
+  readonly estimatedTimeRemaining: number | null;
+}
+
+export type SessionPhase =
+  | 'INITIALIZING'
+  | 'TARGET_IDENTIFICATION'
+  | 'DESTRUCTION'
+  | 'VERIFICATION'
+  | 'CERTIFICATION'
+  | 'FINALIZING';
+
+export interface SessionAlert {
+  readonly alertId: string;
+  readonly timestamp: number;
+  readonly type: AlertType;
+  readonly severity: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
+  readonly source: string;
+  readonly description: string;
+  readonly status: AlertStatus;
+}
+
+export type AlertType =
+  | 'VERIFICATION_FAILURE'
+  | 'DESTRUCTION_INCOMPLETE'
+  | 'EMERGENCY_TRIGGERED'
+  | 'COMPLIANCE_VIOLATION'
+  | 'SECURITY_BREACH';
+
+export type AlertStatus =
+  | 'NEW'
+  | 'ACKNOWLEDGED'
+  | 'INVESTIGATING'
+  | 'RESOLVED'
+  | 'ESCALATED';
+
+export interface SessionError {
+  readonly errorId: string;
+  readonly timestamp: number;
+  readonly type: SessionErrorType;
+  readonly message: string;
+  readonly details: string | null;
+  readonly recoverable: boolean;
+}
+
+export type SessionErrorType =
+  | 'DESTRUCTION_ERROR'
+  | 'VERIFICATION_ERROR'
+  | 'CERTIFICATION_ERROR'
+  | 'HARDWARE_ERROR'
+  | 'TIMEOUT'
+  | 'INTERNAL_ERROR';
+
+export interface SessionMetadata {
+  readonly platformVersion: string;
+  readonly startedBy: string;
+  readonly approvedBy: string | null;
+  readonly classification: SecurityLevel;
+  readonly authorization: string;
+  readonly tags: readonly string[];
+}

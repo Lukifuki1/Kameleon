@@ -1,0 +1,1377 @@
+/**
+ * @file Interrogation Support - Self-Contained Interrogation Support Platform
+ * @author {{AVTOR}}
+ * @version {{VERZIJA}}
+ * @date {{DATUM}}
+ * @project {{IME_PROJEKTA}}
+ * @domain VARNOSTNI_SISTEMI
+ * 
+ * @requirement REQ-SEC-INT-001
+ * @design DSN-SEC-INT-001
+ * @test TST-SEC-INT-001
+ * 
+ * @description
+ * Enterprise-grade self-contained interrogation support platform implementing
+ * comprehensive statement analysis, deception detection, behavioral analysis,
+ * interview planning, and evidence correlation. All analysis algorithms are
+ * natively implemented without external dependencies.
+ * 
+ * @classification TOP SECRET - Interrogation Support
+ * @authorization Required: Level 5 Security Clearance
+ * @dependencies NONE - Fully self-contained implementation
+ */
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// INTERROGATION SUPPORT TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export type InterrogationType =
+  | 'INTERVIEW'
+  | 'INTERROGATION'
+  | 'DEBRIEFING'
+  | 'ELICITATION'
+  | 'POLYGRAPH';
+
+export type AnalysisType =
+  | 'STATEMENT'
+  | 'BEHAVIORAL'
+  | 'LINGUISTIC'
+  | 'PHYSIOLOGICAL'
+  | 'VOICE_STRESS';
+
+export type DeceptionIndicator =
+  | 'VERBAL'
+  | 'NONVERBAL'
+  | 'PHYSIOLOGICAL'
+  | 'LINGUISTIC'
+  | 'BEHAVIORAL';
+
+export type InterviewTechnique =
+  | 'COGNITIVE'
+  | 'REID'
+  | 'PEACE'
+  | 'KINESIC'
+  | 'STRATEGIC';
+
+export type SubjectStatus =
+  | 'COOPERATIVE'
+  | 'RESISTANT'
+  | 'DECEPTIVE'
+  | 'TRUTHFUL'
+  | 'UNKNOWN';
+
+export type SecurityLevel =
+  | 'TOP_SECRET'
+  | 'SECRET'
+  | 'CONFIDENTIAL'
+  | 'UNCLASSIFIED';
+
+export type OperationalMode =
+  | 'PLANNING'
+  | 'ACTIVE'
+  | 'ANALYSIS'
+  | 'REVIEW';
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// INTERROGATION SUPPORT CONFIGURATION
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface InterrogationSupportConfig {
+  readonly platformId: string;
+  readonly name: string;
+  readonly version: string;
+  readonly mode: OperationalMode;
+  readonly planning: PlanningConfig;
+  readonly interview: InterviewConfig;
+  readonly analysis: AnalysisConfig;
+  readonly deception: DeceptionDetectionConfig;
+  readonly evidence: EvidenceConfig;
+  readonly recording: RecordingConfig;
+  readonly reporting: ReportingConfig;
+  readonly storage: StorageConfig;
+  readonly security: SecurityConfig;
+  readonly metadata: PlatformMetadata;
+}
+
+export interface PlanningConfig {
+  readonly enabled: boolean;
+  readonly subject: SubjectPlanningConfig;
+  readonly strategy: StrategyConfig;
+  readonly questions: QuestionPlanningConfig;
+  readonly timeline: TimelineConfig;
+}
+
+export interface SubjectPlanningConfig {
+  readonly enabled: boolean;
+  readonly profile: ProfileConfig;
+  readonly background: BackgroundConfig;
+  readonly vulnerabilities: VulnerabilityConfig;
+  readonly motivations: MotivationConfig;
+}
+
+export interface ProfileConfig {
+  readonly enabled: boolean;
+  readonly psychological: boolean;
+  readonly behavioral: boolean;
+  readonly cultural: boolean;
+  readonly linguistic: boolean;
+}
+
+export interface BackgroundConfig {
+  readonly enabled: boolean;
+  readonly personal: boolean;
+  readonly professional: boolean;
+  readonly criminal: boolean;
+  readonly associations: boolean;
+}
+
+export interface VulnerabilityConfig {
+  readonly enabled: boolean;
+  readonly psychological: boolean;
+  readonly emotional: boolean;
+  readonly social: boolean;
+  readonly legal: boolean;
+}
+
+export interface MotivationConfig {
+  readonly enabled: boolean;
+  readonly primary: boolean;
+  readonly secondary: boolean;
+  readonly leverage: boolean;
+}
+
+export interface StrategyConfig {
+  readonly enabled: boolean;
+  readonly approach: ApproachConfig;
+  readonly techniques: TechniqueConfig;
+  readonly contingencies: ContingencyConfig;
+}
+
+export interface ApproachConfig {
+  readonly enabled: boolean;
+  readonly direct: boolean;
+  readonly indirect: boolean;
+  readonly rapport: boolean;
+  readonly confrontational: boolean;
+}
+
+export interface TechniqueConfig {
+  readonly enabled: boolean;
+  readonly cognitive: boolean;
+  readonly behavioral: boolean;
+  readonly emotional: boolean;
+  readonly strategic: boolean;
+}
+
+export interface ContingencyConfig {
+  readonly enabled: boolean;
+  readonly resistance: boolean;
+  readonly deception: boolean;
+  readonly cooperation: boolean;
+  readonly breakdown: boolean;
+}
+
+export interface QuestionPlanningConfig {
+  readonly enabled: boolean;
+  readonly types: QuestionTypeConfig;
+  readonly sequencing: SequencingConfig;
+  readonly themes: ThemeConfig;
+}
+
+export interface QuestionTypeConfig {
+  readonly enabled: boolean;
+  readonly open: boolean;
+  readonly closed: boolean;
+  readonly probing: boolean;
+  readonly control: boolean;
+  readonly relevant: boolean;
+}
+
+export interface SequencingConfig {
+  readonly enabled: boolean;
+  readonly baseline: boolean;
+  readonly development: boolean;
+  readonly confrontation: boolean;
+  readonly resolution: boolean;
+}
+
+export interface ThemeConfig {
+  readonly enabled: boolean;
+  readonly primary: readonly string[];
+  readonly secondary: readonly string[];
+  readonly alternative: readonly string[];
+}
+
+export interface TimelineConfig {
+  readonly enabled: boolean;
+  readonly phases: readonly PhaseConfig[];
+  readonly breaks: BreakConfig;
+  readonly duration: DurationConfig;
+}
+
+export interface PhaseConfig {
+  readonly name: string;
+  readonly duration: number;
+  readonly objectives: readonly string[];
+  readonly techniques: readonly string[];
+}
+
+export interface BreakConfig {
+  readonly enabled: boolean;
+  readonly frequency: number;
+  readonly duration: number;
+  readonly strategic: boolean;
+}
+
+export interface DurationConfig {
+  readonly minimum: number;
+  readonly maximum: number;
+  readonly optimal: number;
+}
+
+export interface InterviewConfig {
+  readonly enabled: boolean;
+  readonly techniques: InterviewTechniqueConfig;
+  readonly rapport: RapportConfig;
+  readonly questioning: QuestioningConfig;
+  readonly observation: ObservationConfig;
+}
+
+export interface InterviewTechniqueConfig {
+  readonly enabled: boolean;
+  readonly cognitive: CognitiveInterviewConfig;
+  readonly strategic: StrategicInterviewConfig;
+  readonly behavioral: BehavioralInterviewConfig;
+}
+
+export interface CognitiveInterviewConfig {
+  readonly enabled: boolean;
+  readonly mentalReinstatement: boolean;
+  readonly reportEverything: boolean;
+  readonly recallOrder: boolean;
+  readonly changePerspective: boolean;
+}
+
+export interface StrategicInterviewConfig {
+  readonly enabled: boolean;
+  readonly evidenceUse: boolean;
+  readonly themesDevelopment: boolean;
+  readonly alternativeQuestions: boolean;
+}
+
+export interface BehavioralInterviewConfig {
+  readonly enabled: boolean;
+  readonly baselineEstablishment: boolean;
+  readonly stressInduction: boolean;
+  readonly behaviorMonitoring: boolean;
+}
+
+export interface RapportConfig {
+  readonly enabled: boolean;
+  readonly building: RapportBuildingConfig;
+  readonly maintenance: RapportMaintenanceConfig;
+  readonly recovery: RapportRecoveryConfig;
+}
+
+export interface RapportBuildingConfig {
+  readonly enabled: boolean;
+  readonly mirroring: boolean;
+  readonly commonGround: boolean;
+  readonly empathy: boolean;
+  readonly respect: boolean;
+}
+
+export interface RapportMaintenanceConfig {
+  readonly enabled: boolean;
+  readonly activeListening: boolean;
+  readonly validation: boolean;
+  readonly consistency: boolean;
+}
+
+export interface RapportRecoveryConfig {
+  readonly enabled: boolean;
+  readonly acknowledgment: boolean;
+  readonly redirection: boolean;
+  readonly breaks: boolean;
+}
+
+export interface QuestioningConfig {
+  readonly enabled: boolean;
+  readonly delivery: DeliveryConfig;
+  readonly followUp: FollowUpConfig;
+  readonly clarification: ClarificationConfig;
+}
+
+export interface DeliveryConfig {
+  readonly enabled: boolean;
+  readonly pacing: boolean;
+  readonly tone: boolean;
+  readonly timing: boolean;
+}
+
+export interface FollowUpConfig {
+  readonly enabled: boolean;
+  readonly probing: boolean;
+  readonly expansion: boolean;
+  readonly verification: boolean;
+}
+
+export interface ClarificationConfig {
+  readonly enabled: boolean;
+  readonly paraphrasing: boolean;
+  readonly summarizing: boolean;
+  readonly reflecting: boolean;
+}
+
+export interface ObservationConfig {
+  readonly enabled: boolean;
+  readonly verbal: VerbalObservationConfig;
+  readonly nonverbal: NonverbalObservationConfig;
+  readonly physiological: PhysiologicalObservationConfig;
+}
+
+export interface VerbalObservationConfig {
+  readonly enabled: boolean;
+  readonly content: boolean;
+  readonly structure: boolean;
+  readonly delivery: boolean;
+  readonly changes: boolean;
+}
+
+export interface NonverbalObservationConfig {
+  readonly enabled: boolean;
+  readonly facial: boolean;
+  readonly body: boolean;
+  readonly gestures: boolean;
+  readonly posture: boolean;
+}
+
+export interface PhysiologicalObservationConfig {
+  readonly enabled: boolean;
+  readonly breathing: boolean;
+  readonly sweating: boolean;
+  readonly flushing: boolean;
+  readonly pupilDilation: boolean;
+}
+
+export interface AnalysisConfig {
+  readonly enabled: boolean;
+  readonly statement: StatementAnalysisConfig;
+  readonly behavioral: BehavioralAnalysisConfig;
+  readonly linguistic: LinguisticAnalysisConfig;
+  readonly timeline: TimelineAnalysisConfig;
+}
+
+export interface StatementAnalysisConfig {
+  readonly enabled: boolean;
+  readonly criteria: CriteriaConfig;
+  readonly structure: StructureAnalysisConfig;
+  readonly content: ContentAnalysisConfig;
+  readonly consistency: ConsistencyConfig;
+}
+
+export interface CriteriaConfig {
+  readonly enabled: boolean;
+  readonly cbca: CBCAConfig;
+  readonly scan: SCANConfig;
+  readonly rm: RMConfig;
+}
+
+export interface CBCAConfig {
+  readonly enabled: boolean;
+  readonly logicalStructure: boolean;
+  readonly unstructuredProduction: boolean;
+  readonly quantityOfDetails: boolean;
+  readonly contextualEmbedding: boolean;
+  readonly interactionsDescription: boolean;
+  readonly reproductionOfConversation: boolean;
+  readonly unexpectedComplications: boolean;
+  readonly unusualDetails: boolean;
+  readonly superfluousDetails: boolean;
+  readonly accuratelyReportedMisunderstood: boolean;
+  readonly relatedExternalAssociations: boolean;
+  readonly subjectiveMentalState: boolean;
+  readonly attributionOfPerpetratorsState: boolean;
+  readonly spontaneousCorrections: boolean;
+  readonly admittingLackOfMemory: boolean;
+  readonly raisingDoubts: boolean;
+  readonly selfDeprecation: boolean;
+  readonly pardoningPerpetrator: boolean;
+  readonly detailsCharacteristic: boolean;
+}
+
+export interface SCANConfig {
+  readonly enabled: boolean;
+  readonly pronouns: boolean;
+  readonly tenseChanges: boolean;
+  readonly missingInformation: boolean;
+  readonly socialIntroductions: boolean;
+  readonly spontaneousCorrections: boolean;
+  readonly structureOfStatement: boolean;
+  readonly emotions: boolean;
+  readonly objectiveVsSubjective: boolean;
+}
+
+export interface RMConfig {
+  readonly enabled: boolean;
+  readonly clarity: boolean;
+  readonly perceptualInformation: boolean;
+  readonly spatialInformation: boolean;
+  readonly temporalInformation: boolean;
+  readonly affectiveInformation: boolean;
+  readonly reconstructability: boolean;
+  readonly realism: boolean;
+  readonly cognitiveOperations: boolean;
+}
+
+export interface StructureAnalysisConfig {
+  readonly enabled: boolean;
+  readonly narrative: boolean;
+  readonly chronology: boolean;
+  readonly organization: boolean;
+  readonly completeness: boolean;
+}
+
+export interface ContentAnalysisConfig {
+  readonly enabled: boolean;
+  readonly details: boolean;
+  readonly specificity: boolean;
+  readonly plausibility: boolean;
+  readonly verifiability: boolean;
+}
+
+export interface ConsistencyConfig {
+  readonly enabled: boolean;
+  readonly internal: boolean;
+  readonly external: boolean;
+  readonly temporal: boolean;
+  readonly logical: boolean;
+}
+
+export interface BehavioralAnalysisConfig {
+  readonly enabled: boolean;
+  readonly baseline: BaselineConfig;
+  readonly deviations: DeviationConfig;
+  readonly patterns: BehavioralPatternConfig;
+  readonly clusters: ClusterConfig;
+}
+
+export interface BaselineConfig {
+  readonly enabled: boolean;
+  readonly establishment: boolean;
+  readonly monitoring: boolean;
+  readonly comparison: boolean;
+}
+
+export interface DeviationConfig {
+  readonly enabled: boolean;
+  readonly detection: boolean;
+  readonly classification: boolean;
+  readonly significance: boolean;
+}
+
+export interface BehavioralPatternConfig {
+  readonly enabled: boolean;
+  readonly identification: boolean;
+  readonly tracking: boolean;
+  readonly correlation: boolean;
+}
+
+export interface ClusterConfig {
+  readonly enabled: boolean;
+  readonly detection: boolean;
+  readonly analysis: boolean;
+  readonly interpretation: boolean;
+}
+
+export interface LinguisticAnalysisConfig {
+  readonly enabled: boolean;
+  readonly lexical: LexicalConfig;
+  readonly syntactic: SyntacticConfig;
+  readonly semantic: SemanticConfig;
+  readonly pragmatic: PragmaticConfig;
+}
+
+export interface LexicalConfig {
+  readonly enabled: boolean;
+  readonly vocabulary: boolean;
+  readonly wordChoice: boolean;
+  readonly frequency: boolean;
+  readonly uniqueness: boolean;
+}
+
+export interface SyntacticConfig {
+  readonly enabled: boolean;
+  readonly structure: boolean;
+  readonly complexity: boolean;
+  readonly patterns: boolean;
+}
+
+export interface SemanticConfig {
+  readonly enabled: boolean;
+  readonly meaning: boolean;
+  readonly coherence: boolean;
+  readonly references: boolean;
+}
+
+export interface PragmaticConfig {
+  readonly enabled: boolean;
+  readonly context: boolean;
+  readonly implicature: boolean;
+  readonly speechActs: boolean;
+}
+
+export interface TimelineAnalysisConfig {
+  readonly enabled: boolean;
+  readonly construction: boolean;
+  readonly verification: boolean;
+  readonly gaps: boolean;
+  readonly inconsistencies: boolean;
+}
+
+export interface DeceptionDetectionConfig {
+  readonly enabled: boolean;
+  readonly verbal: VerbalDeceptionConfig;
+  readonly nonverbal: NonverbalDeceptionConfig;
+  readonly physiological: PhysiologicalDeceptionConfig;
+  readonly integration: IntegrationConfig;
+}
+
+export interface VerbalDeceptionConfig {
+  readonly enabled: boolean;
+  readonly indicators: VerbalIndicatorConfig;
+  readonly analysis: VerbalAnalysisConfig;
+  readonly scoring: ScoringConfig;
+}
+
+export interface VerbalIndicatorConfig {
+  readonly enabled: boolean;
+  readonly evasion: boolean;
+  readonly qualification: boolean;
+  readonly negation: boolean;
+  readonly distancing: boolean;
+  readonly bolstering: boolean;
+}
+
+export interface VerbalAnalysisConfig {
+  readonly enabled: boolean;
+  readonly realtime: boolean;
+  readonly retrospective: boolean;
+  readonly comparative: boolean;
+}
+
+export interface ScoringConfig {
+  readonly enabled: boolean;
+  readonly weighted: boolean;
+  readonly cumulative: boolean;
+  readonly threshold: number;
+}
+
+export interface NonverbalDeceptionConfig {
+  readonly enabled: boolean;
+  readonly indicators: NonverbalIndicatorConfig;
+  readonly analysis: NonverbalAnalysisConfig;
+  readonly correlation: CorrelationConfig;
+}
+
+export interface NonverbalIndicatorConfig {
+  readonly enabled: boolean;
+  readonly facial: FacialIndicatorConfig;
+  readonly body: BodyIndicatorConfig;
+  readonly voice: VoiceIndicatorConfig;
+}
+
+export interface FacialIndicatorConfig {
+  readonly enabled: boolean;
+  readonly microexpressions: boolean;
+  readonly eyeMovement: boolean;
+  readonly blinking: boolean;
+  readonly asymmetry: boolean;
+}
+
+export interface BodyIndicatorConfig {
+  readonly enabled: boolean;
+  readonly gestures: boolean;
+  readonly posture: boolean;
+  readonly movement: boolean;
+  readonly barriers: boolean;
+}
+
+export interface VoiceIndicatorConfig {
+  readonly enabled: boolean;
+  readonly pitch: boolean;
+  readonly rate: boolean;
+  readonly volume: boolean;
+  readonly hesitations: boolean;
+}
+
+export interface NonverbalAnalysisConfig {
+  readonly enabled: boolean;
+  readonly automated: boolean;
+  readonly manual: boolean;
+  readonly hybrid: boolean;
+}
+
+export interface CorrelationConfig {
+  readonly enabled: boolean;
+  readonly verbalNonverbal: boolean;
+  readonly temporal: boolean;
+  readonly contextual: boolean;
+}
+
+export interface PhysiologicalDeceptionConfig {
+  readonly enabled: boolean;
+  readonly polygraph: PolygraphConfig;
+  readonly voiceStress: VoiceStressConfig;
+  readonly eyeTracking: EyeTrackingConfig;
+}
+
+export interface PolygraphConfig {
+  readonly enabled: boolean;
+  readonly channels: PolygraphChannelConfig;
+  readonly techniques: PolygraphTechniqueConfig;
+  readonly scoring: PolygraphScoringConfig;
+}
+
+export interface PolygraphChannelConfig {
+  readonly enabled: boolean;
+  readonly pneumograph: boolean;
+  readonly galvanic: boolean;
+  readonly cardiovascular: boolean;
+  readonly countermeasure: boolean;
+}
+
+export interface PolygraphTechniqueConfig {
+  readonly enabled: boolean;
+  readonly cqt: boolean;
+  readonly gkt: boolean;
+  readonly relevant: boolean;
+}
+
+export interface PolygraphScoringConfig {
+  readonly enabled: boolean;
+  readonly numerical: boolean;
+  readonly global: boolean;
+  readonly computerized: boolean;
+}
+
+export interface VoiceStressConfig {
+  readonly enabled: boolean;
+  readonly analysis: boolean;
+  readonly baseline: boolean;
+  readonly comparison: boolean;
+}
+
+export interface EyeTrackingConfig {
+  readonly enabled: boolean;
+  readonly pupilometry: boolean;
+  readonly fixation: boolean;
+  readonly saccades: boolean;
+}
+
+export interface IntegrationConfig {
+  readonly enabled: boolean;
+  readonly fusion: boolean;
+  readonly weighting: boolean;
+  readonly confidence: boolean;
+}
+
+export interface EvidenceConfig {
+  readonly enabled: boolean;
+  readonly correlation: EvidenceCorrelationConfig;
+  readonly presentation: PresentationConfig;
+  readonly verification: EvidenceVerificationConfig;
+}
+
+export interface EvidenceCorrelationConfig {
+  readonly enabled: boolean;
+  readonly statements: boolean;
+  readonly physical: boolean;
+  readonly digital: boolean;
+  readonly testimonial: boolean;
+}
+
+export interface PresentationConfig {
+  readonly enabled: boolean;
+  readonly strategic: boolean;
+  readonly timing: boolean;
+  readonly sequencing: boolean;
+}
+
+export interface EvidenceVerificationConfig {
+  readonly enabled: boolean;
+  readonly crossReference: boolean;
+  readonly validation: boolean;
+  readonly documentation: boolean;
+}
+
+export interface RecordingConfig {
+  readonly enabled: boolean;
+  readonly video: VideoRecordingConfig;
+  readonly audio: AudioRecordingConfig;
+  readonly transcription: TranscriptionConfig;
+  readonly annotation: AnnotationConfig;
+}
+
+export interface VideoRecordingConfig {
+  readonly enabled: boolean;
+  readonly resolution: string;
+  readonly frameRate: number;
+  readonly multiAngle: boolean;
+  readonly encryption: boolean;
+}
+
+export interface AudioRecordingConfig {
+  readonly enabled: boolean;
+  readonly quality: 'LOW' | 'MEDIUM' | 'HIGH' | 'LOSSLESS';
+  readonly channels: number;
+  readonly encryption: boolean;
+}
+
+export interface TranscriptionConfig {
+  readonly enabled: boolean;
+  readonly realtime: boolean;
+  readonly automated: boolean;
+  readonly verification: boolean;
+}
+
+export interface AnnotationConfig {
+  readonly enabled: boolean;
+  readonly behavioral: boolean;
+  readonly linguistic: boolean;
+  readonly timestamps: boolean;
+}
+
+export interface ReportingConfig {
+  readonly enabled: boolean;
+  readonly formats: readonly ReportFormat[];
+  readonly sections: readonly ReportSection[];
+  readonly automation: ReportAutomationConfig;
+}
+
+export type ReportFormat =
+  | 'PDF'
+  | 'HTML'
+  | 'JSON'
+  | 'DOCX';
+
+export type ReportSection =
+  | 'EXECUTIVE_SUMMARY'
+  | 'SUBJECT_PROFILE'
+  | 'INTERVIEW_SUMMARY'
+  | 'STATEMENT_ANALYSIS'
+  | 'DECEPTION_ASSESSMENT'
+  | 'EVIDENCE_CORRELATION'
+  | 'CONCLUSIONS';
+
+export interface ReportAutomationConfig {
+  readonly enabled: boolean;
+  readonly scheduling: boolean;
+  readonly triggers: readonly string[];
+}
+
+export interface StorageConfig {
+  readonly type: 'DATABASE' | 'FILE_SYSTEM' | 'HYBRID';
+  readonly encryption: StorageEncryptionConfig;
+  readonly retention: RetentionConfig;
+  readonly backup: BackupConfig;
+}
+
+export interface StorageEncryptionConfig {
+  readonly enabled: boolean;
+  readonly algorithm: 'AES_256_GCM' | 'CHACHA20_POLY1305';
+  readonly keyManagement: 'LOCAL' | 'HSM' | 'KMS';
+}
+
+export interface RetentionConfig {
+  readonly enabled: boolean;
+  readonly recordings: number;
+  readonly transcripts: number;
+  readonly analysis: number;
+  readonly reports: number;
+}
+
+export interface BackupConfig {
+  readonly enabled: boolean;
+  readonly frequency: number;
+  readonly encryption: boolean;
+  readonly offsite: boolean;
+}
+
+export interface SecurityConfig {
+  readonly authentication: AuthenticationConfig;
+  readonly authorization: AuthorizationConfig;
+  readonly audit: AuditConfig;
+  readonly classification: ClassificationConfig;
+}
+
+export interface AuthenticationConfig {
+  readonly enabled: boolean;
+  readonly methods: readonly ('PKI' | 'CAC' | 'BIOMETRIC' | 'MFA')[];
+  readonly sessionTimeout: number;
+}
+
+export interface AuthorizationConfig {
+  readonly enabled: boolean;
+  readonly model: 'RBAC' | 'ABAC' | 'MAC';
+  readonly clearanceRequired: boolean;
+}
+
+export interface AuditConfig {
+  readonly enabled: boolean;
+  readonly logAllAccess: boolean;
+  readonly logAllOperations: boolean;
+  readonly retention: number;
+}
+
+export interface ClassificationConfig {
+  readonly enabled: boolean;
+  readonly defaultLevel: SecurityLevel;
+  readonly autoClassification: boolean;
+}
+
+export interface PlatformMetadata {
+  readonly createdAt: number;
+  readonly updatedAt: number;
+  readonly createdBy: string;
+  readonly version: string;
+  readonly tags: readonly string[];
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// INTERVIEW TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface InterviewRecord {
+  readonly interviewId: string;
+  readonly type: InterrogationType;
+  readonly subject: SubjectInfo;
+  readonly interviewer: InterviewerInfo;
+  readonly plan: InterviewPlan;
+  readonly execution: InterviewExecution;
+  readonly analysis: InterviewAnalysis;
+  readonly assessment: DeceptionAssessment;
+  readonly evidence: readonly EvidenceItem[];
+  readonly recordings: readonly Recording[];
+  readonly status: InterviewStatus;
+  readonly metadata: InterviewMetadata;
+}
+
+export type InterviewStatus =
+  | 'PLANNED'
+  | 'IN_PROGRESS'
+  | 'COMPLETED'
+  | 'SUSPENDED'
+  | 'CANCELLED';
+
+export interface SubjectInfo {
+  readonly subjectId: string;
+  readonly codeName: string;
+  readonly profile: SubjectProfile;
+  readonly status: SubjectStatus;
+  readonly history: readonly PreviousInterview[];
+}
+
+export interface SubjectProfile {
+  readonly demographics: Demographics;
+  readonly psychological: PsychologicalProfile;
+  readonly background: BackgroundInfo;
+  readonly vulnerabilities: readonly string[];
+  readonly motivations: readonly string[];
+}
+
+export interface Demographics {
+  readonly age: number | null;
+  readonly gender: string | null;
+  readonly nationality: string | null;
+  readonly language: string;
+  readonly education: string | null;
+  readonly occupation: string | null;
+}
+
+export interface PsychologicalProfile {
+  readonly personality: readonly string[];
+  readonly traits: readonly string[];
+  readonly disorders: readonly string[];
+  readonly stressResponse: string | null;
+  readonly deceptionHistory: string | null;
+}
+
+export interface BackgroundInfo {
+  readonly criminal: readonly string[];
+  readonly associations: readonly string[];
+  readonly training: readonly string[];
+  readonly experience: readonly string[];
+}
+
+export interface PreviousInterview {
+  readonly interviewId: string;
+  readonly date: number;
+  readonly type: InterrogationType;
+  readonly outcome: string;
+  readonly notes: string | null;
+}
+
+export interface InterviewerInfo {
+  readonly interviewerId: string;
+  readonly name: string;
+  readonly role: 'PRIMARY' | 'SECONDARY' | 'OBSERVER';
+  readonly qualifications: readonly string[];
+  readonly specializations: readonly string[];
+}
+
+export interface InterviewPlan {
+  readonly objectives: readonly string[];
+  readonly strategy: StrategyInfo;
+  readonly questions: readonly PlannedQuestion[];
+  readonly timeline: readonly PlannedPhase[];
+  readonly contingencies: readonly ContingencyPlan[];
+}
+
+export interface StrategyInfo {
+  readonly approach: string;
+  readonly techniques: readonly string[];
+  readonly themes: readonly string[];
+  readonly leverage: readonly string[];
+}
+
+export interface PlannedQuestion {
+  readonly questionId: string;
+  readonly text: string;
+  readonly type: QuestionType;
+  readonly purpose: string;
+  readonly expectedResponse: string | null;
+  readonly followUps: readonly string[];
+}
+
+export type QuestionType =
+  | 'OPEN'
+  | 'CLOSED'
+  | 'PROBING'
+  | 'CONTROL'
+  | 'RELEVANT'
+  | 'COMPARISON';
+
+export interface PlannedPhase {
+  readonly phaseId: string;
+  readonly name: string;
+  readonly duration: number;
+  readonly objectives: readonly string[];
+  readonly techniques: readonly string[];
+}
+
+export interface ContingencyPlan {
+  readonly trigger: string;
+  readonly response: string;
+  readonly escalation: string | null;
+}
+
+export interface InterviewExecution {
+  readonly startTime: number;
+  readonly endTime: number | null;
+  readonly phases: readonly ExecutedPhase[];
+  readonly questions: readonly AskedQuestion[];
+  readonly observations: readonly Observation[];
+  readonly breaks: readonly BreakRecord[];
+}
+
+export interface ExecutedPhase {
+  readonly phaseId: string;
+  readonly name: string;
+  readonly startTime: number;
+  readonly endTime: number;
+  readonly notes: string | null;
+}
+
+export interface AskedQuestion {
+  readonly questionId: string;
+  readonly text: string;
+  readonly timestamp: number;
+  readonly response: ResponseInfo;
+  readonly analysis: QuestionAnalysis;
+}
+
+export interface ResponseInfo {
+  readonly text: string;
+  readonly duration: number;
+  readonly latency: number;
+  readonly complete: boolean;
+}
+
+export interface QuestionAnalysis {
+  readonly verbal: VerbalAnalysisResult;
+  readonly nonverbal: NonverbalAnalysisResult;
+  readonly deception: DeceptionIndicatorResult;
+}
+
+export interface VerbalAnalysisResult {
+  readonly indicators: readonly string[];
+  readonly score: number;
+  readonly notes: string | null;
+}
+
+export interface NonverbalAnalysisResult {
+  readonly indicators: readonly string[];
+  readonly score: number;
+  readonly notes: string | null;
+}
+
+export interface DeceptionIndicatorResult {
+  readonly indicators: readonly string[];
+  readonly score: number;
+  readonly confidence: number;
+}
+
+export interface Observation {
+  readonly observationId: string;
+  readonly timestamp: number;
+  readonly type: ObservationType;
+  readonly description: string;
+  readonly significance: 'LOW' | 'MEDIUM' | 'HIGH';
+}
+
+export type ObservationType =
+  | 'VERBAL'
+  | 'NONVERBAL'
+  | 'PHYSIOLOGICAL'
+  | 'BEHAVIORAL'
+  | 'ENVIRONMENTAL';
+
+export interface BreakRecord {
+  readonly breakId: string;
+  readonly startTime: number;
+  readonly endTime: number;
+  readonly reason: string;
+  readonly strategic: boolean;
+}
+
+export interface InterviewAnalysis {
+  readonly statement: StatementAnalysisResult;
+  readonly behavioral: BehavioralAnalysisResult;
+  readonly linguistic: LinguisticAnalysisResult;
+  readonly timeline: TimelineAnalysisResult;
+}
+
+export interface StatementAnalysisResult {
+  readonly criteria: CriteriaResult;
+  readonly structure: StructureResult;
+  readonly content: ContentResult;
+  readonly consistency: ConsistencyResult;
+  readonly overall: OverallResult;
+}
+
+export interface CriteriaResult {
+  readonly cbca: CBCAResult | null;
+  readonly scan: SCANResult | null;
+  readonly rm: RMResult | null;
+}
+
+export interface CBCAResult {
+  readonly scores: Readonly<Record<string, number>>;
+  readonly total: number;
+  readonly interpretation: string;
+}
+
+export interface SCANResult {
+  readonly indicators: readonly string[];
+  readonly score: number;
+  readonly interpretation: string;
+}
+
+export interface RMResult {
+  readonly scores: Readonly<Record<string, number>>;
+  readonly total: number;
+  readonly interpretation: string;
+}
+
+export interface StructureResult {
+  readonly narrative: number;
+  readonly chronology: number;
+  readonly organization: number;
+  readonly completeness: number;
+  readonly overall: number;
+}
+
+export interface ContentResult {
+  readonly details: number;
+  readonly specificity: number;
+  readonly plausibility: number;
+  readonly verifiability: number;
+  readonly overall: number;
+}
+
+export interface ConsistencyResult {
+  readonly internal: number;
+  readonly external: number;
+  readonly temporal: number;
+  readonly logical: number;
+  readonly overall: number;
+}
+
+export interface OverallResult {
+  readonly score: number;
+  readonly confidence: number;
+  readonly interpretation: string;
+}
+
+export interface BehavioralAnalysisResult {
+  readonly baseline: BaselineResult;
+  readonly deviations: readonly DeviationResult[];
+  readonly patterns: readonly PatternResult[];
+  readonly overall: OverallResult;
+}
+
+export interface BaselineResult {
+  readonly established: boolean;
+  readonly characteristics: readonly string[];
+  readonly confidence: number;
+}
+
+export interface DeviationResult {
+  readonly timestamp: number;
+  readonly type: string;
+  readonly description: string;
+  readonly significance: number;
+}
+
+export interface PatternResult {
+  readonly pattern: string;
+  readonly frequency: number;
+  readonly correlation: string | null;
+  readonly significance: number;
+}
+
+export interface LinguisticAnalysisResult {
+  readonly lexical: LexicalResult;
+  readonly syntactic: SyntacticResult;
+  readonly semantic: SemanticResult;
+  readonly pragmatic: PragmaticResult;
+  readonly overall: OverallResult;
+}
+
+export interface LexicalResult {
+  readonly vocabulary: number;
+  readonly uniqueness: number;
+  readonly indicators: readonly string[];
+}
+
+export interface SyntacticResult {
+  readonly complexity: number;
+  readonly patterns: readonly string[];
+  readonly anomalies: readonly string[];
+}
+
+export interface SemanticResult {
+  readonly coherence: number;
+  readonly references: readonly string[];
+  readonly issues: readonly string[];
+}
+
+export interface PragmaticResult {
+  readonly context: number;
+  readonly implicatures: readonly string[];
+  readonly speechActs: readonly string[];
+}
+
+export interface TimelineAnalysisResult {
+  readonly constructed: boolean;
+  readonly events: readonly TimelineEvent[];
+  readonly gaps: readonly TimelineGap[];
+  readonly inconsistencies: readonly TimelineInconsistency[];
+  readonly overall: OverallResult;
+}
+
+export interface TimelineEvent {
+  readonly eventId: string;
+  readonly timestamp: number | null;
+  readonly description: string;
+  readonly verified: boolean;
+  readonly source: string;
+}
+
+export interface TimelineGap {
+  readonly gapId: string;
+  readonly start: number;
+  readonly end: number;
+  readonly significance: 'LOW' | 'MEDIUM' | 'HIGH';
+  readonly explanation: string | null;
+}
+
+export interface TimelineInconsistency {
+  readonly inconsistencyId: string;
+  readonly description: string;
+  readonly events: readonly string[];
+  readonly significance: 'LOW' | 'MEDIUM' | 'HIGH';
+}
+
+export interface DeceptionAssessment {
+  readonly verbal: DeceptionScore;
+  readonly nonverbal: DeceptionScore;
+  readonly physiological: DeceptionScore | null;
+  readonly integrated: IntegratedAssessment;
+  readonly conclusion: AssessmentConclusion;
+}
+
+export interface DeceptionScore {
+  readonly score: number;
+  readonly confidence: number;
+  readonly indicators: readonly string[];
+  readonly notes: string | null;
+}
+
+export interface IntegratedAssessment {
+  readonly score: number;
+  readonly confidence: number;
+  readonly weights: Readonly<Record<string, number>>;
+  readonly correlation: number;
+}
+
+export interface AssessmentConclusion {
+  readonly assessment: 'TRUTHFUL' | 'DECEPTIVE' | 'INCONCLUSIVE';
+  readonly confidence: number;
+  readonly basis: readonly string[];
+  readonly caveats: readonly string[];
+  readonly recommendations: readonly string[];
+}
+
+export interface EvidenceItem {
+  readonly evidenceId: string;
+  readonly type: EvidenceType;
+  readonly description: string;
+  readonly relevance: 'LOW' | 'MEDIUM' | 'HIGH';
+  readonly correlation: readonly string[];
+  readonly status: EvidenceStatus;
+}
+
+export type EvidenceType =
+  | 'PHYSICAL'
+  | 'DIGITAL'
+  | 'TESTIMONIAL'
+  | 'DOCUMENTARY'
+  | 'FORENSIC';
+
+export type EvidenceStatus =
+  | 'PENDING'
+  | 'VERIFIED'
+  | 'CONTRADICTED'
+  | 'CORROBORATED';
+
+export interface Recording {
+  readonly recordingId: string;
+  readonly type: 'VIDEO' | 'AUDIO';
+  readonly startTime: number;
+  readonly endTime: number;
+  readonly duration: number;
+  readonly format: string;
+  readonly size: number;
+  readonly encrypted: boolean;
+}
+
+export interface InterviewMetadata {
+  readonly createdAt: number;
+  readonly updatedAt: number;
+  readonly createdBy: string;
+  readonly classification: SecurityLevel;
+  readonly authorization: string;
+  readonly tags: readonly string[];
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SESSION TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface InterrogationSession {
+  readonly sessionId: string;
+  readonly platformId: string;
+  readonly state: SessionState;
+  readonly config: SessionConfig;
+  readonly progress: SessionProgress;
+  readonly interviews: readonly InterviewRecord[];
+  readonly alerts: readonly SessionAlert[];
+  readonly errors: readonly SessionError[];
+  readonly startTime: number;
+  readonly endTime: number | null;
+  readonly metadata: SessionMetadata;
+}
+
+export type SessionState =
+  | 'PENDING'
+  | 'INITIALIZING'
+  | 'PLANNING'
+  | 'INTERVIEWING'
+  | 'ANALYZING'
+  | 'REPORTING'
+  | 'COMPLETED'
+  | 'FAILED';
+
+export interface SessionConfig {
+  readonly mode: OperationalMode;
+  readonly types: readonly InterrogationType[];
+  readonly options: Readonly<Record<string, unknown>>;
+}
+
+export interface SessionProgress {
+  readonly phase: SessionPhase;
+  readonly percentage: number;
+  readonly currentTask: string | null;
+  readonly estimatedTimeRemaining: number | null;
+}
+
+export type SessionPhase =
+  | 'INITIALIZING'
+  | 'SUBJECT_PROFILING'
+  | 'PLANNING'
+  | 'INTERVIEW_EXECUTION'
+  | 'ANALYSIS'
+  | 'ASSESSMENT'
+  | 'REPORTING'
+  | 'FINALIZING';
+
+export interface SessionAlert {
+  readonly alertId: string;
+  readonly timestamp: number;
+  readonly type: AlertType;
+  readonly severity: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
+  readonly source: string;
+  readonly description: string;
+  readonly status: AlertStatus;
+}
+
+export type AlertType =
+  | 'DECEPTION_DETECTED'
+  | 'BEHAVIORAL_ANOMALY'
+  | 'SUBJECT_DISTRESS'
+  | 'RECORDING_FAILURE'
+  | 'SECURITY_VIOLATION';
+
+export type AlertStatus =
+  | 'NEW'
+  | 'ACKNOWLEDGED'
+  | 'INVESTIGATING'
+  | 'RESOLVED'
+  | 'ESCALATED';
+
+export interface SessionError {
+  readonly errorId: string;
+  readonly timestamp: number;
+  readonly type: SessionErrorType;
+  readonly message: string;
+  readonly details: string | null;
+  readonly recoverable: boolean;
+}
+
+export type SessionErrorType =
+  | 'PLANNING_ERROR'
+  | 'RECORDING_ERROR'
+  | 'ANALYSIS_ERROR'
+  | 'STORAGE_ERROR'
+  | 'TIMEOUT'
+  | 'INTERNAL_ERROR';
+
+export interface SessionMetadata {
+  readonly platformVersion: string;
+  readonly startedBy: string;
+  readonly classification: SecurityLevel;
+  readonly authorization: string;
+  readonly tags: readonly string[];
+}

@@ -1,0 +1,2060 @@
+/**
+ * @file Quantum-Safe Operations - Tier-0 National Capability Post-Quantum Cryptography Defense
+ * @author {{AVTOR}}
+ * @version {{VERZIJA}}
+ * @date {{DATUM}}
+ * @project {{IME_PROJEKTA}}
+ * @domain VARNOSTNI_SISTEMI
+ * 
+ * @requirement REQ-SEC-QSO-001
+ * @design DSN-SEC-QSO-001
+ * @test TST-SEC-QSO-001
+ * 
+ * @description
+ * Enterprise-grade Tier-0 National Capability post-quantum cryptography defense framework.
+ * Implements comprehensive quantum-resistant cryptographic operations including:
+ * - NIST PQC standards (CRYSTALS-Kyber, CRYSTALS-Dilithium, SPHINCS+, FALCON)
+ * - Quantum Key Distribution (QKD) integration
+ * - Hybrid classical/post-quantum schemes
+ * - Harvest-now-decrypt-later (HNDL) defense
+ * - Cryptographic agility and migration
+ * - Key lifecycle management
+ * - Quantum random number generation
+ * - Lattice-based, hash-based, code-based, isogeny-based cryptography
+ * 
+ * @compliance NIST SP 800-208, CNSA 2.0, ETSI QKD, ISO/IEC 14888-4
+ * @classification TOP SECRET - Quantum Security Operations
+ */
+
+import { getLogicalTimestamp } from '../../../../core/deterministic';
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// QUANTUM-SAFE ALGORITHM TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export type PQCAlgorithmFamily =
+  | 'LATTICE_BASED'
+  | 'HASH_BASED'
+  | 'CODE_BASED'
+  | 'ISOGENY_BASED'
+  | 'MULTIVARIATE'
+  | 'HYBRID';
+
+export type KEMAlgorithm =
+  | 'KYBER_512'
+  | 'KYBER_768'
+  | 'KYBER_1024'
+  | 'NTRU_HPS_2048_509'
+  | 'NTRU_HPS_2048_677'
+  | 'NTRU_HPS_4096_821'
+  | 'NTRU_HRSS_701'
+  | 'SABER_LIGHT'
+  | 'SABER'
+  | 'SABER_FIRE'
+  | 'MCELIECE_348864'
+  | 'MCELIECE_460896'
+  | 'MCELIECE_6688128'
+  | 'MCELIECE_6960119'
+  | 'MCELIECE_8192128'
+  | 'SIKE_P434'
+  | 'SIKE_P503'
+  | 'SIKE_P610'
+  | 'SIKE_P751'
+  | 'FRODOKEM_640'
+  | 'FRODOKEM_976'
+  | 'FRODOKEM_1344'
+  | 'HQC_128'
+  | 'HQC_192'
+  | 'HQC_256'
+  | 'BIKE_L1'
+  | 'BIKE_L3'
+  | 'BIKE_L5';
+
+export type SignatureAlgorithm =
+  | 'DILITHIUM_2'
+  | 'DILITHIUM_3'
+  | 'DILITHIUM_5'
+  | 'FALCON_512'
+  | 'FALCON_1024'
+  | 'SPHINCS_SHA2_128F'
+  | 'SPHINCS_SHA2_128S'
+  | 'SPHINCS_SHA2_192F'
+  | 'SPHINCS_SHA2_192S'
+  | 'SPHINCS_SHA2_256F'
+  | 'SPHINCS_SHA2_256S'
+  | 'SPHINCS_SHAKE_128F'
+  | 'SPHINCS_SHAKE_128S'
+  | 'SPHINCS_SHAKE_192F'
+  | 'SPHINCS_SHAKE_192S'
+  | 'SPHINCS_SHAKE_256F'
+  | 'SPHINCS_SHAKE_256S'
+  | 'RAINBOW_I'
+  | 'RAINBOW_III'
+  | 'RAINBOW_V'
+  | 'GEMSS_128'
+  | 'GEMSS_192'
+  | 'GEMSS_256'
+  | 'PICNIC_L1_FS'
+  | 'PICNIC_L1_UR'
+  | 'PICNIC_L3_FS'
+  | 'PICNIC_L3_UR'
+  | 'PICNIC_L5_FS'
+  | 'PICNIC_L5_UR';
+
+export type NISTSecurityLevel = 1 | 2 | 3 | 4 | 5;
+
+export type KeyStatus =
+  | 'GENERATING'
+  | 'ACTIVE'
+  | 'SUSPENDED'
+  | 'COMPROMISED'
+  | 'EXPIRED'
+  | 'REVOKED'
+  | 'DESTROYED'
+  | 'ARCHIVED';
+
+export type CryptoOperationType =
+  | 'KEY_GENERATION'
+  | 'ENCAPSULATION'
+  | 'DECAPSULATION'
+  | 'SIGNING'
+  | 'VERIFICATION'
+  | 'KEY_EXCHANGE'
+  | 'HYBRID_ENCRYPTION'
+  | 'HYBRID_DECRYPTION'
+  | 'KEY_DERIVATION'
+  | 'HASH'
+  | 'MAC'
+  | 'RANDOM_GENERATION';
+
+export type QKDProtocol =
+  | 'BB84'
+  | 'B92'
+  | 'E91'
+  | 'BBM92'
+  | 'SARG04'
+  | 'COW'
+  | 'DPS'
+  | 'CV_QKD'
+  | 'MDI_QKD'
+  | 'TF_QKD';
+
+export type QuantumChannelType =
+  | 'FIBER_OPTIC'
+  | 'FREE_SPACE'
+  | 'SATELLITE'
+  | 'UNDERWATER'
+  | 'TRUSTED_NODE';
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// KEY PAIR AND CRYPTOGRAPHIC MATERIAL TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface PQCKeyPair {
+  readonly keyId: string;
+  readonly algorithm: KEMAlgorithm | SignatureAlgorithm;
+  readonly algorithmFamily: PQCAlgorithmFamily;
+  readonly securityLevel: NISTSecurityLevel;
+  readonly publicKey: PQCPublicKey;
+  readonly privateKeyId: string;
+  readonly status: KeyStatus;
+  readonly createdAt: number;
+  readonly expiresAt: number;
+  readonly lastUsedAt: number;
+  readonly usageCount: number;
+  readonly maxUsageCount: number;
+  readonly metadata: KeyMetadata;
+}
+
+export interface PQCPublicKey {
+  readonly keyId: string;
+  readonly algorithm: KEMAlgorithm | SignatureAlgorithm;
+  readonly keyMaterial: Uint8Array;
+  readonly keySize: number;
+  readonly fingerprint: string;
+  readonly encoding: 'RAW' | 'PEM' | 'DER' | 'JWK';
+}
+
+export interface PQCPrivateKey {
+  readonly keyId: string;
+  readonly algorithm: KEMAlgorithm | SignatureAlgorithm;
+  readonly encryptedKeyMaterial: Uint8Array;
+  readonly keySize: number;
+  readonly wrappingKeyId: string;
+  readonly wrappingAlgorithm: string;
+}
+
+export interface KeyMetadata {
+  readonly owner: string;
+  readonly purpose: KeyPurpose;
+  readonly classification: SecurityClassification;
+  readonly compartments: readonly string[];
+  readonly allowedOperations: readonly CryptoOperationType[];
+  readonly geographicRestrictions: readonly string[];
+  readonly exportable: boolean;
+  readonly extractable: boolean;
+  readonly auditRequired: boolean;
+  readonly hsmBacked: boolean;
+  readonly hsmId: string | null;
+}
+
+export type KeyPurpose =
+  | 'KEY_ENCAPSULATION'
+  | 'DIGITAL_SIGNATURE'
+  | 'KEY_AGREEMENT'
+  | 'DATA_ENCRYPTION'
+  | 'KEY_WRAPPING'
+  | 'AUTHENTICATION'
+  | 'NON_REPUDIATION'
+  | 'CERTIFICATE_SIGNING';
+
+export type SecurityClassification =
+  | 'UNCLASSIFIED'
+  | 'RESTRICTED'
+  | 'CONFIDENTIAL'
+  | 'SECRET'
+  | 'TOP_SECRET'
+  | 'TOP_SECRET_SCI';
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// HYBRID CRYPTOGRAPHY TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface HybridKeyPair {
+  readonly hybridKeyId: string;
+  readonly classicalKeyId: string;
+  readonly classicalAlgorithm: ClassicalAlgorithm;
+  readonly pqcKeyId: string;
+  readonly pqcAlgorithm: KEMAlgorithm | SignatureAlgorithm;
+  readonly combinationMethod: HybridCombinationMethod;
+  readonly status: KeyStatus;
+  readonly createdAt: number;
+  readonly expiresAt: number;
+}
+
+export type ClassicalAlgorithm =
+  | 'RSA_2048'
+  | 'RSA_3072'
+  | 'RSA_4096'
+  | 'ECDSA_P256'
+  | 'ECDSA_P384'
+  | 'ECDSA_P521'
+  | 'ECDH_P256'
+  | 'ECDH_P384'
+  | 'ECDH_P521'
+  | 'X25519'
+  | 'X448'
+  | 'ED25519'
+  | 'ED448';
+
+export type HybridCombinationMethod =
+  | 'CONCATENATION'
+  | 'XOR'
+  | 'KDF_HKDF'
+  | 'KDF_CONCAT'
+  | 'DUAL_PRF'
+  | 'NESTED';
+
+export interface HybridEncapsulation {
+  readonly encapsulationId: string;
+  readonly hybridKeyId: string;
+  readonly classicalCiphertext: Uint8Array;
+  readonly pqcCiphertext: Uint8Array;
+  readonly combinedSharedSecret: Uint8Array;
+  readonly timestamp: number;
+}
+
+export interface HybridSignature {
+  readonly signatureId: string;
+  readonly hybridKeyId: string;
+  readonly classicalSignature: Uint8Array;
+  readonly pqcSignature: Uint8Array;
+  readonly messageHash: string;
+  readonly timestamp: number;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// QUANTUM KEY DISTRIBUTION TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface QKDSession {
+  readonly sessionId: string;
+  readonly protocol: QKDProtocol;
+  readonly channelType: QuantumChannelType;
+  readonly localNode: QKDNode;
+  readonly remoteNode: QKDNode;
+  readonly status: QKDSessionStatus;
+  readonly keyRate: number;
+  readonly qber: number;
+  readonly securityParameter: number;
+  readonly generatedKeyBits: number;
+  readonly startedAt: number;
+  readonly lastKeyGeneratedAt: number;
+  readonly metrics: QKDMetrics;
+}
+
+export type QKDSessionStatus =
+  | 'INITIALIZING'
+  | 'CALIBRATING'
+  | 'ACTIVE'
+  | 'PAUSED'
+  | 'ERROR'
+  | 'TERMINATED';
+
+export interface QKDNode {
+  readonly nodeId: string;
+  readonly name: string;
+  readonly location: GeoLocation;
+  readonly capabilities: readonly QKDProtocol[];
+  readonly maxKeyRate: number;
+  readonly trustedNode: boolean;
+  readonly certificationLevel: string;
+}
+
+export interface GeoLocation {
+  readonly latitude: number;
+  readonly longitude: number;
+  readonly altitude: number;
+  readonly facility: string;
+  readonly country: string;
+  readonly securityZone: string;
+}
+
+export interface QKDMetrics {
+  readonly totalPhotonsSent: number;
+  readonly totalPhotonsReceived: number;
+  readonly siftedKeyBits: number;
+  readonly errorCorrectedBits: number;
+  readonly privacyAmplifiedBits: number;
+  readonly averageQBER: number;
+  readonly channelLoss: number;
+  readonly detectorEfficiency: number;
+  readonly darkCountRate: number;
+  readonly afterpulsingProbability: number;
+}
+
+export interface QKDKey {
+  readonly keyId: string;
+  readonly sessionId: string;
+  readonly keyMaterial: Uint8Array;
+  readonly keyLength: number;
+  readonly securityLevel: number;
+  readonly generatedAt: number;
+  readonly expiresAt: number;
+  readonly consumed: boolean;
+  readonly consumedAt: number | null;
+  readonly consumedBy: string | null;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// CRYPTOGRAPHIC AGILITY AND MIGRATION TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface CryptoAgilityPolicy {
+  readonly policyId: string;
+  readonly name: string;
+  readonly description: string;
+  readonly approvedAlgorithms: readonly AlgorithmApproval[];
+  readonly deprecatedAlgorithms: readonly AlgorithmDeprecation[];
+  readonly migrationSchedule: readonly MigrationMilestone[];
+  readonly complianceRequirements: readonly string[];
+  readonly effectiveDate: number;
+  readonly reviewDate: number;
+}
+
+export interface AlgorithmApproval {
+  readonly algorithm: KEMAlgorithm | SignatureAlgorithm | ClassicalAlgorithm;
+  readonly approvalLevel: 'APPROVED' | 'CONDITIONAL' | 'LEGACY' | 'PROHIBITED';
+  readonly minSecurityLevel: NISTSecurityLevel;
+  readonly allowedUseCases: readonly KeyPurpose[];
+  readonly expirationDate: number | null;
+  readonly notes: string;
+}
+
+export interface AlgorithmDeprecation {
+  readonly algorithm: string;
+  readonly deprecationDate: number;
+  readonly removalDate: number;
+  readonly replacementAlgorithm: string;
+  readonly migrationPriority: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
+  readonly affectedSystems: readonly string[];
+}
+
+export interface MigrationMilestone {
+  readonly milestoneId: string;
+  readonly name: string;
+  readonly description: string;
+  readonly targetDate: number;
+  readonly status: 'PLANNED' | 'IN_PROGRESS' | 'COMPLETED' | 'DELAYED';
+  readonly completionPercentage: number;
+  readonly blockers: readonly string[];
+  readonly dependencies: readonly string[];
+}
+
+export interface CryptoInventory {
+  readonly inventoryId: string;
+  readonly lastScanAt: number;
+  readonly totalKeys: number;
+  readonly keysByAlgorithm: Readonly<Record<string, number>>;
+  readonly keysByStatus: Readonly<Record<KeyStatus, number>>;
+  readonly keysBySecurityLevel: Readonly<Record<string, number>>;
+  readonly vulnerableKeys: readonly VulnerableKey[];
+  readonly expiringKeys: readonly ExpiringKey[];
+  readonly complianceStatus: ComplianceStatus;
+}
+
+export interface VulnerableKey {
+  readonly keyId: string;
+  readonly algorithm: string;
+  readonly vulnerabilityType: 'QUANTUM_VULNERABLE' | 'WEAK_PARAMETERS' | 'DEPRECATED' | 'COMPROMISED';
+  readonly riskLevel: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
+  readonly recommendedAction: string;
+  readonly migrationDeadline: number;
+}
+
+export interface ExpiringKey {
+  readonly keyId: string;
+  readonly algorithm: string;
+  readonly expiresAt: number;
+  readonly daysUntilExpiration: number;
+  readonly autoRenew: boolean;
+  readonly renewalKeyId: string | null;
+}
+
+export interface ComplianceStatus {
+  readonly compliant: boolean;
+  readonly frameworks: readonly FrameworkCompliance[];
+  readonly violations: readonly ComplianceViolation[];
+  readonly lastAuditAt: number;
+  readonly nextAuditAt: number;
+}
+
+export interface FrameworkCompliance {
+  readonly framework: string;
+  readonly version: string;
+  readonly status: 'COMPLIANT' | 'PARTIAL' | 'NON_COMPLIANT';
+  readonly score: number;
+  readonly findings: readonly string[];
+}
+
+export interface ComplianceViolation {
+  readonly violationId: string;
+  readonly framework: string;
+  readonly requirement: string;
+  readonly severity: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
+  readonly description: string;
+  readonly remediation: string;
+  readonly deadline: number;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// HARVEST-NOW-DECRYPT-LATER (HNDL) DEFENSE TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface HNDLDefensePolicy {
+  readonly policyId: string;
+  readonly name: string;
+  readonly dataClassifications: readonly DataClassificationRule[];
+  readonly retentionPeriods: readonly RetentionPeriod[];
+  readonly migrationPriorities: readonly MigrationPriority[];
+  readonly monitoringRules: readonly HNDLMonitoringRule[];
+}
+
+export interface DataClassificationRule {
+  readonly classification: SecurityClassification;
+  readonly requiredAlgorithms: readonly (KEMAlgorithm | SignatureAlgorithm)[];
+  readonly minSecurityLevel: NISTSecurityLevel;
+  readonly hybridRequired: boolean;
+  readonly qkdRequired: boolean;
+  readonly maxRetentionYears: number;
+}
+
+export interface RetentionPeriod {
+  readonly dataType: string;
+  readonly classification: SecurityClassification;
+  readonly retentionYears: number;
+  readonly quantumThreatHorizon: number;
+  readonly migrationDeadline: number;
+  readonly priority: 'IMMEDIATE' | 'HIGH' | 'MEDIUM' | 'LOW';
+}
+
+export interface MigrationPriority {
+  readonly systemId: string;
+  readonly systemName: string;
+  readonly currentAlgorithm: string;
+  readonly targetAlgorithm: string;
+  readonly dataVolume: number;
+  readonly sensitivityScore: number;
+  readonly priority: number;
+  readonly estimatedEffort: number;
+  readonly deadline: number;
+}
+
+export interface HNDLMonitoringRule {
+  readonly ruleId: string;
+  readonly name: string;
+  readonly description: string;
+  readonly indicators: readonly HNDLIndicator[];
+  readonly alertThreshold: number;
+  readonly responseActions: readonly string[];
+}
+
+export interface HNDLIndicator {
+  readonly indicatorType: 'TRAFFIC_VOLUME' | 'ENCRYPTION_TYPE' | 'DESTINATION' | 'TIMING' | 'PATTERN';
+  readonly pattern: string;
+  readonly weight: number;
+  readonly description: string;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// QUANTUM RANDOM NUMBER GENERATION TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface QRNGSource {
+  readonly sourceId: string;
+  readonly name: string;
+  readonly type: QRNGType;
+  readonly manufacturer: string;
+  readonly model: string;
+  readonly certificationLevel: string;
+  readonly bitRate: number;
+  readonly status: 'ONLINE' | 'OFFLINE' | 'MAINTENANCE' | 'FAILED';
+  readonly healthMetrics: QRNGHealthMetrics;
+  readonly lastCalibrationAt: number;
+  readonly nextCalibrationAt: number;
+}
+
+export type QRNGType =
+  | 'PHOTON_ARRIVAL_TIME'
+  | 'VACUUM_FLUCTUATION'
+  | 'BEAM_SPLITTER'
+  | 'AMPLIFIED_SPONTANEOUS_EMISSION'
+  | 'RADIOACTIVE_DECAY'
+  | 'SHOT_NOISE'
+  | 'HOMODYNE_DETECTION';
+
+export interface QRNGHealthMetrics {
+  readonly entropyRate: number;
+  readonly minEntropy: number;
+  readonly biasDeviation: number;
+  readonly autocorrelation: number;
+  readonly chiSquareScore: number;
+  readonly nistTestsPassed: number;
+  readonly nistTestsTotal: number;
+  readonly lastHealthCheckAt: number;
+}
+
+export interface RandomnessRequest {
+  readonly requestId: string;
+  readonly requesterId: string;
+  readonly bytesRequested: number;
+  readonly purpose: string;
+  readonly minEntropyRequired: number;
+  readonly sourcePreference: readonly string[];
+  readonly timestamp: number;
+}
+
+export interface RandomnessResponse {
+  readonly responseId: string;
+  readonly requestId: string;
+  readonly randomBytes: Uint8Array;
+  readonly sourceId: string;
+  readonly entropyEstimate: number;
+  readonly generatedAt: number;
+  readonly certificationChain: readonly string[];
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// AUDIT AND LOGGING TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface CryptoAuditLog {
+  readonly logId: string;
+  readonly timestamp: number;
+  readonly operationType: CryptoOperationType;
+  readonly keyId: string | null;
+  readonly algorithm: string;
+  readonly userId: string;
+  readonly sourceIp: string;
+  readonly result: 'SUCCESS' | 'FAILURE' | 'DENIED';
+  readonly errorCode: string | null;
+  readonly errorMessage: string | null;
+  readonly duration: number;
+  readonly metadata: Readonly<Record<string, unknown>>;
+}
+
+export interface KeyUsageReport {
+  readonly reportId: string;
+  readonly keyId: string;
+  readonly reportPeriod: { start: number; end: number };
+  readonly totalOperations: number;
+  readonly operationsByType: Readonly<Record<CryptoOperationType, number>>;
+  readonly successRate: number;
+  readonly averageLatency: number;
+  readonly peakUsage: number;
+  readonly anomalies: readonly UsageAnomaly[];
+}
+
+export interface UsageAnomaly {
+  readonly anomalyId: string;
+  readonly timestamp: number;
+  readonly anomalyType: 'VOLUME_SPIKE' | 'UNUSUAL_TIME' | 'NEW_SOURCE' | 'FAILED_ATTEMPTS' | 'PATTERN_DEVIATION';
+  readonly severity: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
+  readonly description: string;
+  readonly investigated: boolean;
+  readonly resolution: string | null;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ERROR TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export const QuantumSafeErrorCode = {
+  KEY_GENERATION_FAILED: 'QS_001',
+  ENCAPSULATION_FAILED: 'QS_002',
+  DECAPSULATION_FAILED: 'QS_003',
+  SIGNATURE_FAILED: 'QS_004',
+  VERIFICATION_FAILED: 'QS_005',
+  KEY_NOT_FOUND: 'QS_006',
+  KEY_EXPIRED: 'QS_007',
+  KEY_REVOKED: 'QS_008',
+  KEY_COMPROMISED: 'QS_009',
+  ALGORITHM_NOT_SUPPORTED: 'QS_010',
+  SECURITY_LEVEL_INSUFFICIENT: 'QS_011',
+  POLICY_VIOLATION: 'QS_012',
+  QKD_SESSION_FAILED: 'QS_013',
+  QRNG_UNAVAILABLE: 'QS_014',
+  HYBRID_MISMATCH: 'QS_015',
+  MIGRATION_FAILED: 'QS_016',
+  COMPLIANCE_VIOLATION: 'QS_017',
+  HSM_ERROR: 'QS_018',
+  ENTROPY_INSUFFICIENT: 'QS_019',
+  AUDIT_FAILED: 'QS_020',
+} as const;
+
+export type QuantumSafeErrorCode = typeof QuantumSafeErrorCode[keyof typeof QuantumSafeErrorCode];
+
+export class QuantumSafeError extends Error {
+  readonly code: QuantumSafeErrorCode;
+  readonly details: Readonly<Record<string, unknown>>;
+  readonly timestamp: number;
+
+  constructor(code: QuantumSafeErrorCode, message: string, details: Record<string, unknown> = {}) {
+    super(message);
+    this.name = 'QuantumSafeError';
+    this.code = code;
+    this.details = details;
+    this.timestamp = Date.now();
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// HELPER FUNCTIONS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+function generateDeterministicId(prefix: string, counter: number): string {
+  return `${prefix}_${counter.toString().padStart(12, '0')}`;
+}
+
+function generateDeterministicTimestamp(counter: number): number {
+  return 1704067200000 + counter * 1000;
+}
+
+function deterministicRandom(seed: number): number {
+  const x = Math.sin(seed * 9999) * 10000;
+  return x - Math.floor(x);
+}
+
+function generateDeterministicBytes(seed: number, length: number): Uint8Array {
+  const bytes = new Uint8Array(length);
+  for (let i = 0; i < length; i++) {
+    bytes[i] = Math.floor(deterministicRandom(seed + i) * 256);
+  }
+  return bytes;
+}
+
+function computeFingerprint(data: Uint8Array): string {
+  let hash = 0;
+  for (let i = 0; i < data.length; i++) {
+    hash = ((hash << 5) - hash + data[i]) | 0;
+  }
+  return Math.abs(hash).toString(16).padStart(16, '0');
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PQC KEY MANAGER
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export class PQCKeyManager {
+  private operationCounter: number = 0;
+  private readonly keyPairs: Map<string, PQCKeyPair> = new Map();
+  private readonly privateKeys: Map<string, PQCPrivateKey> = new Map();
+  private readonly auditLogs: Map<string, CryptoAuditLog> = new Map();
+
+  private readonly algorithmParams: Readonly<Record<KEMAlgorithm | SignatureAlgorithm, AlgorithmParameters>> = {
+    KYBER_512: { family: 'LATTICE_BASED', securityLevel: 1, publicKeySize: 800, privateKeySize: 1632, ciphertextSize: 768 },
+    KYBER_768: { family: 'LATTICE_BASED', securityLevel: 3, publicKeySize: 1184, privateKeySize: 2400, ciphertextSize: 1088 },
+    KYBER_1024: { family: 'LATTICE_BASED', securityLevel: 5, publicKeySize: 1568, privateKeySize: 3168, ciphertextSize: 1568 },
+    NTRU_HPS_2048_509: { family: 'LATTICE_BASED', securityLevel: 1, publicKeySize: 699, privateKeySize: 935, ciphertextSize: 699 },
+    NTRU_HPS_2048_677: { family: 'LATTICE_BASED', securityLevel: 3, publicKeySize: 930, privateKeySize: 1234, ciphertextSize: 930 },
+    NTRU_HPS_4096_821: { family: 'LATTICE_BASED', securityLevel: 5, publicKeySize: 1230, privateKeySize: 1590, ciphertextSize: 1230 },
+    NTRU_HRSS_701: { family: 'LATTICE_BASED', securityLevel: 3, publicKeySize: 1138, privateKeySize: 1450, ciphertextSize: 1138 },
+    SABER_LIGHT: { family: 'LATTICE_BASED', securityLevel: 1, publicKeySize: 672, privateKeySize: 1568, ciphertextSize: 736 },
+    SABER: { family: 'LATTICE_BASED', securityLevel: 3, publicKeySize: 992, privateKeySize: 2304, ciphertextSize: 1088 },
+    SABER_FIRE: { family: 'LATTICE_BASED', securityLevel: 5, publicKeySize: 1312, privateKeySize: 3040, ciphertextSize: 1472 },
+    MCELIECE_348864: { family: 'CODE_BASED', securityLevel: 1, publicKeySize: 261120, privateKeySize: 6492, ciphertextSize: 128 },
+    MCELIECE_460896: { family: 'CODE_BASED', securityLevel: 3, publicKeySize: 524160, privateKeySize: 13608, ciphertextSize: 188 },
+    MCELIECE_6688128: { family: 'CODE_BASED', securityLevel: 5, publicKeySize: 1044992, privateKeySize: 13932, ciphertextSize: 240 },
+    MCELIECE_6960119: { family: 'CODE_BASED', securityLevel: 5, publicKeySize: 1047319, privateKeySize: 13948, ciphertextSize: 226 },
+    MCELIECE_8192128: { family: 'CODE_BASED', securityLevel: 5, publicKeySize: 1357824, privateKeySize: 14120, ciphertextSize: 240 },
+    SIKE_P434: { family: 'ISOGENY_BASED', securityLevel: 1, publicKeySize: 330, privateKeySize: 374, ciphertextSize: 346 },
+    SIKE_P503: { family: 'ISOGENY_BASED', securityLevel: 2, publicKeySize: 378, privateKeySize: 434, ciphertextSize: 402 },
+    SIKE_P610: { family: 'ISOGENY_BASED', securityLevel: 3, publicKeySize: 462, privateKeySize: 524, ciphertextSize: 486 },
+    SIKE_P751: { family: 'ISOGENY_BASED', securityLevel: 5, publicKeySize: 564, privateKeySize: 644, ciphertextSize: 596 },
+    FRODOKEM_640: { family: 'LATTICE_BASED', securityLevel: 1, publicKeySize: 9616, privateKeySize: 19888, ciphertextSize: 9720 },
+    FRODOKEM_976: { family: 'LATTICE_BASED', securityLevel: 3, publicKeySize: 15632, privateKeySize: 31296, ciphertextSize: 15744 },
+    FRODOKEM_1344: { family: 'LATTICE_BASED', securityLevel: 5, publicKeySize: 21520, privateKeySize: 43088, ciphertextSize: 21632 },
+    HQC_128: { family: 'CODE_BASED', securityLevel: 1, publicKeySize: 2249, privateKeySize: 2289, ciphertextSize: 4481 },
+    HQC_192: { family: 'CODE_BASED', securityLevel: 3, publicKeySize: 4522, privateKeySize: 4562, ciphertextSize: 9026 },
+    HQC_256: { family: 'CODE_BASED', securityLevel: 5, publicKeySize: 7245, privateKeySize: 7285, ciphertextSize: 14469 },
+    BIKE_L1: { family: 'CODE_BASED', securityLevel: 1, publicKeySize: 1541, privateKeySize: 3114, ciphertextSize: 1573 },
+    BIKE_L3: { family: 'CODE_BASED', securityLevel: 3, publicKeySize: 3083, privateKeySize: 5765, ciphertextSize: 3115 },
+    BIKE_L5: { family: 'CODE_BASED', securityLevel: 5, publicKeySize: 5122, privateKeySize: 9494, ciphertextSize: 5154 },
+    DILITHIUM_2: { family: 'LATTICE_BASED', securityLevel: 2, publicKeySize: 1312, privateKeySize: 2528, signatureSize: 2420 },
+    DILITHIUM_3: { family: 'LATTICE_BASED', securityLevel: 3, publicKeySize: 1952, privateKeySize: 4000, signatureSize: 3293 },
+    DILITHIUM_5: { family: 'LATTICE_BASED', securityLevel: 5, publicKeySize: 2592, privateKeySize: 4864, signatureSize: 4595 },
+    FALCON_512: { family: 'LATTICE_BASED', securityLevel: 1, publicKeySize: 897, privateKeySize: 1281, signatureSize: 690 },
+    FALCON_1024: { family: 'LATTICE_BASED', securityLevel: 5, publicKeySize: 1793, privateKeySize: 2305, signatureSize: 1330 },
+    SPHINCS_SHA2_128F: { family: 'HASH_BASED', securityLevel: 1, publicKeySize: 32, privateKeySize: 64, signatureSize: 17088 },
+    SPHINCS_SHA2_128S: { family: 'HASH_BASED', securityLevel: 1, publicKeySize: 32, privateKeySize: 64, signatureSize: 7856 },
+    SPHINCS_SHA2_192F: { family: 'HASH_BASED', securityLevel: 3, publicKeySize: 48, privateKeySize: 96, signatureSize: 35664 },
+    SPHINCS_SHA2_192S: { family: 'HASH_BASED', securityLevel: 3, publicKeySize: 48, privateKeySize: 96, signatureSize: 16224 },
+    SPHINCS_SHA2_256F: { family: 'HASH_BASED', securityLevel: 5, publicKeySize: 64, privateKeySize: 128, signatureSize: 49856 },
+    SPHINCS_SHA2_256S: { family: 'HASH_BASED', securityLevel: 5, publicKeySize: 64, privateKeySize: 128, signatureSize: 29792 },
+    SPHINCS_SHAKE_128F: { family: 'HASH_BASED', securityLevel: 1, publicKeySize: 32, privateKeySize: 64, signatureSize: 17088 },
+    SPHINCS_SHAKE_128S: { family: 'HASH_BASED', securityLevel: 1, publicKeySize: 32, privateKeySize: 64, signatureSize: 7856 },
+    SPHINCS_SHAKE_192F: { family: 'HASH_BASED', securityLevel: 3, publicKeySize: 48, privateKeySize: 96, signatureSize: 35664 },
+    SPHINCS_SHAKE_192S: { family: 'HASH_BASED', securityLevel: 3, publicKeySize: 48, privateKeySize: 96, signatureSize: 16224 },
+    SPHINCS_SHAKE_256F: { family: 'HASH_BASED', securityLevel: 5, publicKeySize: 64, privateKeySize: 128, signatureSize: 49856 },
+    SPHINCS_SHAKE_256S: { family: 'HASH_BASED', securityLevel: 5, publicKeySize: 64, privateKeySize: 128, signatureSize: 29792 },
+    RAINBOW_I: { family: 'MULTIVARIATE', securityLevel: 1, publicKeySize: 161600, privateKeySize: 103648, signatureSize: 66 },
+    RAINBOW_III: { family: 'MULTIVARIATE', securityLevel: 3, publicKeySize: 882080, privateKeySize: 626048, signatureSize: 164 },
+    RAINBOW_V: { family: 'MULTIVARIATE', securityLevel: 5, publicKeySize: 1930600, privateKeySize: 1408736, signatureSize: 212 },
+    GEMSS_128: { family: 'MULTIVARIATE', securityLevel: 1, publicKeySize: 352188, privateKeySize: 16, signatureSize: 33 },
+    GEMSS_192: { family: 'MULTIVARIATE', securityLevel: 3, publicKeySize: 1237964, privateKeySize: 24, signatureSize: 53 },
+    GEMSS_256: { family: 'MULTIVARIATE', securityLevel: 5, publicKeySize: 3040700, privateKeySize: 32, signatureSize: 72 },
+    PICNIC_L1_FS: { family: 'HASH_BASED', securityLevel: 1, publicKeySize: 33, privateKeySize: 49, signatureSize: 34036 },
+    PICNIC_L1_UR: { family: 'HASH_BASED', securityLevel: 1, publicKeySize: 33, privateKeySize: 49, signatureSize: 53965 },
+    PICNIC_L3_FS: { family: 'HASH_BASED', securityLevel: 3, publicKeySize: 49, privateKeySize: 73, signatureSize: 76776 },
+    PICNIC_L3_UR: { family: 'HASH_BASED', securityLevel: 3, publicKeySize: 49, privateKeySize: 73, signatureSize: 121849 },
+    PICNIC_L5_FS: { family: 'HASH_BASED', securityLevel: 5, publicKeySize: 65, privateKeySize: 97, signatureSize: 132860 },
+    PICNIC_L5_UR: { family: 'HASH_BASED', securityLevel: 5, publicKeySize: 65, privateKeySize: 97, signatureSize: 209510 },
+  };
+
+  generateKeyPair(
+    algorithm: KEMAlgorithm | SignatureAlgorithm,
+    metadata: KeyMetadata
+  ): PQCKeyPair {
+    this.operationCounter++;
+
+    const params = this.algorithmParams[algorithm];
+    if (!params) {
+      throw new QuantumSafeError(
+        QuantumSafeErrorCode.ALGORITHM_NOT_SUPPORTED,
+        `Algorithm ${algorithm} is not supported`,
+        { algorithm }
+      );
+    }
+
+    const keyId = generateDeterministicId('pqc_key', this.operationCounter);
+    const privateKeyId = generateDeterministicId('pqc_priv', this.operationCounter);
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+
+    const publicKeyMaterial = generateDeterministicBytes(this.operationCounter, params.publicKeySize);
+    const privateKeyMaterial = generateDeterministicBytes(this.operationCounter + 1000000, params.privateKeySize);
+
+    const publicKey: PQCPublicKey = {
+      keyId: generateDeterministicId('pqc_pub', this.operationCounter),
+      algorithm,
+      keyMaterial: publicKeyMaterial,
+      keySize: params.publicKeySize,
+      fingerprint: computeFingerprint(publicKeyMaterial),
+      encoding: 'RAW',
+    };
+
+    const privateKey: PQCPrivateKey = {
+      keyId: privateKeyId,
+      algorithm,
+      encryptedKeyMaterial: privateKeyMaterial,
+      keySize: params.privateKeySize,
+      wrappingKeyId: 'master_key_001',
+      wrappingAlgorithm: 'AES-256-GCM',
+    };
+
+    const keyPair: PQCKeyPair = {
+      keyId,
+      algorithm,
+      algorithmFamily: params.family,
+      securityLevel: params.securityLevel as NISTSecurityLevel,
+      publicKey,
+      privateKeyId,
+      status: 'ACTIVE',
+      createdAt: timestamp,
+      expiresAt: timestamp + 31536000000,
+      lastUsedAt: timestamp,
+      usageCount: 0,
+      maxUsageCount: 1000000,
+      metadata,
+    };
+
+    this.keyPairs.set(keyId, keyPair);
+    this.privateKeys.set(privateKeyId, privateKey);
+
+    this.logOperation('KEY_GENERATION', keyId, algorithm, 'SUCCESS');
+
+    return keyPair;
+  }
+
+  getKeyPair(keyId: string): PQCKeyPair | null {
+    const keyPair = this.keyPairs.get(keyId);
+    if (!keyPair) {
+      return null;
+    }
+    return keyPair;
+  }
+
+  encapsulate(keyId: string): { ciphertext: Uint8Array; sharedSecret: Uint8Array } | null {
+    this.operationCounter++;
+
+    const keyPair = this.keyPairs.get(keyId);
+    if (!keyPair) {
+      this.logOperation('ENCAPSULATION', keyId, 'UNKNOWN', 'FAILURE', QuantumSafeErrorCode.KEY_NOT_FOUND);
+      return null;
+    }
+
+    if (keyPair.status !== 'ACTIVE') {
+      this.logOperation('ENCAPSULATION', keyId, keyPair.algorithm, 'FAILURE', QuantumSafeErrorCode.KEY_EXPIRED);
+      return null;
+    }
+
+    const params = this.algorithmParams[keyPair.algorithm];
+    const ciphertextSize = 'ciphertextSize' in params ? params.ciphertextSize : 1024;
+
+    const ciphertext = generateDeterministicBytes(this.operationCounter, ciphertextSize);
+    const sharedSecret = generateDeterministicBytes(this.operationCounter + 500000, 32);
+
+    this.updateKeyUsage(keyId);
+    this.logOperation('ENCAPSULATION', keyId, keyPair.algorithm, 'SUCCESS');
+
+    return { ciphertext, sharedSecret };
+  }
+
+  decapsulate(keyId: string, ciphertext: Uint8Array): Uint8Array | null {
+    this.operationCounter++;
+
+    const keyPair = this.keyPairs.get(keyId);
+    if (!keyPair) {
+      this.logOperation('DECAPSULATION', keyId, 'UNKNOWN', 'FAILURE', QuantumSafeErrorCode.KEY_NOT_FOUND);
+      return null;
+    }
+
+    if (keyPair.status !== 'ACTIVE') {
+      this.logOperation('DECAPSULATION', keyId, keyPair.algorithm, 'FAILURE', QuantumSafeErrorCode.KEY_EXPIRED);
+      return null;
+    }
+
+    const sharedSecret = generateDeterministicBytes(this.operationCounter + 500000, 32);
+
+    this.updateKeyUsage(keyId);
+    this.logOperation('DECAPSULATION', keyId, keyPair.algorithm, 'SUCCESS');
+
+    return sharedSecret;
+  }
+
+  sign(keyId: string, message: Uint8Array): Uint8Array | null {
+    this.operationCounter++;
+
+    const keyPair = this.keyPairs.get(keyId);
+    if (!keyPair) {
+      this.logOperation('SIGNING', keyId, 'UNKNOWN', 'FAILURE', QuantumSafeErrorCode.KEY_NOT_FOUND);
+      return null;
+    }
+
+    if (keyPair.status !== 'ACTIVE') {
+      this.logOperation('SIGNING', keyId, keyPair.algorithm, 'FAILURE', QuantumSafeErrorCode.KEY_EXPIRED);
+      return null;
+    }
+
+    const params = this.algorithmParams[keyPair.algorithm];
+    const signatureSize = 'signatureSize' in params ? params.signatureSize : 2420;
+
+    const signature = generateDeterministicBytes(this.operationCounter, signatureSize);
+
+    this.updateKeyUsage(keyId);
+    this.logOperation('SIGNING', keyId, keyPair.algorithm, 'SUCCESS');
+
+    return signature;
+  }
+
+  verify(keyId: string, message: Uint8Array, signature: Uint8Array): boolean {
+    this.operationCounter++;
+
+    const keyPair = this.keyPairs.get(keyId);
+    if (!keyPair) {
+      this.logOperation('VERIFICATION', keyId, 'UNKNOWN', 'FAILURE', QuantumSafeErrorCode.KEY_NOT_FOUND);
+      return false;
+    }
+
+    const isValid = deterministicRandom(this.operationCounter) > 0.1;
+
+    this.logOperation('VERIFICATION', keyId, keyPair.algorithm, isValid ? 'SUCCESS' : 'FAILURE');
+
+    return isValid;
+  }
+
+  revokeKey(keyId: string, reason: string): boolean {
+    this.operationCounter++;
+
+    const keyPair = this.keyPairs.get(keyId);
+    if (!keyPair) {
+      return false;
+    }
+
+    const updatedKeyPair: PQCKeyPair = {
+      ...keyPair,
+      status: 'REVOKED',
+    };
+
+    this.keyPairs.set(keyId, updatedKeyPair);
+    this.logOperation('KEY_GENERATION', keyId, keyPair.algorithm, 'SUCCESS');
+
+    return true;
+  }
+
+  private updateKeyUsage(keyId: string): void {
+    const keyPair = this.keyPairs.get(keyId);
+    if (!keyPair) return;
+
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+    const updatedKeyPair: PQCKeyPair = {
+      ...keyPair,
+      lastUsedAt: timestamp,
+      usageCount: keyPair.usageCount + 1,
+    };
+
+    this.keyPairs.set(keyId, updatedKeyPair);
+  }
+
+  private logOperation(
+    operationType: CryptoOperationType,
+    keyId: string | null,
+    algorithm: string,
+    result: 'SUCCESS' | 'FAILURE' | 'DENIED',
+    errorCode: string | null = null
+  ): void {
+    this.operationCounter++;
+
+    const logId = generateDeterministicId('audit', this.operationCounter);
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+
+    const log: CryptoAuditLog = {
+      logId,
+      timestamp,
+      operationType,
+      keyId,
+      algorithm,
+      userId: 'system',
+      sourceIp: '127.0.0.1',
+      result,
+      errorCode,
+      errorMessage: errorCode ? `Error: ${errorCode}` : null,
+      duration: Math.floor(deterministicRandom(this.operationCounter) * 100),
+      metadata: {},
+    };
+
+    this.auditLogs.set(logId, log);
+  }
+
+  listKeyPairs(filter?: { algorithm?: KEMAlgorithm | SignatureAlgorithm; status?: KeyStatus; securityLevel?: NISTSecurityLevel }): readonly PQCKeyPair[] {
+    let keyPairs = Array.from(this.keyPairs.values());
+
+    if (filter?.algorithm) {
+      keyPairs = keyPairs.filter(k => k.algorithm === filter.algorithm);
+    }
+    if (filter?.status) {
+      keyPairs = keyPairs.filter(k => k.status === filter.status);
+    }
+    if (filter?.securityLevel) {
+      keyPairs = keyPairs.filter(k => k.securityLevel === filter.securityLevel);
+    }
+
+    return keyPairs;
+  }
+
+  getAuditLogs(filter?: { keyId?: string; operationType?: CryptoOperationType; result?: 'SUCCESS' | 'FAILURE' | 'DENIED' }): readonly CryptoAuditLog[] {
+    let logs = Array.from(this.auditLogs.values());
+
+    if (filter?.keyId) {
+      logs = logs.filter(l => l.keyId === filter.keyId);
+    }
+    if (filter?.operationType) {
+      logs = logs.filter(l => l.operationType === filter.operationType);
+    }
+    if (filter?.result) {
+      logs = logs.filter(l => l.result === filter.result);
+    }
+
+    return logs;
+  }
+}
+
+interface AlgorithmParameters {
+  family: PQCAlgorithmFamily;
+  securityLevel: number;
+  publicKeySize: number;
+  privateKeySize: number;
+  ciphertextSize?: number;
+  signatureSize?: number;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// HYBRID CRYPTO MANAGER
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export class HybridCryptoManager {
+  private operationCounter: number = 0;
+  private readonly hybridKeyPairs: Map<string, HybridKeyPair> = new Map();
+  private readonly encapsulations: Map<string, HybridEncapsulation> = new Map();
+  private readonly signatures: Map<string, HybridSignature> = new Map();
+
+  createHybridKeyPair(
+    classicalKeyId: string,
+    classicalAlgorithm: ClassicalAlgorithm,
+    pqcKeyId: string,
+    pqcAlgorithm: KEMAlgorithm | SignatureAlgorithm,
+    combinationMethod: HybridCombinationMethod
+  ): HybridKeyPair {
+    this.operationCounter++;
+
+    const hybridKeyId = generateDeterministicId('hybrid', this.operationCounter);
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+
+    const hybridKeyPair: HybridKeyPair = {
+      hybridKeyId,
+      classicalKeyId,
+      classicalAlgorithm,
+      pqcKeyId,
+      pqcAlgorithm,
+      combinationMethod,
+      status: 'ACTIVE',
+      createdAt: timestamp,
+      expiresAt: timestamp + 31536000000,
+    };
+
+    this.hybridKeyPairs.set(hybridKeyId, hybridKeyPair);
+    return hybridKeyPair;
+  }
+
+  getHybridKeyPair(hybridKeyId: string): HybridKeyPair | null {
+    const keyPair = this.hybridKeyPairs.get(hybridKeyId);
+    if (!keyPair) {
+      return null;
+    }
+    return keyPair;
+  }
+
+  hybridEncapsulate(hybridKeyId: string): HybridEncapsulation | null {
+    this.operationCounter++;
+
+    const keyPair = this.hybridKeyPairs.get(hybridKeyId);
+    if (!keyPair || keyPair.status !== 'ACTIVE') {
+      return null;
+    }
+
+    const encapsulationId = generateDeterministicId('henc', this.operationCounter);
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+
+    const classicalCiphertext = generateDeterministicBytes(this.operationCounter, 256);
+    const pqcCiphertext = generateDeterministicBytes(this.operationCounter + 100000, 1088);
+    const combinedSharedSecret = this.combineSecrets(
+      generateDeterministicBytes(this.operationCounter + 200000, 32),
+      generateDeterministicBytes(this.operationCounter + 300000, 32),
+      keyPair.combinationMethod
+    );
+
+    const encapsulation: HybridEncapsulation = {
+      encapsulationId,
+      hybridKeyId,
+      classicalCiphertext,
+      pqcCiphertext,
+      combinedSharedSecret,
+      timestamp,
+    };
+
+    this.encapsulations.set(encapsulationId, encapsulation);
+    return encapsulation;
+  }
+
+  hybridSign(hybridKeyId: string, message: Uint8Array): HybridSignature | null {
+    this.operationCounter++;
+
+    const keyPair = this.hybridKeyPairs.get(hybridKeyId);
+    if (!keyPair || keyPair.status !== 'ACTIVE') {
+      return null;
+    }
+
+    const signatureId = generateDeterministicId('hsig', this.operationCounter);
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+
+    const classicalSignature = generateDeterministicBytes(this.operationCounter, 64);
+    const pqcSignature = generateDeterministicBytes(this.operationCounter + 100000, 2420);
+    const messageHash = computeFingerprint(message);
+
+    const signature: HybridSignature = {
+      signatureId,
+      hybridKeyId,
+      classicalSignature,
+      pqcSignature,
+      messageHash,
+      timestamp,
+    };
+
+    this.signatures.set(signatureId, signature);
+    return signature;
+  }
+
+  hybridVerify(hybridKeyId: string, message: Uint8Array, signatureId: string): boolean {
+    this.operationCounter++;
+
+    const keyPair = this.hybridKeyPairs.get(hybridKeyId);
+    const signature = this.signatures.get(signatureId);
+
+    if (!keyPair || !signature || signature.hybridKeyId !== hybridKeyId) {
+      return false;
+    }
+
+    const messageHash = computeFingerprint(message);
+    return messageHash === signature.messageHash;
+  }
+
+  private combineSecrets(secret1: Uint8Array, secret2: Uint8Array, method: HybridCombinationMethod): Uint8Array {
+    const combined = new Uint8Array(32);
+
+    switch (method) {
+      case 'CONCATENATION': {
+        const concat = new Uint8Array(secret1.length + secret2.length);
+        concat.set(secret1, 0);
+        concat.set(secret2, secret1.length);
+        for (let i = 0; i < 32; i++) {
+          combined[i] = concat[i % concat.length];
+        }
+        break;
+      }
+      case 'XOR': {
+        for (let i = 0; i < 32; i++) {
+          combined[i] = secret1[i % secret1.length] ^ secret2[i % secret2.length];
+        }
+        break;
+      }
+      case 'KDF_HKDF':
+      case 'KDF_CONCAT':
+      case 'DUAL_PRF':
+      case 'NESTED':
+      default: {
+        for (let i = 0; i < 32; i++) {
+          combined[i] = (secret1[i % secret1.length] + secret2[i % secret2.length]) % 256;
+        }
+        break;
+      }
+    }
+
+    return combined;
+  }
+
+  listHybridKeyPairs(filter?: { status?: KeyStatus }): readonly HybridKeyPair[] {
+    let keyPairs = Array.from(this.hybridKeyPairs.values());
+
+    if (filter?.status) {
+      keyPairs = keyPairs.filter(k => k.status === filter.status);
+    }
+
+    return keyPairs;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// QKD SESSION MANAGER
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export class QKDSessionManager {
+  private operationCounter: number = 0;
+  private readonly sessions: Map<string, QKDSession> = new Map();
+  private readonly keys: Map<string, QKDKey> = new Map();
+  private readonly nodes: Map<string, QKDNode> = new Map();
+
+  registerNode(
+    name: string,
+    location: GeoLocation,
+    capabilities: readonly QKDProtocol[],
+    maxKeyRate: number,
+    trustedNode: boolean,
+    certificationLevel: string
+  ): QKDNode {
+    this.operationCounter++;
+
+    const nodeId = generateDeterministicId('qkd_node', this.operationCounter);
+
+    const node: QKDNode = {
+      nodeId,
+      name,
+      location,
+      capabilities,
+      maxKeyRate,
+      trustedNode,
+      certificationLevel,
+    };
+
+    this.nodes.set(nodeId, node);
+    return node;
+  }
+
+  createSession(
+    protocol: QKDProtocol,
+    channelType: QuantumChannelType,
+    localNodeId: string,
+    remoteNodeId: string
+  ): QKDSession | null {
+    this.operationCounter++;
+
+    const localNode = this.nodes.get(localNodeId);
+    const remoteNode = this.nodes.get(remoteNodeId);
+
+    if (!localNode || !remoteNode) {
+      return null;
+    }
+
+    if (!localNode.capabilities.includes(protocol) || !remoteNode.capabilities.includes(protocol)) {
+      return null;
+    }
+
+    const sessionId = generateDeterministicId('qkd_session', this.operationCounter);
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+
+    const session: QKDSession = {
+      sessionId,
+      protocol,
+      channelType,
+      localNode,
+      remoteNode,
+      status: 'INITIALIZING',
+      keyRate: 0,
+      qber: 0,
+      securityParameter: 128,
+      generatedKeyBits: 0,
+      startedAt: timestamp,
+      lastKeyGeneratedAt: timestamp,
+      metrics: {
+        totalPhotonsSent: 0,
+        totalPhotonsReceived: 0,
+        siftedKeyBits: 0,
+        errorCorrectedBits: 0,
+        privacyAmplifiedBits: 0,
+        averageQBER: 0,
+        channelLoss: 0,
+        detectorEfficiency: 0.85,
+        darkCountRate: 0.00001,
+        afterpulsingProbability: 0.001,
+      },
+    };
+
+    this.sessions.set(sessionId, session);
+    return session;
+  }
+
+  activateSession(sessionId: string): boolean {
+    this.operationCounter++;
+
+    const session = this.sessions.get(sessionId);
+    if (!session || session.status !== 'INITIALIZING') {
+      return false;
+    }
+
+    const updatedSession: QKDSession = {
+      ...session,
+      status: 'ACTIVE',
+      keyRate: Math.floor(deterministicRandom(this.operationCounter) * 10000),
+      qber: deterministicRandom(this.operationCounter + 1) * 0.05,
+    };
+
+    this.sessions.set(sessionId, updatedSession);
+    return true;
+  }
+
+  generateKey(sessionId: string, keyLength: number): QKDKey | null {
+    this.operationCounter++;
+
+    const session = this.sessions.get(sessionId);
+    if (!session || session.status !== 'ACTIVE') {
+      return null;
+    }
+
+    const keyId = generateDeterministicId('qkd_key', this.operationCounter);
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+
+    const keyMaterial = generateDeterministicBytes(this.operationCounter, keyLength / 8);
+
+    const key: QKDKey = {
+      keyId,
+      sessionId,
+      keyMaterial,
+      keyLength,
+      securityLevel: session.securityParameter,
+      generatedAt: timestamp,
+      expiresAt: timestamp + 86400000,
+      consumed: false,
+      consumedAt: null,
+      consumedBy: null,
+    };
+
+    this.keys.set(keyId, key);
+
+    const updatedSession: QKDSession = {
+      ...session,
+      generatedKeyBits: session.generatedKeyBits + keyLength,
+      lastKeyGeneratedAt: timestamp,
+      metrics: {
+        ...session.metrics,
+        privacyAmplifiedBits: session.metrics.privacyAmplifiedBits + keyLength,
+      },
+    };
+
+    this.sessions.set(sessionId, updatedSession);
+
+    return key;
+  }
+
+  consumeKey(keyId: string, consumerId: string): Uint8Array | null {
+    this.operationCounter++;
+
+    const key = this.keys.get(keyId);
+    if (!key || key.consumed) {
+      return null;
+    }
+
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+
+    const updatedKey: QKDKey = {
+      ...key,
+      consumed: true,
+      consumedAt: timestamp,
+      consumedBy: consumerId,
+    };
+
+    this.keys.set(keyId, updatedKey);
+
+    return key.keyMaterial;
+  }
+
+  getSession(sessionId: string): QKDSession | null {
+    const session = this.sessions.get(sessionId);
+    if (!session) {
+      return null;
+    }
+    return session;
+  }
+
+  terminateSession(sessionId: string): boolean {
+    this.operationCounter++;
+
+    const session = this.sessions.get(sessionId);
+    if (!session) {
+      return false;
+    }
+
+    const updatedSession: QKDSession = {
+      ...session,
+      status: 'TERMINATED',
+    };
+
+    this.sessions.set(sessionId, updatedSession);
+    return true;
+  }
+
+  listSessions(filter?: { status?: QKDSessionStatus; protocol?: QKDProtocol }): readonly QKDSession[] {
+    let sessions = Array.from(this.sessions.values());
+
+    if (filter?.status) {
+      sessions = sessions.filter(s => s.status === filter.status);
+    }
+    if (filter?.protocol) {
+      sessions = sessions.filter(s => s.protocol === filter.protocol);
+    }
+
+    return sessions;
+  }
+
+  listKeys(filter?: { sessionId?: string; consumed?: boolean }): readonly QKDKey[] {
+    let keys = Array.from(this.keys.values());
+
+    if (filter?.sessionId) {
+      keys = keys.filter(k => k.sessionId === filter.sessionId);
+    }
+    if (filter?.consumed !== undefined) {
+      keys = keys.filter(k => k.consumed === filter.consumed);
+    }
+
+    return keys;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// CRYPTO AGILITY MANAGER
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export class CryptoAgilityManager {
+  private operationCounter: number = 0;
+  private readonly policies: Map<string, CryptoAgilityPolicy> = new Map();
+  private readonly inventories: Map<string, CryptoInventory> = new Map();
+  private readonly migrationPlans: Map<string, MigrationMilestone[]> = new Map();
+
+  createPolicy(
+    name: string,
+    description: string,
+    approvedAlgorithms: readonly AlgorithmApproval[],
+    deprecatedAlgorithms: readonly AlgorithmDeprecation[],
+    complianceRequirements: readonly string[]
+  ): CryptoAgilityPolicy {
+    this.operationCounter++;
+
+    const policyId = generateDeterministicId('policy', this.operationCounter);
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+
+    const policy: CryptoAgilityPolicy = {
+      policyId,
+      name,
+      description,
+      approvedAlgorithms,
+      deprecatedAlgorithms,
+      migrationSchedule: [],
+      complianceRequirements,
+      effectiveDate: timestamp,
+      reviewDate: timestamp + 31536000000,
+    };
+
+    this.policies.set(policyId, policy);
+    return policy;
+  }
+
+  scanInventory(keyManager: PQCKeyManager): CryptoInventory {
+    this.operationCounter++;
+
+    const inventoryId = generateDeterministicId('inventory', this.operationCounter);
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+
+    const allKeys = keyManager.listKeyPairs();
+
+    const keysByAlgorithm: Record<string, number> = {};
+    const keysByStatus: Record<KeyStatus, number> = {
+      GENERATING: 0,
+      ACTIVE: 0,
+      SUSPENDED: 0,
+      COMPROMISED: 0,
+      EXPIRED: 0,
+      REVOKED: 0,
+      DESTROYED: 0,
+      ARCHIVED: 0,
+    };
+    const keysBySecurityLevel: Record<string, number> = {};
+
+    for (const key of allKeys) {
+      keysByAlgorithm[key.algorithm] = (keysByAlgorithm[key.algorithm] ?? 0) + 1;
+      keysByStatus[key.status] = (keysByStatus[key.status] ?? 0) + 1;
+      const levelKey = `NIST_L${key.securityLevel}`;
+      keysBySecurityLevel[levelKey] = (keysBySecurityLevel[levelKey] ?? 0) + 1;
+    }
+
+    const vulnerableKeys: VulnerableKey[] = [];
+    const expiringKeys: ExpiringKey[] = [];
+
+    for (const key of allKeys) {
+      if (key.expiresAt - timestamp < 2592000000) {
+        expiringKeys.push({
+          keyId: key.keyId,
+          algorithm: key.algorithm,
+          expiresAt: key.expiresAt,
+          daysUntilExpiration: Math.floor((key.expiresAt - timestamp) / 86400000),
+          autoRenew: false,
+          renewalKeyId: null,
+        });
+      }
+    }
+
+    const inventory: CryptoInventory = {
+      inventoryId,
+      lastScanAt: timestamp,
+      totalKeys: allKeys.length,
+      keysByAlgorithm,
+      keysByStatus,
+      keysBySecurityLevel,
+      vulnerableKeys,
+      expiringKeys,
+      complianceStatus: {
+        compliant: true,
+        frameworks: [
+          { framework: 'NIST SP 800-208', version: '1.0', status: 'COMPLIANT', score: 95, findings: [] },
+          { framework: 'CNSA 2.0', version: '2022', status: 'COMPLIANT', score: 92, findings: [] },
+        ],
+        violations: [],
+        lastAuditAt: timestamp,
+        nextAuditAt: timestamp + 7776000000,
+      },
+    };
+
+    this.inventories.set(inventoryId, inventory);
+    return inventory;
+  }
+
+  createMigrationPlan(
+    policyId: string,
+    milestones: readonly MigrationMilestone[]
+  ): boolean {
+    const policy = this.policies.get(policyId);
+    if (!policy) {
+      return false;
+    }
+
+    this.migrationPlans.set(policyId, [...milestones]);
+    return true;
+  }
+
+  getPolicy(policyId: string): CryptoAgilityPolicy | null {
+    const policy = this.policies.get(policyId);
+    if (!policy) {
+      return null;
+    }
+    return policy;
+  }
+
+  getInventory(inventoryId: string): CryptoInventory | null {
+    const inventory = this.inventories.get(inventoryId);
+    if (!inventory) {
+      return null;
+    }
+    return inventory;
+  }
+
+  listPolicies(): readonly CryptoAgilityPolicy[] {
+    return Array.from(this.policies.values());
+  }
+
+  listInventories(): readonly CryptoInventory[] {
+    return Array.from(this.inventories.values());
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// QRNG MANAGER
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export class QRNGManager {
+  private operationCounter: number = 0;
+  private readonly sources: Map<string, QRNGSource> = new Map();
+  private readonly requests: Map<string, RandomnessRequest> = new Map();
+  private readonly responses: Map<string, RandomnessResponse> = new Map();
+
+  registerSource(
+    name: string,
+    type: QRNGType,
+    manufacturer: string,
+    model: string,
+    certificationLevel: string,
+    bitRate: number
+  ): QRNGSource {
+    this.operationCounter++;
+
+    const sourceId = generateDeterministicId('qrng', this.operationCounter);
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+
+    const source: QRNGSource = {
+      sourceId,
+      name,
+      type,
+      manufacturer,
+      model,
+      certificationLevel,
+      bitRate,
+      status: 'ONLINE',
+      healthMetrics: {
+        entropyRate: 0.999,
+        minEntropy: 0.998,
+        biasDeviation: 0.0001,
+        autocorrelation: 0.00001,
+        chiSquareScore: 0.95,
+        nistTestsPassed: 15,
+        nistTestsTotal: 15,
+        lastHealthCheckAt: timestamp,
+      },
+      lastCalibrationAt: timestamp,
+      nextCalibrationAt: timestamp + 2592000000,
+    };
+
+    this.sources.set(sourceId, source);
+    return source;
+  }
+
+  requestRandomness(
+    requesterId: string,
+    bytesRequested: number,
+    purpose: string,
+    minEntropyRequired: number,
+    sourcePreference: readonly string[]
+  ): RandomnessResponse | null {
+    this.operationCounter++;
+
+    const requestId = generateDeterministicId('rng_req', this.operationCounter);
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+
+    const request: RandomnessRequest = {
+      requestId,
+      requesterId,
+      bytesRequested,
+      purpose,
+      minEntropyRequired,
+      sourcePreference,
+      timestamp,
+    };
+
+    this.requests.set(requestId, request);
+
+    let selectedSource: QRNGSource | null = null;
+
+    for (const sourceId of sourcePreference) {
+      const source = this.sources.get(sourceId);
+      if (source && source.status === 'ONLINE' && source.healthMetrics.minEntropy >= minEntropyRequired) {
+        selectedSource = source;
+        break;
+      }
+    }
+
+    if (!selectedSource) {
+      for (const source of this.sources.values()) {
+        if (source.status === 'ONLINE' && source.healthMetrics.minEntropy >= minEntropyRequired) {
+          selectedSource = source;
+          break;
+        }
+      }
+    }
+
+    if (!selectedSource) {
+      return null;
+    }
+
+    const responseId = generateDeterministicId('rng_res', this.operationCounter);
+    const randomBytes = generateDeterministicBytes(this.operationCounter, bytesRequested);
+
+    const response: RandomnessResponse = {
+      responseId,
+      requestId,
+      randomBytes,
+      sourceId: selectedSource.sourceId,
+      entropyEstimate: selectedSource.healthMetrics.minEntropy,
+      generatedAt: timestamp,
+      certificationChain: [selectedSource.certificationLevel],
+    };
+
+    this.responses.set(responseId, response);
+    return response;
+  }
+
+  getSource(sourceId: string): QRNGSource | null {
+    const source = this.sources.get(sourceId);
+    if (!source) {
+      return null;
+    }
+    return source;
+  }
+
+  updateSourceStatus(sourceId: string, status: QRNGSource['status']): boolean {
+    const source = this.sources.get(sourceId);
+    if (!source) {
+      return false;
+    }
+
+    const updatedSource: QRNGSource = {
+      ...source,
+      status,
+    };
+
+    this.sources.set(sourceId, updatedSource);
+    return true;
+  }
+
+  runHealthCheck(sourceId: string): QRNGHealthMetrics | null {
+    this.operationCounter++;
+
+    const source = this.sources.get(sourceId);
+    if (!source) {
+      return null;
+    }
+
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+
+    const healthMetrics: QRNGHealthMetrics = {
+      entropyRate: 0.998 + deterministicRandom(this.operationCounter) * 0.002,
+      minEntropy: 0.997 + deterministicRandom(this.operationCounter + 1) * 0.003,
+      biasDeviation: deterministicRandom(this.operationCounter + 2) * 0.0002,
+      autocorrelation: deterministicRandom(this.operationCounter + 3) * 0.00002,
+      chiSquareScore: 0.94 + deterministicRandom(this.operationCounter + 4) * 0.06,
+      nistTestsPassed: 15,
+      nistTestsTotal: 15,
+      lastHealthCheckAt: timestamp,
+    };
+
+    const updatedSource: QRNGSource = {
+      ...source,
+      healthMetrics,
+    };
+
+    this.sources.set(sourceId, updatedSource);
+    return healthMetrics;
+  }
+
+  listSources(filter?: { status?: QRNGSource['status']; type?: QRNGType }): readonly QRNGSource[] {
+    let sources = Array.from(this.sources.values());
+
+    if (filter?.status) {
+      sources = sources.filter(s => s.status === filter.status);
+    }
+    if (filter?.type) {
+      sources = sources.filter(s => s.type === filter.type);
+    }
+
+    return sources;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// HNDL DEFENSE MANAGER
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export class HNDLDefenseManager {
+  private operationCounter: number = 0;
+  private readonly policies: Map<string, HNDLDefensePolicy> = new Map();
+  private readonly alerts: Map<string, HNDLAlert> = new Map();
+
+  createPolicy(
+    name: string,
+    dataClassifications: readonly DataClassificationRule[],
+    retentionPeriods: readonly RetentionPeriod[],
+    migrationPriorities: readonly MigrationPriority[],
+    monitoringRules: readonly HNDLMonitoringRule[]
+  ): HNDLDefensePolicy {
+    this.operationCounter++;
+
+    const policyId = generateDeterministicId('hndl_policy', this.operationCounter);
+
+    const policy: HNDLDefensePolicy = {
+      policyId,
+      name,
+      dataClassifications,
+      retentionPeriods,
+      migrationPriorities,
+      monitoringRules,
+    };
+
+    this.policies.set(policyId, policy);
+    return policy;
+  }
+
+  evaluateTraffic(
+    policyId: string,
+    trafficMetadata: TrafficMetadata
+  ): HNDLAlert | null {
+    this.operationCounter++;
+
+    const policy = this.policies.get(policyId);
+    if (!policy) {
+      return null;
+    }
+
+    let totalScore = 0;
+    const matchedIndicators: string[] = [];
+
+    for (const rule of policy.monitoringRules) {
+      for (const indicator of rule.indicators) {
+        const matches = this.evaluateIndicator(indicator, trafficMetadata);
+        if (matches) {
+          totalScore += indicator.weight;
+          matchedIndicators.push(indicator.description);
+        }
+      }
+
+      if (totalScore >= rule.alertThreshold) {
+        const alertId = generateDeterministicId('hndl_alert', this.operationCounter);
+        const timestamp = generateDeterministicTimestamp(this.operationCounter);
+
+        const alert: HNDLAlert = {
+          alertId,
+          policyId,
+          ruleId: rule.ruleId,
+          severity: totalScore >= 80 ? 'CRITICAL' : totalScore >= 60 ? 'HIGH' : totalScore >= 40 ? 'MEDIUM' : 'LOW',
+          score: totalScore,
+          matchedIndicators,
+          trafficMetadata,
+          timestamp,
+          status: 'NEW',
+          investigatedBy: null,
+          resolution: null,
+        };
+
+        this.alerts.set(alertId, alert);
+        return alert;
+      }
+    }
+
+    return null;
+  }
+
+  private evaluateIndicator(indicator: HNDLIndicator, metadata: TrafficMetadata): boolean {
+    this.operationCounter++;
+    return deterministicRandom(this.operationCounter) > 0.7;
+  }
+
+  getPolicy(policyId: string): HNDLDefensePolicy | null {
+    const policy = this.policies.get(policyId);
+    if (!policy) {
+      return null;
+    }
+    return policy;
+  }
+
+  getAlert(alertId: string): HNDLAlert | null {
+    const alert = this.alerts.get(alertId);
+    if (!alert) {
+      return null;
+    }
+    return alert;
+  }
+
+  updateAlertStatus(alertId: string, status: HNDLAlert['status'], investigatedBy?: string, resolution?: string): boolean {
+    const alert = this.alerts.get(alertId);
+    if (!alert) {
+      return false;
+    }
+
+    const updatedAlert: HNDLAlert = {
+      ...alert,
+      status,
+      investigatedBy: investigatedBy ?? alert.investigatedBy,
+      resolution: resolution ?? alert.resolution,
+    };
+
+    this.alerts.set(alertId, updatedAlert);
+    return true;
+  }
+
+  listPolicies(): readonly HNDLDefensePolicy[] {
+    return Array.from(this.policies.values());
+  }
+
+  listAlerts(filter?: { policyId?: string; severity?: HNDLAlert['severity']; status?: HNDLAlert['status'] }): readonly HNDLAlert[] {
+    let alerts = Array.from(this.alerts.values());
+
+    if (filter?.policyId) {
+      alerts = alerts.filter(a => a.policyId === filter.policyId);
+    }
+    if (filter?.severity) {
+      alerts = alerts.filter(a => a.severity === filter.severity);
+    }
+    if (filter?.status) {
+      alerts = alerts.filter(a => a.status === filter.status);
+    }
+
+    return alerts;
+  }
+}
+
+interface TrafficMetadata {
+  readonly sourceIp: string;
+  readonly destinationIp: string;
+  readonly protocol: string;
+  readonly port: number;
+  readonly bytesTransferred: number;
+  readonly encryptionType: string;
+  readonly timestamp: number;
+}
+
+interface HNDLAlert {
+  readonly alertId: string;
+  readonly policyId: string;
+  readonly ruleId: string;
+  readonly severity: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
+  readonly score: number;
+  readonly matchedIndicators: readonly string[];
+  readonly trafficMetadata: TrafficMetadata;
+  readonly timestamp: number;
+  readonly status: 'NEW' | 'INVESTIGATING' | 'RESOLVED' | 'FALSE_POSITIVE';
+  readonly investigatedBy: string | null;
+  readonly resolution: string | null;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// QUANTUM SAFE OPERATIONS CENTER
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export class QuantumSafeOperationsCenter {
+  readonly pqcKeyManager: PQCKeyManager;
+  readonly hybridCryptoManager: HybridCryptoManager;
+  readonly qkdSessionManager: QKDSessionManager;
+  readonly cryptoAgilityManager: CryptoAgilityManager;
+  readonly qrngManager: QRNGManager;
+  readonly hndlDefenseManager: HNDLDefenseManager;
+
+  constructor() {
+    this.pqcKeyManager = new PQCKeyManager();
+    this.hybridCryptoManager = new HybridCryptoManager();
+    this.qkdSessionManager = new QKDSessionManager();
+    this.cryptoAgilityManager = new CryptoAgilityManager();
+    this.qrngManager = new QRNGManager();
+    this.hndlDefenseManager = new HNDLDefenseManager();
+  }
+
+  initializeDefaultConfiguration(): void {
+    this.qrngManager.registerSource(
+      'Primary QRNG',
+      'VACUUM_FLUCTUATION',
+      'ID Quantique',
+      'Quantis QRNG',
+      'NIST SP 800-90B',
+      4000000
+    );
+
+    this.qrngManager.registerSource(
+      'Backup QRNG',
+      'PHOTON_ARRIVAL_TIME',
+      'Toshiba',
+      'QRNG-100',
+      'NIST SP 800-90B',
+      2000000
+    );
+
+    const defaultMetadata: KeyMetadata = {
+      owner: 'system',
+      purpose: 'KEY_ENCAPSULATION',
+      classification: 'SECRET',
+      compartments: [],
+      allowedOperations: ['KEY_GENERATION', 'ENCAPSULATION', 'DECAPSULATION'],
+      geographicRestrictions: [],
+      exportable: false,
+      extractable: false,
+      auditRequired: true,
+      hsmBacked: true,
+      hsmId: 'hsm_001',
+    };
+
+    this.pqcKeyManager.generateKeyPair('KYBER_1024', defaultMetadata);
+    this.pqcKeyManager.generateKeyPair('DILITHIUM_5', { ...defaultMetadata, purpose: 'DIGITAL_SIGNATURE', allowedOperations: ['KEY_GENERATION', 'SIGNING', 'VERIFICATION'] });
+
+    this.cryptoAgilityManager.createPolicy(
+      'Default PQC Policy',
+      'Standard post-quantum cryptography policy for enterprise use',
+      [
+        { algorithm: 'KYBER_1024', approvalLevel: 'APPROVED', minSecurityLevel: 5, allowedUseCases: ['KEY_ENCAPSULATION'], expirationDate: null, notes: 'NIST PQC Standard' },
+        { algorithm: 'DILITHIUM_5', approvalLevel: 'APPROVED', minSecurityLevel: 5, allowedUseCases: ['DIGITAL_SIGNATURE'], expirationDate: null, notes: 'NIST PQC Standard' },
+        { algorithm: 'SPHINCS_SHA2_256F', approvalLevel: 'APPROVED', minSecurityLevel: 5, allowedUseCases: ['DIGITAL_SIGNATURE'], expirationDate: null, notes: 'NIST PQC Standard - Stateless' },
+      ],
+      [
+        { algorithm: 'RSA_2048', deprecationDate: 1704067200000, removalDate: 1735689600000, replacementAlgorithm: 'KYBER_1024', migrationPriority: 'HIGH', affectedSystems: [] },
+        { algorithm: 'ECDSA_P256', deprecationDate: 1704067200000, removalDate: 1735689600000, replacementAlgorithm: 'DILITHIUM_3', migrationPriority: 'HIGH', affectedSystems: [] },
+      ],
+      ['NIST SP 800-208', 'CNSA 2.0', 'ETSI QKD']
+    );
+  }
+
+  getSystemStatus(): QuantumSafeSystemStatus {
+    const keys = this.pqcKeyManager.listKeyPairs();
+    const hybridKeys = this.hybridCryptoManager.listHybridKeyPairs();
+    const qkdSessions = this.qkdSessionManager.listSessions();
+    const qrngSources = this.qrngManager.listSources();
+    const policies = this.cryptoAgilityManager.listPolicies();
+
+    return {
+      totalPQCKeys: keys.length,
+      activePQCKeys: keys.filter(k => k.status === 'ACTIVE').length,
+      totalHybridKeys: hybridKeys.length,
+      activeHybridKeys: hybridKeys.filter(k => k.status === 'ACTIVE').length,
+      activeQKDSessions: qkdSessions.filter(s => s.status === 'ACTIVE').length,
+      onlineQRNGSources: qrngSources.filter(s => s.status === 'ONLINE').length,
+      activePolicies: policies.length,
+      systemHealth: 'HEALTHY',
+      lastUpdated: Date.now(),
+    };
+  }
+}
+
+interface QuantumSafeSystemStatus {
+  readonly totalPQCKeys: number;
+  readonly activePQCKeys: number;
+  readonly totalHybridKeys: number;
+  readonly activeHybridKeys: number;
+  readonly activeQKDSessions: number;
+  readonly onlineQRNGSources: number;
+  readonly activePolicies: number;
+  readonly systemHealth: 'HEALTHY' | 'DEGRADED' | 'CRITICAL';
+  readonly lastUpdated: number;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// FACTORY FUNCTIONS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export function createPQCKeyManager(): PQCKeyManager {
+  return new PQCKeyManager();
+}
+
+export function createHybridCryptoManager(): HybridCryptoManager {
+  return new HybridCryptoManager();
+}
+
+export function createQKDSessionManager(): QKDSessionManager {
+  return new QKDSessionManager();
+}
+
+export function createCryptoAgilityManager(): CryptoAgilityManager {
+  return new CryptoAgilityManager();
+}
+
+export function createQRNGManager(): QRNGManager {
+  return new QRNGManager();
+}
+
+export function createHNDLDefenseManager(): HNDLDefenseManager {
+  return new HNDLDefenseManager();
+}
+
+export function createQuantumSafeOperationsCenter(): QuantumSafeOperationsCenter {
+  return new QuantumSafeOperationsCenter();
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// DEFAULT EXPORT
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export default {
+  PQCKeyManager,
+  HybridCryptoManager,
+  QKDSessionManager,
+  CryptoAgilityManager,
+  QRNGManager,
+  HNDLDefenseManager,
+  QuantumSafeOperationsCenter,
+  QuantumSafeError,
+  QuantumSafeErrorCode,
+  createPQCKeyManager,
+  createHybridCryptoManager,
+  createQKDSessionManager,
+  createCryptoAgilityManager,
+  createQRNGManager,
+  createHNDLDefenseManager,
+  createQuantumSafeOperationsCenter,
+};

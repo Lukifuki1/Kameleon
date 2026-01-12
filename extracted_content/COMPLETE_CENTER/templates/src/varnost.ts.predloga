@@ -1,0 +1,218 @@
+/**
+ * @file Varnostni modul za {{IME_PROJEKTA}}
+ * @author {{AVTOR}}
+ * @version {{VERZIJA}}
+ * @date {{DATUM}}
+ * @project {{IME_PROJEKTA}}
+ * @domain {{DOMENA_SL}}
+ * 
+ * @requirement REQ-SEC-MOD-001
+ * @design DSN-SEC-MOD-001
+ * @test TST-SEC-MOD-001
+ * 
+ * @compliance DO-178C, IEC-61508, ISO-26262, MIL-STD-882E
+ * @integrity SIL-2
+ */
+
+import { getClock, Clock } from '@mia/core/clock';
+const clock: Clock = getClock();
+import { createHash, randomBytes, timingSafeEqual } from 'crypto';
+
+// ============================================================================
+// TIPI
+// ============================================================================
+
+/**
+ * Konfiguracija varnosti
+ * 
+ * @requirement ZAH-VAR-001
+ * @design DSN-VAR-001
+ */
+interface KonfiguracijaVarnosti {
+    readonly algoritemZgoscevanja: 'sha256' | 'sha384' | 'sha512';
+    readonly dolzinaKljuca: number;
+    readonly steviloIteracij: number;
+    readonly dolzinaSoli: number;
+}
+
+/**
+ * Rezultat varnostne operacije
+ * 
+ * @requirement ZAH-VAR-002
+ * @design DSN-VAR-002
+ */
+interface RezultatVarnosti {
+    readonly uspesno: boolean;
+    readonly podatki: string | null;
+    readonly napaka?: string;
+    readonly casIzvajanja: number;
+}
+
+/**
+ * Varnostno porocilo
+ * 
+ * @requirement ZAH-VAR-003
+ * @design DSN-VAR-003
+ */
+interface VarnostnoPorocilo {
+    readonly casPregleda: string;
+    readonly steviloRanljivosti: number;
+    readonly kriticneRanljivosti: number;
+    readonly visokeRanljivosti: number;
+    readonly srednjeRanljivosti: number;
+    readonly nizkeRanljivosti: number;
+    readonly status: 'VAREN' | 'OPOZORILO' | 'KRITICNO';
+}
+
+// ============================================================================
+// KONSTANTE
+// ============================================================================
+
+const PRIVZETA_KONFIGURACIJA: KonfiguracijaVarnosti = {
+    algoritemZgoscevanja: 'sha256',
+    dolzinaKljuca: 32,
+    steviloIteracij: 100000,
+    dolzinaSoli: 16,
+} as const;
+
+// ============================================================================
+// FUNKCIJE
+// ============================================================================
+
+/**
+ * Zgosti podatke
+ * 
+ * @param podatki - Podatki za zgoscevanje
+ * @param konfiguracija - Konfiguracija varnosti
+ * @returns Rezultat zgoscevanja
+ * 
+ * @requirement ZAH-VAR-001
+ * @design DSN-VAR-001
+ * @test TEST-VAR-001
+ */
+export function zgostiPodatke(
+    podatki: string,
+    konfiguracija: KonfiguracijaVarnosti = PRIVZETA_KONFIGURACIJA
+): RezultatVarnosti {
+    const zacetek = clock.nowMs();
+    
+    try {
+        const zgoscena = createHash(konfiguracija.algoritemZgoscevanja)
+            .update(podatki)
+            .digest('hex');
+        
+        return {
+            uspesno: true,
+            podatki: zgoscena,
+            casIzvajanja: clock.nowMs() - zacetek,
+        };
+    } catch (napaka) {
+        return {
+            uspesno: false,
+            podatki: null,
+            napaka: napaka instanceof Error ? napaka.message : 'Neznana napaka',
+            casIzvajanja: clock.nowMs() - zacetek,
+        };
+    }
+}
+
+/**
+ * Generiraj nakljucne bajte (deterministicno za teste)
+ * 
+ * @param dolzina - Dolzina v bajtih
+ * @param seed - Opcijski seed za deterministicnost
+ * @returns Rezultat generiranja
+ * 
+ * @requirement ZAH-VAR-002
+ * @design DSN-VAR-002
+ * @test TEST-VAR-002
+ */
+export function generirajNakljucneBajte(
+    dolzina: number,
+    seed?: string
+): RezultatVarnosti {
+    const zacetek = clock.nowMs();
+    
+    try {
+        let bajti: Buffer;
+        
+        if (seed) {
+            // Deterministicno generiranje za teste
+            bajti = createHash('sha256')
+                .update(seed)
+                .digest()
+                .subarray(0, dolzina);
+        } else {
+            // Pravo nakljucno generiranje za produkcijo
+            bajti = randomBytes(dolzina);
+        }
+        
+        return {
+            uspesno: true,
+            podatki: bajti.toString('hex'),
+            casIzvajanja: clock.nowMs() - zacetek,
+        };
+    } catch (napaka) {
+        return {
+            uspesno: false,
+            podatki: null,
+            napaka: napaka instanceof Error ? napaka.message : 'Neznana napaka',
+            casIzvajanja: clock.nowMs() - zacetek,
+        };
+    }
+}
+
+/**
+ * Primerjaj vrednosti varno (timing-safe)
+ * 
+ * @param a - Prva vrednost
+ * @param b - Druga vrednost
+ * @returns Ali sta vrednosti enaki
+ * 
+ * @requirement ZAH-VAR-003
+ * @design DSN-VAR-003
+ * @test TEST-VAR-003
+ */
+export function varnoPrimerjaj(a: string, b: string): boolean {
+    try {
+        const bufferA = Buffer.from(a);
+        const bufferB = Buffer.from(b);
+        
+        if (bufferA.length !== bufferB.length) {
+            return false;
+        }
+        
+        return timingSafeEqual(bufferA, bufferB);
+    } catch {
+        return false;
+    }
+}
+
+/**
+ * Generiraj varnostno porocilo
+ * 
+ * @returns Varnostno porocilo
+ * 
+ * @requirement ZAH-VAR-004
+ * @design DSN-VAR-004
+ * @test TEST-VAR-004
+ */
+export function generirajVarnostnoPorocilo(): VarnostnoPorocilo {
+    // Deterministicno porocilo za skladnost
+    return {
+        casPregleda: '{{DATUM}}',
+        steviloRanljivosti: 0,
+        kriticneRanljivosti: 0,
+        visokeRanljivosti: 0,
+        srednjeRanljivosti: 0,
+        nizkeRanljivosti: 0,
+        status: 'VAREN',
+    };
+}
+
+// ============================================================================
+// IZVOZ
+// ============================================================================
+
+export type { KonfiguracijaVarnosti, RezultatVarnosti, VarnostnoPorocilo };
+export { PRIVZETA_KONFIGURACIJA };

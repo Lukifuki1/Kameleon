@@ -1,0 +1,101 @@
+openapi: 3.0.3
+info:
+  title: VARNOSTNI_SISTEMI API
+  description: |
+    API za VARNOSTNI_SISTEMI domeno MIA BUILD sistema.
+    Zagotavlja deterministicno generiranje in upravljanje komponent.
+  version: "{{VERZIJA}}"
+  contact:
+    name: "{{AVTOR}}"
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: "${API_BASE_URL}"
+    description: Produkcijski streznik
+
+paths:
+  /api/v1/varnostni_sistemi/status:
+    get:
+      summary: Pridobi status sistema
+      operationId: getStatus
+      responses:
+        '200':
+          description: Uspesno pridobljen status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatusResponse'
+
+  /api/v1/varnostni_sistemi/build:
+    post:
+      summary: Sprozi gradnjo
+      operationId: triggerBuild
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BuildRequest'
+      responses:
+        '202':
+          description: Gradnja sprejeta
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BuildResponse'
+
+  /health:
+    get:
+      summary: Zdravstveni pregled
+      operationId: healthCheck
+      responses:
+        '200':
+          description: Sistem je zdrav
+
+components:
+  schemas:
+    StatusResponse:
+      type: object
+      required: [status, domain, version]
+      properties:
+        status:
+          type: string
+          enum: [READY, BUSY, ERROR]
+        domain:
+          type: string
+        version:
+          type: string
+
+    BuildRequest:
+      type: object
+      required: [projectName, configuration]
+      properties:
+        projectName:
+          type: string
+        configuration:
+          type: object
+        profile:
+          type: string
+          enum: [enterprise, regulated, defense]
+
+    BuildResponse:
+      type: object
+      required: [buildId, status]
+      properties:
+        buildId:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [QUEUED, RUNNING, COMPLETED, FAILED]
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+security:
+  - bearerAuth: []

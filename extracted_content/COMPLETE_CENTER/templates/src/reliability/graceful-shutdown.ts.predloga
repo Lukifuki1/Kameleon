@@ -1,0 +1,635 @@
+/**
+ * {{IME_PROJEKTA}} - Graceful Shutdown System
+ * Domain: {{DOMENA_SL}}
+ * 
+ * @requirement REQ-SEC-GS-001
+ * @design DSN-SEC-GS-001
+ * @test TST-SEC-GS-001
+ * 
+ * Sistem za elegantno zaustavitev varnostnega sistema.
+ * Skladen z DO-178C, IEC 61508, ISO 26262, MIL-STD-882E standardi.
+ * 
+ * @module reliability/graceful-shutdown
+ */
+
+// ============================================================================
+// TIPI IN VMESNIKI
+// ============================================================================
+
+/**
+ * Faza zaustavitve
+ */
+export enum ShutdownPhase {
+    /** Normalno delovanje */
+    RUNNING = 'running',
+    /** Zaustavitev v teku */
+    SHUTTING_DOWN = 'shutting_down',
+    /** Čakanje na dokončanje operacij */
+    DRAINING = 'draining',
+    /** Čiščenje virov */
+    CLEANUP = 'cleanup',
+    /** Zaustavljen */
+    STOPPED = 'stopped'
+}
+
+/**
+ * Prioriteta zaustavitve
+ */
+export enum ShutdownPriority {
+    /** Kritično - najprej zaustavi */
+    CRITICAL = 0,
+    /** Visoko */
+    HIGH = 1,
+    /** Normalno */
+    NORMAL = 2,
+    /** Nizko - zadnje zaustavi */
+    LOW = 3
+}
+
+/**
+ * Handler za zaustavitev
+ */
+export interface ShutdownHandler {
+    /** Ime handlerja */
+    readonly name: string;
+    /** Prioriteta */
+    readonly priority: ShutdownPriority;
+    /** Timeout (ms) */
+    readonly timeout: number;
+    /** Funkcija za zaustavitev */
+    readonly handler: () => Promise<void>;
+    /** Ali je kritičen */
+    readonly critical: boolean;
+}
+
+/**
+ * Rezultat zaustavitve handlerja
+ */
+export interface ShutdownHandlerResult {
+    /** Ime handlerja */
+    readonly name: string;
+    /** Ali je uspelo */
+    readonly success: boolean;
+    /** Trajanje (ms) */
+    readonly duration: number;
+    /** Napaka */
+    readonly error?: string;
+}
+
+/**
+ * Rezultat zaustavitve
+ */
+export interface ShutdownResult {
+    /** Ali je uspelo */
+    readonly success: boolean;
+    /** Skupno trajanje (ms) */
+    readonly totalDuration: number;
+    /** Rezultati handlerjev */
+    readonly handlers: ShutdownHandlerResult[];
+    /** Faza ob zaključku */
+    readonly finalPhase: ShutdownPhase;
+    /** Razlog zaustavitve */
+    readonly reason: string;
+}
+
+/**
+ * Konfiguracija sistema za zaustavitev
+ */
+export interface ShutdownConfig {
+    /** Skupni timeout (ms) */
+    readonly timeout: number;
+    /** Čas za draining (ms) */
+    readonly drainTimeout: number;
+    /** Ali naj se izvede prisilna zaustavitev ob timeout */
+    readonly forceOnTimeout: boolean;
+    /** Callback pred zaustavitvijo */
+    readonly beforeShutdown?: () => Promise<void>;
+    /** Callback po zaustavitvi */
+    readonly afterShutdown?: (result: ShutdownResult) => Promise<void>;
+}
+
+// ============================================================================
+// POMOŽNE FUNKCIJE
+// ============================================================================
+
+/**
+ * Izvede funkcijo s timeoutom
+ */
+async function withTimeout<T>(
+    promise: Promise<T>,
+    timeoutMs: number,
+    errorMessage: string
+): Promise<T> {
+    let timeoutHandle: ReturnType<typeof setTimeout>;
+    
+    const timeoutPromise = new Promise<never>((_, reject) => {
+        timeoutHandle = setTimeout(() => {
+            reject(new Error(errorMessage));
+        }, timeoutMs);
+    });
+
+    try {
+        const result = await Promise.race([promise, timeoutPromise]);
+        clearTimeout(timeoutHandle!);
+        return result;
+    } catch (error) {
+        clearTimeout(timeoutHandle!);
+        throw error;
+    }
+}
+
+// ============================================================================
+// GLAVNA IMPLEMENTACIJA
+// ============================================================================
+
+/**
+ * Upravljalec elegantne zaustavitve
+ * 
+ * Zagotavlja varno zaustavitev varnostnega sistema z ohranitvijo
+ * integritete podatkov in pravilnim čiščenjem virov.
+ */
+export class GracefulShutdownManager {
+    private readonly config: ShutdownConfig;
+    private readonly handlers: Map<string, ShutdownHandler>;
+    private currentPhase: ShutdownPhase;
+    private shutdownPromise: Promise<ShutdownResult> | null;
+    private activeConnections: number;
+    private isShuttingDown: boolean;
+
+    constructor(config: ShutdownConfig) {
+        this.config = config;
+        this.handlers = new Map();
+        this.currentPhase = ShutdownPhase.RUNNING;
+        this.shutdownPromise = null;
+        this.activeConnections = 0;
+        this.isShuttingDown = false;
+
+        // Registriraj sistemske signale
+        this.registerSignalHandlers();
+    }
+
+    /**
+     * Registrira handler za zaustavitev
+     */
+    register(handler: ShutdownHandler): void {
+        if (this.isShuttingDown) {
+            throw new Error('Cannot register handler during shutdown');
+        }
+        this.handlers.set(handler.name, handler);
+    }
+
+    /**
+     * Odstrani handler za zaustavitev
+     */
+    unregister(name: string): boolean {
+        if (this.isShuttingDown) {
+            throw new Error('Cannot unregister handler during shutdown');
+        }
+        return this.handlers.delete(name);
+    }
+
+    /**
+     * Pridobi trenutno fazo
+     */
+    getPhase(): ShutdownPhase {
+        return this.currentPhase;
+    }
+
+    /**
+     * Ali je v fazi zaustavitve
+     */
+    isInShutdown(): boolean {
+        return this.isShuttingDown;
+    }
+
+    /**
+     * Poveča število aktivnih povezav
+     */
+    incrementConnections(): void {
+        if (!this.isShuttingDown) {
+            this.activeConnections++;
+        }
+    }
+
+    /**
+     * Zmanjša število aktivnih povezav
+     */
+    decrementConnections(): void {
+        if (this.activeConnections > 0) {
+            this.activeConnections--;
+        }
+    }
+
+    /**
+     * Pridobi število aktivnih povezav
+     */
+    getActiveConnections(): number {
+        return this.activeConnections;
+    }
+
+    /**
+     * Sproži elegantno zaustavitev
+     */
+    async shutdown(reason: string = 'Manual shutdown'): Promise<ShutdownResult> {
+        // Če je zaustavitev že v teku, vrni obstoječo obljubo
+        if (this.shutdownPromise !== null) {
+            return this.shutdownPromise;
+        }
+
+        this.isShuttingDown = true;
+        this.shutdownPromise = this.executeShutdown(reason);
+        
+        return this.shutdownPromise;
+    }
+
+    /**
+     * Izvede zaustavitev
+     */
+    private async executeShutdown(reason: string): Promise<ShutdownResult> {
+        const startTime = Date.now();
+        const handlerResults: ShutdownHandlerResult[] = [];
+
+        try {
+            // Faza 1: Pred zaustavitvijo
+            this.currentPhase = ShutdownPhase.SHUTTING_DOWN;
+            console.log(`[SHUTDOWN] Starting graceful shutdown: ${reason}`);
+
+            if (this.config.beforeShutdown !== undefined) {
+                await this.config.beforeShutdown();
+            }
+
+            // Faza 2: Draining - počakaj na dokončanje aktivnih povezav
+            this.currentPhase = ShutdownPhase.DRAINING;
+            console.log(`[SHUTDOWN] Draining ${this.activeConnections} active connections...`);
+
+            await this.drainConnections();
+
+            // Faza 3: Izvedi handlerje po prioriteti
+            this.currentPhase = ShutdownPhase.CLEANUP;
+            console.log('[SHUTDOWN] Executing shutdown handlers...');
+
+            const sortedHandlers = this.getSortedHandlers();
+
+            for (const handler of sortedHandlers) {
+                const result = await this.executeHandler(handler);
+                handlerResults.push(result);
+
+                if (!result.success && handler.critical) {
+                    console.error(`[SHUTDOWN] Critical handler '${handler.name}' failed: ${result.error}`);
+                }
+            }
+
+            // Faza 4: Zaključek
+            this.currentPhase = ShutdownPhase.STOPPED;
+            const totalDuration = Date.now() - startTime;
+
+            const result: ShutdownResult = {
+                success: handlerResults.every(r => r.success || !this.handlers.get(r.name)?.critical),
+                totalDuration,
+                handlers: handlerResults,
+                finalPhase: this.currentPhase,
+                reason
+            };
+
+            console.log(`[SHUTDOWN] Shutdown completed in ${totalDuration}ms`);
+
+            if (this.config.afterShutdown !== undefined) {
+                await this.config.afterShutdown(result);
+            }
+
+            return result;
+
+        } catch (error) {
+            const totalDuration = Date.now() - startTime;
+            const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+
+            console.error(`[SHUTDOWN] Shutdown failed: ${errorMessage}`);
+
+            return {
+                success: false,
+                totalDuration,
+                handlers: handlerResults,
+                finalPhase: this.currentPhase,
+                reason: `${reason} (failed: ${errorMessage})`
+            };
+        }
+    }
+
+    /**
+     * Počaka na dokončanje aktivnih povezav
+     */
+    private async drainConnections(): Promise<void> {
+        const drainStart = Date.now();
+
+        while (this.activeConnections > 0) {
+            const elapsed = Date.now() - drainStart;
+
+            if (elapsed >= this.config.drainTimeout) {
+                console.warn(`[SHUTDOWN] Drain timeout reached with ${this.activeConnections} connections remaining`);
+                break;
+            }
+
+            // Počakaj 100ms pred ponovnim preverjanjem
+            await new Promise(resolve => setTimeout(resolve, 100));
+        }
+
+        console.log('[SHUTDOWN] Draining completed');
+    }
+
+    /**
+     * Pridobi handlerje sortirane po prioriteti
+     */
+    private getSortedHandlers(): ShutdownHandler[] {
+        return Array.from(this.handlers.values())
+            .sort((a, b) => a.priority - b.priority);
+    }
+
+    /**
+     * Izvede posamezen handler
+     */
+    private async executeHandler(handler: ShutdownHandler): Promise<ShutdownHandlerResult> {
+        const startTime = Date.now();
+
+        try {
+            console.log(`[SHUTDOWN] Executing handler: ${handler.name}`);
+
+            await withTimeout(
+                handler.handler(),
+                handler.timeout,
+                `Handler '${handler.name}' timed out after ${handler.timeout}ms`
+            );
+
+            const duration = Date.now() - startTime;
+            console.log(`[SHUTDOWN] Handler '${handler.name}' completed in ${duration}ms`);
+
+            return {
+                name: handler.name,
+                success: true,
+                duration
+            };
+
+        } catch (error) {
+            const duration = Date.now() - startTime;
+            const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+
+            console.error(`[SHUTDOWN] Handler '${handler.name}' failed: ${errorMessage}`);
+
+            return {
+                name: handler.name,
+                success: false,
+                duration,
+                error: errorMessage
+            };
+        }
+    }
+
+    /**
+     * Registrira sistemske signale
+     */
+    private registerSignalHandlers(): void {
+        const signals: NodeJS.Signals[] = ['SIGTERM', 'SIGINT', 'SIGHUP'];
+
+        for (const signal of signals) {
+            process.on(signal, () => {
+                console.log(`[SHUTDOWN] Received ${signal}`);
+                this.shutdown(`Signal: ${signal}`).then(result => {
+                    process.exit(result.success ? 0 : 1);
+                }).catch(error => {
+                    console.error('[SHUTDOWN] Fatal error during shutdown:', error);
+                    process.exit(1);
+                });
+            });
+        }
+
+        // Obravnava nepričakovanih napak
+        process.on('uncaughtException', (error) => {
+            console.error('[SHUTDOWN] Uncaught exception:', error);
+            this.shutdown('Uncaught exception').then(() => {
+                process.exit(1);
+            }).catch(() => {
+                process.exit(1);
+            });
+        });
+
+        process.on('unhandledRejection', (reason) => {
+            console.error('[SHUTDOWN] Unhandled rejection:', reason);
+            this.shutdown('Unhandled rejection').then(() => {
+                process.exit(1);
+            }).catch(() => {
+                process.exit(1);
+            });
+        });
+    }
+}
+
+// ============================================================================
+// VGRAJENI HANDLERJI ZA VARNOSTNE SISTEME
+// ============================================================================
+
+/**
+ * Handler za zaustavitev HTTP strežnika
+ */
+export function createHttpServerShutdownHandler(
+    name: string,
+    closeServer: () => Promise<void>,
+    timeout: number = 30000
+): ShutdownHandler {
+    return {
+        name,
+        priority: ShutdownPriority.HIGH,
+        timeout,
+        critical: false,
+        handler: async () => {
+            console.log(`[SHUTDOWN] Closing HTTP server: ${name}`);
+            await closeServer();
+        }
+    };
+}
+
+/**
+ * Handler za zaustavitev podatkovne baze
+ */
+export function createDatabaseShutdownHandler(
+    name: string,
+    closeConnection: () => Promise<void>,
+    timeout: number = 10000
+): ShutdownHandler {
+    return {
+        name,
+        priority: ShutdownPriority.NORMAL,
+        timeout,
+        critical: true,
+        handler: async () => {
+            console.log(`[SHUTDOWN] Closing database connection: ${name}`);
+            await closeConnection();
+        }
+    };
+}
+
+/**
+ * Handler za zaustavitev Redis
+ */
+export function createRedisShutdownHandler(
+    name: string,
+    closeConnection: () => Promise<void>,
+    timeout: number = 5000
+): ShutdownHandler {
+    return {
+        name,
+        priority: ShutdownPriority.NORMAL,
+        timeout,
+        critical: false,
+        handler: async () => {
+            console.log(`[SHUTDOWN] Closing Redis connection: ${name}`);
+            await closeConnection();
+        }
+    };
+}
+
+/**
+ * Handler za zaustavitev Vault povezave
+ */
+export function createVaultShutdownHandler(
+    name: string,
+    revokeToken: () => Promise<void>,
+    timeout: number = 5000
+): ShutdownHandler {
+    return {
+        name,
+        priority: ShutdownPriority.CRITICAL,
+        timeout,
+        critical: true,
+        handler: async () => {
+            console.log(`[SHUTDOWN] Revoking Vault token: ${name}`);
+            await revokeToken();
+        }
+    };
+}
+
+/**
+ * Handler za zaustavitev HSM povezave
+ */
+export function createHsmShutdownHandler(
+    name: string,
+    closeSession: () => Promise<void>,
+    timeout: number = 10000
+): ShutdownHandler {
+    return {
+        name,
+        priority: ShutdownPriority.CRITICAL,
+        timeout,
+        critical: true,
+        handler: async () => {
+            console.log(`[SHUTDOWN] Closing HSM session: ${name}`);
+            await closeSession();
+        }
+    };
+}
+
+/**
+ * Handler za shranjevanje revizijske sledi
+ */
+export function createAuditFlushHandler(
+    name: string,
+    flushAuditLogs: () => Promise<void>,
+    timeout: number = 30000
+): ShutdownHandler {
+    return {
+        name,
+        priority: ShutdownPriority.CRITICAL,
+        timeout,
+        critical: true,
+        handler: async () => {
+            console.log(`[SHUTDOWN] Flushing audit logs: ${name}`);
+            await flushAuditLogs();
+        }
+    };
+}
+
+/**
+ * Handler za shranjevanje metrik
+ */
+export function createMetricsFlushHandler(
+    name: string,
+    flushMetrics: () => Promise<void>,
+    timeout: number = 10000
+): ShutdownHandler {
+    return {
+        name,
+        priority: ShutdownPriority.LOW,
+        timeout,
+        critical: false,
+        handler: async () => {
+            console.log(`[SHUTDOWN] Flushing metrics: ${name}`);
+            await flushMetrics();
+        }
+    };
+}
+
+/**
+ * Handler za zaustavitev message queue
+ */
+export function createMessageQueueShutdownHandler(
+    name: string,
+    closeConnection: () => Promise<void>,
+    timeout: number = 10000
+): ShutdownHandler {
+    return {
+        name,
+        priority: ShutdownPriority.NORMAL,
+        timeout,
+        critical: false,
+        handler: async () => {
+            console.log(`[SHUTDOWN] Closing message queue: ${name}`);
+            await closeConnection();
+        }
+    };
+}
+
+/**
+ * Handler za čiščenje začasnih datotek
+ */
+export function createTempFilesCleanupHandler(
+    name: string,
+    cleanupFiles: () => Promise<void>,
+    timeout: number = 5000
+): ShutdownHandler {
+    return {
+        name,
+        priority: ShutdownPriority.LOW,
+        timeout,
+        critical: false,
+        handler: async () => {
+            console.log(`[SHUTDOWN] Cleaning up temp files: ${name}`);
+            await cleanupFiles();
+        }
+    };
+}
+
+// ============================================================================
+// TOVARNIŠKA FUNKCIJA
+// ============================================================================
+
+/**
+ * Ustvari upravljalca elegantne zaustavitve
+ */
+export function createGracefulShutdownManager(
+    config?: Partial<ShutdownConfig>
+): GracefulShutdownManager {
+    const defaultConfig: ShutdownConfig = {
+        timeout: 60000,
+        drainTimeout: 30000,
+        forceOnTimeout: true
+    };
+
+    return new GracefulShutdownManager({
+        ...defaultConfig,
+        ...config
+    });
+}
+
+// ============================================================================
+// IZVOZ
+// ============================================================================
+
+export default GracefulShutdownManager;

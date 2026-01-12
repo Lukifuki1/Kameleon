@@ -1,0 +1,1312 @@
+/**
+ * @file Network Security - Enterprise Network Security Framework
+ * @author {{AVTOR}}
+ * @version {{VERZIJA}}
+ * @date {{DATUM}}
+ * @project {{IME_PROJEKTA}}
+ * @domain VARNOSTNI_SISTEMI
+ * 
+ * @requirement REQ-SEC-NET-001
+ * @design DSN-SEC-NET-001
+ * @test TST-SEC-NET-001
+ * 
+ * @description
+ * Enterprise-grade Network Security framework implementing firewall management,
+ * IDS/IPS, network segmentation, DLP, VPN, Zero Trust Network Access,
+ * network monitoring, and traffic analysis with full UI/UX center integration.
+ * 
+ * @compliance NIST CSF, ISO 27001, PCI DSS, CIS Controls
+ * @classification CONFIDENTIAL - Network Security Operations
+ */
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// NETWORK SECURITY TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export type FirewallType =
+  | 'PACKET_FILTER' | 'STATEFUL' | 'APPLICATION' | 'NEXT_GEN'
+  | 'WAF' | 'CLOUD' | 'HOST_BASED' | 'VIRTUAL';
+
+export type FirewallVendor =
+  | 'PALO_ALTO' | 'FORTINET' | 'CISCO' | 'CHECK_POINT'
+  | 'JUNIPER' | 'SOPHOS' | 'BARRACUDA' | 'ZSCALER'
+  | 'CLOUDFLARE' | 'AWS_WAF' | 'AZURE_FIREWALL' | 'GCP_ARMOR';
+
+export type RuleAction = 'ALLOW' | 'DENY' | 'DROP' | 'REJECT' | 'LOG' | 'ALERT' | 'QUARANTINE';
+
+export type Protocol = 'TCP' | 'UDP' | 'ICMP' | 'SCTP' | 'GRE' | 'ESP' | 'AH' | 'ANY';
+
+export type IDSMode = 'INLINE' | 'TAP' | 'SPAN' | 'PASSIVE';
+
+export type ThreatCategory =
+  | 'MALWARE' | 'EXPLOIT' | 'COMMAND_AND_CONTROL' | 'PHISHING'
+  | 'DATA_EXFILTRATION' | 'LATERAL_MOVEMENT' | 'RECONNAISSANCE'
+  | 'DENIAL_OF_SERVICE' | 'BRUTE_FORCE' | 'POLICY_VIOLATION';
+
+export type NetworkZone =
+  | 'INTERNET' | 'DMZ' | 'INTERNAL' | 'MANAGEMENT'
+  | 'GUEST' | 'IOT' | 'OT' | 'QUARANTINE' | 'TRUSTED';
+
+export type SegmentationType =
+  | 'VLAN' | 'VXLAN' | 'MICROSEGMENTATION' | 'SDN'
+  | 'FIREWALL_ZONE' | 'VRF' | 'NAMESPACE';
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// FIREWALL TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface Firewall {
+  readonly firewallId: string;
+  readonly name: string;
+  readonly description: string;
+  readonly type: FirewallType;
+  readonly vendor: FirewallVendor;
+  readonly model: string;
+  readonly version: string;
+  readonly location: FirewallLocation;
+  readonly interfaces: readonly NetworkInterface[];
+  readonly zones: readonly FirewallZone[];
+  readonly policies: readonly FirewallPolicy[];
+  readonly natRules: readonly NATRule[];
+  readonly status: FirewallStatus;
+  readonly highAvailability: HAConfig | null;
+  readonly logging: LoggingConfig;
+  readonly metadata: FirewallMetadata;
+}
+
+export interface FirewallLocation {
+  readonly site: string;
+  readonly datacenter: string | null;
+  readonly rack: string | null;
+  readonly position: string | null;
+  readonly region: string | null;
+  readonly availabilityZone: string | null;
+}
+
+export interface NetworkInterface {
+  readonly interfaceId: string;
+  readonly name: string;
+  readonly type: 'PHYSICAL' | 'VIRTUAL' | 'TUNNEL' | 'LOOPBACK' | 'AGGREGATE';
+  readonly ipAddress: string | null;
+  readonly subnetMask: string | null;
+  readonly gateway: string | null;
+  readonly vlan: number | null;
+  readonly zone: string;
+  readonly speed: number | null;
+  readonly duplex: 'FULL' | 'HALF' | 'AUTO' | null;
+  readonly status: 'UP' | 'DOWN' | 'ADMIN_DOWN';
+  readonly mtu: number;
+}
+
+export interface FirewallZone {
+  readonly zoneId: string;
+  readonly name: string;
+  readonly type: NetworkZone;
+  readonly interfaces: readonly string[];
+  readonly defaultAction: RuleAction;
+  readonly logDefault: boolean;
+  readonly description: string;
+}
+
+export interface FirewallPolicy {
+  readonly policyId: string;
+  readonly name: string;
+  readonly description: string;
+  readonly enabled: boolean;
+  readonly order: number;
+  readonly sourceZones: readonly string[];
+  readonly destinationZones: readonly string[];
+  readonly rules: readonly FirewallRule[];
+  readonly schedule: PolicySchedule | null;
+  readonly logging: boolean;
+  readonly hitCount: number;
+  readonly lastHit: number | null;
+  readonly metadata: PolicyMetadata;
+}
+
+export interface FirewallRule {
+  readonly ruleId: string;
+  readonly name: string;
+  readonly description: string;
+  readonly enabled: boolean;
+  readonly order: number;
+  readonly action: RuleAction;
+  readonly source: RuleEndpoint;
+  readonly destination: RuleEndpoint;
+  readonly service: RuleService;
+  readonly application: readonly string[];
+  readonly user: readonly string[];
+  readonly schedule: string | null;
+  readonly logging: RuleLogging;
+  readonly securityProfile: SecurityProfile | null;
+  readonly hitCount: number;
+  readonly lastHit: number | null;
+  readonly createdAt: number;
+  readonly createdBy: string;
+  readonly modifiedAt: number;
+  readonly modifiedBy: string;
+}
+
+export interface RuleEndpoint {
+  readonly addresses: readonly string[];
+  readonly addressGroups: readonly string[];
+  readonly regions: readonly string[];
+  readonly negate: boolean;
+}
+
+export interface RuleService {
+  readonly protocols: readonly Protocol[];
+  readonly ports: readonly PortRange[];
+  readonly serviceGroups: readonly string[];
+  readonly applications: readonly string[];
+}
+
+export interface PortRange {
+  readonly start: number;
+  readonly end: number;
+  readonly protocol: Protocol;
+}
+
+export interface RuleLogging {
+  readonly enabled: boolean;
+  readonly logStart: boolean;
+  readonly logEnd: boolean;
+  readonly logDeny: boolean;
+  readonly logLevel: 'DEBUG' | 'INFO' | 'WARNING' | 'ERROR';
+}
+
+export interface SecurityProfile {
+  readonly antivirusProfile: string | null;
+  readonly antiSpywareProfile: string | null;
+  readonly vulnerabilityProfile: string | null;
+  readonly urlFilteringProfile: string | null;
+  readonly fileBlockingProfile: string | null;
+  readonly dataFilteringProfile: string | null;
+  readonly wildFireProfile: string | null;
+}
+
+export interface PolicySchedule {
+  readonly scheduleId: string;
+  readonly name: string;
+  readonly type: 'RECURRING' | 'NON_RECURRING';
+  readonly startTime: string | null;
+  readonly endTime: string | null;
+  readonly daysOfWeek: readonly number[];
+  readonly timezone: string;
+}
+
+export interface PolicyMetadata {
+  readonly createdAt: number;
+  readonly createdBy: string;
+  readonly modifiedAt: number;
+  readonly modifiedBy: string;
+  readonly tags: readonly string[];
+  readonly ticketId: string | null;
+  readonly changeRequestId: string | null;
+  readonly expiresAt: number | null;
+}
+
+export interface NATRule {
+  readonly natRuleId: string;
+  readonly name: string;
+  readonly description: string;
+  readonly enabled: boolean;
+  readonly type: 'SNAT' | 'DNAT' | 'BINAT' | 'PAT';
+  readonly originalSource: string;
+  readonly originalDestination: string;
+  readonly originalPort: number | null;
+  readonly translatedSource: string | null;
+  readonly translatedDestination: string | null;
+  readonly translatedPort: number | null;
+  readonly interface: string;
+  readonly hitCount: number;
+}
+
+export interface FirewallStatus {
+  readonly status: 'ONLINE' | 'OFFLINE' | 'DEGRADED' | 'MAINTENANCE';
+  readonly cpuUsage: number;
+  readonly memoryUsage: number;
+  readonly sessionCount: number;
+  readonly maxSessions: number;
+  readonly throughput: number;
+  readonly packetsPerSecond: number;
+  readonly lastSync: number | null;
+  readonly configVersion: string;
+}
+
+export interface HAConfig {
+  readonly enabled: boolean;
+  readonly mode: 'ACTIVE_PASSIVE' | 'ACTIVE_ACTIVE' | 'CLUSTER';
+  readonly priority: number;
+  readonly peerAddress: string;
+  readonly heartbeatInterface: string;
+  readonly preempt: boolean;
+  readonly failoverTime: number;
+  readonly state: 'PRIMARY' | 'SECONDARY' | 'STANDALONE';
+}
+
+export interface LoggingConfig {
+  readonly enabled: boolean;
+  readonly destinations: readonly LogDestination[];
+  readonly format: 'SYSLOG' | 'CEF' | 'LEEF' | 'JSON';
+  readonly severity: 'DEBUG' | 'INFO' | 'WARNING' | 'ERROR' | 'CRITICAL';
+  readonly includeTraffic: boolean;
+  readonly includeThreat: boolean;
+  readonly includeSystem: boolean;
+}
+
+export interface LogDestination {
+  readonly type: 'SYSLOG' | 'SIEM' | 'CLOUD' | 'LOCAL';
+  readonly address: string;
+  readonly port: number;
+  readonly protocol: 'UDP' | 'TCP' | 'TLS';
+  readonly facility: number;
+}
+
+export interface FirewallMetadata {
+  readonly createdAt: number;
+  readonly createdBy: string;
+  readonly updatedAt: number;
+  readonly updatedBy: string;
+  readonly tags: readonly string[];
+  readonly complianceFrameworks: readonly string[];
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// IDS/IPS TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface IDSSystem {
+  readonly idsId: string;
+  readonly name: string;
+  readonly description: string;
+  readonly type: 'IDS' | 'IPS' | 'HYBRID';
+  readonly mode: IDSMode;
+  readonly vendor: string;
+  readonly version: string;
+  readonly sensors: readonly IDSSensor[];
+  readonly signatures: SignatureDatabase;
+  readonly policies: readonly IDSPolicy[];
+  readonly status: IDSStatus;
+  readonly tuning: IDSTuning;
+  readonly metadata: IDSMetadata;
+}
+
+export interface IDSSensor {
+  readonly sensorId: string;
+  readonly name: string;
+  readonly location: string;
+  readonly interfaces: readonly string[];
+  readonly mode: IDSMode;
+  readonly status: 'ACTIVE' | 'INACTIVE' | 'LEARNING' | 'MAINTENANCE';
+  readonly throughput: number;
+  readonly alertsPerSecond: number;
+  readonly droppedPackets: number;
+}
+
+export interface SignatureDatabase {
+  readonly version: string;
+  readonly lastUpdate: number;
+  readonly totalSignatures: number;
+  readonly enabledSignatures: number;
+  readonly customSignatures: number;
+  readonly categories: readonly SignatureCategory[];
+}
+
+export interface SignatureCategory {
+  readonly categoryId: string;
+  readonly name: string;
+  readonly description: string;
+  readonly signatureCount: number;
+  readonly enabled: boolean;
+  readonly defaultAction: RuleAction;
+}
+
+export interface IDSPolicy {
+  readonly policyId: string;
+  readonly name: string;
+  readonly description: string;
+  readonly enabled: boolean;
+  readonly sensors: readonly string[];
+  readonly rules: readonly IDSRule[];
+  readonly thresholds: readonly AlertThreshold[];
+  readonly responses: readonly AutoResponse[];
+}
+
+export interface IDSRule {
+  readonly ruleId: string;
+  readonly signatureId: string;
+  readonly name: string;
+  readonly description: string;
+  readonly enabled: boolean;
+  readonly action: RuleAction;
+  readonly severity: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW' | 'INFO';
+  readonly category: ThreatCategory;
+  readonly cve: readonly string[];
+  readonly mitre: readonly string[];
+  readonly customThreshold: AlertThreshold | null;
+}
+
+export interface AlertThreshold {
+  readonly type: 'COUNT' | 'RATE' | 'BOTH';
+  readonly count: number;
+  readonly timeWindow: number;
+  readonly trackBy: 'SOURCE' | 'DESTINATION' | 'BOTH' | 'SIGNATURE';
+}
+
+export interface AutoResponse {
+  readonly responseId: string;
+  readonly name: string;
+  readonly trigger: ResponseTrigger;
+  readonly actions: readonly ResponseAction[];
+  readonly enabled: boolean;
+  readonly cooldown: number;
+}
+
+export interface ResponseTrigger {
+  readonly severity: readonly string[];
+  readonly categories: readonly ThreatCategory[];
+  readonly signatureIds: readonly string[];
+  readonly threshold: AlertThreshold | null;
+}
+
+export interface ResponseAction {
+  readonly type: 'BLOCK_IP' | 'BLOCK_PORT' | 'QUARANTINE' | 'ALERT' | 'TICKET' | 'SCRIPT' | 'WEBHOOK';
+  readonly target: string;
+  readonly duration: number | null;
+  readonly parameters: Readonly<Record<string, unknown>>;
+}
+
+export interface IDSStatus {
+  readonly status: 'ACTIVE' | 'INACTIVE' | 'LEARNING' | 'ERROR';
+  readonly alertsToday: number;
+  readonly blockedToday: number;
+  readonly falsePositives: number;
+  readonly lastAlert: number | null;
+  readonly signatureVersion: string;
+  readonly lastSignatureUpdate: number;
+}
+
+export interface IDSTuning {
+  readonly learningMode: boolean;
+  readonly learningDuration: number;
+  readonly baselineEstablished: boolean;
+  readonly suppressions: readonly IDSSuppression[];
+  readonly exceptions: readonly IDSException[];
+}
+
+export interface IDSSuppression {
+  readonly suppressionId: string;
+  readonly signatureId: string;
+  readonly source: string | null;
+  readonly destination: string | null;
+  readonly reason: string;
+  readonly expiresAt: number | null;
+  readonly createdBy: string;
+  readonly createdAt: number;
+}
+
+export interface IDSException {
+  readonly exceptionId: string;
+  readonly name: string;
+  readonly conditions: readonly ExceptionCondition[];
+  readonly reason: string;
+  readonly expiresAt: number | null;
+  readonly createdBy: string;
+  readonly createdAt: number;
+}
+
+export interface ExceptionCondition {
+  readonly field: string;
+  readonly operator: 'EQUALS' | 'NOT_EQUALS' | 'CONTAINS' | 'REGEX' | 'IN';
+  readonly value: unknown;
+}
+
+export interface IDSMetadata {
+  readonly createdAt: number;
+  readonly createdBy: string;
+  readonly updatedAt: number;
+  readonly updatedBy: string;
+  readonly tags: readonly string[];
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// NETWORK SEGMENTATION TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface NetworkSegment {
+  readonly segmentId: string;
+  readonly name: string;
+  readonly description: string;
+  readonly type: SegmentationType;
+  readonly zone: NetworkZone;
+  readonly vlanId: number | null;
+  readonly vxlanId: number | null;
+  readonly cidr: string;
+  readonly gateway: string;
+  readonly dhcp: DHCPConfig | null;
+  readonly dns: readonly string[];
+  readonly assets: readonly SegmentAsset[];
+  readonly accessControl: SegmentAccessControl;
+  readonly monitoring: SegmentMonitoring;
+  readonly metadata: SegmentMetadata;
+}
+
+export interface DHCPConfig {
+  readonly enabled: boolean;
+  readonly rangeStart: string;
+  readonly rangeEnd: string;
+  readonly leaseTime: number;
+  readonly reservations: readonly DHCPReservation[];
+}
+
+export interface DHCPReservation {
+  readonly macAddress: string;
+  readonly ipAddress: string;
+  readonly hostname: string;
+}
+
+export interface SegmentAsset {
+  readonly assetId: string;
+  readonly hostname: string;
+  readonly ipAddress: string;
+  readonly macAddress: string;
+  readonly assetType: string;
+  readonly criticality: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
+  readonly owner: string | null;
+  readonly lastSeen: number;
+}
+
+export interface SegmentAccessControl {
+  readonly defaultPolicy: 'ALLOW' | 'DENY';
+  readonly inboundRules: readonly SegmentRule[];
+  readonly outboundRules: readonly SegmentRule[];
+  readonly interSegmentRules: readonly InterSegmentRule[];
+}
+
+export interface SegmentRule {
+  readonly ruleId: string;
+  readonly name: string;
+  readonly action: RuleAction;
+  readonly source: string;
+  readonly destination: string;
+  readonly service: string;
+  readonly enabled: boolean;
+}
+
+export interface InterSegmentRule {
+  readonly ruleId: string;
+  readonly name: string;
+  readonly sourceSegment: string;
+  readonly destinationSegment: string;
+  readonly action: RuleAction;
+  readonly services: readonly string[];
+  readonly bidirectional: boolean;
+  readonly enabled: boolean;
+}
+
+export interface SegmentMonitoring {
+  readonly enabled: boolean;
+  readonly flowCollection: boolean;
+  readonly packetCapture: boolean;
+  readonly anomalyDetection: boolean;
+  readonly baselineEstablished: boolean;
+}
+
+export interface SegmentMetadata {
+  readonly createdAt: number;
+  readonly createdBy: string;
+  readonly updatedAt: number;
+  readonly updatedBy: string;
+  readonly tags: readonly string[];
+  readonly complianceRequirements: readonly string[];
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// DLP TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface DLPSystem {
+  readonly dlpId: string;
+  readonly name: string;
+  readonly description: string;
+  readonly vendor: string;
+  readonly version: string;
+  readonly mode: 'MONITOR' | 'BLOCK' | 'ENCRYPT';
+  readonly channels: readonly DLPChannel[];
+  readonly policies: readonly DLPPolicy[];
+  readonly classifiers: readonly DataClassifier[];
+  readonly status: DLPStatus;
+  readonly metadata: DLPMetadata;
+}
+
+export interface DLPChannel {
+  readonly channelId: string;
+  readonly type: 'EMAIL' | 'WEB' | 'ENDPOINT' | 'CLOUD' | 'NETWORK' | 'USB' | 'PRINT';
+  readonly enabled: boolean;
+  readonly mode: 'MONITOR' | 'BLOCK' | 'ENCRYPT';
+  readonly configuration: Readonly<Record<string, unknown>>;
+}
+
+export interface DLPPolicy {
+  readonly policyId: string;
+  readonly name: string;
+  readonly description: string;
+  readonly enabled: boolean;
+  readonly priority: number;
+  readonly channels: readonly string[];
+  readonly conditions: readonly DLPCondition[];
+  readonly actions: readonly DLPAction[];
+  readonly exceptions: readonly DLPException[];
+  readonly notifications: readonly DLPNotification[];
+  readonly hitCount: number;
+  readonly lastHit: number | null;
+}
+
+export interface DLPCondition {
+  readonly conditionId: string;
+  readonly type: 'CLASSIFIER' | 'KEYWORD' | 'REGEX' | 'FILE_TYPE' | 'SIZE' | 'DESTINATION';
+  readonly operator: 'CONTAINS' | 'EQUALS' | 'MATCHES' | 'GREATER_THAN' | 'LESS_THAN';
+  readonly value: unknown;
+  readonly threshold: number | null;
+  readonly confidence: number | null;
+}
+
+export interface DLPAction {
+  readonly actionId: string;
+  readonly type: 'BLOCK' | 'ENCRYPT' | 'QUARANTINE' | 'ALERT' | 'LOG' | 'REDACT' | 'WATERMARK';
+  readonly parameters: Readonly<Record<string, unknown>>;
+}
+
+export interface DLPException {
+  readonly exceptionId: string;
+  readonly name: string;
+  readonly type: 'USER' | 'GROUP' | 'DESTINATION' | 'APPLICATION';
+  readonly value: string;
+  readonly reason: string;
+  readonly expiresAt: number | null;
+}
+
+export interface DLPNotification {
+  readonly notificationId: string;
+  readonly type: 'EMAIL' | 'SLACK' | 'TICKET' | 'WEBHOOK';
+  readonly recipients: readonly string[];
+  readonly template: string;
+  readonly severity: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
+}
+
+export interface DataClassifier {
+  readonly classifierId: string;
+  readonly name: string;
+  readonly description: string;
+  readonly type: 'BUILTIN' | 'CUSTOM' | 'ML';
+  readonly category: 'PII' | 'PHI' | 'PCI' | 'FINANCIAL' | 'INTELLECTUAL_PROPERTY' | 'CONFIDENTIAL' | 'CUSTOM';
+  readonly patterns: readonly ClassifierPattern[];
+  readonly keywords: readonly string[];
+  readonly confidence: number;
+  readonly enabled: boolean;
+}
+
+export interface ClassifierPattern {
+  readonly patternId: string;
+  readonly name: string;
+  readonly regex: string;
+  readonly validator: string | null;
+  readonly weight: number;
+}
+
+export interface DLPStatus {
+  readonly status: 'ACTIVE' | 'INACTIVE' | 'LEARNING' | 'ERROR';
+  readonly incidentsToday: number;
+  readonly blockedToday: number;
+  readonly dataScanned: number;
+  readonly lastIncident: number | null;
+}
+
+export interface DLPMetadata {
+  readonly createdAt: number;
+  readonly createdBy: string;
+  readonly updatedAt: number;
+  readonly updatedBy: string;
+  readonly tags: readonly string[];
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// VPN TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface VPNGateway {
+  readonly gatewayId: string;
+  readonly name: string;
+  readonly description: string;
+  readonly type: 'SITE_TO_SITE' | 'REMOTE_ACCESS' | 'SSL_VPN' | 'IPSEC';
+  readonly vendor: string;
+  readonly version: string;
+  readonly endpoints: readonly VPNEndpoint[];
+  readonly tunnels: readonly VPNTunnel[];
+  readonly users: readonly VPNUser[];
+  readonly policies: readonly VPNPolicy[];
+  readonly status: VPNStatus;
+  readonly metadata: VPNMetadata;
+}
+
+export interface VPNEndpoint {
+  readonly endpointId: string;
+  readonly name: string;
+  readonly publicIp: string;
+  readonly privateIp: string;
+  readonly port: number;
+  readonly protocol: 'IPSEC' | 'SSL' | 'WIREGUARD' | 'OPENVPN';
+  readonly certificate: string | null;
+  readonly status: 'ACTIVE' | 'INACTIVE' | 'MAINTENANCE';
+}
+
+export interface VPNTunnel {
+  readonly tunnelId: string;
+  readonly name: string;
+  readonly type: 'SITE_TO_SITE' | 'REMOTE_ACCESS';
+  readonly localEndpoint: string;
+  readonly remoteEndpoint: string;
+  readonly localNetworks: readonly string[];
+  readonly remoteNetworks: readonly string[];
+  readonly encryption: VPNEncryption;
+  readonly authentication: VPNAuthentication;
+  readonly status: TunnelStatus;
+  readonly statistics: TunnelStatistics;
+}
+
+export interface VPNEncryption {
+  readonly phase1: Phase1Config;
+  readonly phase2: Phase2Config;
+}
+
+export interface Phase1Config {
+  readonly encryption: 'AES_128' | 'AES_256' | '3DES';
+  readonly hash: 'SHA1' | 'SHA256' | 'SHA384' | 'SHA512';
+  readonly dhGroup: number;
+  readonly lifetime: number;
+}
+
+export interface Phase2Config {
+  readonly encryption: 'AES_128' | 'AES_256' | '3DES';
+  readonly hash: 'SHA1' | 'SHA256' | 'SHA384' | 'SHA512';
+  readonly pfs: boolean;
+  readonly dhGroup: number | null;
+  readonly lifetime: number;
+}
+
+export interface VPNAuthentication {
+  readonly type: 'PSK' | 'CERTIFICATE' | 'EAP' | 'RADIUS';
+  readonly psk: string | null;
+  readonly certificateId: string | null;
+  readonly radiusServer: string | null;
+}
+
+export interface TunnelStatus {
+  readonly status: 'UP' | 'DOWN' | 'NEGOTIATING' | 'ERROR';
+  readonly uptime: number | null;
+  readonly lastStateChange: number;
+  readonly phase1Status: 'UP' | 'DOWN';
+  readonly phase2Status: 'UP' | 'DOWN';
+  readonly error: string | null;
+}
+
+export interface TunnelStatistics {
+  readonly bytesIn: number;
+  readonly bytesOut: number;
+  readonly packetsIn: number;
+  readonly packetsOut: number;
+  readonly encryptionErrors: number;
+  readonly decryptionErrors: number;
+  readonly rekeys: number;
+}
+
+export interface VPNUser {
+  readonly userId: string;
+  readonly username: string;
+  readonly email: string;
+  readonly groups: readonly string[];
+  readonly status: 'ACTIVE' | 'INACTIVE' | 'LOCKED';
+  readonly authMethod: 'PASSWORD' | 'CERTIFICATE' | 'MFA' | 'SSO';
+  readonly lastLogin: number | null;
+  readonly assignedIp: string | null;
+  readonly connectedSince: number | null;
+}
+
+export interface VPNPolicy {
+  readonly policyId: string;
+  readonly name: string;
+  readonly description: string;
+  readonly users: readonly string[];
+  readonly groups: readonly string[];
+  readonly allowedResources: readonly string[];
+  readonly deniedResources: readonly string[];
+  readonly splitTunnel: boolean;
+  readonly mfaRequired: boolean;
+  readonly sessionTimeout: number;
+  readonly idleTimeout: number;
+}
+
+export interface VPNStatus {
+  readonly status: 'ONLINE' | 'OFFLINE' | 'DEGRADED';
+  readonly activeTunnels: number;
+  readonly activeUsers: number;
+  readonly throughput: number;
+  readonly lastSync: number | null;
+}
+
+export interface VPNMetadata {
+  readonly createdAt: number;
+  readonly createdBy: string;
+  readonly updatedAt: number;
+  readonly updatedBy: string;
+  readonly tags: readonly string[];
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ZERO TRUST TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface ZeroTrustPolicy {
+  readonly policyId: string;
+  readonly name: string;
+  readonly description: string;
+  readonly enabled: boolean;
+  readonly priority: number;
+  readonly subjects: readonly ZTSubject[];
+  readonly resources: readonly ZTResource[];
+  readonly conditions: readonly ZTCondition[];
+  readonly actions: readonly ZTAction[];
+  readonly enforcement: ZTEnforcement;
+  readonly metadata: ZTMetadata;
+}
+
+export interface ZTSubject {
+  readonly type: 'USER' | 'GROUP' | 'SERVICE_ACCOUNT' | 'DEVICE' | 'WORKLOAD';
+  readonly identifier: string;
+  readonly attributes: Readonly<Record<string, unknown>>;
+}
+
+export interface ZTResource {
+  readonly type: 'APPLICATION' | 'API' | 'DATABASE' | 'FILE_SHARE' | 'NETWORK_SEGMENT';
+  readonly identifier: string;
+  readonly sensitivity: 'PUBLIC' | 'INTERNAL' | 'CONFIDENTIAL' | 'RESTRICTED';
+  readonly attributes: Readonly<Record<string, unknown>>;
+}
+
+export interface ZTCondition {
+  readonly conditionId: string;
+  readonly type: 'DEVICE_TRUST' | 'LOCATION' | 'TIME' | 'RISK_SCORE' | 'MFA' | 'NETWORK' | 'CUSTOM';
+  readonly operator: 'EQUALS' | 'NOT_EQUALS' | 'IN' | 'NOT_IN' | 'GREATER_THAN' | 'LESS_THAN';
+  readonly value: unknown;
+  readonly required: boolean;
+}
+
+export interface ZTAction {
+  readonly actionId: string;
+  readonly type: 'ALLOW' | 'DENY' | 'MFA_CHALLENGE' | 'STEP_UP_AUTH' | 'ISOLATE' | 'LOG';
+  readonly parameters: Readonly<Record<string, unknown>>;
+}
+
+export interface ZTEnforcement {
+  readonly mode: 'ENFORCE' | 'MONITOR' | 'LEARNING';
+  readonly continuousVerification: boolean;
+  readonly verificationInterval: number;
+  readonly sessionDuration: number;
+  readonly reauthenticationTriggers: readonly string[];
+}
+
+export interface ZTMetadata {
+  readonly createdAt: number;
+  readonly createdBy: string;
+  readonly updatedAt: number;
+  readonly updatedBy: string;
+  readonly tags: readonly string[];
+  readonly complianceFrameworks: readonly string[];
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// NETWORK MONITORING TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface NetworkMonitor {
+  readonly monitorId: string;
+  readonly name: string;
+  readonly description: string;
+  readonly type: 'FLOW' | 'PACKET' | 'SNMP' | 'SYNTHETIC' | 'APM';
+  readonly targets: readonly MonitorTarget[];
+  readonly collectors: readonly FlowCollector[];
+  readonly alerts: readonly NetworkAlert[];
+  readonly baselines: readonly NetworkBaseline[];
+  readonly status: MonitorStatus;
+  readonly metadata: MonitorMetadata;
+}
+
+export interface MonitorTarget {
+  readonly targetId: string;
+  readonly type: 'DEVICE' | 'INTERFACE' | 'SEGMENT' | 'APPLICATION';
+  readonly identifier: string;
+  readonly metrics: readonly string[];
+  readonly interval: number;
+}
+
+export interface FlowCollector {
+  readonly collectorId: string;
+  readonly name: string;
+  readonly type: 'NETFLOW' | 'SFLOW' | 'IPFIX' | 'JFLOW';
+  readonly address: string;
+  readonly port: number;
+  readonly sources: readonly string[];
+  readonly status: 'ACTIVE' | 'INACTIVE';
+  readonly flowsPerSecond: number;
+}
+
+export interface NetworkAlert {
+  readonly alertId: string;
+  readonly name: string;
+  readonly description: string;
+  readonly enabled: boolean;
+  readonly condition: AlertCondition;
+  readonly severity: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
+  readonly notifications: readonly string[];
+  readonly cooldown: number;
+  readonly lastTriggered: number | null;
+}
+
+export interface AlertCondition {
+  readonly metric: string;
+  readonly operator: 'GREATER_THAN' | 'LESS_THAN' | 'EQUALS' | 'NOT_EQUALS' | 'CHANGE_PERCENT';
+  readonly threshold: number;
+  readonly duration: number;
+  readonly aggregation: 'AVG' | 'MAX' | 'MIN' | 'SUM' | 'COUNT';
+}
+
+export interface NetworkBaseline {
+  readonly baselineId: string;
+  readonly name: string;
+  readonly metric: string;
+  readonly target: string;
+  readonly period: 'HOURLY' | 'DAILY' | 'WEEKLY';
+  readonly values: readonly BaselineValue[];
+  readonly deviationThreshold: number;
+  readonly lastUpdated: number;
+}
+
+export interface BaselineValue {
+  readonly timestamp: number;
+  readonly value: number;
+  readonly stdDev: number;
+}
+
+export interface MonitorStatus {
+  readonly status: 'ACTIVE' | 'INACTIVE' | 'ERROR';
+  readonly lastCollection: number | null;
+  readonly dataPoints: number;
+  readonly alertsActive: number;
+}
+
+export interface MonitorMetadata {
+  readonly createdAt: number;
+  readonly createdBy: string;
+  readonly updatedAt: number;
+  readonly updatedBy: string;
+  readonly tags: readonly string[];
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// UI/UX CENTER INTEGRATION
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface NetworkSecurityUIConfig {
+  readonly dashboardEnabled: boolean;
+  readonly realTimeUpdates: boolean;
+  readonly visualizations: readonly NetworkVisualization[];
+  readonly notifications: NetworkNotificationConfig;
+  readonly reporting: NetworkReportingConfig;
+  readonly topology: TopologyConfig;
+  readonly flowAnalysis: FlowAnalysisConfig;
+}
+
+export type NetworkVisualization =
+  | 'NETWORK_TOPOLOGY' | 'TRAFFIC_FLOW' | 'THREAT_MAP' | 'FIREWALL_HITS'
+  | 'IDS_ALERTS' | 'DLP_INCIDENTS' | 'VPN_STATUS' | 'BANDWIDTH_USAGE'
+  | 'TOP_TALKERS' | 'PROTOCOL_DISTRIBUTION' | 'SEGMENT_HEALTH' | 'COMPLIANCE_STATUS';
+
+export interface NetworkNotificationConfig {
+  readonly firewallAlert: boolean;
+  readonly idsAlert: boolean;
+  readonly dlpIncident: boolean;
+  readonly vpnDown: boolean;
+  readonly bandwidthThreshold: boolean;
+  readonly anomalyDetected: boolean;
+  readonly policyViolation: boolean;
+  readonly deviceOffline: boolean;
+}
+
+export interface NetworkReportingConfig {
+  readonly autoGenerate: boolean;
+  readonly schedules: readonly ReportSchedule[];
+  readonly templates: readonly string[];
+  readonly distribution: readonly string[];
+  readonly retention: number;
+}
+
+export interface ReportSchedule {
+  readonly reportType: string;
+  readonly frequency: 'DAILY' | 'WEEKLY' | 'MONTHLY';
+  readonly time: string;
+  readonly recipients: readonly string[];
+}
+
+export interface TopologyConfig {
+  readonly autoDiscovery: boolean;
+  readonly discoveryInterval: number;
+  readonly showVirtualLinks: boolean;
+  readonly showTrafficFlow: boolean;
+  readonly groupByZone: boolean;
+}
+
+export interface FlowAnalysisConfig {
+  readonly enabled: boolean;
+  readonly retention: number;
+  readonly sampling: number;
+  readonly anomalyDetection: boolean;
+  readonly baselineWindow: number;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ERROR TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export enum NetworkSecurityErrorCode {
+  FIREWALL_ERROR = 'NET_E001',
+  IDS_ERROR = 'NET_E002',
+  DLP_ERROR = 'NET_E003',
+  VPN_ERROR = 'NET_E004',
+  SEGMENTATION_ERROR = 'NET_E005',
+  MONITORING_ERROR = 'NET_E006',
+  POLICY_ERROR = 'NET_E007',
+  CONFIGURATION_ERROR = 'NET_E008',
+}
+
+export class NetworkSecurityError extends Error {
+  constructor(
+    public readonly code: NetworkSecurityErrorCode,
+    message: string,
+    public readonly details: Readonly<Record<string, unknown>> = {}
+  ) {
+    super(`[${code}] ${message}`);
+    this.name = 'NetworkSecurityError';
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// DETERMINISTIC UTILITIES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+function deterministicHash(input: string): number {
+  let hash = 0;
+  for (let i = 0; i < input.length; i++) {
+    const char = input.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash;
+  }
+  return Math.abs(hash);
+}
+
+function generateDeterministicId(prefix: string, seed: number): string {
+  const hash = deterministicHash(`${prefix}-${seed}`);
+  const jitter = Math.abs(Math.sin(seed * 12.9898) * 43758.5453) % 1;
+  return `${prefix}-${hash.toString(16)}-${Math.floor(jitter * 10000).toString(16)}`;
+}
+
+function generateDeterministicTimestamp(seed: number): number {
+  const baseTime = 1704067200000;
+  const offset = Math.abs(deterministicHash(`timestamp-${seed}`)) % 86400000;
+  return baseTime + offset;
+}
+
+function generateDeterministicIP(seed: number): string {
+  const octet1 = 10 + (deterministicHash(`ip1-${seed}`) % 246);
+  const octet2 = deterministicHash(`ip2-${seed}`) % 256;
+  const octet3 = deterministicHash(`ip3-${seed}`) % 256;
+  const octet4 = 1 + (deterministicHash(`ip4-${seed}`) % 254);
+  return `${octet1}.${octet2}.${octet3}.${octet4}`;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// FIREWALL MANAGER
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export class FirewallManager {
+  private operationCounter: number = 0;
+  private readonly firewalls: Map<string, Firewall> = new Map();
+
+  addFirewall(
+    name: string,
+    description: string,
+    type: FirewallType,
+    vendor: FirewallVendor,
+    model: string,
+    location: FirewallLocation
+  ): Firewall {
+    this.operationCounter++;
+
+    const firewallId = generateDeterministicId('fw', this.operationCounter);
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+
+    const firewall: Firewall = {
+      firewallId,
+      name,
+      description,
+      type,
+      vendor,
+      model,
+      version: '10.0.0',
+      location,
+      interfaces: [],
+      zones: [
+        { zoneId: 'zone-trust', name: 'Trust', type: 'INTERNAL', interfaces: [], defaultAction: 'ALLOW', logDefault: false, description: 'Internal trusted zone' },
+        { zoneId: 'zone-untrust', name: 'Untrust', type: 'INTERNET', interfaces: [], defaultAction: 'DENY', logDefault: true, description: 'External untrusted zone' },
+        { zoneId: 'zone-dmz', name: 'DMZ', type: 'DMZ', interfaces: [], defaultAction: 'DENY', logDefault: true, description: 'Demilitarized zone' },
+      ],
+      policies: [],
+      natRules: [],
+      status: {
+        status: 'ONLINE',
+        cpuUsage: 25,
+        memoryUsage: 40,
+        sessionCount: 10000,
+        maxSessions: 100000,
+        throughput: 1000000000,
+        packetsPerSecond: 50000,
+        lastSync: timestamp,
+        configVersion: '1.0.0',
+      },
+      highAvailability: null,
+      logging: {
+        enabled: true,
+        destinations: [{ type: 'SIEM', address: '10.0.0.100', port: 514, protocol: 'TLS', facility: 1 }],
+        format: 'CEF',
+        severity: 'INFO',
+        includeTraffic: true,
+        includeThreat: true,
+        includeSystem: true,
+      },
+      metadata: {
+        createdAt: timestamp,
+        createdBy: 'system',
+        updatedAt: timestamp,
+        updatedBy: 'system',
+        tags: [],
+        complianceFrameworks: ['PCI-DSS', 'ISO-27001'],
+      },
+    };
+
+    this.firewalls.set(firewallId, firewall);
+    return firewall;
+  }
+
+  addRule(firewallId: string, policyId: string, rule: FirewallRule): Firewall | null {
+    this.operationCounter++;
+
+    const firewall = this.firewalls.get(firewallId);
+    if (!firewall) return null;
+
+    const policyIndex = firewall.policies.findIndex(p => p.policyId === policyId);
+    if (policyIndex === -1) return null;
+
+    const updatedPolicies = [...firewall.policies];
+    updatedPolicies[policyIndex] = {
+      ...updatedPolicies[policyIndex],
+      rules: [...updatedPolicies[policyIndex].rules, rule],
+    };
+
+    const updatedFirewall: Firewall = {
+      ...firewall,
+      policies: updatedPolicies,
+      metadata: {
+        ...firewall.metadata,
+        updatedAt: generateDeterministicTimestamp(this.operationCounter),
+      },
+    };
+
+    this.firewalls.set(firewallId, updatedFirewall);
+    return updatedFirewall;
+  }
+
+  getFirewalls(): ReadonlyMap<string, Firewall> {
+    return this.firewalls;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// IDS MANAGER
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export class IDSManager {
+  private operationCounter: number = 0;
+  private readonly systems: Map<string, IDSSystem> = new Map();
+
+  addSystem(
+    name: string,
+    description: string,
+    type: 'IDS' | 'IPS' | 'HYBRID',
+    mode: IDSMode,
+    vendor: string
+  ): IDSSystem {
+    this.operationCounter++;
+
+    const idsId = generateDeterministicId('ids', this.operationCounter);
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+
+    const system: IDSSystem = {
+      idsId,
+      name,
+      description,
+      type,
+      mode,
+      vendor,
+      version: '7.0.0',
+      sensors: [],
+      signatures: {
+        version: '2024.01.01',
+        lastUpdate: timestamp,
+        totalSignatures: 50000,
+        enabledSignatures: 45000,
+        customSignatures: 100,
+        categories: [
+          { categoryId: 'cat-malware', name: 'Malware', description: 'Malware detection signatures', signatureCount: 15000, enabled: true, defaultAction: 'ALERT' },
+          { categoryId: 'cat-exploit', name: 'Exploits', description: 'Exploit detection signatures', signatureCount: 10000, enabled: true, defaultAction: 'DROP' },
+          { categoryId: 'cat-c2', name: 'Command and Control', description: 'C2 communication detection', signatureCount: 5000, enabled: true, defaultAction: 'DROP' },
+        ],
+      },
+      policies: [],
+      status: {
+        status: 'ACTIVE',
+        alertsToday: 150,
+        blockedToday: 25,
+        falsePositives: 5,
+        lastAlert: timestamp,
+        signatureVersion: '2024.01.01',
+        lastSignatureUpdate: timestamp,
+      },
+      tuning: {
+        learningMode: false,
+        learningDuration: 604800000,
+        baselineEstablished: true,
+        suppressions: [],
+        exceptions: [],
+      },
+      metadata: {
+        createdAt: timestamp,
+        createdBy: 'system',
+        updatedAt: timestamp,
+        updatedBy: 'system',
+        tags: [],
+      },
+    };
+
+    this.systems.set(idsId, system);
+    return system;
+  }
+
+  getSystems(): ReadonlyMap<string, IDSSystem> {
+    return this.systems;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// NETWORK SECURITY MANAGER
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export class NetworkSecurityManager {
+  private readonly firewallManager: FirewallManager;
+  private readonly idsManager: IDSManager;
+  private readonly uiConfig: NetworkSecurityUIConfig;
+
+  constructor(uiConfig: NetworkSecurityUIConfig) {
+    this.firewallManager = new FirewallManager();
+    this.idsManager = new IDSManager();
+    this.uiConfig = uiConfig;
+  }
+
+  addFirewall(
+    name: string,
+    description: string,
+    type: FirewallType,
+    vendor: FirewallVendor,
+    model: string,
+    location: FirewallLocation
+  ): Firewall {
+    return this.firewallManager.addFirewall(name, description, type, vendor, model, location);
+  }
+
+  addIDSSystem(
+    name: string,
+    description: string,
+    type: 'IDS' | 'IPS' | 'HYBRID',
+    mode: IDSMode,
+    vendor: string
+  ): IDSSystem {
+    return this.idsManager.addSystem(name, description, type, mode, vendor);
+  }
+
+  getFirewallManager(): FirewallManager {
+    return this.firewallManager;
+  }
+
+  getIDSManager(): IDSManager {
+    return this.idsManager;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// DEFAULT CONFIGURATIONS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export function createDefaultNetworkSecurityUIConfig(): NetworkSecurityUIConfig {
+  return {
+    dashboardEnabled: true,
+    realTimeUpdates: true,
+    visualizations: [
+      'NETWORK_TOPOLOGY', 'TRAFFIC_FLOW', 'THREAT_MAP', 'FIREWALL_HITS',
+      'IDS_ALERTS', 'DLP_INCIDENTS', 'VPN_STATUS', 'BANDWIDTH_USAGE',
+      'TOP_TALKERS', 'SEGMENT_HEALTH', 'COMPLIANCE_STATUS',
+    ],
+    notifications: {
+      firewallAlert: true,
+      idsAlert: true,
+      dlpIncident: true,
+      vpnDown: true,
+      bandwidthThreshold: true,
+      anomalyDetected: true,
+      policyViolation: true,
+      deviceOffline: true,
+    },
+    reporting: {
+      autoGenerate: true,
+      schedules: [
+        { reportType: 'DAILY_SECURITY', frequency: 'DAILY', time: '08:00', recipients: ['security-team@company.com'] },
+        { reportType: 'WEEKLY_NETWORK', frequency: 'WEEKLY', time: '09:00', recipients: ['network-team@company.com'] },
+      ],
+      templates: ['daily_security', 'weekly_network', 'compliance_report'],
+      distribution: ['security-team@company.com'],
+      retention: 31536000000,
+    },
+    topology: {
+      autoDiscovery: true,
+      discoveryInterval: 3600000,
+      showVirtualLinks: true,
+      showTrafficFlow: true,
+      groupByZone: true,
+    },
+    flowAnalysis: {
+      enabled: true,
+      retention: 2592000000,
+      sampling: 1000,
+      anomalyDetection: true,
+      baselineWindow: 604800000,
+    },
+  };
+}

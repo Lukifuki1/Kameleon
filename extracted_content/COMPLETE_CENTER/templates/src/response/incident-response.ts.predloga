@@ -1,0 +1,1688 @@
+/**
+ * @file Incident Response - Enterprise Incident Response Framework
+ * @author {{AVTOR}}
+ * @version {{VERZIJA}}
+ * @date {{DATUM}}
+ * @project {{IME_PROJEKTA}}
+ * @domain VARNOSTNI_SISTEMI
+ * 
+ * @requirement REQ-SEC-IRS-001
+ * @design DSN-SEC-IRS-001
+ * @test TST-SEC-IRS-001
+ * 
+ * @description
+ * Enterprise-grade Incident Response framework implementing NIST SP 800-61,
+ * SANS IR methodology, containment strategies, eradication procedures,
+ * recovery operations, and post-incident analysis with full automation support.
+ * 
+ * @compliance NIST SP 800-61, SANS IR, ISO 27035, CERT/CC
+ * @classification CONFIDENTIAL - Incident Response Operations
+ */
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// INCIDENT RESPONSE TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export type IncidentPhase =
+  | 'PREPARATION' | 'DETECTION_AND_ANALYSIS' | 'CONTAINMENT'
+  | 'ERADICATION' | 'RECOVERY' | 'POST_INCIDENT';
+
+export type IncidentCategory =
+  | 'MALWARE' | 'RANSOMWARE' | 'DATA_BREACH' | 'INSIDER_THREAT'
+  | 'PHISHING' | 'DENIAL_OF_SERVICE' | 'UNAUTHORIZED_ACCESS'
+  | 'WEB_APPLICATION_ATTACK' | 'APT' | 'SUPPLY_CHAIN'
+  | 'CREDENTIAL_COMPROMISE' | 'POLICY_VIOLATION' | 'OTHER';
+
+export type IncidentSeverity = 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
+
+export type IncidentStatus =
+  | 'NEW' | 'TRIAGED' | 'IN_PROGRESS' | 'CONTAINED'
+  | 'ERADICATED' | 'RECOVERED' | 'CLOSED' | 'REOPENED';
+
+export type ContainmentStrategy =
+  | 'ISOLATE_HOST' | 'ISOLATE_NETWORK_SEGMENT' | 'BLOCK_IP'
+  | 'BLOCK_DOMAIN' | 'DISABLE_ACCOUNT' | 'REVOKE_CREDENTIALS'
+  | 'QUARANTINE_FILE' | 'KILL_PROCESS' | 'SHUTDOWN_SYSTEM'
+  | 'DISCONNECT_VPN' | 'BLOCK_EMAIL' | 'CUSTOM';
+
+export type EradicationAction =
+  | 'REMOVE_MALWARE' | 'PATCH_VULNERABILITY' | 'RESET_CREDENTIALS'
+  | 'REBUILD_SYSTEM' | 'RESTORE_FROM_BACKUP' | 'UPDATE_SECURITY_CONTROLS'
+  | 'REMOVE_PERSISTENCE' | 'CLEAN_REGISTRY' | 'REMOVE_SCHEDULED_TASKS'
+  | 'REMOVE_SERVICES' | 'CUSTOM';
+
+export type RecoveryAction =
+  | 'RESTORE_SYSTEM' | 'RESTORE_DATA' | 'VERIFY_INTEGRITY'
+  | 'RECONNECT_NETWORK' | 'ENABLE_SERVICES' | 'VALIDATE_FUNCTIONALITY'
+  | 'MONITOR_CLOSELY' | 'GRADUAL_RESTORATION' | 'CUSTOM';
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// INCIDENT TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface Incident {
+  readonly incidentId: string;
+  readonly title: string;
+  readonly description: string;
+  readonly category: IncidentCategory;
+  readonly severity: IncidentSeverity;
+  readonly status: IncidentStatus;
+  readonly phase: IncidentPhase;
+  readonly priority: number;
+  readonly classification: IncidentClassification;
+  readonly timeline: IncidentTimeline;
+  readonly affectedAssets: readonly AffectedAsset[];
+  readonly indicators: readonly IncidentIndicator[];
+  readonly containment: ContainmentRecord;
+  readonly eradication: EradicationRecord;
+  readonly recovery: RecoveryRecord;
+  readonly team: IncidentTeam;
+  readonly communications: CommunicationRecord;
+  readonly evidence: EvidenceRecord;
+  readonly impact: ImpactAssessment;
+  readonly sla: SLATracking;
+  readonly postIncident: PostIncidentRecord | null;
+  readonly metadata: IncidentMetadata;
+}
+
+export interface IncidentClassification {
+  readonly confirmed: boolean;
+  readonly attackVector: string | null;
+  readonly threatActor: string | null;
+  readonly campaign: string | null;
+  readonly mitreMapping: readonly MitreMapping[];
+  readonly killChainPhase: string | null;
+  readonly confidence: number;
+}
+
+export interface MitreMapping {
+  readonly tacticId: string;
+  readonly tacticName: string;
+  readonly techniqueId: string;
+  readonly techniqueName: string;
+  readonly subTechniqueId: string | null;
+}
+
+export interface IncidentTimeline {
+  readonly detected: number;
+  readonly reported: number;
+  readonly triaged: number | null;
+  readonly containmentStarted: number | null;
+  readonly contained: number | null;
+  readonly eradicationStarted: number | null;
+  readonly eradicated: number | null;
+  readonly recoveryStarted: number | null;
+  readonly recovered: number | null;
+  readonly closed: number | null;
+  readonly events: readonly TimelineEvent[];
+}
+
+export interface TimelineEvent {
+  readonly eventId: string;
+  readonly timestamp: number;
+  readonly eventType: TimelineEventType;
+  readonly description: string;
+  readonly actor: string;
+  readonly source: string;
+  readonly evidence: readonly string[];
+  readonly automated: boolean;
+}
+
+export type TimelineEventType =
+  | 'DETECTION' | 'ALERT' | 'TRIAGE' | 'ESCALATION' | 'ASSIGNMENT'
+  | 'CONTAINMENT_ACTION' | 'ERADICATION_ACTION' | 'RECOVERY_ACTION'
+  | 'COMMUNICATION' | 'EVIDENCE_COLLECTION' | 'ANALYSIS' | 'DECISION'
+  | 'STATUS_CHANGE' | 'NOTE' | 'EXTERNAL_UPDATE';
+
+export interface AffectedAsset {
+  readonly assetId: string;
+  readonly hostname: string;
+  readonly ipAddress: string;
+  readonly macAddress: string | null;
+  readonly assetType: AssetType;
+  readonly operatingSystem: string | null;
+  readonly criticality: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
+  readonly owner: string | null;
+  readonly department: string | null;
+  readonly location: string | null;
+  readonly compromiseLevel: CompromiseLevel;
+  readonly containmentStatus: ContainmentStatus;
+  readonly recoveryStatus: RecoveryStatus;
+  readonly notes: string | null;
+}
+
+export type AssetType =
+  | 'WORKSTATION' | 'SERVER' | 'LAPTOP' | 'MOBILE' | 'NETWORK_DEVICE'
+  | 'FIREWALL' | 'DATABASE' | 'APPLICATION' | 'CLOUD_INSTANCE'
+  | 'CONTAINER' | 'IOT' | 'OTHER';
+
+export type CompromiseLevel =
+  | 'SUSPECTED' | 'CONFIRMED' | 'PARTIAL' | 'FULL' | 'UNKNOWN';
+
+export type ContainmentStatus =
+  | 'NOT_CONTAINED' | 'PARTIALLY_CONTAINED' | 'FULLY_CONTAINED' | 'NOT_REQUIRED';
+
+export type RecoveryStatus =
+  | 'NOT_STARTED' | 'IN_PROGRESS' | 'COMPLETED' | 'VERIFIED' | 'NOT_REQUIRED';
+
+export interface IncidentIndicator {
+  readonly indicatorId: string;
+  readonly type: IndicatorType;
+  readonly value: string;
+  readonly source: string;
+  readonly firstSeen: number;
+  readonly lastSeen: number;
+  readonly confidence: number;
+  readonly context: string | null;
+  readonly relatedIndicators: readonly string[];
+}
+
+export type IndicatorType =
+  | 'IP_ADDRESS' | 'DOMAIN' | 'URL' | 'EMAIL' | 'FILE_HASH_MD5'
+  | 'FILE_HASH_SHA1' | 'FILE_HASH_SHA256' | 'FILE_NAME' | 'FILE_PATH'
+  | 'REGISTRY_KEY' | 'MUTEX' | 'USER_AGENT' | 'PROCESS_NAME'
+  | 'COMMAND_LINE' | 'SERVICE_NAME' | 'SCHEDULED_TASK';
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// CONTAINMENT TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface ContainmentRecord {
+  readonly strategy: ContainmentStrategy;
+  readonly status: 'NOT_STARTED' | 'IN_PROGRESS' | 'COMPLETED' | 'FAILED';
+  readonly startTime: number | null;
+  readonly endTime: number | null;
+  readonly actions: readonly ContainmentAction[];
+  readonly effectiveness: number | null;
+  readonly notes: string | null;
+}
+
+export interface ContainmentAction {
+  readonly actionId: string;
+  readonly actionType: ContainmentStrategy;
+  readonly target: string;
+  readonly status: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'FAILED' | 'ROLLED_BACK';
+  readonly initiatedBy: string;
+  readonly initiatedAt: number;
+  readonly completedAt: number | null;
+  readonly automated: boolean;
+  readonly parameters: Readonly<Record<string, unknown>>;
+  readonly result: ActionResult | null;
+  readonly rollbackAvailable: boolean;
+  readonly rollbackPerformed: boolean;
+}
+
+export interface ActionResult {
+  readonly success: boolean;
+  readonly message: string;
+  readonly details: Readonly<Record<string, unknown>>;
+  readonly duration: number;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ERADICATION TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface EradicationRecord {
+  readonly status: 'NOT_STARTED' | 'IN_PROGRESS' | 'COMPLETED' | 'FAILED';
+  readonly startTime: number | null;
+  readonly endTime: number | null;
+  readonly actions: readonly EradicationActionRecord[];
+  readonly rootCauseIdentified: boolean;
+  readonly rootCause: RootCauseAnalysis | null;
+  readonly vulnerabilitiesPatched: readonly string[];
+  readonly malwareRemoved: readonly string[];
+  readonly persistenceRemoved: readonly string[];
+  readonly notes: string | null;
+}
+
+export interface EradicationActionRecord {
+  readonly actionId: string;
+  readonly actionType: EradicationAction;
+  readonly target: string;
+  readonly status: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'FAILED';
+  readonly initiatedBy: string;
+  readonly initiatedAt: number;
+  readonly completedAt: number | null;
+  readonly automated: boolean;
+  readonly parameters: Readonly<Record<string, unknown>>;
+  readonly result: ActionResult | null;
+  readonly verificationPerformed: boolean;
+  readonly verificationResult: string | null;
+}
+
+export interface RootCauseAnalysis {
+  readonly primaryCause: string;
+  readonly contributingFactors: readonly string[];
+  readonly attackVector: string;
+  readonly initialAccess: string;
+  readonly vulnerabilitiesExploited: readonly VulnerabilityReference[];
+  readonly securityGaps: readonly SecurityGap[];
+  readonly humanFactors: readonly string[];
+  readonly processFailures: readonly string[];
+  readonly technicalFailures: readonly string[];
+  readonly timeline: readonly RootCauseEvent[];
+}
+
+export interface VulnerabilityReference {
+  readonly cveId: string | null;
+  readonly description: string;
+  readonly severity: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
+  readonly affectedSystems: readonly string[];
+  readonly patchAvailable: boolean;
+  readonly patchApplied: boolean;
+}
+
+export interface SecurityGap {
+  readonly gapId: string;
+  readonly category: 'TECHNICAL' | 'PROCESS' | 'PEOPLE' | 'POLICY';
+  readonly description: string;
+  readonly severity: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
+  readonly recommendation: string;
+  readonly remediated: boolean;
+}
+
+export interface RootCauseEvent {
+  readonly timestamp: number;
+  readonly description: string;
+  readonly significance: string;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// RECOVERY TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface RecoveryRecord {
+  readonly status: 'NOT_STARTED' | 'IN_PROGRESS' | 'COMPLETED' | 'FAILED';
+  readonly startTime: number | null;
+  readonly endTime: number | null;
+  readonly plan: RecoveryPlan;
+  readonly actions: readonly RecoveryActionRecord[];
+  readonly systemsRestored: readonly string[];
+  readonly dataRestored: readonly string[];
+  readonly servicesRestored: readonly string[];
+  readonly verificationCompleted: boolean;
+  readonly monitoringEnhanced: boolean;
+  readonly notes: string | null;
+}
+
+export interface RecoveryPlan {
+  readonly planId: string;
+  readonly priority: readonly RecoveryPriority[];
+  readonly dependencies: readonly RecoveryDependency[];
+  readonly estimatedDuration: number;
+  readonly approvedBy: string | null;
+  readonly approvedAt: number | null;
+}
+
+export interface RecoveryPriority {
+  readonly order: number;
+  readonly assetId: string;
+  readonly assetName: string;
+  readonly criticality: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
+  readonly estimatedTime: number;
+  readonly dependencies: readonly string[];
+}
+
+export interface RecoveryDependency {
+  readonly sourceAsset: string;
+  readonly targetAsset: string;
+  readonly dependencyType: 'REQUIRES' | 'BLOCKS' | 'OPTIONAL';
+}
+
+export interface RecoveryActionRecord {
+  readonly actionId: string;
+  readonly actionType: RecoveryAction;
+  readonly target: string;
+  readonly status: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'FAILED';
+  readonly initiatedBy: string;
+  readonly initiatedAt: number;
+  readonly completedAt: number | null;
+  readonly automated: boolean;
+  readonly parameters: Readonly<Record<string, unknown>>;
+  readonly result: ActionResult | null;
+  readonly verificationPerformed: boolean;
+  readonly verificationResult: string | null;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TEAM AND COMMUNICATION TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface IncidentTeam {
+  readonly incidentCommander: TeamMember | null;
+  readonly leadAnalyst: TeamMember | null;
+  readonly members: readonly TeamMember[];
+  readonly escalationPath: EscalationPath;
+  readonly externalContacts: readonly ExternalContact[];
+}
+
+export interface TeamMember {
+  readonly userId: string;
+  readonly name: string;
+  readonly email: string;
+  readonly role: TeamRole;
+  readonly assignedAt: number;
+  readonly responsibilities: readonly string[];
+  readonly availability: 'AVAILABLE' | 'BUSY' | 'OFFLINE';
+  readonly lastActivity: number;
+}
+
+export type TeamRole =
+  | 'INCIDENT_COMMANDER' | 'LEAD_ANALYST' | 'ANALYST' | 'SPECIALIST'
+  | 'COMMUNICATIONS' | 'LEGAL' | 'EXECUTIVE' | 'OBSERVER';
+
+export interface EscalationPath {
+  readonly levels: readonly EscalationLevel[];
+  readonly currentLevel: number;
+  readonly autoEscalate: boolean;
+  readonly escalationCriteria: readonly EscalationCriterion[];
+}
+
+export interface EscalationLevel {
+  readonly level: number;
+  readonly name: string;
+  readonly contacts: readonly string[];
+  readonly notificationChannels: readonly NotificationChannel[];
+  readonly responseTime: number;
+  readonly authority: readonly string[];
+}
+
+export type NotificationChannel = 'EMAIL' | 'SMS' | 'PHONE' | 'SLACK' | 'TEAMS' | 'PAGERDUTY' | 'CUSTOM';
+
+export interface EscalationCriterion {
+  readonly criterionType: 'TIME_BASED' | 'SEVERITY_BASED' | 'IMPACT_BASED' | 'MANUAL';
+  readonly threshold: number | string;
+  readonly targetLevel: number;
+}
+
+export interface ExternalContact {
+  readonly contactId: string;
+  readonly name: string;
+  readonly organization: string;
+  readonly role: string;
+  readonly email: string;
+  readonly phone: string | null;
+  readonly type: 'LAW_ENFORCEMENT' | 'REGULATOR' | 'VENDOR' | 'PARTNER' | 'LEGAL' | 'PR' | 'OTHER';
+  readonly notified: boolean;
+  readonly notifiedAt: number | null;
+}
+
+export interface CommunicationRecord {
+  readonly internalUpdates: readonly InternalUpdate[];
+  readonly externalNotifications: readonly ExternalNotification[];
+  readonly statusReports: readonly StatusReport[];
+  readonly mediaStatements: readonly MediaStatement[];
+}
+
+export interface InternalUpdate {
+  readonly updateId: string;
+  readonly timestamp: number;
+  readonly author: string;
+  readonly audience: readonly string[];
+  readonly subject: string;
+  readonly content: string;
+  readonly channel: NotificationChannel;
+  readonly acknowledged: boolean;
+}
+
+export interface ExternalNotification {
+  readonly notificationId: string;
+  readonly timestamp: number;
+  readonly recipient: string;
+  readonly recipientType: 'CUSTOMER' | 'PARTNER' | 'REGULATOR' | 'LAW_ENFORCEMENT' | 'VENDOR' | 'PUBLIC';
+  readonly subject: string;
+  readonly content: string;
+  readonly channel: NotificationChannel;
+  readonly legalReview: boolean;
+  readonly approved: boolean;
+  readonly approvedBy: string | null;
+}
+
+export interface StatusReport {
+  readonly reportId: string;
+  readonly timestamp: number;
+  readonly author: string;
+  readonly reportType: 'INITIAL' | 'UPDATE' | 'FINAL';
+  readonly summary: string;
+  readonly details: string;
+  readonly nextUpdate: number | null;
+  readonly distribution: readonly string[];
+}
+
+export interface MediaStatement {
+  readonly statementId: string;
+  readonly timestamp: number;
+  readonly author: string;
+  readonly content: string;
+  readonly approved: boolean;
+  readonly approvedBy: string | null;
+  readonly published: boolean;
+  readonly publishedAt: number | null;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// EVIDENCE TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface EvidenceRecord {
+  readonly items: readonly EvidenceItem[];
+  readonly chainOfCustody: readonly CustodyEntry[];
+  readonly preservationOrders: readonly PreservationOrder[];
+  readonly forensicImages: readonly ForensicImage[];
+}
+
+export interface EvidenceItem {
+  readonly evidenceId: string;
+  readonly type: EvidenceType;
+  readonly description: string;
+  readonly source: string;
+  readonly collectedBy: string;
+  readonly collectedAt: number;
+  readonly hash: EvidenceHash;
+  readonly size: number;
+  readonly location: string;
+  readonly classification: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
+  readonly status: 'COLLECTED' | 'ANALYZED' | 'ARCHIVED' | 'RELEASED';
+  readonly analysis: EvidenceAnalysis | null;
+}
+
+export type EvidenceType =
+  | 'MEMORY_DUMP' | 'DISK_IMAGE' | 'NETWORK_CAPTURE' | 'LOG_FILE'
+  | 'REGISTRY_EXPORT' | 'MALWARE_SAMPLE' | 'SCREENSHOT' | 'EMAIL'
+  | 'DOCUMENT' | 'CONFIGURATION' | 'DATABASE_EXPORT' | 'OTHER';
+
+export interface EvidenceHash {
+  readonly md5: string;
+  readonly sha1: string;
+  readonly sha256: string;
+}
+
+export interface EvidenceAnalysis {
+  readonly analysisId: string;
+  readonly analyst: string;
+  readonly startTime: number;
+  readonly endTime: number | null;
+  readonly tools: readonly string[];
+  readonly findings: readonly string[];
+  readonly indicators: readonly string[];
+  readonly report: string | null;
+}
+
+export interface CustodyEntry {
+  readonly entryId: string;
+  readonly timestamp: number;
+  readonly action: 'COLLECTED' | 'TRANSFERRED' | 'ANALYZED' | 'STORED' | 'RELEASED';
+  readonly fromHandler: string | null;
+  readonly toHandler: string;
+  readonly location: string;
+  readonly notes: string | null;
+  readonly signature: string;
+}
+
+export interface PreservationOrder {
+  readonly orderId: string;
+  readonly issuedAt: number;
+  readonly issuedBy: string;
+  readonly scope: string;
+  readonly systems: readonly string[];
+  readonly dataTypes: readonly string[];
+  readonly duration: number;
+  readonly legalBasis: string;
+  readonly status: 'ACTIVE' | 'EXPIRED' | 'RELEASED';
+}
+
+export interface ForensicImage {
+  readonly imageId: string;
+  readonly sourceAsset: string;
+  readonly imageType: 'FULL_DISK' | 'MEMORY' | 'LOGICAL' | 'TARGETED';
+  readonly createdBy: string;
+  readonly createdAt: number;
+  readonly tool: string;
+  readonly hash: EvidenceHash;
+  readonly size: number;
+  readonly location: string;
+  readonly verified: boolean;
+  readonly verifiedAt: number | null;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// IMPACT ASSESSMENT TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface ImpactAssessment {
+  readonly businessImpact: BusinessImpact;
+  readonly dataImpact: DataImpact;
+  readonly operationalImpact: OperationalImpact;
+  readonly financialImpact: FinancialImpact;
+  readonly reputationalImpact: ReputationalImpact;
+  readonly regulatoryImpact: RegulatoryImpact;
+  readonly overallSeverity: IncidentSeverity;
+  readonly assessedAt: number;
+  readonly assessedBy: string;
+}
+
+export interface BusinessImpact {
+  readonly severity: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW' | 'NONE';
+  readonly affectedProcesses: readonly string[];
+  readonly affectedServices: readonly string[];
+  readonly customersAffected: number;
+  readonly employeesAffected: number;
+  readonly partnersAffected: number;
+  readonly description: string;
+}
+
+export interface DataImpact {
+  readonly dataCompromised: boolean;
+  readonly dataExfiltrated: boolean;
+  readonly dataDestroyed: boolean;
+  readonly dataModified: boolean;
+  readonly dataTypes: readonly DataType[];
+  readonly recordsAffected: number | null;
+  readonly piiInvolved: boolean;
+  readonly phiInvolved: boolean;
+  readonly pciInvolved: boolean;
+  readonly intellectualProperty: boolean;
+  readonly description: string;
+}
+
+export interface DataType {
+  readonly type: string;
+  readonly classification: 'PUBLIC' | 'INTERNAL' | 'CONFIDENTIAL' | 'RESTRICTED';
+  readonly recordCount: number | null;
+  readonly description: string;
+}
+
+export interface OperationalImpact {
+  readonly severity: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW' | 'NONE';
+  readonly systemsAffected: number;
+  readonly servicesDown: readonly string[];
+  readonly downtime: number;
+  readonly productivityLoss: number;
+  readonly description: string;
+}
+
+export interface FinancialImpact {
+  readonly estimatedLoss: number | null;
+  readonly directCosts: FinancialCost[];
+  readonly indirectCosts: FinancialCost[];
+  readonly recoveryBudget: number | null;
+  readonly insuranceCoverage: number | null;
+  readonly description: string;
+}
+
+export interface FinancialCost {
+  readonly category: string;
+  readonly amount: number;
+  readonly currency: string;
+  readonly description: string;
+}
+
+export interface ReputationalImpact {
+  readonly severity: 'SEVERE' | 'MODERATE' | 'MINOR' | 'NONE';
+  readonly mediaAttention: boolean;
+  readonly customerNotificationRequired: boolean;
+  readonly publicDisclosureRequired: boolean;
+  readonly description: string;
+}
+
+export interface RegulatoryImpact {
+  readonly notificationRequired: boolean;
+  readonly regulations: readonly RegulatoryRequirement[];
+  readonly deadlines: readonly RegulatoryDeadline[];
+  readonly potentialFines: number | null;
+  readonly description: string;
+}
+
+export interface RegulatoryRequirement {
+  readonly regulation: string;
+  readonly requirement: string;
+  readonly deadline: number | null;
+  readonly status: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'OVERDUE';
+}
+
+export interface RegulatoryDeadline {
+  readonly regulation: string;
+  readonly action: string;
+  readonly deadline: number;
+  readonly completed: boolean;
+  readonly completedAt: number | null;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SLA AND METRICS TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface SLATracking {
+  readonly slaDefinition: SLADefinition;
+  readonly acknowledgementSLA: SLAStatus;
+  readonly containmentSLA: SLAStatus;
+  readonly resolutionSLA: SLAStatus;
+  readonly updateSLA: SLAStatus;
+}
+
+export interface SLADefinition {
+  readonly acknowledgementTime: number;
+  readonly containmentTime: number;
+  readonly resolutionTime: number;
+  readonly updateFrequency: number;
+}
+
+export interface SLAStatus {
+  readonly target: number;
+  readonly actual: number | null;
+  readonly status: 'ON_TRACK' | 'AT_RISK' | 'BREACHED' | 'MET' | 'NOT_APPLICABLE';
+  readonly breachTime: number | null;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// POST-INCIDENT TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface PostIncidentRecord {
+  readonly reviewCompleted: boolean;
+  readonly reviewDate: number | null;
+  readonly participants: readonly string[];
+  readonly lessonsLearned: LessonsLearned;
+  readonly improvements: readonly Improvement[];
+  readonly metrics: IncidentMetrics;
+  readonly report: PostIncidentReport | null;
+}
+
+export interface LessonsLearned {
+  readonly whatWorked: readonly string[];
+  readonly whatDidntWork: readonly string[];
+  readonly surprises: readonly string[];
+  readonly recommendations: readonly string[];
+  readonly trainingNeeds: readonly string[];
+  readonly processChanges: readonly string[];
+  readonly toolingChanges: readonly string[];
+  readonly policyChanges: readonly string[];
+}
+
+export interface Improvement {
+  readonly improvementId: string;
+  readonly category: 'PREVENTION' | 'DETECTION' | 'RESPONSE' | 'RECOVERY';
+  readonly title: string;
+  readonly description: string;
+  readonly priority: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
+  readonly owner: string;
+  readonly deadline: number;
+  readonly status: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
+  readonly completedAt: number | null;
+}
+
+export interface IncidentMetrics {
+  readonly timeToDetect: number;
+  readonly timeToAcknowledge: number;
+  readonly timeToContain: number;
+  readonly timeToEradicate: number;
+  readonly timeToRecover: number;
+  readonly totalDuration: number;
+  readonly teamSize: number;
+  readonly actionsExecuted: number;
+  readonly automatedActions: number;
+  readonly manualActions: number;
+  readonly escalations: number;
+  readonly falsePositiveRate: number | null;
+}
+
+export interface PostIncidentReport {
+  readonly reportId: string;
+  readonly title: string;
+  readonly executiveSummary: string;
+  readonly incidentSummary: string;
+  readonly timeline: string;
+  readonly rootCauseAnalysis: string;
+  readonly impactAnalysis: string;
+  readonly responseAnalysis: string;
+  readonly lessonsLearned: string;
+  readonly recommendations: string;
+  readonly appendices: readonly ReportAppendix[];
+  readonly createdAt: number;
+  readonly createdBy: string;
+  readonly approvedAt: number | null;
+  readonly approvedBy: string | null;
+  readonly distribution: readonly string[];
+}
+
+export interface ReportAppendix {
+  readonly appendixId: string;
+  readonly title: string;
+  readonly content: string;
+  readonly attachments: readonly string[];
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// METADATA TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface IncidentMetadata {
+  readonly createdAt: number;
+  readonly createdBy: string;
+  readonly updatedAt: number;
+  readonly updatedBy: string;
+  readonly source: string;
+  readonly sourceId: string | null;
+  readonly relatedIncidents: readonly string[];
+  readonly relatedAlerts: readonly string[];
+  readonly tags: readonly string[];
+  readonly customFields: Readonly<Record<string, unknown>>;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PLAYBOOK TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface IncidentPlaybook {
+  readonly playbookId: string;
+  readonly name: string;
+  readonly description: string;
+  readonly category: IncidentCategory;
+  readonly severity: IncidentSeverity;
+  readonly version: string;
+  readonly phases: readonly PlaybookPhase[];
+  readonly triggers: readonly PlaybookTrigger[];
+  readonly variables: readonly PlaybookVariable[];
+  readonly integrations: readonly PlaybookIntegration[];
+  readonly metadata: PlaybookMetadata;
+}
+
+export interface PlaybookPhase {
+  readonly phaseId: string;
+  readonly name: string;
+  readonly description: string;
+  readonly phase: IncidentPhase;
+  readonly steps: readonly PlaybookStep[];
+  readonly conditions: readonly PhaseCondition[];
+  readonly timeout: number | null;
+}
+
+export interface PlaybookStep {
+  readonly stepId: string;
+  readonly order: number;
+  readonly name: string;
+  readonly description: string;
+  readonly type: 'MANUAL' | 'AUTOMATED' | 'CONDITIONAL' | 'PARALLEL' | 'APPROVAL';
+  readonly action: PlaybookAction;
+  readonly conditions: readonly StepCondition[];
+  readonly timeout: number | null;
+  readonly retries: number;
+  readonly onSuccess: string | null;
+  readonly onFailure: string | null;
+  readonly onTimeout: string | null;
+}
+
+export interface PlaybookAction {
+  readonly actionType: string;
+  readonly integration: string | null;
+  readonly parameters: Readonly<Record<string, unknown>>;
+  readonly outputVariables: readonly string[];
+}
+
+export interface StepCondition {
+  readonly field: string;
+  readonly operator: 'EQUALS' | 'NOT_EQUALS' | 'CONTAINS' | 'GREATER_THAN' | 'LESS_THAN' | 'IN' | 'NOT_IN';
+  readonly value: unknown;
+}
+
+export interface PhaseCondition {
+  readonly conditionType: 'ALL_STEPS_COMPLETE' | 'ANY_STEP_COMPLETE' | 'MANUAL_APPROVAL' | 'TIME_BASED' | 'CUSTOM';
+  readonly parameters: Readonly<Record<string, unknown>>;
+}
+
+export interface PlaybookTrigger {
+  readonly triggerType: 'ALERT' | 'MANUAL' | 'SCHEDULED' | 'API' | 'CONDITION';
+  readonly conditions: readonly TriggerCondition[];
+}
+
+export interface TriggerCondition {
+  readonly field: string;
+  readonly operator: string;
+  readonly value: unknown;
+}
+
+export interface PlaybookVariable {
+  readonly name: string;
+  readonly type: 'STRING' | 'NUMBER' | 'BOOLEAN' | 'ARRAY' | 'OBJECT';
+  readonly defaultValue: unknown;
+  readonly required: boolean;
+  readonly description: string;
+}
+
+export interface PlaybookIntegration {
+  readonly integrationId: string;
+  readonly name: string;
+  readonly type: 'SIEM' | 'EDR' | 'SOAR' | 'TICKETING' | 'COMMUNICATION' | 'CUSTOM';
+  readonly configuration: Readonly<Record<string, unknown>>;
+}
+
+export interface PlaybookMetadata {
+  readonly author: string;
+  readonly createdAt: number;
+  readonly updatedAt: number;
+  readonly lastExecuted: number | null;
+  readonly executionCount: number;
+  readonly successRate: number;
+  readonly averageExecutionTime: number;
+  readonly tags: readonly string[];
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// UI/UX CENTER INTEGRATION
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface IncidentResponseUIConfig {
+  readonly dashboardEnabled: boolean;
+  readonly realTimeUpdates: boolean;
+  readonly visualizations: readonly IRVisualization[];
+  readonly notifications: IRNotificationConfig;
+  readonly reporting: IRReportingConfig;
+  readonly collaboration: IRCollaborationConfig;
+  readonly automation: IRAutomationConfig;
+}
+
+export type IRVisualization =
+  | 'INCIDENT_TIMELINE' | 'PHASE_PROGRESS' | 'ASSET_MAP' | 'TEAM_WORKLOAD'
+  | 'SLA_TRACKER' | 'METRICS_DASHBOARD' | 'EVIDENCE_CHAIN' | 'COMMUNICATION_LOG'
+  | 'PLAYBOOK_EXECUTION' | 'IMPACT_ASSESSMENT' | 'RECOVERY_PROGRESS';
+
+export interface IRNotificationConfig {
+  readonly newIncident: boolean;
+  readonly severityChange: boolean;
+  readonly phaseChange: boolean;
+  readonly slaWarning: boolean;
+  readonly slaBreach: boolean;
+  readonly escalation: boolean;
+  readonly assignmentChange: boolean;
+  readonly actionRequired: boolean;
+  readonly incidentClosed: boolean;
+}
+
+export interface IRReportingConfig {
+  readonly autoGenerate: boolean;
+  readonly format: 'PDF' | 'HTML' | 'DOCX' | 'JSON';
+  readonly templates: readonly string[];
+  readonly schedules: readonly ReportSchedule[];
+  readonly distribution: readonly string[];
+}
+
+export interface ReportSchedule {
+  readonly reportType: string;
+  readonly frequency: 'HOURLY' | 'DAILY' | 'WEEKLY' | 'ON_CLOSE';
+  readonly recipients: readonly string[];
+}
+
+export interface IRCollaborationConfig {
+  readonly chatEnabled: boolean;
+  readonly videoEnabled: boolean;
+  readonly sharedWorkspace: boolean;
+  readonly taskAssignment: boolean;
+  readonly documentSharing: boolean;
+  readonly auditLogging: boolean;
+}
+
+export interface IRAutomationConfig {
+  readonly autoTriage: boolean;
+  readonly autoContainment: boolean;
+  readonly autoEnrichment: boolean;
+  readonly autoNotification: boolean;
+  readonly playbookExecution: boolean;
+  readonly autoEscalation: boolean;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ERROR TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export enum IncidentResponseErrorCode {
+  INCIDENT_NOT_FOUND = 'IR_E001',
+  INVALID_PHASE_TRANSITION = 'IR_E002',
+  CONTAINMENT_FAILED = 'IR_E003',
+  ERADICATION_FAILED = 'IR_E004',
+  RECOVERY_FAILED = 'IR_E005',
+  PLAYBOOK_EXECUTION_ERROR = 'IR_E006',
+  SLA_BREACH = 'IR_E007',
+  EVIDENCE_COLLECTION_ERROR = 'IR_E008',
+  COMMUNICATION_ERROR = 'IR_E009',
+  AUTHORIZATION_ERROR = 'IR_E010',
+}
+
+export class IncidentResponseError extends Error {
+  constructor(
+    public readonly code: IncidentResponseErrorCode,
+    message: string,
+    public readonly details: Readonly<Record<string, unknown>> = {}
+  ) {
+    super(`[${code}] ${message}`);
+    this.name = 'IncidentResponseError';
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// DETERMINISTIC UTILITIES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+function deterministicHash(input: string): number {
+  let hash = 0;
+  for (let i = 0; i < input.length; i++) {
+    const char = input.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash;
+  }
+  return Math.abs(hash);
+}
+
+function generateDeterministicId(prefix: string, seed: number): string {
+  const hash = deterministicHash(`${prefix}-${seed}`);
+  const jitter = Math.abs(Math.sin(seed * 12.9898) * 43758.5453) % 1;
+  return `${prefix}-${hash.toString(16)}-${Math.floor(jitter * 10000).toString(16)}`;
+}
+
+function generateDeterministicTimestamp(seed: number): number {
+  const baseTime = 1704067200000;
+  const offset = Math.abs(deterministicHash(`timestamp-${seed}`)) % 86400000;
+  return baseTime + offset;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// INCIDENT MANAGER
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export class IncidentManager {
+  private operationCounter: number = 0;
+  private readonly incidents: Map<string, Incident> = new Map();
+  private readonly playbooks: Map<string, IncidentPlaybook> = new Map();
+
+  createIncident(
+    title: string,
+    description: string,
+    category: IncidentCategory,
+    severity: IncidentSeverity,
+    source: string
+  ): Incident {
+    this.operationCounter++;
+
+    const incidentId = generateDeterministicId('incident', this.operationCounter);
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+
+    const incident: Incident = {
+      incidentId,
+      title,
+      description,
+      category,
+      severity,
+      status: 'NEW',
+      phase: 'DETECTION_AND_ANALYSIS',
+      priority: this.calculatePriority(severity, category),
+      classification: {
+        confirmed: false,
+        attackVector: null,
+        threatActor: null,
+        campaign: null,
+        mitreMapping: [],
+        killChainPhase: null,
+        confidence: 0,
+      },
+      timeline: {
+        detected: timestamp,
+        reported: timestamp,
+        triaged: null,
+        containmentStarted: null,
+        contained: null,
+        eradicationStarted: null,
+        eradicated: null,
+        recoveryStarted: null,
+        recovered: null,
+        closed: null,
+        events: [{
+          eventId: generateDeterministicId('event', this.operationCounter),
+          timestamp,
+          eventType: 'DETECTION',
+          description: 'Incident detected and created',
+          actor: 'system',
+          source,
+          evidence: [],
+          automated: true,
+        }],
+      },
+      affectedAssets: [],
+      indicators: [],
+      containment: {
+        strategy: 'ISOLATE_HOST',
+        status: 'NOT_STARTED',
+        startTime: null,
+        endTime: null,
+        actions: [],
+        effectiveness: null,
+        notes: null,
+      },
+      eradication: {
+        status: 'NOT_STARTED',
+        startTime: null,
+        endTime: null,
+        actions: [],
+        rootCauseIdentified: false,
+        rootCause: null,
+        vulnerabilitiesPatched: [],
+        malwareRemoved: [],
+        persistenceRemoved: [],
+        notes: null,
+      },
+      recovery: {
+        status: 'NOT_STARTED',
+        startTime: null,
+        endTime: null,
+        plan: {
+          planId: generateDeterministicId('plan', this.operationCounter),
+          priority: [],
+          dependencies: [],
+          estimatedDuration: 0,
+          approvedBy: null,
+          approvedAt: null,
+        },
+        actions: [],
+        systemsRestored: [],
+        dataRestored: [],
+        servicesRestored: [],
+        verificationCompleted: false,
+        monitoringEnhanced: false,
+        notes: null,
+      },
+      team: {
+        incidentCommander: null,
+        leadAnalyst: null,
+        members: [],
+        escalationPath: {
+          levels: this.createDefaultEscalationLevels(),
+          currentLevel: 1,
+          autoEscalate: true,
+          escalationCriteria: [],
+        },
+        externalContacts: [],
+      },
+      communications: {
+        internalUpdates: [],
+        externalNotifications: [],
+        statusReports: [],
+        mediaStatements: [],
+      },
+      evidence: {
+        items: [],
+        chainOfCustody: [],
+        preservationOrders: [],
+        forensicImages: [],
+      },
+      impact: this.createInitialImpactAssessment(timestamp),
+      sla: this.createSLATracking(severity),
+      postIncident: null,
+      metadata: {
+        createdAt: timestamp,
+        createdBy: 'system',
+        updatedAt: timestamp,
+        updatedBy: 'system',
+        source,
+        sourceId: null,
+        relatedIncidents: [],
+        relatedAlerts: [],
+        tags: [],
+        customFields: {},
+      },
+    };
+
+    this.incidents.set(incidentId, incident);
+    return incident;
+  }
+
+  private calculatePriority(severity: IncidentSeverity, category: IncidentCategory): number {
+    const severityScore: Record<IncidentSeverity, number> = {
+      CRITICAL: 4,
+      HIGH: 3,
+      MEDIUM: 2,
+      LOW: 1,
+    };
+
+    const categoryScore: Record<IncidentCategory, number> = {
+      RANSOMWARE: 4,
+      APT: 4,
+      DATA_BREACH: 4,
+      MALWARE: 3,
+      UNAUTHORIZED_ACCESS: 3,
+      CREDENTIAL_COMPROMISE: 3,
+      INSIDER_THREAT: 3,
+      SUPPLY_CHAIN: 3,
+      DENIAL_OF_SERVICE: 2,
+      WEB_APPLICATION_ATTACK: 2,
+      PHISHING: 2,
+      POLICY_VIOLATION: 1,
+      OTHER: 1,
+    };
+
+    return severityScore[severity] * 10 + categoryScore[category];
+  }
+
+  private createDefaultEscalationLevels(): readonly EscalationLevel[] {
+    return [
+      {
+        level: 1,
+        name: 'L1 Analyst',
+        contacts: ['l1-team@company.com'],
+        notificationChannels: ['EMAIL', 'SLACK'],
+        responseTime: 900000,
+        authority: ['triage', 'initial_analysis'],
+      },
+      {
+        level: 2,
+        name: 'L2 Analyst',
+        contacts: ['l2-team@company.com'],
+        notificationChannels: ['EMAIL', 'SLACK', 'PHONE'],
+        responseTime: 1800000,
+        authority: ['containment', 'investigation'],
+      },
+      {
+        level: 3,
+        name: 'Incident Manager',
+        contacts: ['incident-manager@company.com'],
+        notificationChannels: ['EMAIL', 'SLACK', 'PHONE', 'PAGERDUTY'],
+        responseTime: 3600000,
+        authority: ['eradication', 'recovery', 'external_communication'],
+      },
+      {
+        level: 4,
+        name: 'CISO',
+        contacts: ['ciso@company.com'],
+        notificationChannels: ['EMAIL', 'PHONE', 'PAGERDUTY'],
+        responseTime: 7200000,
+        authority: ['executive_decision', 'media_communication', 'legal_action'],
+      },
+    ];
+  }
+
+  private createInitialImpactAssessment(timestamp: number): ImpactAssessment {
+    return {
+      businessImpact: {
+        severity: 'MEDIUM',
+        affectedProcesses: [],
+        affectedServices: [],
+        customersAffected: 0,
+        employeesAffected: 0,
+        partnersAffected: 0,
+        description: 'Initial assessment pending',
+      },
+      dataImpact: {
+        dataCompromised: false,
+        dataExfiltrated: false,
+        dataDestroyed: false,
+        dataModified: false,
+        dataTypes: [],
+        recordsAffected: null,
+        piiInvolved: false,
+        phiInvolved: false,
+        pciInvolved: false,
+        intellectualProperty: false,
+        description: 'Initial assessment pending',
+      },
+      operationalImpact: {
+        severity: 'MEDIUM',
+        systemsAffected: 0,
+        servicesDown: [],
+        downtime: 0,
+        productivityLoss: 0,
+        description: 'Initial assessment pending',
+      },
+      financialImpact: {
+        estimatedLoss: null,
+        directCosts: [],
+        indirectCosts: [],
+        recoveryBudget: null,
+        insuranceCoverage: null,
+        description: 'Initial assessment pending',
+      },
+      reputationalImpact: {
+        severity: 'NONE',
+        mediaAttention: false,
+        customerNotificationRequired: false,
+        publicDisclosureRequired: false,
+        description: 'Initial assessment pending',
+      },
+      regulatoryImpact: {
+        notificationRequired: false,
+        regulations: [],
+        deadlines: [],
+        potentialFines: null,
+        description: 'Initial assessment pending',
+      },
+      overallSeverity: 'MEDIUM',
+      assessedAt: timestamp,
+      assessedBy: 'system',
+    };
+  }
+
+  private createSLATracking(severity: IncidentSeverity): SLATracking {
+    const slaDefinitions: Record<IncidentSeverity, SLADefinition> = {
+      CRITICAL: { acknowledgementTime: 900000, containmentTime: 3600000, resolutionTime: 86400000, updateFrequency: 1800000 },
+      HIGH: { acknowledgementTime: 1800000, containmentTime: 14400000, resolutionTime: 259200000, updateFrequency: 3600000 },
+      MEDIUM: { acknowledgementTime: 3600000, containmentTime: 86400000, resolutionTime: 604800000, updateFrequency: 14400000 },
+      LOW: { acknowledgementTime: 14400000, containmentTime: 259200000, resolutionTime: 1209600000, updateFrequency: 86400000 },
+    };
+
+    const definition = slaDefinitions[severity];
+
+    return {
+      slaDefinition: definition,
+      acknowledgementSLA: { target: definition.acknowledgementTime, actual: null, status: 'ON_TRACK', breachTime: null },
+      containmentSLA: { target: definition.containmentTime, actual: null, status: 'ON_TRACK', breachTime: null },
+      resolutionSLA: { target: definition.resolutionTime, actual: null, status: 'ON_TRACK', breachTime: null },
+      updateSLA: { target: definition.updateFrequency, actual: null, status: 'ON_TRACK', breachTime: null },
+    };
+  }
+
+  transitionPhase(incidentId: string, newPhase: IncidentPhase, actor: string): Incident {
+    this.operationCounter++;
+
+    const incident = this.incidents.get(incidentId);
+    if (!incident) {
+      throw new IncidentResponseError(IncidentResponseErrorCode.INCIDENT_NOT_FOUND, 'Incident not found');
+    }
+
+    const validTransitions: Record<IncidentPhase, readonly IncidentPhase[]> = {
+      PREPARATION: ['DETECTION_AND_ANALYSIS'],
+      DETECTION_AND_ANALYSIS: ['CONTAINMENT'],
+      CONTAINMENT: ['ERADICATION'],
+      ERADICATION: ['RECOVERY'],
+      RECOVERY: ['POST_INCIDENT'],
+      POST_INCIDENT: [],
+    };
+
+    if (!validTransitions[incident.phase].includes(newPhase)) {
+      throw new IncidentResponseError(
+        IncidentResponseErrorCode.INVALID_PHASE_TRANSITION,
+        `Invalid phase transition from ${incident.phase} to ${newPhase}`
+      );
+    }
+
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+
+    const timelineUpdate = this.getTimelineUpdate(newPhase, timestamp);
+    const statusUpdate = this.getStatusUpdate(newPhase);
+
+    const updatedIncident: Incident = {
+      ...incident,
+      phase: newPhase,
+      status: statusUpdate,
+      timeline: {
+        ...incident.timeline,
+        ...timelineUpdate,
+        events: [
+          ...incident.timeline.events,
+          {
+            eventId: generateDeterministicId('event', this.operationCounter),
+            timestamp,
+            eventType: 'STATUS_CHANGE',
+            description: `Phase transitioned to ${newPhase}`,
+            actor,
+            source: 'incident_manager',
+            evidence: [],
+            automated: false,
+          },
+        ],
+      },
+      metadata: {
+        ...incident.metadata,
+        updatedAt: timestamp,
+        updatedBy: actor,
+      },
+    };
+
+    this.incidents.set(incidentId, updatedIncident);
+    return updatedIncident;
+  }
+
+  private getTimelineUpdate(phase: IncidentPhase, timestamp: number): Partial<IncidentTimeline> {
+    const updates: Record<IncidentPhase, Partial<IncidentTimeline>> = {
+      PREPARATION: {},
+      DETECTION_AND_ANALYSIS: { triaged: timestamp },
+      CONTAINMENT: { containmentStarted: timestamp },
+      ERADICATION: { contained: timestamp, eradicationStarted: timestamp },
+      RECOVERY: { eradicated: timestamp, recoveryStarted: timestamp },
+      POST_INCIDENT: { recovered: timestamp },
+    };
+    return updates[phase];
+  }
+
+  private getStatusUpdate(phase: IncidentPhase): IncidentStatus {
+    const statusMap: Record<IncidentPhase, IncidentStatus> = {
+      PREPARATION: 'NEW',
+      DETECTION_AND_ANALYSIS: 'TRIAGED',
+      CONTAINMENT: 'IN_PROGRESS',
+      ERADICATION: 'CONTAINED',
+      RECOVERY: 'ERADICATED',
+      POST_INCIDENT: 'RECOVERED',
+    };
+    return statusMap[phase];
+  }
+
+  executeContainmentAction(
+    incidentId: string,
+    actionType: ContainmentStrategy,
+    target: string,
+    actor: string,
+    parameters: Readonly<Record<string, unknown>> = {}
+  ): ContainmentAction {
+    this.operationCounter++;
+
+    const incident = this.incidents.get(incidentId);
+    if (!incident) {
+      throw new IncidentResponseError(IncidentResponseErrorCode.INCIDENT_NOT_FOUND, 'Incident not found');
+    }
+
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+
+    const action: ContainmentAction = {
+      actionId: generateDeterministicId('action', this.operationCounter),
+      actionType,
+      target,
+      status: 'COMPLETED',
+      initiatedBy: actor,
+      initiatedAt: timestamp,
+      completedAt: timestamp + 5000,
+      automated: false,
+      parameters,
+      result: {
+        success: true,
+        message: `${actionType} executed successfully on ${target}`,
+        details: {},
+        duration: 5000,
+      },
+      rollbackAvailable: true,
+      rollbackPerformed: false,
+    };
+
+    const updatedIncident: Incident = {
+      ...incident,
+      containment: {
+        ...incident.containment,
+        status: 'IN_PROGRESS',
+        startTime: incident.containment.startTime ?? timestamp,
+        actions: [...incident.containment.actions, action],
+      },
+      timeline: {
+        ...incident.timeline,
+        events: [
+          ...incident.timeline.events,
+          {
+            eventId: generateDeterministicId('event', this.operationCounter),
+            timestamp,
+            eventType: 'CONTAINMENT_ACTION',
+            description: `Containment action ${actionType} executed on ${target}`,
+            actor,
+            source: 'incident_manager',
+            evidence: [],
+            automated: false,
+          },
+        ],
+      },
+      metadata: {
+        ...incident.metadata,
+        updatedAt: timestamp,
+        updatedBy: actor,
+      },
+    };
+
+    this.incidents.set(incidentId, updatedIncident);
+    return action;
+  }
+
+  closeIncident(incidentId: string, actor: string): Incident {
+    this.operationCounter++;
+
+    const incident = this.incidents.get(incidentId);
+    if (!incident) {
+      throw new IncidentResponseError(IncidentResponseErrorCode.INCIDENT_NOT_FOUND, 'Incident not found');
+    }
+
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+
+    const updatedIncident: Incident = {
+      ...incident,
+      status: 'CLOSED',
+      timeline: {
+        ...incident.timeline,
+        closed: timestamp,
+        events: [
+          ...incident.timeline.events,
+          {
+            eventId: generateDeterministicId('event', this.operationCounter),
+            timestamp,
+            eventType: 'STATUS_CHANGE',
+            description: 'Incident closed',
+            actor,
+            source: 'incident_manager',
+            evidence: [],
+            automated: false,
+          },
+        ],
+      },
+      metadata: {
+        ...incident.metadata,
+        updatedAt: timestamp,
+        updatedBy: actor,
+      },
+    };
+
+    this.incidents.set(incidentId, updatedIncident);
+    return updatedIncident;
+  }
+
+  getIncidents(): ReadonlyMap<string, Incident> {
+    return this.incidents;
+  }
+
+  getPlaybooks(): ReadonlyMap<string, IncidentPlaybook> {
+    return this.playbooks;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// INCIDENT RESPONSE MANAGER
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export class IncidentResponseManager {
+  private readonly incidentManager: IncidentManager;
+  private readonly uiConfig: IncidentResponseUIConfig;
+  private operationCounter: number = 0;
+
+  constructor(uiConfig: IncidentResponseUIConfig) {
+    this.incidentManager = new IncidentManager();
+    this.uiConfig = uiConfig;
+  }
+
+  createIncident(
+    title: string,
+    description: string,
+    category: IncidentCategory,
+    severity: IncidentSeverity,
+    source: string
+  ): Incident {
+    return this.incidentManager.createIncident(title, description, category, severity, source);
+  }
+
+  transitionPhase(incidentId: string, newPhase: IncidentPhase, actor: string): Incident {
+    return this.incidentManager.transitionPhase(incidentId, newPhase, actor);
+  }
+
+  executeContainment(
+    incidentId: string,
+    actionType: ContainmentStrategy,
+    target: string,
+    actor: string
+  ): ContainmentAction {
+    return this.incidentManager.executeContainmentAction(incidentId, actionType, target, actor);
+  }
+
+  closeIncident(incidentId: string, actor: string): Incident {
+    return this.incidentManager.closeIncident(incidentId, actor);
+  }
+
+  getIncidentManager(): IncidentManager {
+    return this.incidentManager;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// DEFAULT CONFIGURATIONS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export function createDefaultIncidentResponseUIConfig(): IncidentResponseUIConfig {
+  return {
+    dashboardEnabled: true,
+    realTimeUpdates: true,
+    visualizations: [
+      'INCIDENT_TIMELINE', 'PHASE_PROGRESS', 'ASSET_MAP', 'TEAM_WORKLOAD',
+      'SLA_TRACKER', 'METRICS_DASHBOARD', 'EVIDENCE_CHAIN', 'COMMUNICATION_LOG',
+    ],
+    notifications: {
+      newIncident: true,
+      severityChange: true,
+      phaseChange: true,
+      slaWarning: true,
+      slaBreach: true,
+      escalation: true,
+      assignmentChange: true,
+      actionRequired: true,
+      incidentClosed: true,
+    },
+    reporting: {
+      autoGenerate: true,
+      format: 'PDF',
+      templates: ['incident_report', 'executive_summary', 'technical_report'],
+      schedules: [
+        { reportType: 'STATUS_UPDATE', frequency: 'HOURLY', recipients: ['incident-team@company.com'] },
+        { reportType: 'DAILY_SUMMARY', frequency: 'DAILY', recipients: ['security-team@company.com'] },
+      ],
+      distribution: ['security-team@company.com'],
+    },
+    collaboration: {
+      chatEnabled: true,
+      videoEnabled: true,
+      sharedWorkspace: true,
+      taskAssignment: true,
+      documentSharing: true,
+      auditLogging: true,
+    },
+    automation: {
+      autoTriage: true,
+      autoContainment: false,
+      autoEnrichment: true,
+      autoNotification: true,
+      playbookExecution: true,
+      autoEscalation: true,
+    },
+  };
+}
+
+export function createDefaultPlaybook(category: IncidentCategory): IncidentPlaybook {
+  const playbookId = generateDeterministicId('playbook', deterministicHash(category));
+
+  return {
+    playbookId,
+    name: `${category} Response Playbook`,
+    description: `Standard response playbook for ${category} incidents`,
+    category,
+    severity: 'HIGH',
+    version: '1.0.0',
+    phases: [
+      {
+        phaseId: 'phase-1',
+        name: 'Detection and Analysis',
+        description: 'Initial triage and analysis',
+        phase: 'DETECTION_AND_ANALYSIS',
+        steps: [
+          {
+            stepId: 'step-1-1',
+            order: 1,
+            name: 'Initial Triage',
+            description: 'Perform initial triage and validation',
+            type: 'MANUAL',
+            action: { actionType: 'TRIAGE', integration: null, parameters: {}, outputVariables: [] },
+            conditions: [],
+            timeout: 900000,
+            retries: 0,
+            onSuccess: 'step-1-2',
+            onFailure: null,
+            onTimeout: 'step-1-2',
+          },
+          {
+            stepId: 'step-1-2',
+            order: 2,
+            name: 'Enrich Indicators',
+            description: 'Enrich indicators with threat intelligence',
+            type: 'AUTOMATED',
+            action: { actionType: 'ENRICHMENT', integration: 'threat_intel', parameters: {}, outputVariables: ['enriched_indicators'] },
+            conditions: [],
+            timeout: 300000,
+            retries: 3,
+            onSuccess: null,
+            onFailure: null,
+            onTimeout: null,
+          },
+        ],
+        conditions: [{ conditionType: 'ALL_STEPS_COMPLETE', parameters: {} }],
+        timeout: 3600000,
+      },
+      {
+        phaseId: 'phase-2',
+        name: 'Containment',
+        description: 'Contain the threat',
+        phase: 'CONTAINMENT',
+        steps: [
+          {
+            stepId: 'step-2-1',
+            order: 1,
+            name: 'Isolate Affected Systems',
+            description: 'Isolate affected systems from the network',
+            type: 'AUTOMATED',
+            action: { actionType: 'ISOLATE_HOST', integration: 'edr', parameters: {}, outputVariables: [] },
+            conditions: [],
+            timeout: 300000,
+            retries: 3,
+            onSuccess: 'step-2-2',
+            onFailure: null,
+            onTimeout: null,
+          },
+          {
+            stepId: 'step-2-2',
+            order: 2,
+            name: 'Block Indicators',
+            description: 'Block malicious indicators',
+            type: 'AUTOMATED',
+            action: { actionType: 'BLOCK_INDICATORS', integration: 'firewall', parameters: {}, outputVariables: [] },
+            conditions: [],
+            timeout: 300000,
+            retries: 3,
+            onSuccess: null,
+            onFailure: null,
+            onTimeout: null,
+          },
+        ],
+        conditions: [{ conditionType: 'ALL_STEPS_COMPLETE', parameters: {} }],
+        timeout: 3600000,
+      },
+    ],
+    triggers: [
+      { triggerType: 'ALERT', conditions: [{ field: 'category', operator: 'EQUALS', value: category }] },
+    ],
+    variables: [],
+    integrations: [],
+    metadata: {
+      author: 'Security Team',
+      createdAt: 1704067200000,
+      updatedAt: 1704067200000,
+      lastExecuted: null,
+      executionCount: 0,
+      successRate: 0,
+      averageExecutionTime: 0,
+      tags: [category.toLowerCase()],
+    },
+  };
+}

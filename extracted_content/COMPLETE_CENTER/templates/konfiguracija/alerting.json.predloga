@@ -1,0 +1,453 @@
+{
+  "$schema": "https://{{ORGANIZACIJA_DOMENA}}/schemas/alerting-config.json",
+  "metadata": {
+    "projectName": "{{IME_PROJEKTA}}",
+    "version": "{{VERZIJA}}",
+    "domain": "{{DOMENA_SL}}",
+    "generatedAt": "{{DATUM}}"
+  },
+  "global": {
+    "resolveTimeout": "5m",
+    "smtpSmarthost": "smtp.{{ORGANIZACIJA_DOMENA}}:587",
+    "smtpFrom": "alerts@{{ORGANIZACIJA_DOMENA}}",
+    "smtpRequireTLS": true
+  },
+  "routes": {
+    "receiver": "default",
+    "groupBy": ["alertname", "severity", "service"],
+    "groupWait": "30s",
+    "groupInterval": "5m",
+    "repeatInterval": "4h",
+    "routes": [
+      {
+        "match": {
+          "severity": "critical"
+        },
+        "receiver": "security-critical",
+        "groupWait": "0s",
+        "repeatInterval": "15m",
+        "continue": true
+      },
+      {
+        "match": {
+          "severity": "high"
+        },
+        "receiver": "security-high",
+        "groupWait": "30s",
+        "repeatInterval": "1h"
+      },
+      {
+        "match": {
+          "category": "authentication"
+        },
+        "receiver": "auth-team",
+        "groupBy": ["alertname", "userId"]
+      },
+      {
+        "match": {
+          "category": "threat"
+        },
+        "receiver": "security-team",
+        "groupWait": "0s"
+      },
+      {
+        "match": {
+          "category": "compliance"
+        },
+        "receiver": "compliance-team"
+      }
+    ]
+  },
+  "receivers": [
+    {
+      "name": "default",
+      "emailConfigs": [
+        {
+          "to": "ops@{{ORGANIZACIJA_DOMENA}}",
+          "sendResolved": true
+        }
+      ]
+    },
+    {
+      "name": "security-critical",
+      "emailConfigs": [
+        {
+          "to": "security-critical@{{ORGANIZACIJA_DOMENA}}",
+          "sendResolved": true
+        }
+      ],
+      "pagerdutyConfigs": [
+        {
+          "serviceKey": "{{PAGERDUTY_SERVICE_KEY}}",
+          "severity": "critical",
+          "description": "{{ .CommonAnnotations.summary }}",
+          "details": {
+            "alertname": "{{ .CommonLabels.alertname }}",
+            "service": "{{ .CommonLabels.service }}",
+            "severity": "{{ .CommonLabels.severity }}"
+          }
+        }
+      ],
+      "slackConfigs": [
+        {
+          "apiUrl": "{{SLACK_WEBHOOK_URL}}",
+          "channel": "#security-alerts",
+          "username": "Security Alert Bot",
+          "iconEmoji": ":rotating_light:",
+          "title": "CRITICAL: {{ .CommonLabels.alertname }}",
+          "text": "{{ .CommonAnnotations.description }}",
+          "sendResolved": true
+        }
+      ]
+    },
+    {
+      "name": "security-high",
+      "emailConfigs": [
+        {
+          "to": "security@{{ORGANIZACIJA_DOMENA}}",
+          "sendResolved": true
+        }
+      ],
+      "slackConfigs": [
+        {
+          "apiUrl": "{{SLACK_WEBHOOK_URL}}",
+          "channel": "#security-alerts",
+          "username": "Security Alert Bot",
+          "iconEmoji": ":warning:",
+          "title": "HIGH: {{ .CommonLabels.alertname }}",
+          "text": "{{ .CommonAnnotations.description }}",
+          "sendResolved": true
+        }
+      ]
+    },
+    {
+      "name": "auth-team",
+      "emailConfigs": [
+        {
+          "to": "auth-team@{{ORGANIZACIJA_DOMENA}}",
+          "sendResolved": true
+        }
+      ]
+    },
+    {
+      "name": "security-team",
+      "emailConfigs": [
+        {
+          "to": "security@{{ORGANIZACIJA_DOMENA}}",
+          "sendResolved": true
+        }
+      ],
+      "pagerdutyConfigs": [
+        {
+          "serviceKey": "{{PAGERDUTY_SECURITY_KEY}}",
+          "severity": "{{ .CommonLabels.severity }}"
+        }
+      ]
+    },
+    {
+      "name": "compliance-team",
+      "emailConfigs": [
+        {
+          "to": "compliance@{{ORGANIZACIJA_DOMENA}}",
+          "sendResolved": true
+        }
+      ]
+    }
+  ],
+  "inhibitRules": [
+    {
+      "sourceMatch": {
+        "severity": "critical"
+      },
+      "targetMatch": {
+        "severity": "high"
+      },
+      "equal": ["alertname", "service"]
+    },
+    {
+      "sourceMatch": {
+        "severity": "high"
+      },
+      "targetMatch": {
+        "severity": "medium"
+      },
+      "equal": ["alertname", "service"]
+    }
+  ],
+  "alerts": {
+    "authentication": [
+      {
+        "name": "HighFailedLoginRate",
+        "expr": "rate(auth_login_failed_total[5m]) > 10",
+        "for": "2m",
+        "labels": {
+          "severity": "high",
+          "category": "authentication"
+        },
+        "annotations": {
+          "summary": "High rate of failed login attempts",
+          "description": "More than 10 failed login attempts per second in the last 5 minutes"
+        }
+      },
+      {
+        "name": "BruteForceDetected",
+        "expr": "rate(auth_login_failed_total{reason=\"invalid_password\"}[1m]) > 5",
+        "for": "1m",
+        "labels": {
+          "severity": "critical",
+          "category": "authentication"
+        },
+        "annotations": {
+          "summary": "Potential brute force attack detected",
+          "description": "More than 5 failed password attempts per second from {{ $labels.ip_address }}"
+        }
+      },
+      {
+        "name": "AccountLockouts",
+        "expr": "increase(auth_account_locked_total[1h]) > 10",
+        "for": "5m",
+        "labels": {
+          "severity": "high",
+          "category": "authentication"
+        },
+        "annotations": {
+          "summary": "High number of account lockouts",
+          "description": "More than 10 accounts locked in the last hour"
+        }
+      },
+      {
+        "name": "MFAFailures",
+        "expr": "rate(auth_mfa_failed_total[5m]) > 5",
+        "for": "2m",
+        "labels": {
+          "severity": "high",
+          "category": "authentication"
+        },
+        "annotations": {
+          "summary": "High rate of MFA failures",
+          "description": "More than 5 MFA failures per second"
+        }
+      }
+    ],
+    "authorization": [
+      {
+        "name": "UnauthorizedAccessAttempts",
+        "expr": "rate(authz_denied_total[5m]) > 10",
+        "for": "2m",
+        "labels": {
+          "severity": "high",
+          "category": "authorization"
+        },
+        "annotations": {
+          "summary": "High rate of unauthorized access attempts",
+          "description": "More than 10 authorization denials per second"
+        }
+      },
+      {
+        "name": "PrivilegeEscalationAttempt",
+        "expr": "increase(authz_privilege_escalation_attempt_total[5m]) > 0",
+        "for": "0m",
+        "labels": {
+          "severity": "critical",
+          "category": "authorization"
+        },
+        "annotations": {
+          "summary": "Privilege escalation attempt detected",
+          "description": "User {{ $labels.user_id }} attempted privilege escalation"
+        }
+      }
+    ],
+    "cryptography": [
+      {
+        "name": "KeyExpirationWarning",
+        "expr": "security_key_expiration_days < 30",
+        "for": "1h",
+        "labels": {
+          "severity": "medium",
+          "category": "cryptography"
+        },
+        "annotations": {
+          "summary": "Cryptographic key expiring soon",
+          "description": "Key {{ $labels.key_id }} expires in {{ $value }} days"
+        }
+      },
+      {
+        "name": "KeyExpirationCritical",
+        "expr": "security_key_expiration_days < 7",
+        "for": "1h",
+        "labels": {
+          "severity": "critical",
+          "category": "cryptography"
+        },
+        "annotations": {
+          "summary": "Cryptographic key expiring very soon",
+          "description": "Key {{ $labels.key_id }} expires in {{ $value }} days - immediate rotation required"
+        }
+      },
+      {
+        "name": "HSMConnectionFailure",
+        "expr": "security_hsm_connection_status == 0",
+        "for": "1m",
+        "labels": {
+          "severity": "critical",
+          "category": "cryptography"
+        },
+        "annotations": {
+          "summary": "HSM connection failure",
+          "description": "Unable to connect to Hardware Security Module"
+        }
+      }
+    ],
+    "threat": [
+      {
+        "name": "ThreatDetected",
+        "expr": "increase(security_threat_detected_total[5m]) > 0",
+        "for": "0m",
+        "labels": {
+          "severity": "high",
+          "category": "threat"
+        },
+        "annotations": {
+          "summary": "Security threat detected",
+          "description": "Threat type {{ $labels.threat_type }} detected from {{ $labels.source_ip }}"
+        }
+      },
+      {
+        "name": "CriticalThreatDetected",
+        "expr": "increase(security_threat_detected_total{severity=\"critical\"}[5m]) > 0",
+        "for": "0m",
+        "labels": {
+          "severity": "critical",
+          "category": "threat"
+        },
+        "annotations": {
+          "summary": "Critical security threat detected",
+          "description": "Critical threat {{ $labels.threat_type }} requires immediate attention"
+        }
+      },
+      {
+        "name": "DDoSDetected",
+        "expr": "rate(http_requests_total[1m]) > 10000",
+        "for": "2m",
+        "labels": {
+          "severity": "critical",
+          "category": "threat"
+        },
+        "annotations": {
+          "summary": "Potential DDoS attack detected",
+          "description": "Request rate exceeds 10000 requests per second"
+        }
+      }
+    ],
+    "audit": [
+      {
+        "name": "AuditLogWriteFailure",
+        "expr": "rate(audit_write_failures_total[5m]) > 0",
+        "for": "1m",
+        "labels": {
+          "severity": "critical",
+          "category": "audit"
+        },
+        "annotations": {
+          "summary": "Audit log write failures",
+          "description": "Unable to write to audit log - compliance violation"
+        }
+      },
+      {
+        "name": "AuditLogIntegrityFailure",
+        "expr": "audit_integrity_check_status == 0",
+        "for": "0m",
+        "labels": {
+          "severity": "critical",
+          "category": "audit"
+        },
+        "annotations": {
+          "summary": "Audit log integrity check failed",
+          "description": "Hash chain verification failed - potential tampering detected"
+        }
+      }
+    ],
+    "compliance": [
+      {
+        "name": "ComplianceViolation",
+        "expr": "compliance_violation_total > 0",
+        "for": "0m",
+        "labels": {
+          "severity": "high",
+          "category": "compliance"
+        },
+        "annotations": {
+          "summary": "Compliance violation detected",
+          "description": "Violation of {{ $labels.standard }} - {{ $labels.control_id }}"
+        }
+      },
+      {
+        "name": "CertificateExpiring",
+        "expr": "security_certificate_expiration_days < 30",
+        "for": "1h",
+        "labels": {
+          "severity": "high",
+          "category": "compliance"
+        },
+        "annotations": {
+          "summary": "TLS certificate expiring soon",
+          "description": "Certificate {{ $labels.cert_name }} expires in {{ $value }} days"
+        }
+      }
+    ],
+    "availability": [
+      {
+        "name": "ServiceDown",
+        "expr": "up == 0",
+        "for": "1m",
+        "labels": {
+          "severity": "critical",
+          "category": "availability"
+        },
+        "annotations": {
+          "summary": "Service is down",
+          "description": "{{ $labels.job }} has been down for more than 1 minute"
+        }
+      },
+      {
+        "name": "HighErrorRate",
+        "expr": "rate(http_requests_total{status=~\"5..\"}[5m]) / rate(http_requests_total[5m]) > 0.05",
+        "for": "5m",
+        "labels": {
+          "severity": "high",
+          "category": "availability"
+        },
+        "annotations": {
+          "summary": "High error rate",
+          "description": "Error rate is above 5%"
+        }
+      },
+      {
+        "name": "HighLatency",
+        "expr": "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) > 2",
+        "for": "5m",
+        "labels": {
+          "severity": "high",
+          "category": "availability"
+        },
+        "annotations": {
+          "summary": "High latency",
+          "description": "95th percentile latency is above 2 seconds"
+        }
+      },
+      {
+        "name": "CircuitBreakerOpen",
+        "expr": "circuit_breaker_state == 1",
+        "for": "1m",
+        "labels": {
+          "severity": "high",
+          "category": "availability"
+        },
+        "annotations": {
+          "summary": "Circuit breaker is open",
+          "description": "Circuit breaker {{ $labels.circuit_name }} is open"
+        }
+      }
+    ]
+  }
+}

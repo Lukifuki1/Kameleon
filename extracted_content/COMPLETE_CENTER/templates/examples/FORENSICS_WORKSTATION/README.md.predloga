@@ -1,0 +1,80 @@
+# {{IME_PROJEKTA}} - Digital Forensics Workstation
+
+## _traceability
+- requirement: ZAH-SEC-006 Digitalna forenzična delovna postaja
+- design: DSN-SEC-006 Referenčna implementacija forenzičnega centra
+- test: TST-SEC-006 Verifikacija Forensics primera
+
+## Opis
+
+Digital Forensics Workstation je enterprise-grade platforma za celovito digitalno forenzično preiskavo, vključno z device forensics, memory forensics, network forensics in mobile forensics.
+
+## Vključene komponente
+
+### Device Forensics
+- Disk imaging
+- File system analysis
+- Deleted file recovery
+- Timeline analysis
+- Artifact extraction
+- Registry analysis
+
+### Memory Forensics
+- Memory acquisition
+- Process analysis
+- Network connections
+- Malware detection
+- Credential extraction
+- Rootkit detection
+
+### Network Forensics
+- Packet capture
+- Protocol analysis
+- Session reconstruction
+- Traffic analysis
+- Anomaly detection
+- Evidence correlation
+
+### Mobile Forensics
+- iOS acquisition
+- Android acquisition
+- App data extraction
+- Communication recovery
+- Location history
+- Cloud data
+
+### Evidence Management
+- Chain of custody
+- Evidence integrity
+- Hash verification
+- Secure storage
+- Court-ready reports
+
+## Skladnost
+
+- DO-178C DAL-B
+- IEC-61508 SIL-3
+- ISO-26262 ASIL-C
+- ISO 27037
+- NIST 800-86
+
+## SLA
+
+- Uptime: 99.99%
+- RTO: 30min
+- RPO: 0 (no data loss)
+- Evidence Integrity: 100%
+- Chain of Custody: Complete
+
+## Zagon
+
+```bash
+npm install
+npm run build
+npm run forensics:start
+npm run forensics:acquire
+```
+
+## Licenca
+
+Enterprise License - {{ORGANIZACIJA}} - CONFIDENTIAL

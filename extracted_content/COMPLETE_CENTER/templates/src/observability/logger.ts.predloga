@@ -1,0 +1,373 @@
+/**
+ * @file Varnostni strukturirani logger modul za {{IME_PROJEKTA}}
+ * @author {{AVTOR}}
+ * @version {{VERZIJA}}
+ * @date {{DATUM}}
+ * @domain {{DOMENA_SL}}
+ * 
+ * @requirement REQ-SEC-LOG-001
+ * @design DSN-SEC-LOG-001
+ * @test TST-SEC-LOG-001
+ * 
+ * @description
+ * Specializiran logger za varnostne sisteme z dodatnimi funkcionalnostmi:
+ * - Varnostno logiranje z maskiranjem obcutljivih podatkov
+ * - Forenzicno logiranje za varnostne incidente
+ * - Skladnost z SIEM sistemi (Splunk, ELK, QRadar)
+ * - Nespremenljivost logov za revizijsko sled
+ * 
+ * @compliance DO-178C, IEC-61508, ISO-26262, MIL-STD-882E
+ * @security ISO-27001, NIST-800-53, SOC-2
+ * @meta_atom OBS_001 - Structured Logging
+ */
+
+import { getClock, Clock } from '@mia/core/clock';
+import { createHash } from 'crypto';
+const clock: Clock = getClock();
+
+// ============================================================================
+// TIPI
+// ============================================================================
+
+/**
+ * Nivo logiranja za varnostne sisteme
+ */
+export type LogLevel = 'DEBUG' | 'INFO' | 'WARN' | 'ERROR' | 'FATAL' | 'SECURITY' | 'AUDIT';
+
+/**
+ * Kategorija varnostnega dogodka
+ */
+export type SecurityEventCategory = 
+    | 'AUTHENTICATION'
+    | 'AUTHORIZATION'
+    | 'ACCESS_CONTROL'
+    | 'DATA_PROTECTION'
+    | 'INTRUSION_DETECTION'
+    | 'VULNERABILITY'
+    | 'COMPLIANCE'
+    | 'INCIDENT';
+
+/**
+ * Strukturiran log vnos za varnostne sisteme
+ */
+export interface LogEntry {
+    /** Casovni zig v ISO 8601 formatu */
+    readonly timestamp: string;
+    /** Nivo logiranja */
+    readonly level: LogLevel;
+    /** Sporocilo */
+    readonly message: string;
+    /** Kontekst */
+    readonly context: Readonly<Record<string, unknown>>;
+    /** Ime storitve */
+    readonly service: string;
+    /** Trace ID za korelacijo */
+    readonly traceId: string | null;
+    /** Span ID za korelacijo */
+    readonly spanId: string | null;
+    /** Varnostna kategorija (za varnostne dogodke) */
+    readonly securityCategory: SecurityEventCategory | null;
+    /** Hash vnosa za integriteto */
+    readonly entryHash: string;
+    /** Hash prejsnjega vnosa za verizenje */
+    readonly previousHash: string | null;
+}
+
+/**
+ * Konfiguracija varnostnega loggerja
+ */
+export interface SecurityLoggerConfig {
+    /** Ime storitve */
+    readonly service: string;
+    /** Minimalni nivo logiranja */
+    readonly minLevel: LogLevel;
+    /** Format izhoda */
+    readonly format: 'json' | 'cef' | 'leef';
+    /** Ali je omogoceno */
+    readonly enabled: boolean;
+    /** Ali maskirati obcutljive podatke */
+    readonly maskSensitiveData: boolean;
+    /** Vzorci za maskiranje */
+    readonly sensitivePatterns: readonly RegExp[];
+    /** SIEM endpoint */
+    readonly siemEndpoint: string | null;
+}
+
+// ============================================================================
+// KONSTANTE
+// ============================================================================
+
+const LOG_LEVEL_PRIORITY: Readonly<Record<LogLevel, number>> = {
+    DEBUG: 0,
+    INFO: 1,
+    WARN: 2,
+    ERROR: 3,
+    FATAL: 4,
+    SECURITY: 5,
+    AUDIT: 6,
+};
+
+const DEFAULT_SENSITIVE_PATTERNS: readonly RegExp[] = [
+    /password["\s]*[:=]["\s]*["'][^"']+["']/gi,
+    /api[_-]?key["\s]*[:=]["\s]*["'][^"']+["']/gi,
+    /secret["\s]*[:=]["\s]*["'][^"']+["']/gi,
+    /token["\s]*[:=]["\s]*["'][^"']+["']/gi,
+    /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/g,
+    /\b\d{3}-\d{2}-\d{4}\b/g,
+    /\b\d{16}\b/g,
+];
+
+const DEFAULT_CONFIG: SecurityLoggerConfig = {
+    service: '{{IME_PROJEKTA}}',
+    minLevel: 'INFO',
+    format: 'json',
+    enabled: true,
+    maskSensitiveData: true,
+    sensitivePatterns: DEFAULT_SENSITIVE_PATTERNS,
+    siemEndpoint: null,
+};
+
+// ============================================================================
+// STANJE
+// ============================================================================
+
+let currentConfig: SecurityLoggerConfig = DEFAULT_CONFIG;
+let currentTraceId: string | null = null;
+let currentSpanId: string | null = null;
+let previousEntryHash: string | null = null;
+let entryCounter = 0;
+
+// ============================================================================
+// FUNKCIJE
+// ============================================================================
+
+/**
+ * Nastavi konfiguracijo varnostnega loggerja
+ */
+export function configureLogger(config: Partial<SecurityLoggerConfig>): void {
+    currentConfig = { ...currentConfig, ...config };
+}
+
+/**
+ * Nastavi trace kontekst
+ */
+export function setTraceContext(traceId: string | null, spanId: string | null): void {
+    currentTraceId = traceId;
+    currentSpanId = spanId;
+}
+
+/**
+ * Maskiraj obcutljive podatke
+ */
+function maskSensitiveData(data: string): string {
+    if (!currentConfig.maskSensitiveData) {
+        return data;
+    }
+    
+    let masked = data;
+    for (const pattern of currentConfig.sensitivePatterns) {
+        masked = masked.replace(pattern, '[MASKED]');
+    }
+    return masked;
+}
+
+/**
+ * Izracunaj hash vnosa za integriteto
+ */
+function computeEntryHash(entry: Omit<LogEntry, 'entryHash'>): string {
+    const content = JSON.stringify({
+        timestamp: entry.timestamp,
+        level: entry.level,
+        message: entry.message,
+        service: entry.service,
+        previousHash: entry.previousHash,
+    });
+    return createHash('sha256').update(content).digest('hex').substring(0, 16);
+}
+
+/**
+ * Ustvari log vnos
+ */
+function createLogEntry(
+    level: LogLevel,
+    message: string,
+    context: Record<string, unknown> = {},
+    securityCategory: SecurityEventCategory | null = null
+): LogEntry {
+    entryCounter++;
+    const maskedMessage = maskSensitiveData(message);
+    const maskedContext: Record<string, unknown> = {};
+    
+    for (const [key, value] of Object.entries(context)) {
+        if (typeof value === 'string') {
+            maskedContext[key] = maskSensitiveData(value);
+        } else {
+            maskedContext[key] = value;
+        }
+    }
+    
+    const partialEntry = {
+        timestamp: new Date(clock.nowMs()).toISOString(),
+        level,
+        message: maskedMessage,
+        context: maskedContext,
+        service: currentConfig.service,
+        traceId: currentTraceId,
+        spanId: currentSpanId,
+        securityCategory,
+        previousHash: previousEntryHash,
+    };
+    
+    const entryHash = computeEntryHash(partialEntry);
+    previousEntryHash = entryHash;
+    
+    return {
+        ...partialEntry,
+        entryHash,
+    };
+}
+
+/**
+ * Formatiraj log vnos v CEF format (Common Event Format)
+ */
+function formatAsCEF(entry: LogEntry): string {
+    const severity = LOG_LEVEL_PRIORITY[entry.level];
+    const extension = Object.entries(entry.context)
+        .map(([k, v]) => `${k}=${String(v)}`)
+        .join(' ');
+    
+    return `CEF:0|{{IME_PROJEKTA}}|SecurityLogger|{{VERZIJA}}|${entry.level}|${entry.message}|${severity}|${extension}`;
+}
+
+/**
+ * Formatiraj log vnos v LEEF format (Log Event Extended Format)
+ */
+function formatAsLEEF(entry: LogEntry): string {
+    const attributes = Object.entries(entry.context)
+        .map(([k, v]) => `${k}=${String(v)}`)
+        .join('\t');
+    
+    return `LEEF:2.0|{{IME_PROJEKTA}}|SecurityLogger|{{VERZIJA}}|${entry.level}|${attributes}`;
+}
+
+/**
+ * Formatiraj log vnos
+ */
+function formatLogEntry(entry: LogEntry): string {
+    switch (currentConfig.format) {
+        case 'cef':
+            return formatAsCEF(entry);
+        case 'leef':
+            return formatAsLEEF(entry);
+        case 'json':
+        default:
+            return JSON.stringify(entry);
+    }
+}
+
+/**
+ * Zapisi log vnos
+ */
+function writeLog(entry: LogEntry): void {
+    if (!currentConfig.enabled) {
+        return;
+    }
+    
+    const entryPriority = LOG_LEVEL_PRIORITY[entry.level];
+    const minPriority = LOG_LEVEL_PRIORITY[currentConfig.minLevel];
+    
+    if (entryPriority < minPriority) {
+        return;
+    }
+    
+    const formatted = formatLogEntry(entry);
+    process.stdout.write(formatted + '\n');
+}
+
+/**
+ * Logiranje na DEBUG nivoju
+ */
+export function logDebug(message: string, context: Record<string, unknown> = {}): void {
+    const entry = createLogEntry('DEBUG', message, context);
+    writeLog(entry);
+}
+
+/**
+ * Logiranje na INFO nivoju
+ */
+export function logInfo(message: string, context: Record<string, unknown> = {}): void {
+    const entry = createLogEntry('INFO', message, context);
+    writeLog(entry);
+}
+
+/**
+ * Logiranje na WARN nivoju
+ */
+export function logWarn(message: string, context: Record<string, unknown> = {}): void {
+    const entry = createLogEntry('WARN', message, context);
+    writeLog(entry);
+}
+
+/**
+ * Logiranje na ERROR nivoju
+ */
+export function logError(message: string, context: Record<string, unknown> = {}): void {
+    const entry = createLogEntry('ERROR', message, context);
+    writeLog(entry);
+}
+
+/**
+ * Logiranje na FATAL nivoju
+ */
+export function logFatal(message: string, context: Record<string, unknown> = {}): void {
+    const entry = createLogEntry('FATAL', message, context);
+    writeLog(entry);
+}
+
+/**
+ * Logiranje varnostnega dogodka
+ */
+export function logSecurityEvent(
+    message: string,
+    category: SecurityEventCategory,
+    context: Record<string, unknown> = {}
+): void {
+    const entry = createLogEntry('SECURITY', message, { ...context, category }, category);
+    writeLog(entry);
+}
+
+/**
+ * Logiranje revizijskega dogodka
+ */
+export function logAuditEvent(
+    message: string,
+    context: Record<string, unknown> = {}
+): void {
+    const entry = createLogEntry('AUDIT', message, context);
+    writeLog(entry);
+}
+
+/**
+ * Splosna log funkcija
+ */
+export function log(level: LogLevel, message: string, context: Record<string, unknown> = {}): void {
+    const entry = createLogEntry(level, message, context);
+    writeLog(entry);
+}
+
+// ============================================================================
+// IZVOZ
+// ============================================================================
+
+export const SecurityLogger = {
+    configure: configureLogger,
+    setTraceContext,
+    debug: logDebug,
+    info: logInfo,
+    warn: logWarn,
+    error: logError,
+    fatal: logFatal,
+    security: logSecurityEvent,
+    audit: logAuditEvent,
+    log,
+};

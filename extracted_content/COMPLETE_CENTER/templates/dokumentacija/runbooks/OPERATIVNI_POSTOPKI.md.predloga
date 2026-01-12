@@ -1,0 +1,425 @@
+# Operativni Postopki - {{IME_PROJEKTA}}
+
+## Pregled
+
+Ta dokument vsebuje podrobne operativne postopke za upravljanje varnostnega sistema {{IME_PROJEKTA}}. Postopki so namenjeni operativnim ekipam za izvajanje rutinskih in izrednih nalog.
+
+**Verzija:** {{VERZIJA}}
+**Datum:** {{DATUM}}
+**Avtor:** {{AVTOR}}
+**Domena:** {{DOMENA_SL}}
+
+## Skladnost
+
+- **DO-178C** - Software Considerations in Airborne Systems
+- **IEC 61508** - Functional Safety
+- **ISO 27001** - Information Security Management
+- **ITIL v4** - IT Service Management
+
+---
+
+## 1. Upravljanje Uporabnikov
+
+### 1.1 Ustvarjanje Novega Uporabnika
+
+**Predpogoji:**
+- Odobritev vodje
+- Izpolnjen obrazec za dostop
+- Določene vloge in dovoljenja
+
+**Postopek:**
+
+```bash
+# 1. Ustvari uporabnika
+curl -X POST https://api.{{IME_PROJEKTA_SLUG}}.{{ORGANIZACIJA_DOMENA}}/v1/admin/users \
+  -H "Authorization: Bearer $ADMIN_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "username": "<username>",
+    "email": "<email>",
+    "firstName": "<ime>",
+    "lastName": "<priimek>",
+    "roles": ["user"],
+    "requireMfaSetup": true,
+    "passwordExpiresDays": 90
+  }'
+
+# 2. Pošlji pozdravno sporočilo z navodili
+curl -X POST https://api.{{IME_PROJEKTA_SLUG}}.{{ORGANIZACIJA_DOMENA}}/v1/admin/users/<userId>/welcome \
+  -H "Authorization: Bearer $ADMIN_TOKEN"
+
+# 3. Preveri ustvaritev
+curl -X GET https://api.{{IME_PROJEKTA_SLUG}}.{{ORGANIZACIJA_DOMENA}}/v1/admin/users/<userId> \
+  -H "Authorization: Bearer $ADMIN_TOKEN"
+```
+
+**Verifikacija:**
+- [ ] Uporabnik ustvarjen
+- [ ] Email poslan
+- [ ] Vloge dodeljene
+- [ ] MFA zahteva aktivna
+
+### 1.2 Deaktivacija Uporabnika
+
+**Predpogoji:**
+- Odobritev vodje ali HR
+- Dokumentiran razlog
+
+**Postopek:**
+
+```bash
+# 1. Prekini vse aktivne seje
+curl -X DELETE https://api.{{IME_PROJEKTA_SLUG}}.{{ORGANIZACIJA_DOMENA}}/v1/admin/users/<userId>/sessions \
+  -H "Authorization: Bearer $ADMIN_TOKEN" \
+  -d '{"reason": "account_deactivation"}'
+
+# 2. Deaktiviraj uporabnika
+curl -X POST https://api.{{IME_PROJEKTA_SLUG}}.{{ORGANIZACIJA_DOMENA}}/v1/admin/users/<userId>/deactivate \
+  -H "Authorization: Bearer $ADMIN_TOKEN" \
+  -d '{"reason": "<razlog>", "retainData": true}'
+
+# 3. Preveri deaktivacijo
+curl -X GET https://api.{{IME_PROJEKTA_SLUG}}.{{ORGANIZACIJA_DOMENA}}/v1/admin/users/<userId> \
+  -H "Authorization: Bearer $ADMIN_TOKEN" | jq '.data.status'
+```
+
+**Verifikacija:**
+- [ ] Vse seje prekinjene
+- [ ] Uporabnik deaktiviran
+- [ ] Revizijski zapis ustvarjen
+
+### 1.3 Ponastavitev Gesla
+
+**Predpogoji:**
+- Zahteva uporabnika ali varnostni incident
+- Verifikacija identitete
+
+**Postopek:**
+
+```bash
+# 1. Generiraj začasno geslo
+curl -X POST https://api.{{IME_PROJEKTA_SLUG}}.{{ORGANIZACIJA_DOMENA}}/v1/admin/users/<userId>/password/reset \
+  -H "Authorization: Bearer $ADMIN_TOKEN" \
+  -d '{"sendEmail": true, "expireHours": 24}'
+
+# 2. Prekini vse aktivne seje (varnostni ukrep)
+curl -X DELETE https://api.{{IME_PROJEKTA_SLUG}}.{{ORGANIZACIJA_DOMENA}}/v1/admin/users/<userId>/sessions \
+  -H "Authorization: Bearer $ADMIN_TOKEN" \
+  -d '{"reason": "password_reset"}'
+```
+
+**Verifikacija:**
+- [ ] Email poslan
+- [ ] Seje prekinjene
+- [ ] Uporabnik obveščen
+
+---
+
+## 2. Upravljanje Vlog in Dovoljenj
+
+### 2.1 Dodelitev Vloge
+
+**Predpogoji:**
+- Odobritev lastnika vloge
+- Dokumentirana potreba
+
+**Postopek:**
+
+```bash
+# 1. Preveri obstoječe vloge
+curl -X GET https://api.{{IME_PROJEKTA_SLUG}}.{{ORGANIZACIJA_DOMENA}}/v1/admin/users/<userId>/roles \
+  -H "Authorization: Bearer $ADMIN_TOKEN"
+
+# 2. Dodeli vlogo
+curl -X POST https://api.{{IME_PROJEKTA_SLUG}}.{{ORGANIZACIJA_DOMENA}}/v1/admin/users/<userId>/roles \
+  -H "Authorization: Bearer $ADMIN_TOKEN" \
+  -d '{"role": "<vloga>", "reason": "<razlog>", "expiresAt": "<datum_ali_null>"}'
+
+# 3. Preveri dodelitev
+curl -X GET https://api.{{IME_PROJEKTA_SLUG}}.{{ORGANIZACIJA_DOMENA}}/v1/admin/users/<userId>/roles \
+  -H "Authorization: Bearer $ADMIN_TOKEN"
+```
+
+### 2.2 Odvzem Vloge
+
+**Postopek:**
+
+```bash
+# 1. Odvzemi vlogo
+curl -X DELETE https://api.{{IME_PROJEKTA_SLUG}}.{{ORGANIZACIJA_DOMENA}}/v1/admin/users/<userId>/roles/<vloga> \
+  -H "Authorization: Bearer $ADMIN_TOKEN" \
+  -d '{"reason": "<razlog>"}'
+
+# 2. Osveži seje (za takojšnji učinek)
+curl -X POST https://api.{{IME_PROJEKTA_SLUG}}.{{ORGANIZACIJA_DOMENA}}/v1/admin/users/<userId>/sessions/refresh \
+  -H "Authorization: Bearer $ADMIN_TOKEN"
+```
+
+---
+
+## 3. Upravljanje Ključev
+
+### 3.1 Načrtovana Rotacija Ključa
+
+**Predpogoji:**
+- Načrtovano vzdrževalno okno
+- Obveščene prizadete ekipe
+
+**Postopek:**
+
+```bash
+# 1. Preveri stanje ključa
+curl -X GET https://api.{{IME_PROJEKTA_SLUG}}.{{ORGANIZACIJA_DOMENA}}/v1/keys/<keyId> \
+  -H "Authorization: Bearer $ADMIN_TOKEN"
+
+# 2. Izvedi rotacijo
+curl -X POST https://api.{{IME_PROJEKTA_SLUG}}.{{ORGANIZACIJA_DOMENA}}/v1/keys/<keyId>/rotate \
+  -H "Authorization: Bearer $ADMIN_TOKEN" \
+  -d '{"reason": "scheduled", "deprecationPeriodDays": 30}'
+
+# 3. Preveri nov ključ
+curl -X GET https://api.{{IME_PROJEKTA_SLUG}}.{{ORGANIZACIJA_DOMENA}}/v1/keys \
+  -H "Authorization: Bearer $ADMIN_TOKEN" | jq '.data.keys[] | select(.status == "active")'
+
+# 4. Preveri da stari ključ je deprecated
+curl -X GET https://api.{{IME_PROJEKTA_SLUG}}.{{ORGANIZACIJA_DOMENA}}/v1/keys/<oldKeyId> \
+  -H "Authorization: Bearer $ADMIN_TOKEN" | jq '.data.status'
+```
+
+**Verifikacija:**
+- [ ] Nov ključ aktiven
+- [ ] Stari ključ deprecated
+- [ ] Aplikacije delujejo normalno
+- [ ] Revizijski zapis ustvarjen
+
+### 3.2 Nujna Rotacija Ključa (Kompromitacija)
+
+**OPOZORILO:** Ta postopek se izvaja samo ob potrjeni ali sumljivi kompromitaciji.
+
+**Postopek:**
+
+```bash
+# 1. Takoj rotiraj ključ brez deprecation obdobja
+curl -X POST https://api.{{IME_PROJEKTA_SLUG}}.{{ORGANIZACIJA_DOMENA}}/v1/keys/<keyId>/rotate \
+  -H "Authorization: Bearer $ADMIN_TOKEN" \
+  -d '{"reason": "compromised", "immediate": true, "revokeOld": true}'
+
+# 2. Prekini vse seje (če je bil kompromitiran session key)
+curl -X POST https://api.{{IME_PROJEKTA_SLUG}}.{{ORGANIZACIJA_DOMENA}}/v1/admin/sessions/revoke-all \
+  -H "Authorization: Bearer $ADMIN_TOKEN" \
+  -d '{"reason": "key_compromise"}'
+
+# 3. Obvesti varnostno ekipo
+# (avtomatsko preko alerting sistema)
+
+# 4. Dokumentiraj incident
+curl -X POST https://api.{{IME_PROJEKTA_SLUG}}.{{ORGANIZACIJA_DOMENA}}/v1/incidents \
+  -H "Authorization: Bearer $ADMIN_TOKEN" \
+  -d '{
+    "type": "key_compromise",
+    "severity": "critical",
+    "affectedKey": "<keyId>",
+    "description": "<opis>"
+  }'
+```
+
+---
+
+## 4. Upravljanje Certifikatov
+
+### 4.1 Obnova Certifikata
+
+**Predpogoji:**
+- Certifikat poteče v manj kot 30 dneh
+- Dostop do CA
+
+**Postopek:**
+
+```bash
+# 1. Preveri stanje certifikata
+curl -X GET https://api.{{IME_PROJEKTA_SLUG}}.{{ORGANIZACIJA_DOMENA}}/v1/certificates/<certId> \
+  -H "Authorization: Bearer $ADMIN_TOKEN"
+
+# 2. Generiraj CSR
+curl -X POST https://api.{{IME_PROJEKTA_SLUG}}.{{ORGANIZACIJA_DOMENA}}/v1/certificates/<certId>/csr \
+  -H "Authorization: Bearer $ADMIN_TOKEN" \
+  -o csr.pem
+
+# 3. Pošlji CSR na CA in pridobi nov certifikat
+# (ta korak je odvisen od CA)
+
+# 4. Naloži nov certifikat
+curl -X POST https://api.{{IME_PROJEKTA_SLUG}}.{{ORGANIZACIJA_DOMENA}}/v1/certificates/<certId>/renew \
+  -H "Authorization: Bearer $ADMIN_TOKEN" \
+  -F "certificate=@new_cert.pem" \
+  -F "chain=@chain.pem"
+
+# 5. Ponovno naloži storitve
+kubectl rollout restart deployment/{{IME_PROJEKTA_SLUG}} -n {{IME_PROJEKTA_SLUG}}
+
+# 6. Preveri nov certifikat
+openssl s_client -connect api.{{IME_PROJEKTA_SLUG}}.{{ORGANIZACIJA_DOMENA}}:443 \
+  -servername api.{{IME_PROJEKTA_SLUG}}.{{ORGANIZACIJA_DOMENA}} < /dev/null 2>/dev/null | \
+  openssl x509 -noout -dates
+```
+
+---
+
+## 5. Upravljanje Groženj
+
+### 5.1 Blokada IP Naslova
+
+**Predpogoji:**
+- Zaznana grožnja ali napad
+- Potrjena zlonamerna aktivnost
+
+**Postopek:**
+
+```bash
+# 1. Preveri aktivnost IP naslova
+curl -X GET "https://api.{{IME_PROJEKTA_SLUG}}.{{ORGANIZACIJA_DOMENA}}/v1/audit/logs?ipAddress=<ip>&limit=100" \
+  -H "Authorization: Bearer $ADMIN_TOKEN"
+
+# 2. Blokiraj IP
+curl -X POST https://api.{{IME_PROJEKTA_SLUG}}.{{ORGANIZACIJA_DOMENA}}/v1/threats/mitigate \
+  -H "Authorization: Bearer $ADMIN_TOKEN" \
+  -d '{
+    "action": "block_ip",
+    "target": "<ip_address>",
+    "duration": "24h",
+    "reason": "<razlog>"
+  }'
+
+# 3. Preveri blokado
+curl -X GET https://api.{{IME_PROJEKTA_SLUG}}.{{ORGANIZACIJA_DOMENA}}/v1/threats/blocks \
+  -H "Authorization: Bearer $ADMIN_TOKEN" | jq '.data.blocks[] | select(.target == "<ip_address>")'
+```
+
+### 5.2 Odstranitev Blokade
+
+**Postopek:**
+
+```bash
+# 1. Preveri razlog za blokado
+curl -X GET https://api.{{IME_PROJEKTA_SLUG}}.{{ORGANIZACIJA_DOMENA}}/v1/threats/blocks/<blockId> \
+  -H "Authorization: Bearer $ADMIN_TOKEN"
+
+# 2. Odstrani blokado
+curl -X DELETE https://api.{{IME_PROJEKTA_SLUG}}.{{ORGANIZACIJA_DOMENA}}/v1/threats/blocks/<blockId> \
+  -H "Authorization: Bearer $ADMIN_TOKEN" \
+  -d '{"reason": "<razlog_za_odstranitev>"}'
+```
+
+---
+
+## 6. Backup in Restore
+
+### 6.1 Ročni Backup
+
+**Postopek:**
+
+```bash
+# 1. Ustvari backup podatkovne baze
+./skripta/backup.sh --type=database --tag=manual-$(date +%Y%m%d%H%M%S)
+
+# 2. Ustvari backup konfiguracije
+./skripta/backup.sh --type=config --tag=manual-$(date +%Y%m%d%H%M%S)
+
+# 3. Preveri backup
+./skripta/backup-verify.sh --id=<backup_id>
+
+# 4. Dokumentiraj backup
+echo "Backup ustvarjen: $(date)" >> /var/log/backup.log
+```
+
+### 6.2 Restore iz Backupa
+
+**OPOZORILO:** Restore lahko povzroči izgubo podatkov. Izvajaj samo z odobritvijo.
+
+**Postopek:**
+
+```bash
+# 1. Preveri razpoložljive backupe
+./skripta/backup-list.sh --type=database --last=10
+
+# 2. Preveri integriteto backupa
+./skripta/backup-verify.sh --id=<backup_id>
+
+# 3. Ustavi aplikacijo (če je potrebno)
+kubectl scale deployment {{IME_PROJEKTA_SLUG}} -n {{IME_PROJEKTA_SLUG}} --replicas=0
+
+# 4. Izvedi restore
+./skripta/restore.sh --source=<backup_id> --confirm
+
+# 5. Preveri integriteto
+./skripta/integrity-check.sh --full
+
+# 6. Zaženi aplikacijo
+kubectl scale deployment {{IME_PROJEKTA_SLUG}} -n {{IME_PROJEKTA_SLUG}} --replicas=3
+
+# 7. Preveri zdravje
+curl -s https://api.{{IME_PROJEKTA_SLUG}}.{{ORGANIZACIJA_DOMENA}}/health | jq
+```
+
+---
+
+## 7. Monitoring in Alerting
+
+### 7.1 Pregled Metrik
+
+```bash
+# Prometheus metrike
+curl -s https://api.{{IME_PROJEKTA_SLUG}}.{{ORGANIZACIJA_DOMENA}}:9090/metrics | grep -E "^(security_|auth_|audit_)"
+
+# Grafana dashboard
+# URL: https://grafana.{{ORGANIZACIJA_DOMENA}}/d/security-overview
+```
+
+### 7.2 Pregled Alertov
+
+```bash
+# Aktivni alerti
+curl -s https://alertmanager.{{ORGANIZACIJA_DOMENA}}/api/v2/alerts | jq '.[] | select(.status.state == "active")'
+
+# Utišaj alert (če je potrebno)
+curl -X POST https://alertmanager.{{ORGANIZACIJA_DOMENA}}/api/v2/silences \
+  -H "Content-Type: application/json" \
+  -d '{
+    "matchers": [{"name": "alertname", "value": "<alert_name>", "isRegex": false}],
+    "startsAt": "'$(date -u +%Y-%m-%dT%H:%M:%SZ)'",
+    "endsAt": "'$(date -u -d '+1 hour' +%Y-%m-%dT%H:%M:%SZ)'",
+    "createdBy": "<operator>",
+    "comment": "<razlog>"
+  }'
+```
+
+---
+
+## 8. Eskalacija
+
+### Eskalacijska Matrika
+
+| Situacija | Nivo | Kontakt | SLA |
+|-----------|------|---------|-----|
+| Neuspešna prijava (masovna) | P2 | Varnostna ekipa | 1 ura |
+| Kompromitacija ključa | P1 | CISO | Takoj |
+| DDoS napad | P1 | Infrastruktura + Varnost | 15 min |
+| Izpad sistema | P1 | On-call | 15 min |
+| Sumljiva aktivnost | P3 | Varnostna ekipa | 4 ure |
+
+### Kontakti
+
+| Vloga | Kontakt |
+|-------|---------|
+| On-call | PagerDuty |
+| Varnostna ekipa | security@{{ORGANIZACIJA_DOMENA}} |
+| CISO | ciso@{{ORGANIZACIJA_DOMENA}} |
+| Infrastruktura | infra@{{ORGANIZACIJA_DOMENA}} |
+
+---
+
+## Revizija Dokumenta
+
+| Verzija | Datum | Avtor | Spremembe |
+|---------|-------|-------|-----------|
+| 1.0 | {{DATUM}} | {{AVTOR}} | Začetna verzija |

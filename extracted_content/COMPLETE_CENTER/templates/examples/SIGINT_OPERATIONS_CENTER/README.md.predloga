@@ -1,0 +1,88 @@
+# {{IME_PROJEKTA}} - SIGINT Operations Center
+
+## _traceability
+- requirement: ZAH-SEC-007 SIGINT operativni center
+- design: DSN-SEC-007 Referenčna implementacija signals intelligence
+- test: TST-SEC-007 Verifikacija SIGINT primera
+
+## Opis
+
+SIGINT Operations Center je enterprise-grade platforma za signals intelligence operacije, vključno s communications intercept, traffic analysis, metadata analysis in network mapping.
+
+## Vključene komponente
+
+### Communications Intercept
+- Voice intercept
+- Data intercept
+- Email intercept
+- Messaging intercept
+- VoIP intercept
+- Satellite intercept
+
+### Traffic Analysis
+- Protocol analysis
+- Flow analysis
+- Pattern detection
+- Anomaly detection
+- Bandwidth analysis
+- Timing analysis
+
+### Metadata Analysis
+- Call detail records
+- Email headers
+- Network metadata
+- Location data
+- Device fingerprints
+- User behavior
+
+### Pattern of Life
+- Communication patterns
+- Movement patterns
+- Association mapping
+- Temporal analysis
+- Behavioral profiling
+- Predictive analysis
+
+### Network Mapping
+- Infrastructure discovery
+- Topology mapping
+- Service enumeration
+- Vulnerability mapping
+- Asset inventory
+- Relationship mapping
+
+### Protocol Fingerprinting
+- Application identification
+- Protocol detection
+- Version detection
+- Encryption detection
+- Tunneling detection
+- Evasion detection
+
+## Skladnost
+
+- DO-178C DAL-A
+- IEC-61508 SIL-4
+- ISO-26262 ASIL-D
+- MIL-STD-882E
+
+## SLA
+
+- Uptime: 99.999%
+- RTO: 5min
+- RPO: 0
+- Intercept Latency: <100ms
+- Processing Time: Real-time
+
+## Zagon
+
+```bash
+npm install
+npm run build
+npm run sigint:start
+npm run sigint:monitor
+```
+
+## Licenca
+
+Enterprise License - {{ORGANIZACIJA}} - TOP SECRET

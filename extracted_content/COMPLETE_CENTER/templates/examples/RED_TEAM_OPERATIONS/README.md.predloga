@@ -1,0 +1,83 @@
+# {{IME_PROJEKTA}} - Red Team Operations Center
+
+## _traceability
+- requirement: ZAH-SEC-002 Red Team operativni center
+- design: DSN-SEC-002 Referenčna implementacija ofenzivnih varnostnih operacij
+- test: TST-SEC-002 Verifikacija Red Team primera
+
+## Opis
+
+Red Team Operations Center je enterprise-grade platforma za izvajanje ofenzivnih varnostnih operacij, vključno z reconnaissance, exploitation, persistence, lateral movement in command & control.
+
+## Vključene komponente
+
+### Reconnaissance
+- Passive reconnaissance (OSINT)
+- Active reconnaissance (scanning)
+- Network mapping
+- Service enumeration
+- Vulnerability discovery
+
+### Exploitation
+- Exploit development
+- Payload generation
+- Weaponization
+- Delivery mechanisms
+- Initial access
+
+### Persistence
+- Registry persistence
+- Scheduled tasks
+- Service installation
+- Bootkit/Rootkit
+- Firmware implants
+
+### Lateral Movement
+- Pass-the-hash
+- Pass-the-ticket
+- Remote execution
+- Network pivoting
+- Credential harvesting
+
+### Command & Control
+- C2 infrastructure
+- Encrypted communications
+- Domain fronting
+- Covert channels
+- Beacon management
+
+### Data Exfiltration
+- Data staging
+- Compression/Encryption
+- Covert exfiltration
+- Protocol tunneling
+- Steganography
+
+## Skladnost
+
+- DO-178C DAL-B
+- IEC-61508 SIL-3
+- ISO-26262 ASIL-C
+- MIL-STD-882E
+- MITRE ATT&CK Framework
+
+## SLA
+
+- Uptime: 99.99%
+- RTO: 30min
+- RPO: 5min
+- Campaign Duration: Configurable
+- Stealth Rating: Maximum
+
+## Zagon
+
+```bash
+npm install
+npm run build
+npm run redteam:start
+npm run redteam:campaign
+```
+
+## Licenca
+
+Enterprise License - {{ORGANIZACIJA}} - CLASSIFIED

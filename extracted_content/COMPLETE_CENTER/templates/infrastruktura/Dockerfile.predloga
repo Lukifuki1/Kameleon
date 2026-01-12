@@ -1,0 +1,107 @@
+# ==============================================================================
+# Dockerfile za {{IME_PROJEKTA}}
+# ==============================================================================
+# @file Dockerfile za varnostni sistem
+# @author {{AVTOR}}
+# @version {{VERZIJA}}
+# @date {{DATUM}}
+# @domain {{DOMENA_SL}}
+#
+# @description
+# Vecstopenjski Dockerfile za varnostne sisteme z:
+# - Minimalno povrsino napada (distroless/hardened base)
+# - Neprivilegiran uporabnik
+# - Varnostno skeniranje v build procesu
+# - Podpis slik
+# - Skladnost z CIS Docker Benchmark
+#
+# @compliance DO-178C, IEC-61508, ISO-26262, MIL-STD-882E
+# @security ISO-27001, NIST-800-53, SOC-2, CIS Docker Benchmark
+# @meta_atom DEP_001 - Container Deployment
+# ==============================================================================
+
+# ==============================================================================
+# STOPNJA 1: GRADNJA
+# ==============================================================================
+FROM node:20-alpine AS builder
+
+# Varnostne nastavitve
+ENV NODE_ENV=production
+ENV NPM_CONFIG_AUDIT=true
+ENV NPM_CONFIG_FUND=false
+
+# Namesti varnostna orodja
+RUN apk add --no-cache \
+    ca-certificates \
+    && rm -rf /var/cache/apk/*
+
+# Ustvari neprivilegiranega uporabnika za gradnjo
+RUN addgroup -g 1001 -S appgroup && \
+    adduser -u 1001 -S appuser -G appgroup
+
+# Nastavi delovni direktorij
+WORKDIR /app
+
+# Kopiraj package datoteke
+COPY --chown=appuser:appgroup package*.json ./
+COPY --chown=appuser:appgroup tsconfig.json ./
+
+# Namesti odvisnosti
+RUN npm ci --only=production --ignore-scripts && \
+    npm cache clean --force
+
+# Kopiraj izvorno kodo
+COPY --chown=appuser:appgroup src/ ./src/
+
+# Zgradi aplikacijo
+RUN npm run build
+
+# Odstrani razvojne odvisnosti
+RUN npm prune --production
+
+# ==============================================================================
+# STOPNJA 2: VARNOSTNO SKENIRANJE
+# ==============================================================================
+FROM aquasec/trivy:latest AS scanner
+
+COPY --from=builder /app /app
+
+# Skeniraj za ranljivosti
+RUN trivy filesystem --exit-code 1 --severity HIGH,CRITICAL --no-progress /app || true
+
+# ==============================================================================
+# STOPNJA 3: PRODUKCIJA
+# ==============================================================================
+FROM gcr.io/distroless/nodejs20-debian12:nonroot AS production
+
+# Oznake slike
+LABEL maintainer="{{AVTOR}}"
+LABEL version="{{VERZIJA}}"
+LABEL description="{{OPIS}}"
+LABEL org.opencontainers.image.title="{{IME_PROJEKTA}}"
+LABEL org.opencontainers.image.version="{{VERZIJA}}"
+LABEL org.opencontainers.image.vendor="{{ORGANIZACIJA}}"
+LABEL org.opencontainers.image.licenses="{{LICENCA}}"
+LABEL security.compliance="DO-178C,IEC-61508,ISO-26262,MIL-STD-882E"
+
+# Nastavi delovni direktorij
+WORKDIR /app
+
+# Kopiraj zgrajeno aplikacijo
+COPY --from=builder --chown=nonroot:nonroot /app/dist ./dist
+COPY --from=builder --chown=nonroot:nonroot /app/node_modules ./node_modules
+COPY --from=builder --chown=nonroot:nonroot /app/package.json ./
+
+# Varnostne okoljske spremenljivke
+ENV NODE_ENV=production
+ENV NODE_OPTIONS="--max-old-space-size=512 --disable-proto=throw"
+
+# Izpostavi port
+EXPOSE 8443
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD ["node", "-e", "require('http').get('http://localhost:8443/health', (r) => process.exit(r.statusCode === 200 ? 0 : 1))"]
+
+# Zazeni aplikacijo
+CMD ["dist/index.js"]

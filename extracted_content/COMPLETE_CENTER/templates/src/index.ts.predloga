@@ -1,0 +1,44 @@
+/**
+ * @file Vstopna tocka za Varnostni sistemi
+ * @author {{AVTOR}}
+ * @version {{VERZIJA}}
+ * @date {{DATUM}}
+ * @project {{IME_PROJEKTA}}
+ * @domain VARNOSTNI_SISTEMI
+ * 
+ * @requirement REQ-VARNOSTNI_SISTEMI-INDEX-001
+ * @design DES-VARNOSTNI_SISTEMI-INDEX-001
+ * @test TST-VARNOSTNI_SISTEMI-INDEX-001
+ * 
+ * @description
+ * {{OPIS}}
+ * 
+ * Domena: Varnostni sistemi
+ * Opis: Kriptografija in zascita podatkov
+ * 
+ * @compliance DO-178C, IEC-61508, ISO-26262, MIL-STD-882E
+ * @integrity SIL-2
+ */
+
+export * from './jedro';
+
+import { JEDRO_MEHANIZEM, DOMENA_VARNOSTNI_SISTEMI_KONSTANTE } from './jedro';
+
+/**
+ * Domensko-specificne konstante za Varnostni sistemi
+ */
+export const DOMENA_INFO = {
+    ime: 'Varnostni sistemi',
+    templateDir: 'VARNOSTNI_SISTEMI',
+    opis: 'Kriptografija in zascita podatkov',
+    kljucneBesede: ['encryption', 'authentication', 'authorization', 'firewall', 'vulnerability'] as const,
+} as const;
+
+/**
+ * Privzeti izvoz za VARNOSTNI_SISTEMI
+ */
+export default {
+    ...JEDRO_MEHANIZEM,
+    DOMENA_INFO,
+    DOMENA_KONSTANTE: DOMENA_VARNOSTNI_SISTEMI_KONSTANTE,
+};

@@ -1,0 +1,812 @@
+/**
+ * {{IME_PROJEKTA}} - Health Check System
+ * Domain: {{DOMENA_SL}}
+ * 
+ * @requirement REQ-SEC-HLT-001
+ * @design DSN-SEC-HLT-001
+ * @test TST-SEC-HLT-001
+ * 
+ * Sistem za preverjanje zdravja varnostnega sistema.
+ * Skladen z DO-178C, IEC 61508, ISO 26262, MIL-STD-882E standardi.
+ * 
+ * @module observability/health
+ */
+
+// ============================================================================
+// HTTP CLIENT INTERFACE (dependency injection)
+// ============================================================================
+
+/**
+ * Vmesnik za HTTP odjemalca
+ */
+export interface HttpClient {
+    request(url: string, options: {
+        method: string;
+        headers: Record<string, string>;
+    }): Promise<{ status: number }>;
+}
+
+let httpClient: HttpClient;
+
+/**
+ * Nastavi HTTP odjemalca
+ */
+export function setHttpClient(client: HttpClient): void {
+    httpClient = client;
+}
+
+// ============================================================================
+// TIPI IN VMESNIKI
+// ============================================================================
+
+/**
+ * Status zdravja
+ */
+export enum HealthStatus {
+    /** Zdrav */
+    HEALTHY = 'healthy',
+    /** Degradiran */
+    DEGRADED = 'degraded',
+    /** Nezdrav */
+    UNHEALTHY = 'unhealthy',
+    /** Neznan */
+    UNKNOWN = 'unknown'
+}
+
+/**
+ * Tip preverjanja zdravja
+ */
+export enum HealthCheckType {
+    /** Liveness - ali je proces živ */
+    LIVENESS = 'liveness',
+    /** Readiness - ali je pripravljen za promet */
+    READINESS = 'readiness',
+    /** Startup - ali se je uspešno zagnal */
+    STARTUP = 'startup'
+}
+
+/**
+ * Rezultat preverjanja zdravja komponente
+ */
+export interface ComponentHealthResult {
+    /** Ime komponente */
+    readonly name: string;
+    /** Status */
+    readonly status: HealthStatus;
+    /** Čas preverjanja */
+    readonly checkedAt: Date;
+    /** Trajanje preverjanja (ms) */
+    readonly duration: number;
+    /** Sporočilo */
+    readonly message?: string;
+    /** Podrobnosti */
+    readonly details?: Record<string, unknown>;
+    /** Napaka */
+    readonly error?: string;
+}
+
+/**
+ * Skupni rezultat preverjanja zdravja
+ */
+export interface HealthCheckResult {
+    /** Skupni status */
+    readonly status: HealthStatus;
+    /** Verzija aplikacije */
+    readonly version: string;
+    /** Čas delovanja (sekunde) */
+    readonly uptime: number;
+    /** Čas preverjanja */
+    readonly checkedAt: Date;
+    /** Rezultati komponent */
+    readonly components: ComponentHealthResult[];
+}
+
+/**
+ * Funkcija za preverjanje zdravja komponente
+ */
+export type HealthCheckFunction = () => Promise<ComponentHealthResult>;
+
+/**
+ * Konfiguracija preverjanja zdravja
+ */
+export interface HealthCheckConfig {
+    /** Ime komponente */
+    readonly name: string;
+    /** Tip preverjanja */
+    readonly type: HealthCheckType;
+    /** Funkcija za preverjanje */
+    readonly check: HealthCheckFunction;
+    /** Timeout (ms) */
+    readonly timeout: number;
+    /** Ali je kritična komponenta */
+    readonly critical: boolean;
+    /** Interval preverjanja (ms) */
+    readonly interval?: number;
+}
+
+/**
+ * Konfiguracija sistema za preverjanje zdravja
+ */
+export interface HealthSystemConfig {
+    /** Verzija aplikacije */
+    readonly version: string;
+    /** Privzeti timeout (ms) */
+    readonly defaultTimeout: number;
+    /** Ali naj se izvaja periodično preverjanje */
+    readonly periodicCheck: boolean;
+    /** Interval periodičnega preverjanja (ms) */
+    readonly periodicInterval: number;
+    /** Čas zagona */
+    readonly startTime: Date;
+}
+
+// ============================================================================
+// POMOŽNE FUNKCIJE
+// ============================================================================
+
+/**
+ * Izvede funkcijo s timeoutom
+ */
+async function withTimeout<T>(
+    promise: Promise<T>,
+    timeoutMs: number,
+    errorMessage: string
+): Promise<T> {
+    let timeoutHandle: ReturnType<typeof setTimeout>;
+    
+    const timeoutPromise = new Promise<never>((_, reject) => {
+        timeoutHandle = setTimeout(() => {
+            reject(new Error(errorMessage));
+        }, timeoutMs);
+    });
+
+    try {
+        const result = await Promise.race([promise, timeoutPromise]);
+        clearTimeout(timeoutHandle!);
+        return result;
+    } catch (error) {
+        clearTimeout(timeoutHandle!);
+        throw error;
+    }
+}
+
+/**
+ * Določi skupni status iz statusov komponent
+ */
+function aggregateStatus(results: ComponentHealthResult[]): HealthStatus {
+    if (results.length === 0) {
+        return HealthStatus.UNKNOWN;
+    }
+
+    const hasUnhealthy = results.some(r => r.status === HealthStatus.UNHEALTHY);
+    const hasDegraded = results.some(r => r.status === HealthStatus.DEGRADED);
+    const hasUnknown = results.some(r => r.status === HealthStatus.UNKNOWN);
+
+    if (hasUnhealthy) {
+        return HealthStatus.UNHEALTHY;
+    }
+
+    if (hasDegraded) {
+        return HealthStatus.DEGRADED;
+    }
+
+    if (hasUnknown) {
+        return HealthStatus.DEGRADED;
+    }
+
+    return HealthStatus.HEALTHY;
+}
+
+// ============================================================================
+// GLAVNA IMPLEMENTACIJA
+// ============================================================================
+
+/**
+ * Sistem za preverjanje zdravja
+ * 
+ * Implementira preverjanje zdravja skladno z Kubernetes probes in industrijskimi standardi.
+ */
+export class HealthCheckSystem {
+    private readonly config: HealthSystemConfig;
+    private readonly checks: Map<string, HealthCheckConfig>;
+    private readonly cachedResults: Map<string, ComponentHealthResult>;
+    private periodicTimer: ReturnType<typeof setInterval> | null;
+
+    constructor(config: HealthSystemConfig) {
+        this.config = config;
+        this.checks = new Map();
+        this.cachedResults = new Map();
+        this.periodicTimer = null;
+    }
+
+    /**
+     * Registrira preverjanje zdravja
+     */
+    register(checkConfig: HealthCheckConfig): void {
+        this.checks.set(checkConfig.name, checkConfig);
+    }
+
+    /**
+     * Odstrani preverjanje zdravja
+     */
+    unregister(name: string): boolean {
+        this.cachedResults.delete(name);
+        return this.checks.delete(name);
+    }
+
+    /**
+     * Zažene periodično preverjanje
+     */
+    start(): void {
+        if (!this.config.periodicCheck) {
+            return;
+        }
+
+        if (this.periodicTimer !== null) {
+            return;
+        }
+
+        this.periodicTimer = setInterval(
+            () => this.checkAll(),
+            this.config.periodicInterval
+        );
+
+        // Izvedi prvo preverjanje takoj
+        this.checkAll().catch(error => {
+            console.error('Periodic health check failed:', error);
+        });
+    }
+
+    /**
+     * Ustavi periodično preverjanje
+     */
+    stop(): void {
+        if (this.periodicTimer !== null) {
+            clearInterval(this.periodicTimer);
+            this.periodicTimer = null;
+        }
+    }
+
+    /**
+     * Izvede liveness preverjanje
+     */
+    async checkLiveness(): Promise<HealthCheckResult> {
+        return this.checkByType(HealthCheckType.LIVENESS);
+    }
+
+    /**
+     * Izvede readiness preverjanje
+     */
+    async checkReadiness(): Promise<HealthCheckResult> {
+        return this.checkByType(HealthCheckType.READINESS);
+    }
+
+    /**
+     * Izvede startup preverjanje
+     */
+    async checkStartup(): Promise<HealthCheckResult> {
+        return this.checkByType(HealthCheckType.STARTUP);
+    }
+
+    /**
+     * Izvede vsa preverjanja
+     */
+    async checkAll(): Promise<HealthCheckResult> {
+        const results: ComponentHealthResult[] = [];
+        const now = new Date();
+
+        for (const [name, checkConfig] of this.checks.entries()) {
+            const result = await this.executeCheck(checkConfig);
+            results.push(result);
+            this.cachedResults.set(name, result);
+        }
+
+        const status = aggregateStatus(results);
+        const uptime = Math.floor((now.getTime() - this.config.startTime.getTime()) / 1000);
+
+        return {
+            status,
+            version: this.config.version,
+            uptime,
+            checkedAt: now,
+            components: results
+        };
+    }
+
+    /**
+     * Izvede preverjanja po tipu
+     */
+    async checkByType(type: HealthCheckType): Promise<HealthCheckResult> {
+        const results: ComponentHealthResult[] = [];
+        const now = new Date();
+
+        for (const [name, checkConfig] of this.checks.entries()) {
+            if (checkConfig.type !== type) {
+                continue;
+            }
+
+            const result = await this.executeCheck(checkConfig);
+            results.push(result);
+            this.cachedResults.set(name, result);
+        }
+
+        const status = aggregateStatus(results);
+        const uptime = Math.floor((now.getTime() - this.config.startTime.getTime()) / 1000);
+
+        return {
+            status,
+            version: this.config.version,
+            uptime,
+            checkedAt: now,
+            components: results
+        };
+    }
+
+    /**
+     * Pridobi zadnji rezultat za komponento
+     */
+    getLastResult(name: string): ComponentHealthResult | undefined {
+        return this.cachedResults.get(name);
+    }
+
+    /**
+     * Pridobi vse zadnje rezultate
+     */
+    getAllLastResults(): ComponentHealthResult[] {
+        return Array.from(this.cachedResults.values());
+    }
+
+    /**
+     * Pridobi čas delovanja
+     */
+    getUptime(): number {
+        return Math.floor((Date.now() - this.config.startTime.getTime()) / 1000);
+    }
+
+    // ========================================================================
+    // PRIVATNE METODE
+    // ========================================================================
+
+    /**
+     * Izvede posamezno preverjanje
+     */
+    private async executeCheck(checkConfig: HealthCheckConfig): Promise<ComponentHealthResult> {
+        const startTime = Date.now();
+        const timeout = checkConfig.timeout || this.config.defaultTimeout;
+
+        try {
+            const result = await withTimeout(
+                checkConfig.check(),
+                timeout,
+                `Health check '${checkConfig.name}' timed out after ${timeout}ms`
+            );
+
+            return {
+                ...result,
+                duration: Date.now() - startTime
+            };
+        } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+            
+            return {
+                name: checkConfig.name,
+                status: checkConfig.critical ? HealthStatus.UNHEALTHY : HealthStatus.DEGRADED,
+                checkedAt: new Date(),
+                duration: Date.now() - startTime,
+                error: errorMessage
+            };
+        }
+    }
+}
+
+// ============================================================================
+// VGRAJENE FUNKCIJE ZA PREVERJANJE ZDRAVJA
+// ============================================================================
+
+/**
+ * Preverjanje zdravja podatkovne baze
+ */
+export function createDatabaseHealthCheck(
+    name: string,
+    connectionTest: () => Promise<boolean>
+): HealthCheckConfig {
+    return {
+        name,
+        type: HealthCheckType.READINESS,
+        timeout: 5000,
+        critical: true,
+        check: async (): Promise<ComponentHealthResult> => {
+            const startTime = Date.now();
+            
+            try {
+                const isConnected = await connectionTest();
+                
+                return {
+                    name,
+                    status: isConnected ? HealthStatus.HEALTHY : HealthStatus.UNHEALTHY,
+                    checkedAt: new Date(),
+                    duration: Date.now() - startTime,
+                    message: isConnected ? 'Database connection successful' : 'Database connection failed'
+                };
+            } catch (error) {
+                return {
+                    name,
+                    status: HealthStatus.UNHEALTHY,
+                    checkedAt: new Date(),
+                    duration: Date.now() - startTime,
+                    error: error instanceof Error ? error.message : 'Unknown error'
+                };
+            }
+        }
+    };
+}
+
+/**
+ * Preverjanje zdravja Redis
+ */
+export function createRedisHealthCheck(
+    name: string,
+    pingTest: () => Promise<string>
+): HealthCheckConfig {
+    return {
+        name,
+        type: HealthCheckType.READINESS,
+        timeout: 3000,
+        critical: false,
+        check: async (): Promise<ComponentHealthResult> => {
+            const startTime = Date.now();
+            
+            try {
+                const response = await pingTest();
+                const isHealthy = response === 'PONG';
+                
+                return {
+                    name,
+                    status: isHealthy ? HealthStatus.HEALTHY : HealthStatus.DEGRADED,
+                    checkedAt: new Date(),
+                    duration: Date.now() - startTime,
+                    message: isHealthy ? 'Redis connection successful' : `Unexpected response: ${response}`
+                };
+            } catch (error) {
+                return {
+                    name,
+                    status: HealthStatus.DEGRADED,
+                    checkedAt: new Date(),
+                    duration: Date.now() - startTime,
+                    error: error instanceof Error ? error.message : 'Unknown error'
+                };
+            }
+        }
+    };
+}
+
+/**
+ * Preverjanje zdravja Vault
+ */
+export function createVaultHealthCheck(
+    name: string,
+    statusCheck: () => Promise<{ initialized: boolean; sealed: boolean }>
+): HealthCheckConfig {
+    return {
+        name,
+        type: HealthCheckType.READINESS,
+        timeout: 5000,
+        critical: true,
+        check: async (): Promise<ComponentHealthResult> => {
+            const startTime = Date.now();
+            
+            try {
+                const status = await statusCheck();
+                
+                if (!status.initialized) {
+                    return {
+                        name,
+                        status: HealthStatus.UNHEALTHY,
+                        checkedAt: new Date(),
+                        duration: Date.now() - startTime,
+                        message: 'Vault is not initialized',
+                        details: status
+                    };
+                }
+                
+                if (status.sealed) {
+                    return {
+                        name,
+                        status: HealthStatus.UNHEALTHY,
+                        checkedAt: new Date(),
+                        duration: Date.now() - startTime,
+                        message: 'Vault is sealed',
+                        details: status
+                    };
+                }
+                
+                return {
+                    name,
+                    status: HealthStatus.HEALTHY,
+                    checkedAt: new Date(),
+                    duration: Date.now() - startTime,
+                    message: 'Vault is initialized and unsealed',
+                    details: status
+                };
+            } catch (error) {
+                return {
+                    name,
+                    status: HealthStatus.UNHEALTHY,
+                    checkedAt: new Date(),
+                    duration: Date.now() - startTime,
+                    error: error instanceof Error ? error.message : 'Unknown error'
+                };
+            }
+        }
+    };
+}
+
+/**
+ * Preverjanje zdravja HSM
+ */
+export function createHsmHealthCheck(
+    name: string,
+    connectionTest: () => Promise<boolean>
+): HealthCheckConfig {
+    return {
+        name,
+        type: HealthCheckType.READINESS,
+        timeout: 10000,
+        critical: true,
+        check: async (): Promise<ComponentHealthResult> => {
+            const startTime = Date.now();
+            
+            try {
+                const isConnected = await connectionTest();
+                
+                return {
+                    name,
+                    status: isConnected ? HealthStatus.HEALTHY : HealthStatus.UNHEALTHY,
+                    checkedAt: new Date(),
+                    duration: Date.now() - startTime,
+                    message: isConnected ? 'HSM connection successful' : 'HSM connection failed'
+                };
+            } catch (error) {
+                return {
+                    name,
+                    status: HealthStatus.UNHEALTHY,
+                    checkedAt: new Date(),
+                    duration: Date.now() - startTime,
+                    error: error instanceof Error ? error.message : 'Unknown error'
+                };
+            }
+        }
+    };
+}
+
+/**
+ * Preverjanje zdravja pomnilnika
+ */
+export function createMemoryHealthCheck(
+    name: string,
+    thresholdPercent: number = 90
+): HealthCheckConfig {
+    return {
+        name,
+        type: HealthCheckType.LIVENESS,
+        timeout: 1000,
+        critical: false,
+        check: async (): Promise<ComponentHealthResult> => {
+            const startTime = Date.now();
+            const memoryUsage = process.memoryUsage();
+            
+            const heapUsedMB = Math.round(memoryUsage.heapUsed / 1024 / 1024);
+            const heapTotalMB = Math.round(memoryUsage.heapTotal / 1024 / 1024);
+            const usagePercent = Math.round((memoryUsage.heapUsed / memoryUsage.heapTotal) * 100);
+            
+            const status = usagePercent >= thresholdPercent 
+                ? HealthStatus.DEGRADED 
+                : HealthStatus.HEALTHY;
+            
+            return {
+                name,
+                status,
+                checkedAt: new Date(),
+                duration: Date.now() - startTime,
+                message: `Heap usage: ${heapUsedMB}MB / ${heapTotalMB}MB (${usagePercent}%)`,
+                details: {
+                    heapUsed: memoryUsage.heapUsed,
+                    heapTotal: memoryUsage.heapTotal,
+                    external: memoryUsage.external,
+                    rss: memoryUsage.rss,
+                    usagePercent
+                }
+            };
+        }
+    };
+}
+
+/**
+ * Preverjanje zdravja event loop
+ */
+export function createEventLoopHealthCheck(
+    name: string,
+    lagThresholdMs: number = 100
+): HealthCheckConfig {
+    return {
+        name,
+        type: HealthCheckType.LIVENESS,
+        timeout: 1000,
+        critical: false,
+        check: async (): Promise<ComponentHealthResult> => {
+            const startTime = Date.now();
+            
+            // Izmeri lag event loop
+            const lagStart = Date.now();
+            await new Promise(resolve => setImmediate(resolve));
+            const lag = Date.now() - lagStart;
+            
+            const status = lag >= lagThresholdMs 
+                ? HealthStatus.DEGRADED 
+                : HealthStatus.HEALTHY;
+            
+            return {
+                name,
+                status,
+                checkedAt: new Date(),
+                duration: Date.now() - startTime,
+                message: `Event loop lag: ${lag}ms`,
+                details: {
+                    lag,
+                    threshold: lagThresholdMs
+                }
+            };
+        }
+    };
+}
+
+/**
+ * Preverjanje zdravja zunanjega servisa
+ */
+export function createExternalServiceHealthCheck(
+    name: string,
+    url: string,
+    expectedStatus: number = 200
+): HealthCheckConfig {
+    return {
+        name,
+        type: HealthCheckType.READINESS,
+        timeout: 10000,
+        critical: false,
+        check: async (): Promise<ComponentHealthResult> => {
+            const startTime = Date.now();
+            
+            try {
+                const response = await httpClient.request(url, {
+                    method: 'GET',
+                    headers: { 'Accept': 'application/json' }
+                });
+                
+                const isHealthy = response.status === expectedStatus;
+                
+                return {
+                    name,
+                    status: isHealthy ? HealthStatus.HEALTHY : HealthStatus.DEGRADED,
+                    checkedAt: new Date(),
+                    duration: Date.now() - startTime,
+                    message: `HTTP ${response.status}`,
+                    details: {
+                        url,
+                        statusCode: response.status,
+                        expectedStatus
+                    }
+                };
+            } catch (error) {
+                return {
+                    name,
+                    status: HealthStatus.DEGRADED,
+                    checkedAt: new Date(),
+                    duration: Date.now() - startTime,
+                    error: error instanceof Error ? error.message : 'Unknown error',
+                    details: { url }
+                };
+            }
+        }
+    };
+}
+
+/**
+ * Preverjanje zdravja certifikata
+ */
+export function createCertificateHealthCheck(
+    name: string,
+    getCertificateExpiry: () => Promise<Date>,
+    warningDays: number = 30
+): HealthCheckConfig {
+    return {
+        name,
+        type: HealthCheckType.READINESS,
+        timeout: 5000,
+        critical: true,
+        check: async (): Promise<ComponentHealthResult> => {
+            const startTime = Date.now();
+            
+            try {
+                const expiryDate = await getCertificateExpiry();
+                const now = new Date();
+                const daysUntilExpiry = Math.floor(
+                    (expiryDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
+                );
+                
+                let status: HealthStatus;
+                let message: string;
+                
+                if (daysUntilExpiry <= 0) {
+                    status = HealthStatus.UNHEALTHY;
+                    message = 'Certificate has expired';
+                } else if (daysUntilExpiry <= 7) {
+                    status = HealthStatus.UNHEALTHY;
+                    message = `Certificate expires in ${daysUntilExpiry} days - CRITICAL`;
+                } else if (daysUntilExpiry <= warningDays) {
+                    status = HealthStatus.DEGRADED;
+                    message = `Certificate expires in ${daysUntilExpiry} days - WARNING`;
+                } else {
+                    status = HealthStatus.HEALTHY;
+                    message = `Certificate expires in ${daysUntilExpiry} days`;
+                }
+                
+                return {
+                    name,
+                    status,
+                    checkedAt: new Date(),
+                    duration: Date.now() - startTime,
+                    message,
+                    details: {
+                        expiryDate: expiryDate.toISOString(),
+                        daysUntilExpiry,
+                        warningThreshold: warningDays
+                    }
+                };
+            } catch (error) {
+                return {
+                    name,
+                    status: HealthStatus.UNKNOWN,
+                    checkedAt: new Date(),
+                    duration: Date.now() - startTime,
+                    error: error instanceof Error ? error.message : 'Unknown error'
+                };
+            }
+        }
+    };
+}
+
+// ============================================================================
+// TOVARNIŠKA FUNKCIJA
+// ============================================================================
+
+/**
+ * Ustvari privzeti sistem za preverjanje zdravja
+ */
+export function createHealthCheckSystem(
+    config?: Partial<HealthSystemConfig>
+): HealthCheckSystem {
+    const defaultConfig: HealthSystemConfig = {
+        version: '{{VERZIJA}}',
+        defaultTimeout: 5000,
+        periodicCheck: true,
+        periodicInterval: 30000,
+        startTime: new Date()
+    };
+
+    const system = new HealthCheckSystem({
+        ...defaultConfig,
+        ...config
+    });
+
+    // Registriraj privzeta preverjanja
+    system.register(createMemoryHealthCheck('memory'));
+    system.register(createEventLoopHealthCheck('event-loop'));
+
+    return system;
+}
+
+// ============================================================================
+// IZVOZ
+// ============================================================================
+
+export default HealthCheckSystem;

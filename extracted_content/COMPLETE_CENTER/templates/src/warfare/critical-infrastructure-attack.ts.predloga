@@ -1,0 +1,1105 @@
+/**
+ * @file Critical Infrastructure Attack - Self-Contained CI Attack/Defense Platform
+ * @author {{AVTOR}}
+ * @version {{VERZIJA}}
+ * @date {{DATUM}}
+ * @project {{IME_PROJEKTA}}
+ * @domain VARNOSTNI_SISTEMI
+ * 
+ * @requirement REQ-SEC-CIA-001
+ * @design DSN-SEC-CIA-001
+ * @test TST-SEC-CIA-001
+ * 
+ * @description
+ * Enterprise-grade self-contained critical infrastructure attack and defense platform
+ * implementing comprehensive SCADA/ICS security, OT network operations, industrial
+ * control system exploitation, and critical infrastructure protection. All CI
+ * algorithms are natively implemented without external dependencies.
+ * 
+ * @classification TOP SECRET - Critical Infrastructure Operations
+ * @authorization Required: Level 5 Security Clearance
+ * @dependencies NONE - Fully self-contained implementation
+ */
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// CRITICAL INFRASTRUCTURE TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export type InfrastructureSector =
+  | 'ENERGY'
+  | 'WATER'
+  | 'TRANSPORTATION'
+  | 'COMMUNICATIONS'
+  | 'HEALTHCARE'
+  | 'FINANCIAL'
+  | 'GOVERNMENT'
+  | 'DEFENSE'
+  | 'MANUFACTURING'
+  | 'CHEMICAL'
+  | 'NUCLEAR'
+  | 'FOOD_AGRICULTURE';
+
+export type ControlSystemType =
+  | 'SCADA'
+  | 'DCS'
+  | 'PLC'
+  | 'RTU'
+  | 'HMI'
+  | 'HISTORIAN'
+  | 'EWS'
+  | 'SIS'
+  | 'BMS'
+  | 'EMS';
+
+export type ProtocolType =
+  | 'MODBUS'
+  | 'DNP3'
+  | 'IEC_61850'
+  | 'IEC_60870_5_104'
+  | 'OPC_UA'
+  | 'OPC_DA'
+  | 'PROFINET'
+  | 'ETHERNET_IP'
+  | 'BACNET'
+  | 'HART'
+  | 'FOUNDATION_FIELDBUS'
+  | 'CAN_BUS';
+
+export type AttackType =
+  | 'RECONNAISSANCE'
+  | 'INITIAL_ACCESS'
+  | 'EXECUTION'
+  | 'PERSISTENCE'
+  | 'PRIVILEGE_ESCALATION'
+  | 'EVASION'
+  | 'DISCOVERY'
+  | 'LATERAL_MOVEMENT'
+  | 'COLLECTION'
+  | 'COMMAND_CONTROL'
+  | 'INHIBIT_RESPONSE'
+  | 'IMPAIR_PROCESS'
+  | 'IMPACT';
+
+export type ImpactType =
+  | 'LOSS_OF_VIEW'
+  | 'LOSS_OF_CONTROL'
+  | 'MANIPULATION_OF_VIEW'
+  | 'MANIPULATION_OF_CONTROL'
+  | 'DENIAL_OF_VIEW'
+  | 'DENIAL_OF_CONTROL'
+  | 'THEFT_OF_OPERATIONAL_INFO'
+  | 'DAMAGE_TO_PROPERTY'
+  | 'SAFETY_SYSTEM_BYPASS';
+
+export type SecurityLevel =
+  | 'TOP_SECRET'
+  | 'SECRET'
+  | 'CONFIDENTIAL'
+  | 'UNCLASSIFIED';
+
+export type OperationalMode =
+  | 'OFFENSIVE'
+  | 'DEFENSIVE'
+  | 'ASSESSMENT'
+  | 'COMBINED';
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// CRITICAL INFRASTRUCTURE CONFIGURATION
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface CriticalInfrastructureConfig {
+  readonly platformId: string;
+  readonly name: string;
+  readonly version: string;
+  readonly mode: OperationalMode;
+  readonly targeting: CITargetingConfig;
+  readonly reconnaissance: CIReconnaissanceConfig;
+  readonly exploitation: CIExploitationConfig;
+  readonly impact: CIImpactConfig;
+  readonly defense: CIDefenseConfig;
+  readonly protocols: ProtocolConfig;
+  readonly safety: SafetyConfig;
+  readonly assessment: AssessmentConfig;
+  readonly reporting: ReportingConfig;
+  readonly storage: StorageConfig;
+  readonly security: SecurityConfig;
+  readonly metadata: PlatformMetadata;
+}
+
+export interface CITargetingConfig {
+  readonly enabled: boolean;
+  readonly sectors: readonly InfrastructureSector[];
+  readonly systems: SystemTargetingConfig;
+  readonly networks: NetworkTargetingConfig;
+  readonly assets: AssetTargetingConfig;
+}
+
+export interface SystemTargetingConfig {
+  readonly enabled: boolean;
+  readonly scada: boolean;
+  readonly dcs: boolean;
+  readonly plc: boolean;
+  readonly rtu: boolean;
+  readonly hmi: boolean;
+  readonly historian: boolean;
+  readonly ews: boolean;
+  readonly sis: boolean;
+}
+
+export interface NetworkTargetingConfig {
+  readonly enabled: boolean;
+  readonly level0: boolean;
+  readonly level1: boolean;
+  readonly level2: boolean;
+  readonly level3: boolean;
+  readonly level4: boolean;
+  readonly level5: boolean;
+  readonly dmz: boolean;
+}
+
+export interface AssetTargetingConfig {
+  readonly enabled: boolean;
+  readonly controllers: boolean;
+  readonly sensors: boolean;
+  readonly actuators: boolean;
+  readonly drives: boolean;
+  readonly relays: boolean;
+  readonly meters: boolean;
+}
+
+export interface CIReconnaissanceConfig {
+  readonly enabled: boolean;
+  readonly passive: PassiveReconConfig;
+  readonly active: ActiveReconConfig;
+  readonly protocol: ProtocolReconConfig;
+  readonly physical: PhysicalReconConfig;
+}
+
+export interface PassiveReconConfig {
+  readonly enabled: boolean;
+  readonly networkSniffing: boolean;
+  readonly protocolAnalysis: boolean;
+  readonly trafficAnalysis: boolean;
+  readonly assetDiscovery: boolean;
+}
+
+export interface ActiveReconConfig {
+  readonly enabled: boolean;
+  readonly portScanning: boolean;
+  readonly serviceEnumeration: boolean;
+  readonly vulnerabilityScanning: boolean;
+  readonly protocolProbing: boolean;
+}
+
+export interface ProtocolReconConfig {
+  readonly enabled: boolean;
+  readonly modbus: ModbusReconConfig;
+  readonly dnp3: DNP3ReconConfig;
+  readonly iec61850: IEC61850ReconConfig;
+  readonly opcua: OPCUAReconConfig;
+}
+
+export interface ModbusReconConfig {
+  readonly enabled: boolean;
+  readonly functionCodeScan: boolean;
+  readonly registerEnumeration: boolean;
+  readonly coilEnumeration: boolean;
+  readonly deviceIdentification: boolean;
+}
+
+export interface DNP3ReconConfig {
+  readonly enabled: boolean;
+  readonly addressScan: boolean;
+  readonly objectEnumeration: boolean;
+  readonly classDataRequest: boolean;
+  readonly deviceAttributes: boolean;
+}
+
+export interface IEC61850ReconConfig {
+  readonly enabled: boolean;
+  readonly logicalDeviceDiscovery: boolean;
+  readonly logicalNodeEnumeration: boolean;
+  readonly dataObjectDiscovery: boolean;
+  readonly gooseDiscovery: boolean;
+}
+
+export interface OPCUAReconConfig {
+  readonly enabled: boolean;
+  readonly serverDiscovery: boolean;
+  readonly endpointEnumeration: boolean;
+  readonly nodeEnumeration: boolean;
+  readonly securityPolicyDiscovery: boolean;
+}
+
+export interface PhysicalReconConfig {
+  readonly enabled: boolean;
+  readonly facilityMapping: boolean;
+  readonly equipmentIdentification: boolean;
+  readonly networkTopology: boolean;
+  readonly accessPoints: boolean;
+}
+
+export interface CIExploitationConfig {
+  readonly enabled: boolean;
+  readonly protocol: ProtocolExploitationConfig;
+  readonly system: SystemExploitationConfig;
+  readonly network: NetworkExploitationConfig;
+  readonly application: ApplicationExploitationConfig;
+}
+
+export interface ProtocolExploitationConfig {
+  readonly enabled: boolean;
+  readonly modbus: ModbusExploitationConfig;
+  readonly dnp3: DNP3ExploitationConfig;
+  readonly iec61850: IEC61850ExploitationConfig;
+  readonly opcua: OPCUAExploitationConfig;
+}
+
+export interface ModbusExploitationConfig {
+  readonly enabled: boolean;
+  readonly registerManipulation: boolean;
+  readonly coilManipulation: boolean;
+  readonly functionCodeAbuse: boolean;
+  readonly broadcastAttacks: boolean;
+}
+
+export interface DNP3ExploitationConfig {
+  readonly enabled: boolean;
+  readonly controlRelayOutput: boolean;
+  readonly analogOutput: boolean;
+  readonly fileTransfer: boolean;
+  readonly coldRestart: boolean;
+}
+
+export interface IEC61850ExploitationConfig {
+  readonly enabled: boolean;
+  readonly gooseInjection: boolean;
+  readonly mmsManipulation: boolean;
+  readonly sampledValuesInjection: boolean;
+  readonly configurationManipulation: boolean;
+}
+
+export interface OPCUAExploitationConfig {
+  readonly enabled: boolean;
+  readonly nodeManipulation: boolean;
+  readonly methodInvocation: boolean;
+  readonly subscriptionAbuse: boolean;
+  readonly securityBypass: boolean;
+}
+
+export interface SystemExploitationConfig {
+  readonly enabled: boolean;
+  readonly plcExploitation: PLCExploitationConfig;
+  readonly hmiExploitation: HMIExploitationConfig;
+  readonly ewsExploitation: EWSExploitationConfig;
+  readonly historianExploitation: HistorianExploitationConfig;
+}
+
+export interface PLCExploitationConfig {
+  readonly enabled: boolean;
+  readonly firmwareManipulation: boolean;
+  readonly logicManipulation: boolean;
+  readonly memoryManipulation: boolean;
+  readonly configurationChange: boolean;
+}
+
+export interface HMIExploitationConfig {
+  readonly enabled: boolean;
+  readonly displayManipulation: boolean;
+  readonly alarmSuppression: boolean;
+  readonly credentialTheft: boolean;
+  readonly commandInjection: boolean;
+}
+
+export interface EWSExploitationConfig {
+  readonly enabled: boolean;
+  readonly projectManipulation: boolean;
+  readonly libraryManipulation: boolean;
+  readonly credentialExtraction: boolean;
+  readonly remoteAccess: boolean;
+}
+
+export interface HistorianExploitationConfig {
+  readonly enabled: boolean;
+  readonly dataManipulation: boolean;
+  readonly queryInjection: boolean;
+  readonly credentialExtraction: boolean;
+  readonly archiveManipulation: boolean;
+}
+
+export interface NetworkExploitationConfig {
+  readonly enabled: boolean;
+  readonly manInTheMiddle: boolean;
+  readonly trafficInjection: boolean;
+  readonly routingManipulation: boolean;
+  readonly segmentationBypass: boolean;
+}
+
+export interface ApplicationExploitationConfig {
+  readonly enabled: boolean;
+  readonly webApplications: boolean;
+  readonly remoteAccess: boolean;
+  readonly vendorSoftware: boolean;
+  readonly customApplications: boolean;
+}
+
+export interface CIImpactConfig {
+  readonly enabled: boolean;
+  readonly processManipulation: ProcessManipulationConfig;
+  readonly safetyBypass: SafetyBypassConfig;
+  readonly denial: DenialConfig;
+  readonly destruction: DestructionConfig;
+}
+
+export interface ProcessManipulationConfig {
+  readonly enabled: boolean;
+  readonly setpointManipulation: boolean;
+  readonly sequenceManipulation: boolean;
+  readonly timingManipulation: boolean;
+  readonly modeManipulation: boolean;
+}
+
+export interface SafetyBypassConfig {
+  readonly enabled: boolean;
+  readonly sisManipulation: boolean;
+  readonly alarmSuppression: boolean;
+  readonly interlockBypass: boolean;
+  readonly tripPointManipulation: boolean;
+}
+
+export interface DenialConfig {
+  readonly enabled: boolean;
+  readonly viewDenial: boolean;
+  readonly controlDenial: boolean;
+  readonly communicationDenial: boolean;
+  readonly serviceDenial: boolean;
+}
+
+export interface DestructionConfig {
+  readonly enabled: boolean;
+  readonly equipmentDamage: boolean;
+  readonly processDisruption: boolean;
+  readonly dataDestruction: boolean;
+  readonly firmwareCorruption: boolean;
+}
+
+export interface CIDefenseConfig {
+  readonly enabled: boolean;
+  readonly monitoring: CIMonitoringConfig;
+  readonly detection: CIDetectionConfig;
+  readonly response: CIResponseConfig;
+  readonly recovery: CIRecoveryConfig;
+}
+
+export interface CIMonitoringConfig {
+  readonly enabled: boolean;
+  readonly networkMonitoring: boolean;
+  readonly protocolMonitoring: boolean;
+  readonly processMonitoring: boolean;
+  readonly assetMonitoring: boolean;
+}
+
+export interface CIDetectionConfig {
+  readonly enabled: boolean;
+  readonly anomalyDetection: boolean;
+  readonly signatureDetection: boolean;
+  readonly behavioralDetection: boolean;
+  readonly integrityMonitoring: boolean;
+}
+
+export interface CIResponseConfig {
+  readonly enabled: boolean;
+  readonly automated: boolean;
+  readonly manual: boolean;
+  readonly containment: boolean;
+  readonly isolation: boolean;
+}
+
+export interface CIRecoveryConfig {
+  readonly enabled: boolean;
+  readonly backup: boolean;
+  readonly restoration: boolean;
+  readonly failover: boolean;
+  readonly continuity: boolean;
+}
+
+export interface ProtocolConfig {
+  readonly enabled: boolean;
+  readonly modbus: ModbusConfig;
+  readonly dnp3: DNP3Config;
+  readonly iec61850: IEC61850Config;
+  readonly opcua: OPCUAConfig;
+  readonly profinet: ProfinetConfig;
+  readonly ethernetip: EthernetIPConfig;
+}
+
+export interface ModbusConfig {
+  readonly enabled: boolean;
+  readonly tcp: boolean;
+  readonly rtu: boolean;
+  readonly ascii: boolean;
+  readonly functionCodes: readonly number[];
+}
+
+export interface DNP3Config {
+  readonly enabled: boolean;
+  readonly tcp: boolean;
+  readonly serial: boolean;
+  readonly secureAuthentication: boolean;
+  readonly objectGroups: readonly number[];
+}
+
+export interface IEC61850Config {
+  readonly enabled: boolean;
+  readonly mms: boolean;
+  readonly goose: boolean;
+  readonly sampledValues: boolean;
+  readonly edition: 1 | 2;
+}
+
+export interface OPCUAConfig {
+  readonly enabled: boolean;
+  readonly binary: boolean;
+  readonly xml: boolean;
+  readonly securityPolicies: readonly string[];
+  readonly authentication: readonly string[];
+}
+
+export interface ProfinetConfig {
+  readonly enabled: boolean;
+  readonly io: boolean;
+  readonly cba: boolean;
+  readonly dcp: boolean;
+}
+
+export interface EthernetIPConfig {
+  readonly enabled: boolean;
+  readonly explicit: boolean;
+  readonly implicit: boolean;
+  readonly cip: boolean;
+}
+
+export interface SafetyConfig {
+  readonly enabled: boolean;
+  readonly constraints: SafetyConstraintsConfig;
+  readonly limits: SafetyLimitsConfig;
+  readonly verification: SafetyVerificationConfig;
+}
+
+export interface SafetyConstraintsConfig {
+  readonly enabled: boolean;
+  readonly noPhysicalDamage: boolean;
+  readonly noSafetySystemBypass: boolean;
+  readonly noEnvironmentalHarm: boolean;
+  readonly noHumanHarm: boolean;
+}
+
+export interface SafetyLimitsConfig {
+  readonly enabled: boolean;
+  readonly maxProcessDeviation: number;
+  readonly maxDuration: number;
+  readonly rollbackCapability: boolean;
+}
+
+export interface SafetyVerificationConfig {
+  readonly enabled: boolean;
+  readonly preOperationCheck: boolean;
+  readonly continuousMonitoring: boolean;
+  readonly postOperationVerification: boolean;
+}
+
+export interface AssessmentConfig {
+  readonly enabled: boolean;
+  readonly vulnerability: VulnerabilityAssessmentConfig;
+  readonly risk: RiskAssessmentConfig;
+  readonly impact: ImpactAssessmentConfig;
+}
+
+export interface VulnerabilityAssessmentConfig {
+  readonly enabled: boolean;
+  readonly automated: boolean;
+  readonly manual: boolean;
+  readonly continuous: boolean;
+}
+
+export interface RiskAssessmentConfig {
+  readonly enabled: boolean;
+  readonly likelihood: boolean;
+  readonly impact: boolean;
+  readonly mitigation: boolean;
+}
+
+export interface ImpactAssessmentConfig {
+  readonly enabled: boolean;
+  readonly operational: boolean;
+  readonly safety: boolean;
+  readonly environmental: boolean;
+  readonly financial: boolean;
+}
+
+export interface ReportingConfig {
+  readonly enabled: boolean;
+  readonly formats: readonly ReportFormat[];
+  readonly sections: readonly ReportSection[];
+  readonly automation: ReportAutomationConfig;
+}
+
+export type ReportFormat =
+  | 'PDF'
+  | 'HTML'
+  | 'JSON'
+  | 'XML';
+
+export type ReportSection =
+  | 'EXECUTIVE_SUMMARY'
+  | 'TARGET_ANALYSIS'
+  | 'VULNERABILITY_ASSESSMENT'
+  | 'ATTACK_ANALYSIS'
+  | 'IMPACT_ASSESSMENT'
+  | 'RECOMMENDATIONS';
+
+export interface ReportAutomationConfig {
+  readonly enabled: boolean;
+  readonly scheduling: boolean;
+  readonly triggers: readonly string[];
+}
+
+export interface StorageConfig {
+  readonly type: 'DATABASE' | 'FILE_SYSTEM' | 'HYBRID';
+  readonly encryption: StorageEncryptionConfig;
+  readonly retention: RetentionConfig;
+  readonly backup: BackupConfig;
+}
+
+export interface StorageEncryptionConfig {
+  readonly enabled: boolean;
+  readonly algorithm: 'AES_256_GCM' | 'CHACHA20_POLY1305';
+  readonly keyManagement: 'LOCAL' | 'HSM' | 'KMS';
+}
+
+export interface RetentionConfig {
+  readonly enabled: boolean;
+  readonly operations: number;
+  readonly assessments: number;
+  readonly logs: number;
+}
+
+export interface BackupConfig {
+  readonly enabled: boolean;
+  readonly frequency: number;
+  readonly encryption: boolean;
+  readonly offsite: boolean;
+}
+
+export interface SecurityConfig {
+  readonly authentication: AuthenticationConfig;
+  readonly authorization: AuthorizationConfig;
+  readonly audit: AuditConfig;
+  readonly classification: ClassificationConfig;
+}
+
+export interface AuthenticationConfig {
+  readonly enabled: boolean;
+  readonly methods: readonly ('PKI' | 'CAC' | 'BIOMETRIC' | 'MFA')[];
+  readonly sessionTimeout: number;
+}
+
+export interface AuthorizationConfig {
+  readonly enabled: boolean;
+  readonly model: 'RBAC' | 'ABAC' | 'MAC';
+  readonly clearanceRequired: boolean;
+}
+
+export interface AuditConfig {
+  readonly enabled: boolean;
+  readonly logAllAccess: boolean;
+  readonly logAllOperations: boolean;
+  readonly retention: number;
+}
+
+export interface ClassificationConfig {
+  readonly enabled: boolean;
+  readonly defaultLevel: SecurityLevel;
+  readonly autoClassification: boolean;
+}
+
+export interface PlatformMetadata {
+  readonly createdAt: number;
+  readonly updatedAt: number;
+  readonly createdBy: string;
+  readonly version: string;
+  readonly tags: readonly string[];
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TARGET TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface CITarget {
+  readonly targetId: string;
+  readonly sector: InfrastructureSector;
+  readonly facility: FacilityInfo;
+  readonly systems: readonly ControlSystemInfo[];
+  readonly networks: readonly NetworkInfo[];
+  readonly assets: readonly AssetInfo[];
+  readonly vulnerabilities: readonly VulnerabilityInfo[];
+  readonly status: TargetStatus;
+  readonly metadata: TargetMetadata;
+}
+
+export interface FacilityInfo {
+  readonly facilityId: string;
+  readonly name: string;
+  readonly type: FacilityType;
+  readonly location: LocationInfo;
+  readonly criticality: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
+  readonly owner: string;
+}
+
+export type FacilityType =
+  | 'POWER_PLANT'
+  | 'SUBSTATION'
+  | 'WATER_TREATMENT'
+  | 'PUMPING_STATION'
+  | 'REFINERY'
+  | 'CHEMICAL_PLANT'
+  | 'MANUFACTURING'
+  | 'DATA_CENTER'
+  | 'HOSPITAL'
+  | 'TRANSPORTATION_HUB';
+
+export interface LocationInfo {
+  readonly country: string;
+  readonly region: string;
+  readonly city: string | null;
+  readonly coordinates: Coordinates | null;
+}
+
+export interface Coordinates {
+  readonly latitude: number;
+  readonly longitude: number;
+}
+
+export interface ControlSystemInfo {
+  readonly systemId: string;
+  readonly type: ControlSystemType;
+  readonly vendor: string;
+  readonly model: string;
+  readonly version: string;
+  readonly protocols: readonly ProtocolType[];
+  readonly function: string;
+  readonly criticality: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
+}
+
+export interface NetworkInfo {
+  readonly networkId: string;
+  readonly level: PurdueLevel;
+  readonly type: NetworkType;
+  readonly subnet: string;
+  readonly vlan: number | null;
+  readonly segmentation: SegmentationInfo;
+}
+
+export type PurdueLevel =
+  | 'LEVEL_0'
+  | 'LEVEL_1'
+  | 'LEVEL_2'
+  | 'LEVEL_3'
+  | 'LEVEL_3_5'
+  | 'LEVEL_4'
+  | 'LEVEL_5';
+
+export type NetworkType =
+  | 'PROCESS_CONTROL'
+  | 'SAFETY'
+  | 'SUPERVISORY'
+  | 'OPERATIONS'
+  | 'DMZ'
+  | 'ENTERPRISE';
+
+export interface SegmentationInfo {
+  readonly firewalls: readonly string[];
+  readonly accessControls: readonly string[];
+  readonly monitoring: boolean;
+}
+
+export interface AssetInfo {
+  readonly assetId: string;
+  readonly type: AssetType;
+  readonly vendor: string;
+  readonly model: string;
+  readonly firmware: string;
+  readonly ipAddress: string | null;
+  readonly macAddress: string | null;
+  readonly protocols: readonly ProtocolType[];
+  readonly function: string;
+}
+
+export type AssetType =
+  | 'PLC'
+  | 'RTU'
+  | 'HMI'
+  | 'EWS'
+  | 'HISTORIAN'
+  | 'SENSOR'
+  | 'ACTUATOR'
+  | 'DRIVE'
+  | 'RELAY'
+  | 'METER'
+  | 'SWITCH'
+  | 'ROUTER'
+  | 'FIREWALL';
+
+export interface VulnerabilityInfo {
+  readonly vulnerabilityId: string;
+  readonly type: VulnerabilityType;
+  readonly description: string;
+  readonly severity: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
+  readonly cvss: number;
+  readonly cve: string | null;
+  readonly affected: readonly string[];
+  readonly exploitability: 'HIGH' | 'MEDIUM' | 'LOW';
+}
+
+export type VulnerabilityType =
+  | 'AUTHENTICATION'
+  | 'AUTHORIZATION'
+  | 'PROTOCOL'
+  | 'CONFIGURATION'
+  | 'SOFTWARE'
+  | 'FIRMWARE'
+  | 'NETWORK'
+  | 'PHYSICAL';
+
+export type TargetStatus =
+  | 'IDENTIFIED'
+  | 'PROFILED'
+  | 'ASSESSED'
+  | 'VALIDATED'
+  | 'ENGAGED'
+  | 'EXPLOITED'
+  | 'IMPACTED';
+
+export interface TargetMetadata {
+  readonly createdAt: number;
+  readonly updatedAt: number;
+  readonly createdBy: string;
+  readonly classification: SecurityLevel;
+  readonly tags: readonly string[];
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// OPERATION TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface CIOperation {
+  readonly operationId: string;
+  readonly name: string;
+  readonly codeName: string;
+  readonly type: OperationType;
+  readonly phase: OperationPhase;
+  readonly status: OperationStatus;
+  readonly target: CITarget;
+  readonly objectives: readonly OperationObjective[];
+  readonly actions: readonly OperationAction[];
+  readonly impacts: readonly ImpactResult[];
+  readonly safety: SafetyStatus;
+  readonly timeline: readonly OperationEvent[];
+  readonly metadata: OperationMetadata;
+}
+
+export type OperationType =
+  | 'ASSESSMENT'
+  | 'PENETRATION_TEST'
+  | 'RED_TEAM'
+  | 'OFFENSIVE'
+  | 'DEFENSIVE';
+
+export type OperationPhase =
+  | 'PLANNING'
+  | 'RECONNAISSANCE'
+  | 'EXPLOITATION'
+  | 'POST_EXPLOITATION'
+  | 'IMPACT'
+  | 'CLEANUP';
+
+export type OperationStatus =
+  | 'PLANNING'
+  | 'APPROVED'
+  | 'EXECUTING'
+  | 'PAUSED'
+  | 'COMPLETED'
+  | 'TERMINATED'
+  | 'FAILED';
+
+export interface OperationObjective {
+  readonly objectiveId: string;
+  readonly description: string;
+  readonly type: ObjectiveType;
+  readonly priority: 'PRIMARY' | 'SECONDARY' | 'TERTIARY';
+  readonly status: ObjectiveStatus;
+  readonly metrics: readonly ObjectiveMetric[];
+}
+
+export type ObjectiveType =
+  | 'ACCESS'
+  | 'PERSISTENCE'
+  | 'COLLECTION'
+  | 'MANIPULATION'
+  | 'DISRUPTION'
+  | 'DESTRUCTION';
+
+export type ObjectiveStatus =
+  | 'PENDING'
+  | 'IN_PROGRESS'
+  | 'ACHIEVED'
+  | 'PARTIALLY_ACHIEVED'
+  | 'FAILED'
+  | 'ABANDONED';
+
+export interface ObjectiveMetric {
+  readonly metricId: string;
+  readonly name: string;
+  readonly target: number;
+  readonly current: number;
+  readonly unit: string;
+}
+
+export interface OperationAction {
+  readonly actionId: string;
+  readonly type: AttackType;
+  readonly technique: string;
+  readonly target: string;
+  readonly status: ActionStatus;
+  readonly startTime: number;
+  readonly endTime: number | null;
+  readonly result: ActionResult | null;
+}
+
+export type ActionStatus =
+  | 'PENDING'
+  | 'IN_PROGRESS'
+  | 'COMPLETED'
+  | 'FAILED'
+  | 'ABORTED';
+
+export interface ActionResult {
+  readonly success: boolean;
+  readonly message: string;
+  readonly details: Readonly<Record<string, unknown>>;
+  readonly evidence: readonly EvidenceItem[];
+}
+
+export interface EvidenceItem {
+  readonly evidenceId: string;
+  readonly type: EvidenceType;
+  readonly path: string;
+  readonly hash: string;
+  readonly timestamp: number;
+}
+
+export type EvidenceType =
+  | 'CAPTURE'
+  | 'LOG'
+  | 'SCREENSHOT'
+  | 'ARTIFACT'
+  | 'CONFIGURATION';
+
+export interface ImpactResult {
+  readonly impactId: string;
+  readonly type: ImpactType;
+  readonly description: string;
+  readonly severity: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
+  readonly affected: readonly string[];
+  readonly duration: number | null;
+  readonly reversible: boolean;
+}
+
+export interface SafetyStatus {
+  readonly status: 'SAFE' | 'CAUTION' | 'WARNING' | 'CRITICAL';
+  readonly constraints: readonly SafetyConstraint[];
+  readonly violations: readonly SafetyViolation[];
+  readonly monitoring: SafetyMonitoring;
+}
+
+export interface SafetyConstraint {
+  readonly constraintId: string;
+  readonly description: string;
+  readonly type: 'HARD' | 'SOFT';
+  readonly status: 'ACTIVE' | 'VIOLATED' | 'WAIVED';
+}
+
+export interface SafetyViolation {
+  readonly violationId: string;
+  readonly timestamp: number;
+  readonly constraint: string;
+  readonly description: string;
+  readonly severity: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
+  readonly response: string;
+}
+
+export interface SafetyMonitoring {
+  readonly enabled: boolean;
+  readonly processValues: readonly ProcessValue[];
+  readonly alarms: readonly AlarmInfo[];
+  readonly interlocks: readonly InterlockInfo[];
+}
+
+export interface ProcessValue {
+  readonly valueId: string;
+  readonly name: string;
+  readonly current: number;
+  readonly unit: string;
+  readonly lowLimit: number;
+  readonly highLimit: number;
+  readonly status: 'NORMAL' | 'LOW' | 'HIGH' | 'ALARM';
+}
+
+export interface AlarmInfo {
+  readonly alarmId: string;
+  readonly name: string;
+  readonly status: 'ACTIVE' | 'ACKNOWLEDGED' | 'CLEARED';
+  readonly priority: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
+  readonly timestamp: number;
+}
+
+export interface InterlockInfo {
+  readonly interlockId: string;
+  readonly name: string;
+  readonly status: 'ACTIVE' | 'BYPASSED' | 'TRIPPED';
+  readonly condition: string;
+}
+
+export interface OperationEvent {
+  readonly eventId: string;
+  readonly timestamp: number;
+  readonly type: EventType;
+  readonly description: string;
+  readonly actor: string;
+  readonly details: Readonly<Record<string, unknown>>;
+}
+
+export type EventType =
+  | 'PLANNING'
+  | 'APPROVAL'
+  | 'EXECUTION'
+  | 'MILESTONE'
+  | 'SAFETY_EVENT'
+  | 'INCIDENT'
+  | 'COMPLETION';
+
+export interface OperationMetadata {
+  readonly createdAt: number;
+  readonly updatedAt: number;
+  readonly createdBy: string;
+  readonly classification: SecurityLevel;
+  readonly authorization: string;
+  readonly safetyReview: boolean;
+  readonly legalReview: boolean;
+  readonly tags: readonly string[];
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SESSION TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface CIOperationSession {
+  readonly sessionId: string;
+  readonly platformId: string;
+  readonly state: SessionState;
+  readonly config: SessionConfig;
+  readonly progress: SessionProgress;
+  readonly targets: readonly CITarget[];
+  readonly operations: readonly CIOperation[];
+  readonly alerts: readonly SessionAlert[];
+  readonly errors: readonly SessionError[];
+  readonly startTime: number;
+  readonly endTime: number | null;
+  readonly metadata: SessionMetadata;
+}
+
+export type SessionState =
+  | 'PENDING'
+  | 'INITIALIZING'
+  | 'RECONNAISSANCE'
+  | 'EXPLOITATION'
+  | 'IMPACT'
+  | 'CLEANUP'
+  | 'COMPLETED'
+  | 'FAILED';
+
+export interface SessionConfig {
+  readonly mode: OperationalMode;
+  readonly targets: readonly string[];
+  readonly options: Readonly<Record<string, unknown>>;
+}
+
+export interface SessionProgress {
+  readonly phase: SessionPhase;
+  readonly percentage: number;
+  readonly currentTask: string | null;
+  readonly estimatedTimeRemaining: number | null;
+}
+
+export type SessionPhase =
+  | 'INITIALIZING'
+  | 'TARGET_PROFILING'
+  | 'VULNERABILITY_ASSESSMENT'
+  | 'EXPLOITATION'
+  | 'POST_EXPLOITATION'
+  | 'IMPACT_EXECUTION'
+  | 'CLEANUP'
+  | 'REPORTING'
+  | 'FINALIZING';
+
+export interface SessionAlert {
+  readonly alertId: string;
+  readonly timestamp: number;
+  readonly type: AlertType;
+  readonly severity: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
+  readonly source: string;
+  readonly description: string;
+  readonly status: AlertStatus;
+}
+
+export type AlertType =
+  | 'SAFETY_VIOLATION'
+  | 'DETECTION_RISK'
+  | 'OPERATION_FAILURE'
+  | 'PROCESS_ANOMALY'
+  | 'COMMUNICATION_LOSS'
+  | 'ESCALATION_REQUIRED';
+
+export type AlertStatus =
+  | 'NEW'
+  | 'ACKNOWLEDGED'
+  | 'INVESTIGATING'
+  | 'RESOLVED'
+  | 'ESCALATED';
+
+export interface SessionError {
+  readonly errorId: string;
+  readonly timestamp: number;
+  readonly type: SessionErrorType;
+  readonly message: string;
+  readonly details: string | null;
+  readonly recoverable: boolean;
+}
+
+export type SessionErrorType =
+  | 'RECONNAISSANCE_ERROR'
+  | 'EXPLOITATION_ERROR'
+  | 'PROTOCOL_ERROR'
+  | 'SAFETY_ERROR'
+  | 'COMMUNICATION_ERROR'
+  | 'TIMEOUT'
+  | 'INTERNAL_ERROR';
+
+export interface SessionMetadata {
+  readonly platformVersion: string;
+  readonly startedBy: string;
+  readonly classification: SecurityLevel;
+  readonly authorization: string;
+  readonly safetyOfficer: string;
+  readonly tags: readonly string[];
+}

@@ -1,0 +1,581 @@
+/**
+ * {{IME_PROJEKTA}} - Encryption System
+ * Domain: {{DOMENA_SL}}
+ * 
+ * @requirement REQ-SEC-ENC-001
+ * @design DSN-SEC-ENC-001
+ * @test TST-SEC-ENC-001
+ * 
+ * Sistem za šifriranje v varnostnem sistemu.
+ * Skladen z DO-178C, IEC 61508, ISO 26262, MIL-STD-882E standardi.
+ * 
+ * @module security/encryption
+ */
+
+import * as crypto from 'crypto';
+
+// ============================================================================
+// TIPI IN VMESNIKI
+// ============================================================================
+
+/**
+ * Algoritem šifriranja
+ */
+export enum EncryptionAlgorithm {
+    /** AES-256-GCM */
+    AES_256_GCM = 'aes-256-gcm',
+    /** AES-256-CBC */
+    AES_256_CBC = 'aes-256-cbc',
+    /** ChaCha20-Poly1305 */
+    CHACHA20_POLY1305 = 'chacha20-poly1305'
+}
+
+/**
+ * Algoritem hashiranja
+ */
+export enum HashAlgorithm {
+    /** SHA-256 */
+    SHA256 = 'sha256',
+    /** SHA-384 */
+    SHA384 = 'sha384',
+    /** SHA-512 */
+    SHA512 = 'sha512',
+    /** SHA3-256 */
+    SHA3_256 = 'sha3-256',
+    /** SHA3-512 */
+    SHA3_512 = 'sha3-512'
+}
+
+/**
+ * Algoritem za izpeljavo ključa
+ */
+export enum KeyDerivationAlgorithm {
+    /** PBKDF2 */
+    PBKDF2 = 'pbkdf2',
+    /** Argon2id */
+    ARGON2ID = 'argon2id',
+    /** scrypt */
+    SCRYPT = 'scrypt',
+    /** HKDF */
+    HKDF = 'hkdf'
+}
+
+/**
+ * Tip ključa
+ */
+export enum KeyType {
+    /** Simetrični ključ */
+    SYMMETRIC = 'symmetric',
+    /** Asimetrični javni ključ */
+    PUBLIC = 'public',
+    /** Asimetrični zasebni ključ */
+    PRIVATE = 'private',
+    /** HMAC ključ */
+    HMAC = 'hmac'
+}
+
+/**
+ * Ključ
+ */
+export interface CryptoKey {
+    /** Identifikator */
+    readonly id: string;
+    /** Tip */
+    readonly type: KeyType;
+    /** Algoritem */
+    readonly algorithm: string;
+    /** Dolžina (biti) */
+    readonly length: number;
+    /** Čas ustvarjanja */
+    readonly createdAt: Date;
+    /** Čas poteka */
+    readonly expiresAt?: Date;
+    /** Verzija */
+    readonly version: number;
+    /** Ali je aktiven */
+    active: boolean;
+}
+
+/**
+ * Šifrirani podatki
+ */
+export interface EncryptedData {
+    /** Šifrirani podatki (base64) */
+    readonly ciphertext: string;
+    /** IV (base64) */
+    readonly iv: string;
+    /** Auth tag (base64) - za GCM */
+    readonly authTag?: string;
+    /** Algoritem */
+    readonly algorithm: EncryptionAlgorithm;
+    /** ID ključa */
+    readonly keyId: string;
+    /** Verzija ključa */
+    readonly keyVersion: number;
+}
+
+/**
+ * Rezultat hashiranja
+ */
+export interface HashResult {
+    /** Hash (hex) */
+    readonly hash: string;
+    /** Algoritem */
+    readonly algorithm: HashAlgorithm;
+    /** Sol (hex) - če je bila uporabljena */
+    readonly salt?: string;
+}
+
+/**
+ * Konfiguracija šifriranja
+ */
+export interface EncryptionConfig {
+    /** Privzeti algoritem šifriranja */
+    readonly defaultAlgorithm: EncryptionAlgorithm;
+    /** Privzeti algoritem hashiranja */
+    readonly defaultHashAlgorithm: HashAlgorithm;
+    /** Privzeti algoritem za izpeljavo ključa */
+    readonly defaultKdfAlgorithm: KeyDerivationAlgorithm;
+    /** Število iteracij za PBKDF2 */
+    readonly pbkdf2Iterations: number;
+    /** Dolžina soli (bajti) */
+    readonly saltLength: number;
+    /** Dolžina IV (bajti) */
+    readonly ivLength: number;
+    /** Čas veljavnosti ključa (dni) */
+    readonly keyExpiryDays: number;
+}
+
+// ============================================================================
+// GLAVNA IMPLEMENTACIJA
+// ============================================================================
+
+/**
+ * Sistem za šifriranje
+ * 
+ * Implementira varno šifriranje skladno z industrijskimi standardi.
+ */
+export class EncryptionSystem {
+    private readonly config: EncryptionConfig;
+    private readonly keys: Map<string, { key: CryptoKey; material: Buffer }>;
+    private keyCounter: number;
+
+    constructor(config: EncryptionConfig) {
+        this.config = config;
+        this.keys = new Map();
+        this.keyCounter = 0;
+    }
+
+    /**
+     * Generiraj simetrični ključ
+     */
+    generateKey(
+        algorithm: EncryptionAlgorithm = this.config.defaultAlgorithm,
+        expiryDays?: number
+    ): CryptoKey {
+        this.keyCounter++;
+        const now = new Date();
+        const keyLength = this.getKeyLength(algorithm);
+        const keyMaterial = crypto.randomBytes(keyLength / 8);
+
+        const expiresAt = new Date(now);
+        expiresAt.setDate(expiresAt.getDate() + (expiryDays ?? this.config.keyExpiryDays));
+
+        const key: CryptoKey = {
+            id: this.generateKeyId(),
+            type: KeyType.SYMMETRIC,
+            algorithm,
+            length: keyLength,
+            createdAt: now,
+            expiresAt,
+            version: 1,
+            active: true
+        };
+
+        this.keys.set(key.id, { key, material: keyMaterial });
+        return key;
+    }
+
+    /**
+     * Šifriraj podatke
+     */
+    encrypt(
+        plaintext: string | Buffer,
+        keyId: string
+    ): EncryptedData {
+        const keyData = this.keys.get(keyId);
+        if (keyData === undefined) {
+            throw new Error(`Key not found: ${keyId}`);
+        }
+
+        if (!keyData.key.active) {
+            throw new Error(`Key is not active: ${keyId}`);
+        }
+
+        if (keyData.key.expiresAt !== undefined && keyData.key.expiresAt < new Date()) {
+            throw new Error(`Key has expired: ${keyId}`);
+        }
+
+        const algorithm = keyData.key.algorithm as EncryptionAlgorithm;
+        const iv = crypto.randomBytes(this.config.ivLength);
+        const plaintextBuffer = typeof plaintext === 'string' 
+            ? Buffer.from(plaintext, 'utf8') 
+            : plaintext;
+
+        let ciphertext: Buffer;
+        let authTag: Buffer | undefined;
+
+        if (algorithm === EncryptionAlgorithm.AES_256_GCM) {
+            const cipher = crypto.createCipheriv(
+                'aes-256-gcm',
+                keyData.material,
+                iv
+            );
+            ciphertext = Buffer.concat([
+                cipher.update(plaintextBuffer),
+                cipher.final()
+            ]);
+            authTag = cipher.getAuthTag();
+        } else if (algorithm === EncryptionAlgorithm.AES_256_CBC) {
+            const cipher = crypto.createCipheriv(
+                'aes-256-cbc',
+                keyData.material,
+                iv
+            );
+            ciphertext = Buffer.concat([
+                cipher.update(plaintextBuffer),
+                cipher.final()
+            ]);
+        } else {
+            throw new Error(`Unsupported algorithm: ${algorithm}`);
+        }
+
+        return {
+            ciphertext: ciphertext.toString('base64'),
+            iv: iv.toString('base64'),
+            authTag: authTag?.toString('base64'),
+            algorithm,
+            keyId,
+            keyVersion: keyData.key.version
+        };
+    }
+
+    /**
+     * Dešifriraj podatke
+     */
+    decrypt(encryptedData: EncryptedData): Buffer {
+        const keyData = this.keys.get(encryptedData.keyId);
+        if (keyData === undefined) {
+            throw new Error(`Key not found: ${encryptedData.keyId}`);
+        }
+
+        const ciphertext = Buffer.from(encryptedData.ciphertext, 'base64');
+        const iv = Buffer.from(encryptedData.iv, 'base64');
+
+        let plaintext: Buffer;
+
+        if (encryptedData.algorithm === EncryptionAlgorithm.AES_256_GCM) {
+            if (encryptedData.authTag === undefined) {
+                throw new Error('Auth tag is required for GCM mode');
+            }
+
+            const decipher = crypto.createDecipheriv(
+                'aes-256-gcm',
+                keyData.material,
+                iv
+            );
+            decipher.setAuthTag(Buffer.from(encryptedData.authTag, 'base64'));
+            plaintext = Buffer.concat([
+                decipher.update(ciphertext),
+                decipher.final()
+            ]);
+        } else if (encryptedData.algorithm === EncryptionAlgorithm.AES_256_CBC) {
+            const decipher = crypto.createDecipheriv(
+                'aes-256-cbc',
+                keyData.material,
+                iv
+            );
+            plaintext = Buffer.concat([
+                decipher.update(ciphertext),
+                decipher.final()
+            ]);
+        } else {
+            throw new Error(`Unsupported algorithm: ${encryptedData.algorithm}`);
+        }
+
+        return plaintext;
+    }
+
+    /**
+     * Dešifriraj v niz
+     */
+    decryptToString(encryptedData: EncryptedData): string {
+        return this.decrypt(encryptedData).toString('utf8');
+    }
+
+    /**
+     * Hashiraj podatke
+     */
+    hash(
+        data: string | Buffer,
+        algorithm: HashAlgorithm = this.config.defaultHashAlgorithm,
+        salt?: string
+    ): HashResult {
+        const dataBuffer = typeof data === 'string' ? Buffer.from(data, 'utf8') : data;
+        let saltBuffer: Buffer | undefined;
+
+        if (salt !== undefined) {
+            saltBuffer = Buffer.from(salt, 'hex');
+        }
+
+        const hashInput = saltBuffer !== undefined
+            ? Buffer.concat([saltBuffer, dataBuffer])
+            : dataBuffer;
+
+        const hash = crypto.createHash(algorithm)
+            .update(hashInput)
+            .digest('hex');
+
+        return {
+            hash,
+            algorithm,
+            salt
+        };
+    }
+
+    /**
+     * Hashiraj z soljo
+     */
+    hashWithSalt(
+        data: string | Buffer,
+        algorithm: HashAlgorithm = this.config.defaultHashAlgorithm
+    ): HashResult {
+        const salt = crypto.randomBytes(this.config.saltLength).toString('hex');
+        return this.hash(data, algorithm, salt);
+    }
+
+    /**
+     * Preveri hash
+     */
+    verifyHash(
+        data: string | Buffer,
+        expectedHash: string,
+        algorithm: HashAlgorithm,
+        salt?: string
+    ): boolean {
+        const result = this.hash(data, algorithm, salt);
+        return crypto.timingSafeEqual(
+            Buffer.from(result.hash, 'hex'),
+            Buffer.from(expectedHash, 'hex')
+        );
+    }
+
+    /**
+     * Izpelji ključ iz gesla
+     */
+    deriveKey(
+        password: string,
+        salt?: Buffer,
+        algorithm: KeyDerivationAlgorithm = this.config.defaultKdfAlgorithm
+    ): { key: Buffer; salt: Buffer } {
+        const saltBuffer = salt ?? crypto.randomBytes(this.config.saltLength);
+
+        let derivedKey: Buffer;
+
+        if (algorithm === KeyDerivationAlgorithm.PBKDF2) {
+            derivedKey = crypto.pbkdf2Sync(
+                password,
+                saltBuffer,
+                this.config.pbkdf2Iterations,
+                32,
+                'sha256'
+            );
+        } else if (algorithm === KeyDerivationAlgorithm.SCRYPT) {
+            derivedKey = crypto.scryptSync(password, saltBuffer, 32);
+        } else {
+            throw new Error(`Unsupported KDF algorithm: ${algorithm}`);
+        }
+
+        return { key: derivedKey, salt: saltBuffer };
+    }
+
+    /**
+     * Generiraj HMAC
+     */
+    hmac(
+        data: string | Buffer,
+        keyId: string,
+        algorithm: HashAlgorithm = this.config.defaultHashAlgorithm
+    ): string {
+        const keyData = this.keys.get(keyId);
+        if (keyData === undefined) {
+            throw new Error(`Key not found: ${keyId}`);
+        }
+
+        const dataBuffer = typeof data === 'string' ? Buffer.from(data, 'utf8') : data;
+
+        return crypto.createHmac(algorithm, keyData.material)
+            .update(dataBuffer)
+            .digest('hex');
+    }
+
+    /**
+     * Preveri HMAC
+     */
+    verifyHmac(
+        data: string | Buffer,
+        expectedHmac: string,
+        keyId: string,
+        algorithm: HashAlgorithm = this.config.defaultHashAlgorithm
+    ): boolean {
+        const actualHmac = this.hmac(data, keyId, algorithm);
+        return crypto.timingSafeEqual(
+            Buffer.from(actualHmac, 'hex'),
+            Buffer.from(expectedHmac, 'hex')
+        );
+    }
+
+    /**
+     * Rotiraj ključ
+     */
+    rotateKey(keyId: string): CryptoKey {
+        const keyData = this.keys.get(keyId);
+        if (keyData === undefined) {
+            throw new Error(`Key not found: ${keyId}`);
+        }
+
+        // Deaktiviraj stari ključ
+        keyData.key.active = false;
+
+        // Generiraj nov ključ z isto konfiguracijo
+        const newKey = this.generateKey(
+            keyData.key.algorithm as EncryptionAlgorithm
+        );
+
+        return newKey;
+    }
+
+    /**
+     * Pridobi ključ
+     */
+    getKey(keyId: string): CryptoKey | undefined {
+        return this.keys.get(keyId)?.key;
+    }
+
+    /**
+     * Pridobi vse ključe
+     */
+    getKeys(): CryptoKey[] {
+        return Array.from(this.keys.values()).map(kd => kd.key);
+    }
+
+    /**
+     * Pridobi aktivne ključe
+     */
+    getActiveKeys(): CryptoKey[] {
+        return this.getKeys().filter(k => k.active);
+    }
+
+    /**
+     * Deaktiviraj ključ
+     */
+    deactivateKey(keyId: string): boolean {
+        const keyData = this.keys.get(keyId);
+        if (keyData === undefined) {
+            return false;
+        }
+
+        keyData.key.active = false;
+        return true;
+    }
+
+    /**
+     * Izbriši ključ
+     */
+    deleteKey(keyId: string): boolean {
+        const keyData = this.keys.get(keyId);
+        if (keyData === undefined) {
+            return false;
+        }
+
+        // Varno izbriši material ključa
+        keyData.material.fill(0);
+        return this.keys.delete(keyId);
+    }
+
+    /**
+     * Generiraj naključne bajte
+     */
+    randomBytes(length: number): Buffer {
+        return crypto.randomBytes(length);
+    }
+
+    /**
+     * Generiraj naključni niz
+     */
+    randomString(length: number): string {
+        return crypto.randomBytes(Math.ceil(length / 2))
+            .toString('hex')
+            .slice(0, length);
+    }
+
+    // ========================================================================
+    // PRIVATNE METODE
+    // ========================================================================
+
+    /**
+     * Pridobi dolžino ključa za algoritem
+     */
+    private getKeyLength(algorithm: EncryptionAlgorithm): number {
+        switch (algorithm) {
+            case EncryptionAlgorithm.AES_256_GCM:
+            case EncryptionAlgorithm.AES_256_CBC:
+                return 256;
+            case EncryptionAlgorithm.CHACHA20_POLY1305:
+                return 256;
+            default:
+                return 256;
+        }
+    }
+
+    /**
+     * Generiraj ID ključa
+     */
+    private generateKeyId(): string {
+        const timestamp = Date.now();
+        const random = crypto.randomBytes(4).toString('hex');
+        return `key-${timestamp}-${random}`;
+    }
+}
+
+// ============================================================================
+// TOVARNIŠKA FUNKCIJA
+// ============================================================================
+
+/**
+ * Ustvari sistem za šifriranje
+ */
+export function createEncryptionSystem(
+    config?: Partial<EncryptionConfig>
+): EncryptionSystem {
+    const defaultConfig: EncryptionConfig = {
+        defaultAlgorithm: EncryptionAlgorithm.AES_256_GCM,
+        defaultHashAlgorithm: HashAlgorithm.SHA256,
+        defaultKdfAlgorithm: KeyDerivationAlgorithm.PBKDF2,
+        pbkdf2Iterations: 100000,
+        saltLength: 32,
+        ivLength: 12,
+        keyExpiryDays: 365
+    };
+
+    return new EncryptionSystem({
+        ...defaultConfig,
+        ...config
+    });
+}
+
+// ============================================================================
+// IZVOZ
+// ============================================================================
+
+export default EncryptionSystem;

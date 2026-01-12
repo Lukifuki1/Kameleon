@@ -1,0 +1,1285 @@
+/**
+ * @file Psychological Operations - Self-Contained PSYOP Platform
+ * @author {{AVTOR}}
+ * @version {{VERZIJA}}
+ * @date {{DATUM}}
+ * @project {{IME_PROJEKTA}}
+ * @domain VARNOSTNI_SISTEMI
+ * 
+ * @requirement REQ-SEC-PSY-001
+ * @design DSN-SEC-PSY-001
+ * @test TST-SEC-PSY-001
+ * 
+ * @description
+ * Enterprise-grade self-contained psychological operations platform implementing
+ * comprehensive influence operations, propaganda analysis, narrative management,
+ * disinformation detection, and behavioral influence assessment. All PSYOP
+ * algorithms are natively implemented without external dependencies.
+ * 
+ * @classification TOP SECRET - Psychological Operations
+ * @authorization Required: Level 5 Security Clearance
+ * @dependencies NONE - Fully self-contained implementation
+ */
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PSYCHOLOGICAL OPERATIONS TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export type OperationType =
+  | 'INFLUENCE'
+  | 'PROPAGANDA_ANALYSIS'
+  | 'COUNTER_PROPAGANDA'
+  | 'NARRATIVE_MANAGEMENT'
+  | 'DISINFORMATION_DETECTION'
+  | 'PERCEPTION_MANAGEMENT'
+  | 'BEHAVIORAL_INFLUENCE'
+  | 'STRATEGIC_COMMUNICATION';
+
+export type InfluenceMethod =
+  | 'SOCIAL_MEDIA'
+  | 'TRADITIONAL_MEDIA'
+  | 'DIRECT_ENGAGEMENT'
+  | 'CULTURAL_INFLUENCE'
+  | 'ECONOMIC_INFLUENCE'
+  | 'POLITICAL_INFLUENCE'
+  | 'RELIGIOUS_INFLUENCE'
+  | 'EDUCATIONAL_INFLUENCE';
+
+export type PropagandaType =
+  | 'WHITE'
+  | 'GRAY'
+  | 'BLACK'
+  | 'COMPUTATIONAL'
+  | 'ASTROTURFING'
+  | 'SOCKPUPPET'
+  | 'BOT_NETWORK'
+  | 'TROLL_FARM';
+
+export type NarrativeType =
+  | 'STRATEGIC'
+  | 'OPERATIONAL'
+  | 'TACTICAL'
+  | 'COUNTER_NARRATIVE'
+  | 'ALTERNATIVE_NARRATIVE'
+  | 'MASTER_NARRATIVE';
+
+export type TargetAudience =
+  | 'GENERAL_PUBLIC'
+  | 'MILITARY'
+  | 'GOVERNMENT'
+  | 'MEDIA'
+  | 'ACADEMIC'
+  | 'BUSINESS'
+  | 'YOUTH'
+  | 'DIASPORA'
+  | 'SPECIFIC_GROUP';
+
+export type ImpactLevel =
+  | 'STRATEGIC'
+  | 'OPERATIONAL'
+  | 'TACTICAL'
+  | 'MINIMAL';
+
+export type SecurityLevel =
+  | 'TOP_SECRET'
+  | 'SECRET'
+  | 'CONFIDENTIAL'
+  | 'UNCLASSIFIED';
+
+export type OperationalMode =
+  | 'OFFENSIVE'
+  | 'DEFENSIVE'
+  | 'ANALYTICAL'
+  | 'COMBINED';
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PSYCHOLOGICAL OPERATIONS CONFIGURATION
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface PsychologicalOperationsConfig {
+  readonly platformId: string;
+  readonly name: string;
+  readonly version: string;
+  readonly mode: OperationalMode;
+  readonly influence: InfluenceConfig;
+  readonly propaganda: PropagandaConfig;
+  readonly narrative: NarrativeConfig;
+  readonly disinformation: DisinformationConfig;
+  readonly perception: PerceptionConfig;
+  readonly behavioral: BehavioralConfig;
+  readonly analysis: AnalysisConfig;
+  readonly targeting: TargetingConfig;
+  readonly measurement: MeasurementConfig;
+  readonly reporting: ReportingConfig;
+  readonly storage: StorageConfig;
+  readonly security: SecurityConfig;
+  readonly metadata: PlatformMetadata;
+}
+
+export interface InfluenceConfig {
+  readonly enabled: boolean;
+  readonly channels: InfluenceChannelsConfig;
+  readonly methods: InfluenceMethodsConfig;
+  readonly messaging: MessagingConfig;
+  readonly amplification: AmplificationConfig;
+}
+
+export interface InfluenceChannelsConfig {
+  readonly enabled: boolean;
+  readonly socialMedia: SocialMediaConfig;
+  readonly traditionalMedia: TraditionalMediaConfig;
+  readonly directEngagement: DirectEngagementConfig;
+  readonly culturalChannels: CulturalChannelsConfig;
+}
+
+export interface SocialMediaConfig {
+  readonly enabled: boolean;
+  readonly platforms: readonly SocialPlatform[];
+  readonly contentTypes: readonly ContentType[];
+  readonly scheduling: boolean;
+  readonly analytics: boolean;
+}
+
+export type SocialPlatform =
+  | 'FACEBOOK'
+  | 'TWITTER'
+  | 'INSTAGRAM'
+  | 'TIKTOK'
+  | 'YOUTUBE'
+  | 'TELEGRAM'
+  | 'WHATSAPP'
+  | 'REDDIT'
+  | 'LINKEDIN'
+  | 'VK'
+  | 'WEIBO'
+  | 'WECHAT';
+
+export type ContentType =
+  | 'TEXT'
+  | 'IMAGE'
+  | 'VIDEO'
+  | 'AUDIO'
+  | 'INFOGRAPHIC'
+  | 'MEME'
+  | 'ARTICLE'
+  | 'LIVE_STREAM';
+
+export interface TraditionalMediaConfig {
+  readonly enabled: boolean;
+  readonly channels: readonly TraditionalChannel[];
+  readonly pressReleases: boolean;
+  readonly mediaRelations: boolean;
+  readonly advertising: boolean;
+}
+
+export type TraditionalChannel =
+  | 'TELEVISION'
+  | 'RADIO'
+  | 'NEWSPAPER'
+  | 'MAGAZINE'
+  | 'BILLBOARD'
+  | 'LEAFLET';
+
+export interface DirectEngagementConfig {
+  readonly enabled: boolean;
+  readonly methods: readonly EngagementMethod[];
+  readonly keyLeaders: boolean;
+  readonly communityOutreach: boolean;
+}
+
+export type EngagementMethod =
+  | 'FACE_TO_FACE'
+  | 'VIRTUAL_MEETING'
+  | 'CONFERENCE'
+  | 'WORKSHOP'
+  | 'TOWN_HALL';
+
+export interface CulturalChannelsConfig {
+  readonly enabled: boolean;
+  readonly arts: boolean;
+  readonly entertainment: boolean;
+  readonly sports: boolean;
+  readonly education: boolean;
+  readonly religion: boolean;
+}
+
+export interface InfluenceMethodsConfig {
+  readonly enabled: boolean;
+  readonly persuasion: PersuasionConfig;
+  readonly socialProof: SocialProofConfig;
+  readonly authority: AuthorityConfig;
+  readonly reciprocity: ReciprocityConfig;
+}
+
+export interface PersuasionConfig {
+  readonly enabled: boolean;
+  readonly techniques: readonly PersuasionTechnique[];
+  readonly emotionalAppeals: boolean;
+  readonly logicalAppeals: boolean;
+  readonly ethicalAppeals: boolean;
+}
+
+export type PersuasionTechnique =
+  | 'REPETITION'
+  | 'ASSOCIATION'
+  | 'BANDWAGON'
+  | 'FEAR_APPEAL'
+  | 'TESTIMONIAL'
+  | 'PLAIN_FOLKS'
+  | 'TRANSFER'
+  | 'CARD_STACKING';
+
+export interface SocialProofConfig {
+  readonly enabled: boolean;
+  readonly testimonials: boolean;
+  readonly endorsements: boolean;
+  readonly statistics: boolean;
+  readonly crowdBehavior: boolean;
+}
+
+export interface AuthorityConfig {
+  readonly enabled: boolean;
+  readonly expertEndorsement: boolean;
+  readonly officialSources: boolean;
+  readonly credentialDisplay: boolean;
+}
+
+export interface ReciprocityConfig {
+  readonly enabled: boolean;
+  readonly valueProvision: boolean;
+  readonly relationshipBuilding: boolean;
+  readonly obligationCreation: boolean;
+}
+
+export interface MessagingConfig {
+  readonly enabled: boolean;
+  readonly development: MessageDevelopmentConfig;
+  readonly testing: MessageTestingConfig;
+  readonly localization: LocalizationConfig;
+  readonly timing: TimingConfig;
+}
+
+export interface MessageDevelopmentConfig {
+  readonly enabled: boolean;
+  readonly themes: readonly string[];
+  readonly toneOptions: readonly ToneOption[];
+  readonly formatOptions: readonly string[];
+}
+
+export type ToneOption =
+  | 'AUTHORITATIVE'
+  | 'FRIENDLY'
+  | 'URGENT'
+  | 'EMOTIONAL'
+  | 'FACTUAL'
+  | 'INSPIRATIONAL'
+  | 'HUMOROUS';
+
+export interface MessageTestingConfig {
+  readonly enabled: boolean;
+  readonly abTesting: boolean;
+  readonly focusGroups: boolean;
+  readonly surveyTesting: boolean;
+  readonly analyticsTracking: boolean;
+}
+
+export interface LocalizationConfig {
+  readonly enabled: boolean;
+  readonly languages: readonly string[];
+  readonly culturalAdaptation: boolean;
+  readonly dialectVariation: boolean;
+}
+
+export interface TimingConfig {
+  readonly enabled: boolean;
+  readonly scheduling: boolean;
+  readonly eventTiming: boolean;
+  readonly frequencyOptimization: boolean;
+}
+
+export interface AmplificationConfig {
+  readonly enabled: boolean;
+  readonly organic: OrganicAmplificationConfig;
+  readonly paid: PaidAmplificationConfig;
+  readonly network: NetworkAmplificationConfig;
+}
+
+export interface OrganicAmplificationConfig {
+  readonly enabled: boolean;
+  readonly viralContent: boolean;
+  readonly influencerEngagement: boolean;
+  readonly communityBuilding: boolean;
+}
+
+export interface PaidAmplificationConfig {
+  readonly enabled: boolean;
+  readonly advertising: boolean;
+  readonly sponsoredContent: boolean;
+  readonly promotedPosts: boolean;
+}
+
+export interface NetworkAmplificationConfig {
+  readonly enabled: boolean;
+  readonly coordinatedSharing: boolean;
+  readonly crossPlatform: boolean;
+  readonly partnerNetworks: boolean;
+}
+
+export interface PropagandaConfig {
+  readonly enabled: boolean;
+  readonly analysis: PropagandaAnalysisConfig;
+  readonly detection: PropagandaDetectionConfig;
+  readonly counter: CounterPropagandaConfig;
+  readonly attribution: PropagandaAttributionConfig;
+}
+
+export interface PropagandaAnalysisConfig {
+  readonly enabled: boolean;
+  readonly sourceAnalysis: boolean;
+  readonly contentAnalysis: boolean;
+  readonly networkAnalysis: boolean;
+  readonly impactAnalysis: boolean;
+}
+
+export interface PropagandaDetectionConfig {
+  readonly enabled: boolean;
+  readonly botDetection: BotDetectionConfig;
+  readonly coordinatedBehavior: CoordinatedBehaviorConfig;
+  readonly artificialAmplification: ArtificialAmplificationConfig;
+  readonly fakeAccounts: FakeAccountConfig;
+}
+
+export interface BotDetectionConfig {
+  readonly enabled: boolean;
+  readonly behavioralAnalysis: boolean;
+  readonly networkAnalysis: boolean;
+  readonly contentAnalysis: boolean;
+  readonly temporalAnalysis: boolean;
+}
+
+export interface CoordinatedBehaviorConfig {
+  readonly enabled: boolean;
+  readonly synchronizedPosting: boolean;
+  readonly identicalContent: boolean;
+  readonly networkClusters: boolean;
+  readonly amplificationPatterns: boolean;
+}
+
+export interface ArtificialAmplificationConfig {
+  readonly enabled: boolean;
+  readonly engagementPatterns: boolean;
+  readonly growthPatterns: boolean;
+  readonly viralityAnalysis: boolean;
+}
+
+export interface FakeAccountConfig {
+  readonly enabled: boolean;
+  readonly profileAnalysis: boolean;
+  readonly activityAnalysis: boolean;
+  readonly networkAnalysis: boolean;
+  readonly contentAnalysis: boolean;
+}
+
+export interface CounterPropagandaConfig {
+  readonly enabled: boolean;
+  readonly debunking: DebunkingConfig;
+  readonly prebunking: PrebunkingConfig;
+  readonly inoculation: InoculationConfig;
+  readonly exposure: ExposureConfig;
+}
+
+export interface DebunkingConfig {
+  readonly enabled: boolean;
+  readonly factChecking: boolean;
+  readonly sourceVerification: boolean;
+  readonly contextProvision: boolean;
+  readonly correctionDissemination: boolean;
+}
+
+export interface PrebunkingConfig {
+  readonly enabled: boolean;
+  readonly anticipation: boolean;
+  readonly preemptiveMessaging: boolean;
+  readonly audiencePreparation: boolean;
+}
+
+export interface InoculationConfig {
+  readonly enabled: boolean;
+  readonly weakenedExposure: boolean;
+  readonly criticalThinking: boolean;
+  readonly mediaLiteracy: boolean;
+}
+
+export interface ExposureConfig {
+  readonly enabled: boolean;
+  readonly sourceExposure: boolean;
+  readonly methodExposure: boolean;
+  readonly networkExposure: boolean;
+  readonly motivationExposure: boolean;
+}
+
+export interface PropagandaAttributionConfig {
+  readonly enabled: boolean;
+  readonly actorIdentification: boolean;
+  readonly sponsorIdentification: boolean;
+  readonly networkMapping: boolean;
+  readonly confidenceAssessment: boolean;
+}
+
+export interface NarrativeConfig {
+  readonly enabled: boolean;
+  readonly development: NarrativeDevelopmentConfig;
+  readonly management: NarrativeManagementConfig;
+  readonly monitoring: NarrativeMonitoringConfig;
+  readonly counter: CounterNarrativeConfig;
+}
+
+export interface NarrativeDevelopmentConfig {
+  readonly enabled: boolean;
+  readonly themes: readonly string[];
+  readonly storylines: boolean;
+  readonly characters: boolean;
+  readonly evidence: boolean;
+}
+
+export interface NarrativeManagementConfig {
+  readonly enabled: boolean;
+  readonly consistency: boolean;
+  readonly adaptation: boolean;
+  readonly reinforcement: boolean;
+  readonly evolution: boolean;
+}
+
+export interface NarrativeMonitoringConfig {
+  readonly enabled: boolean;
+  readonly tracking: boolean;
+  readonly sentiment: boolean;
+  readonly reach: boolean;
+  readonly engagement: boolean;
+}
+
+export interface CounterNarrativeConfig {
+  readonly enabled: boolean;
+  readonly identification: boolean;
+  readonly development: boolean;
+  readonly deployment: boolean;
+  readonly measurement: boolean;
+}
+
+export interface DisinformationConfig {
+  readonly enabled: boolean;
+  readonly detection: DisinformationDetectionConfig;
+  readonly analysis: DisinformationAnalysisConfig;
+  readonly response: DisinformationResponseConfig;
+  readonly prevention: DisinformationPreventionConfig;
+}
+
+export interface DisinformationDetectionConfig {
+  readonly enabled: boolean;
+  readonly contentAnalysis: ContentAnalysisConfig;
+  readonly sourceAnalysis: SourceAnalysisConfig;
+  readonly networkAnalysis: NetworkAnalysisConfig;
+  readonly temporalAnalysis: TemporalAnalysisConfig;
+}
+
+export interface ContentAnalysisConfig {
+  readonly enabled: boolean;
+  readonly factualAccuracy: boolean;
+  readonly manipulatedMedia: boolean;
+  readonly misleadingContext: boolean;
+  readonly fabricatedContent: boolean;
+}
+
+export interface SourceAnalysisConfig {
+  readonly enabled: boolean;
+  readonly credibilityAssessment: boolean;
+  readonly historyAnalysis: boolean;
+  readonly affiliationAnalysis: boolean;
+  readonly motivationAnalysis: boolean;
+}
+
+export interface NetworkAnalysisConfig {
+  readonly enabled: boolean;
+  readonly spreadPatterns: boolean;
+  readonly amplificationNetworks: boolean;
+  readonly coordinatedBehavior: boolean;
+  readonly influencerMapping: boolean;
+}
+
+export interface TemporalAnalysisConfig {
+  readonly enabled: boolean;
+  readonly emergenceTracking: boolean;
+  readonly evolutionTracking: boolean;
+  readonly peakAnalysis: boolean;
+  readonly decayAnalysis: boolean;
+}
+
+export interface DisinformationAnalysisConfig {
+  readonly enabled: boolean;
+  readonly impactAssessment: boolean;
+  readonly audienceAnalysis: boolean;
+  readonly narrativeAnalysis: boolean;
+  readonly attributionAnalysis: boolean;
+}
+
+export interface DisinformationResponseConfig {
+  readonly enabled: boolean;
+  readonly rapidResponse: boolean;
+  readonly correction: boolean;
+  readonly amplification: boolean;
+  readonly coordination: boolean;
+}
+
+export interface DisinformationPreventionConfig {
+  readonly enabled: boolean;
+  readonly earlyWarning: boolean;
+  readonly mediaLiteracy: boolean;
+  readonly platformCoordination: boolean;
+  readonly policyAdvocacy: boolean;
+}
+
+export interface PerceptionConfig {
+  readonly enabled: boolean;
+  readonly assessment: PerceptionAssessmentConfig;
+  readonly management: PerceptionManagementConfig;
+  readonly monitoring: PerceptionMonitoringConfig;
+}
+
+export interface PerceptionAssessmentConfig {
+  readonly enabled: boolean;
+  readonly surveys: boolean;
+  readonly focusGroups: boolean;
+  readonly socialListening: boolean;
+  readonly mediaAnalysis: boolean;
+}
+
+export interface PerceptionManagementConfig {
+  readonly enabled: boolean;
+  readonly messaging: boolean;
+  readonly engagement: boolean;
+  readonly crisisManagement: boolean;
+  readonly reputationManagement: boolean;
+}
+
+export interface PerceptionMonitoringConfig {
+  readonly enabled: boolean;
+  readonly realTimeTracking: boolean;
+  readonly sentimentAnalysis: boolean;
+  readonly trendAnalysis: boolean;
+  readonly alerting: boolean;
+}
+
+export interface BehavioralConfig {
+  readonly enabled: boolean;
+  readonly analysis: BehavioralAnalysisConfig;
+  readonly influence: BehavioralInfluenceConfig;
+  readonly prediction: BehavioralPredictionConfig;
+}
+
+export interface BehavioralAnalysisConfig {
+  readonly enabled: boolean;
+  readonly individualBehavior: boolean;
+  readonly groupBehavior: boolean;
+  readonly socialDynamics: boolean;
+  readonly decisionMaking: boolean;
+}
+
+export interface BehavioralInfluenceConfig {
+  readonly enabled: boolean;
+  readonly nudging: boolean;
+  readonly framing: boolean;
+  readonly priming: boolean;
+  readonly socialNorms: boolean;
+}
+
+export interface BehavioralPredictionConfig {
+  readonly enabled: boolean;
+  readonly modeling: boolean;
+  readonly simulation: boolean;
+  readonly scenarioAnalysis: boolean;
+}
+
+export interface AnalysisConfig {
+  readonly enabled: boolean;
+  readonly audienceAnalysis: AudienceAnalysisConfig;
+  readonly mediaAnalysis: MediaAnalysisConfig;
+  readonly sentimentAnalysis: SentimentAnalysisConfig;
+  readonly trendAnalysis: TrendAnalysisConfig;
+}
+
+export interface AudienceAnalysisConfig {
+  readonly enabled: boolean;
+  readonly demographics: boolean;
+  readonly psychographics: boolean;
+  readonly behaviors: boolean;
+  readonly preferences: boolean;
+}
+
+export interface MediaAnalysisConfig {
+  readonly enabled: boolean;
+  readonly coverage: boolean;
+  readonly tone: boolean;
+  readonly reach: boolean;
+  readonly influence: boolean;
+}
+
+export interface SentimentAnalysisConfig {
+  readonly enabled: boolean;
+  readonly polarity: boolean;
+  readonly emotion: boolean;
+  readonly intensity: boolean;
+  readonly aspects: boolean;
+}
+
+export interface TrendAnalysisConfig {
+  readonly enabled: boolean;
+  readonly emerging: boolean;
+  readonly declining: boolean;
+  readonly cyclical: boolean;
+  readonly anomalies: boolean;
+}
+
+export interface TargetingConfig {
+  readonly enabled: boolean;
+  readonly audienceSegmentation: AudienceSegmentationConfig;
+  readonly prioritization: PrioritizationConfig;
+  readonly personalization: PersonalizationConfig;
+}
+
+export interface AudienceSegmentationConfig {
+  readonly enabled: boolean;
+  readonly demographic: boolean;
+  readonly geographic: boolean;
+  readonly psychographic: boolean;
+  readonly behavioral: boolean;
+}
+
+export interface PrioritizationConfig {
+  readonly enabled: boolean;
+  readonly influence: boolean;
+  readonly receptivity: boolean;
+  readonly accessibility: boolean;
+  readonly impact: boolean;
+}
+
+export interface PersonalizationConfig {
+  readonly enabled: boolean;
+  readonly messaging: boolean;
+  readonly channels: boolean;
+  readonly timing: boolean;
+  readonly format: boolean;
+}
+
+export interface MeasurementConfig {
+  readonly enabled: boolean;
+  readonly effectiveness: EffectivenessConfig;
+  readonly reach: ReachConfig;
+  readonly engagement: EngagementConfig;
+  readonly impact: ImpactConfig;
+}
+
+export interface EffectivenessConfig {
+  readonly enabled: boolean;
+  readonly messageRecall: boolean;
+  readonly attitudeChange: boolean;
+  readonly behaviorChange: boolean;
+  readonly objectiveAchievement: boolean;
+}
+
+export interface ReachConfig {
+  readonly enabled: boolean;
+  readonly audienceSize: boolean;
+  readonly frequency: boolean;
+  readonly penetration: boolean;
+  readonly coverage: boolean;
+}
+
+export interface EngagementConfig {
+  readonly enabled: boolean;
+  readonly interactions: boolean;
+  readonly shares: boolean;
+  readonly comments: boolean;
+  readonly conversions: boolean;
+}
+
+export interface ImpactConfig {
+  readonly enabled: boolean;
+  readonly shortTerm: boolean;
+  readonly mediumTerm: boolean;
+  readonly longTerm: boolean;
+  readonly strategic: boolean;
+}
+
+export interface ReportingConfig {
+  readonly enabled: boolean;
+  readonly formats: readonly ReportFormat[];
+  readonly sections: readonly ReportSection[];
+  readonly automation: ReportAutomationConfig;
+}
+
+export type ReportFormat =
+  | 'PDF'
+  | 'HTML'
+  | 'JSON'
+  | 'POWERPOINT';
+
+export type ReportSection =
+  | 'EXECUTIVE_SUMMARY'
+  | 'OPERATION_DETAILS'
+  | 'AUDIENCE_ANALYSIS'
+  | 'MESSAGE_PERFORMANCE'
+  | 'IMPACT_ASSESSMENT'
+  | 'RECOMMENDATIONS';
+
+export interface ReportAutomationConfig {
+  readonly enabled: boolean;
+  readonly scheduling: boolean;
+  readonly triggers: readonly string[];
+}
+
+export interface StorageConfig {
+  readonly type: 'DATABASE' | 'FILE_SYSTEM' | 'HYBRID';
+  readonly encryption: StorageEncryptionConfig;
+  readonly retention: RetentionConfig;
+  readonly backup: BackupConfig;
+}
+
+export interface StorageEncryptionConfig {
+  readonly enabled: boolean;
+  readonly algorithm: 'AES_256_GCM' | 'CHACHA20_POLY1305';
+  readonly keyManagement: 'LOCAL' | 'HSM' | 'KMS';
+}
+
+export interface RetentionConfig {
+  readonly enabled: boolean;
+  readonly operations: number;
+  readonly content: number;
+  readonly analytics: number;
+}
+
+export interface BackupConfig {
+  readonly enabled: boolean;
+  readonly frequency: number;
+  readonly encryption: boolean;
+  readonly offsite: boolean;
+}
+
+export interface SecurityConfig {
+  readonly authentication: AuthenticationConfig;
+  readonly authorization: AuthorizationConfig;
+  readonly audit: AuditConfig;
+  readonly classification: ClassificationConfig;
+}
+
+export interface AuthenticationConfig {
+  readonly enabled: boolean;
+  readonly methods: readonly ('PKI' | 'CAC' | 'BIOMETRIC' | 'MFA')[];
+  readonly sessionTimeout: number;
+}
+
+export interface AuthorizationConfig {
+  readonly enabled: boolean;
+  readonly model: 'RBAC' | 'ABAC' | 'MAC';
+  readonly clearanceRequired: boolean;
+}
+
+export interface AuditConfig {
+  readonly enabled: boolean;
+  readonly logAllAccess: boolean;
+  readonly logAllOperations: boolean;
+  readonly retention: number;
+}
+
+export interface ClassificationConfig {
+  readonly enabled: boolean;
+  readonly defaultLevel: SecurityLevel;
+  readonly autoClassification: boolean;
+}
+
+export interface PlatformMetadata {
+  readonly createdAt: number;
+  readonly updatedAt: number;
+  readonly createdBy: string;
+  readonly version: string;
+  readonly tags: readonly string[];
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// OPERATION TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface PsychologicalOperation {
+  readonly operationId: string;
+  readonly name: string;
+  readonly codeName: string;
+  readonly type: OperationType;
+  readonly status: OperationStatus;
+  readonly objectives: readonly OperationObjective[];
+  readonly audiences: readonly TargetAudienceInfo[];
+  readonly narratives: readonly NarrativeInfo[];
+  readonly messages: readonly MessageInfo[];
+  readonly channels: readonly ChannelInfo[];
+  readonly timeline: readonly OperationEvent[];
+  readonly metrics: OperationMetrics;
+  readonly metadata: OperationMetadata;
+}
+
+export type OperationStatus =
+  | 'PLANNING'
+  | 'APPROVED'
+  | 'ACTIVE'
+  | 'PAUSED'
+  | 'COMPLETED'
+  | 'TERMINATED';
+
+export interface OperationObjective {
+  readonly objectiveId: string;
+  readonly description: string;
+  readonly type: ObjectiveType;
+  readonly priority: 'PRIMARY' | 'SECONDARY' | 'TERTIARY';
+  readonly status: ObjectiveStatus;
+  readonly metrics: readonly ObjectiveMetric[];
+}
+
+export type ObjectiveType =
+  | 'AWARENESS'
+  | 'ATTITUDE_CHANGE'
+  | 'BEHAVIOR_CHANGE'
+  | 'PERCEPTION_CHANGE'
+  | 'NARRATIVE_DOMINANCE';
+
+export type ObjectiveStatus =
+  | 'PENDING'
+  | 'IN_PROGRESS'
+  | 'ACHIEVED'
+  | 'PARTIALLY_ACHIEVED'
+  | 'FAILED';
+
+export interface ObjectiveMetric {
+  readonly metricId: string;
+  readonly name: string;
+  readonly target: number;
+  readonly current: number;
+  readonly unit: string;
+}
+
+export interface TargetAudienceInfo {
+  readonly audienceId: string;
+  readonly type: TargetAudience;
+  readonly description: string;
+  readonly size: number;
+  readonly characteristics: AudienceCharacteristics;
+  readonly receptivity: ReceptivityInfo;
+  readonly channels: readonly string[];
+}
+
+export interface AudienceCharacteristics {
+  readonly demographics: DemographicInfo;
+  readonly psychographics: PsychographicInfo;
+  readonly behaviors: readonly string[];
+  readonly preferences: readonly string[];
+}
+
+export interface DemographicInfo {
+  readonly ageRange: AgeRange;
+  readonly gender: readonly string[];
+  readonly location: readonly string[];
+  readonly education: readonly string[];
+  readonly income: readonly string[];
+}
+
+export interface AgeRange {
+  readonly min: number;
+  readonly max: number;
+}
+
+export interface PsychographicInfo {
+  readonly values: readonly string[];
+  readonly attitudes: readonly string[];
+  readonly interests: readonly string[];
+  readonly lifestyles: readonly string[];
+}
+
+export interface ReceptivityInfo {
+  readonly level: 'HIGH' | 'MEDIUM' | 'LOW';
+  readonly factors: readonly string[];
+  readonly barriers: readonly string[];
+  readonly opportunities: readonly string[];
+}
+
+export interface NarrativeInfo {
+  readonly narrativeId: string;
+  readonly type: NarrativeType;
+  readonly theme: string;
+  readonly description: string;
+  readonly keyMessages: readonly string[];
+  readonly supportingEvidence: readonly string[];
+  readonly status: NarrativeStatus;
+}
+
+export type NarrativeStatus =
+  | 'DEVELOPMENT'
+  | 'TESTING'
+  | 'ACTIVE'
+  | 'RETIRED';
+
+export interface MessageInfo {
+  readonly messageId: string;
+  readonly narrativeId: string;
+  readonly content: string;
+  readonly format: ContentType;
+  readonly tone: ToneOption;
+  readonly audience: string;
+  readonly channel: string;
+  readonly status: MessageStatus;
+  readonly performance: MessagePerformance | null;
+}
+
+export type MessageStatus =
+  | 'DRAFT'
+  | 'APPROVED'
+  | 'SCHEDULED'
+  | 'PUBLISHED'
+  | 'RETIRED';
+
+export interface MessagePerformance {
+  readonly reach: number;
+  readonly engagement: number;
+  readonly shares: number;
+  readonly sentiment: number;
+  readonly effectiveness: number;
+}
+
+export interface ChannelInfo {
+  readonly channelId: string;
+  readonly type: ChannelType;
+  readonly platform: string;
+  readonly audience: string;
+  readonly reach: number;
+  readonly effectiveness: number;
+}
+
+export type ChannelType =
+  | 'SOCIAL_MEDIA'
+  | 'TRADITIONAL_MEDIA'
+  | 'DIRECT'
+  | 'INFLUENCER'
+  | 'COMMUNITY';
+
+export interface OperationEvent {
+  readonly eventId: string;
+  readonly timestamp: number;
+  readonly type: EventType;
+  readonly description: string;
+  readonly actor: string;
+  readonly details: Readonly<Record<string, unknown>>;
+}
+
+export type EventType =
+  | 'PLANNING'
+  | 'APPROVAL'
+  | 'LAUNCH'
+  | 'MESSAGE_PUBLISHED'
+  | 'MILESTONE'
+  | 'ADJUSTMENT'
+  | 'COMPLETION';
+
+export interface OperationMetrics {
+  readonly reach: ReachMetrics;
+  readonly engagement: EngagementMetrics;
+  readonly sentiment: SentimentMetrics;
+  readonly effectiveness: EffectivenessMetrics;
+}
+
+export interface ReachMetrics {
+  readonly totalReach: number;
+  readonly uniqueReach: number;
+  readonly frequency: number;
+  readonly penetration: number;
+}
+
+export interface EngagementMetrics {
+  readonly totalEngagements: number;
+  readonly engagementRate: number;
+  readonly shares: number;
+  readonly comments: number;
+}
+
+export interface SentimentMetrics {
+  readonly positive: number;
+  readonly neutral: number;
+  readonly negative: number;
+  readonly netSentiment: number;
+}
+
+export interface EffectivenessMetrics {
+  readonly awarenessChange: number;
+  readonly attitudeChange: number;
+  readonly behaviorChange: number;
+  readonly objectiveAchievement: number;
+}
+
+export interface OperationMetadata {
+  readonly createdAt: number;
+  readonly updatedAt: number;
+  readonly createdBy: string;
+  readonly classification: SecurityLevel;
+  readonly authorization: string;
+  readonly oversight: readonly string[];
+  readonly tags: readonly string[];
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// DISINFORMATION TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface DisinformationCampaign {
+  readonly campaignId: string;
+  readonly name: string;
+  readonly status: CampaignStatus;
+  readonly origin: CampaignOrigin;
+  readonly narratives: readonly DisinformationNarrative[];
+  readonly actors: readonly ThreatActor[];
+  readonly infrastructure: readonly InfrastructureElement[];
+  readonly impact: CampaignImpact;
+  readonly response: CampaignResponse;
+  readonly metadata: CampaignMetadata;
+}
+
+export type CampaignStatus =
+  | 'DETECTED'
+  | 'ANALYZING'
+  | 'ACTIVE'
+  | 'DECLINING'
+  | 'DORMANT'
+  | 'NEUTRALIZED';
+
+export interface CampaignOrigin {
+  readonly attribution: AttributionInfo;
+  readonly firstSeen: number;
+  readonly lastSeen: number;
+  readonly confidence: 'HIGH' | 'MEDIUM' | 'LOW';
+}
+
+export interface AttributionInfo {
+  readonly actor: string | null;
+  readonly nationState: string | null;
+  readonly organization: string | null;
+  readonly motivation: readonly string[];
+}
+
+export interface DisinformationNarrative {
+  readonly narrativeId: string;
+  readonly content: string;
+  readonly type: DisinformationType;
+  readonly themes: readonly string[];
+  readonly reach: number;
+  readonly engagement: number;
+  readonly status: NarrativeStatus;
+}
+
+export type DisinformationType =
+  | 'FABRICATED_CONTENT'
+  | 'MANIPULATED_CONTENT'
+  | 'MISLEADING_CONTEXT'
+  | 'FALSE_CONNECTION'
+  | 'SATIRE_PARODY'
+  | 'IMPOSTER_CONTENT';
+
+export interface ThreatActor {
+  readonly actorId: string;
+  readonly type: ActorType;
+  readonly name: string | null;
+  readonly characteristics: ActorCharacteristics;
+  readonly activities: readonly ActorActivity[];
+}
+
+export type ActorType =
+  | 'STATE_SPONSORED'
+  | 'POLITICAL'
+  | 'COMMERCIAL'
+  | 'IDEOLOGICAL'
+  | 'OPPORTUNISTIC';
+
+export interface ActorCharacteristics {
+  readonly sophistication: 'HIGH' | 'MEDIUM' | 'LOW';
+  readonly resources: 'HIGH' | 'MEDIUM' | 'LOW';
+  readonly persistence: 'HIGH' | 'MEDIUM' | 'LOW';
+}
+
+export interface ActorActivity {
+  readonly activityId: string;
+  readonly timestamp: number;
+  readonly type: ActivityType;
+  readonly description: string;
+  readonly indicators: readonly string[];
+}
+
+export type ActivityType =
+  | 'CONTENT_CREATION'
+  | 'AMPLIFICATION'
+  | 'COORDINATION'
+  | 'TARGETING'
+  | 'ADAPTATION';
+
+export interface InfrastructureElement {
+  readonly elementId: string;
+  readonly type: InfrastructureType;
+  readonly identifier: string;
+  readonly role: string;
+  readonly status: 'ACTIVE' | 'INACTIVE' | 'TAKEN_DOWN';
+}
+
+export type InfrastructureType =
+  | 'WEBSITE'
+  | 'SOCIAL_ACCOUNT'
+  | 'BOT_NETWORK'
+  | 'PROXY'
+  | 'HOSTING';
+
+export interface CampaignImpact {
+  readonly reach: number;
+  readonly engagement: number;
+  readonly audiencesAffected: readonly string[];
+  readonly narrativePenetration: number;
+  readonly realWorldEffects: readonly string[];
+}
+
+export interface CampaignResponse {
+  readonly status: ResponseStatus;
+  readonly actions: readonly ResponseAction[];
+  readonly effectiveness: number;
+}
+
+export type ResponseStatus =
+  | 'MONITORING'
+  | 'RESPONDING'
+  | 'CONTAINED'
+  | 'RESOLVED';
+
+export interface ResponseAction {
+  readonly actionId: string;
+  readonly type: ResponseActionType;
+  readonly timestamp: number;
+  readonly description: string;
+  readonly result: string;
+}
+
+export type ResponseActionType =
+  | 'DETECTION'
+  | 'ANALYSIS'
+  | 'DEBUNKING'
+  | 'COUNTER_MESSAGING'
+  | 'PLATFORM_REPORTING'
+  | 'TAKEDOWN';
+
+export interface CampaignMetadata {
+  readonly detectedAt: number;
+  readonly updatedAt: number;
+  readonly detectedBy: string;
+  readonly classification: SecurityLevel;
+  readonly tags: readonly string[];
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SESSION TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface PsychologicalOperationsSession {
+  readonly sessionId: string;
+  readonly platformId: string;
+  readonly state: SessionState;
+  readonly config: SessionConfig;
+  readonly progress: SessionProgress;
+  readonly operations: readonly PsychologicalOperation[];
+  readonly campaigns: readonly DisinformationCampaign[];
+  readonly alerts: readonly SessionAlert[];
+  readonly errors: readonly SessionError[];
+  readonly startTime: number;
+  readonly endTime: number | null;
+  readonly metadata: SessionMetadata;
+}
+
+export type SessionState =
+  | 'PENDING'
+  | 'INITIALIZING'
+  | 'PLANNING'
+  | 'EXECUTING'
+  | 'MONITORING'
+  | 'ANALYZING'
+  | 'COMPLETED'
+  | 'FAILED';
+
+export interface SessionConfig {
+  readonly mode: OperationalMode;
+  readonly operations: readonly string[];
+  readonly options: Readonly<Record<string, unknown>>;
+}
+
+export interface SessionProgress {
+  readonly phase: SessionPhase;
+  readonly percentage: number;
+  readonly currentTask: string | null;
+  readonly estimatedTimeRemaining: number | null;
+}
+
+export type SessionPhase =
+  | 'INITIALIZING'
+  | 'AUDIENCE_ANALYSIS'
+  | 'NARRATIVE_DEVELOPMENT'
+  | 'MESSAGE_CREATION'
+  | 'DEPLOYMENT'
+  | 'MONITORING'
+  | 'ASSESSMENT'
+  | 'FINALIZING';
+
+export interface SessionAlert {
+  readonly alertId: string;
+  readonly timestamp: number;
+  readonly type: AlertType;
+  readonly severity: ImpactLevel;
+  readonly source: string;
+  readonly description: string;
+  readonly status: AlertStatus;
+}
+
+export type AlertType =
+  | 'DISINFORMATION_DETECTED'
+  | 'NARRATIVE_SHIFT'
+  | 'AUDIENCE_CHANGE'
+  | 'EFFECTIVENESS_DROP'
+  | 'COUNTER_OPERATION'
+  | 'ATTRIBUTION_RISK';
+
+export type AlertStatus =
+  | 'NEW'
+  | 'ACKNOWLEDGED'
+  | 'INVESTIGATING'
+  | 'RESOLVED'
+  | 'ESCALATED';
+
+export interface SessionError {
+  readonly errorId: string;
+  readonly timestamp: number;
+  readonly type: SessionErrorType;
+  readonly message: string;
+  readonly details: string | null;
+  readonly recoverable: boolean;
+}
+
+export type SessionErrorType =
+  | 'ANALYSIS_ERROR'
+  | 'DEPLOYMENT_ERROR'
+  | 'MONITORING_ERROR'
+  | 'INTEGRATION_ERROR'
+  | 'TIMEOUT'
+  | 'INTERNAL_ERROR';
+
+export interface SessionMetadata {
+  readonly platformVersion: string;
+  readonly startedBy: string;
+  readonly classification: SecurityLevel;
+  readonly authorization: string;
+  readonly oversight: readonly string[];
+  readonly tags: readonly string[];
+}

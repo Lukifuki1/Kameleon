@@ -1,0 +1,228 @@
+{
+  "$schema": "https://{{ORGANIZACIJA_DOMENA}}/schemas/tracing-config.json",
+  "metadata": {
+    "projectName": "{{IME_PROJEKTA}}",
+    "version": "{{VERZIJA}}",
+    "domain": "{{DOMENA_SL}}",
+    "generatedAt": "{{DATUM}}"
+  },
+  "tracing": {
+    "enabled": true,
+    "serviceName": "{{IME_PROJEKTA_SLUG}}",
+    "serviceVersion": "{{VERZIJA}}",
+    "environment": "{{OKOLJE}}"
+  },
+  "sampling": {
+    "type": "parentbased_traceidratio",
+    "ratio": 0.1,
+    "rules": [
+      {
+        "name": "security-events",
+        "match": {
+          "attributes": {
+            "security.event": true
+          }
+        },
+        "ratio": 1.0
+      },
+      {
+        "name": "errors",
+        "match": {
+          "attributes": {
+            "error": true
+          }
+        },
+        "ratio": 1.0
+      },
+      {
+        "name": "authentication",
+        "match": {
+          "spanName": "/auth/*"
+        },
+        "ratio": 1.0
+      },
+      {
+        "name": "health-checks",
+        "match": {
+          "spanName": "/health/*"
+        },
+        "ratio": 0.01
+      }
+    ]
+  },
+  "propagation": {
+    "formats": ["w3c", "b3", "jaeger"],
+    "default": "w3c"
+  },
+  "exporters": [
+    {
+      "type": "otlp",
+      "enabled": true,
+      "endpoint": "http://otel-collector.{{ORGANIZACIJA_DOMENA}}:4317",
+      "protocol": "grpc",
+      "headers": {
+        "Authorization": "Bearer {{OTEL_TOKEN}}"
+      },
+      "compression": "gzip",
+      "timeout": "10s",
+      "retry": {
+        "enabled": true,
+        "initialInterval": "1s",
+        "maxInterval": "30s",
+        "maxElapsedTime": "5m"
+      }
+    },
+    {
+      "type": "jaeger",
+      "enabled": true,
+      "endpoint": "http://jaeger.{{ORGANIZACIJA_DOMENA}}:14268/api/traces",
+      "agentHost": "jaeger-agent.{{ORGANIZACIJA_DOMENA}}",
+      "agentPort": 6831
+    },
+    {
+      "type": "zipkin",
+      "enabled": false,
+      "endpoint": "http://zipkin.{{ORGANIZACIJA_DOMENA}}:9411/api/v2/spans"
+    }
+  ],
+  "processors": [
+    {
+      "type": "batch",
+      "config": {
+        "maxQueueSize": 2048,
+        "scheduledDelayMillis": 5000,
+        "maxExportBatchSize": 512,
+        "exportTimeoutMillis": 30000
+      }
+    },
+    {
+      "type": "memory_limiter",
+      "config": {
+        "checkInterval": "1s",
+        "limitMib": 512,
+        "spikeLimitMib": 128
+      }
+    }
+  ],
+  "resourceAttributes": {
+    "service.name": "{{IME_PROJEKTA_SLUG}}",
+    "service.version": "{{VERZIJA}}",
+    "service.namespace": "{{ORGANIZACIJA_SLUG}}",
+    "deployment.environment": "{{OKOLJE}}",
+    "host.name": "${HOSTNAME}",
+    "cloud.provider": "{{CLOUD_PROVIDER}}",
+    "cloud.region": "{{CLOUD_REGION}}"
+  },
+  "spanAttributes": {
+    "always": [
+      "http.method",
+      "http.url",
+      "http.status_code",
+      "http.user_agent",
+      "net.peer.ip",
+      "net.peer.port"
+    ],
+    "security": [
+      "security.event_type",
+      "security.user_id",
+      "security.session_id",
+      "security.outcome",
+      "security.risk_level"
+    ],
+    "redact": [
+      "http.request.header.authorization",
+      "http.request.header.cookie",
+      "db.statement",
+      "security.credentials"
+    ]
+  },
+  "securityTracing": {
+    "enabled": true,
+    "events": {
+      "authentication": {
+        "trace": true,
+        "sampleRate": 1.0,
+        "attributes": ["user_id", "method", "outcome", "mfa_used", "source_ip"]
+      },
+      "authorization": {
+        "trace": true,
+        "sampleRate": 1.0,
+        "attributes": ["user_id", "resource", "action", "outcome", "reason"]
+      },
+      "dataAccess": {
+        "trace": true,
+        "sampleRate": 0.5,
+        "attributes": ["user_id", "resource", "operation", "record_count"]
+      },
+      "cryptoOperation": {
+        "trace": true,
+        "sampleRate": 0.1,
+        "attributes": ["operation", "algorithm", "key_id"]
+      },
+      "threatDetection": {
+        "trace": true,
+        "sampleRate": 1.0,
+        "attributes": ["threat_type", "severity", "source_ip", "mitigation"]
+      }
+    },
+    "contextPropagation": {
+      "userId": true,
+      "sessionId": true,
+      "riskLevel": true,
+      "securityContext": true
+    }
+  },
+  "instrumentation": {
+    "http": {
+      "enabled": true,
+      "captureHeaders": {
+        "request": ["x-request-id", "x-correlation-id", "user-agent"],
+        "response": ["x-request-id", "x-response-time"]
+      },
+      "ignoreRoutes": ["/health", "/metrics", "/ready", "/live"]
+    },
+    "database": {
+      "enabled": true,
+      "captureStatements": false,
+      "captureParameters": false
+    },
+    "redis": {
+      "enabled": true,
+      "captureCommands": false
+    },
+    "grpc": {
+      "enabled": true,
+      "captureMetadata": true
+    },
+    "custom": {
+      "enabled": true,
+      "modules": [
+        "src/security/authentication.ts",
+        "src/security/authorization.ts",
+        "src/security/audit.ts",
+        "src/security/encryption.ts"
+      ]
+    }
+  },
+  "correlation": {
+    "requestIdHeader": "x-request-id",
+    "correlationIdHeader": "x-correlation-id",
+    "generateIfMissing": true,
+    "propagateToLogs": true,
+    "propagateToMetrics": true
+  },
+  "errorTracking": {
+    "enabled": true,
+    "captureStackTrace": true,
+    "maxStackTraceLength": 50,
+    "recordException": true,
+    "setStatus": true
+  },
+  "performance": {
+    "maxSpansPerTrace": 1000,
+    "maxAttributesPerSpan": 128,
+    "maxEventsPerSpan": 128,
+    "maxLinksPerSpan": 128,
+    "attributeValueLengthLimit": 1024
+  }
+}

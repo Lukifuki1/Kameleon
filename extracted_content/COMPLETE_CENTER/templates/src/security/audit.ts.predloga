@@ -1,0 +1,885 @@
+/**
+ * {{IME_PROJEKTA}} - Audit System
+ * Domain: {{DOMENA_SL}}
+ * 
+ * @requirement REQ-SEC-AUD-001
+ * @design DSN-SEC-AUD-001
+ * @test TST-SEC-AUD-001
+ * 
+ * Sistem za revizijsko sled varnostnega sistema.
+ * Skladen z DO-178C, IEC 61508, ISO 26262, MIL-STD-882E standardi.
+ * 
+ * @module security/audit
+ */
+
+// ============================================================================
+// TIPI IN VMESNIKI
+// ============================================================================
+
+/**
+ * Kategorija revizijskega dogodka
+ */
+export enum AuditCategory {
+    /** Avtentikacija */
+    AUTHENTICATION = 'authentication',
+    /** Avtorizacija */
+    AUTHORIZATION = 'authorization',
+    /** Dostop do podatkov */
+    DATA_ACCESS = 'data_access',
+    /** Sprememba podatkov */
+    DATA_MODIFICATION = 'data_modification',
+    /** Sprememba konfiguracije */
+    CONFIGURATION_CHANGE = 'configuration_change',
+    /** Upravljanje uporabnikov */
+    USER_MANAGEMENT = 'user_management',
+    /** Upravljanje ključev */
+    KEY_MANAGEMENT = 'key_management',
+    /** Varnostni dogodek */
+    SECURITY_EVENT = 'security_event',
+    /** Sistemski dogodek */
+    SYSTEM_EVENT = 'system_event',
+    /** Skladnost */
+    COMPLIANCE = 'compliance'
+}
+
+/**
+ * Resnost revizijskega dogodka
+ */
+export enum AuditSeverity {
+    /** Kritično */
+    CRITICAL = 'critical',
+    /** Visoko */
+    HIGH = 'high',
+    /** Srednje */
+    MEDIUM = 'medium',
+    /** Nizko */
+    LOW = 'low',
+    /** Informativno */
+    INFO = 'info'
+}
+
+/**
+ * Rezultat operacije
+ */
+export enum AuditOutcome {
+    /** Uspeh */
+    SUCCESS = 'success',
+    /** Neuspeh */
+    FAILURE = 'failure',
+    /** Zavrnjeno */
+    DENIED = 'denied',
+    /** Napaka */
+    ERROR = 'error'
+}
+
+/**
+ * Revizijski dogodek
+ */
+export interface AuditEvent {
+    /** Unikatni identifikator */
+    readonly id: string;
+    /** Časovni žig */
+    readonly timestamp: Date;
+    /** Kategorija */
+    readonly category: AuditCategory;
+    /** Resnost */
+    readonly severity: AuditSeverity;
+    /** Akcija */
+    readonly action: string;
+    /** Rezultat */
+    readonly outcome: AuditOutcome;
+    /** Akter (uporabnik/sistem) */
+    readonly actor: AuditActor;
+    /** Cilj operacije */
+    readonly target?: AuditTarget;
+    /** Kontekst */
+    readonly context: AuditContext;
+    /** Podrobnosti */
+    readonly details?: Record<string, unknown>;
+    /** Hash za integriteto */
+    readonly hash: string;
+    /** Hash prejšnjega dogodka (veriga) */
+    readonly previousHash?: string;
+}
+
+/**
+ * Akter revizijskega dogodka
+ */
+export interface AuditActor {
+    /** Tip akterja */
+    readonly type: 'user' | 'system' | 'service' | 'anonymous';
+    /** Identifikator */
+    readonly id?: string;
+    /** Ime */
+    readonly name?: string;
+    /** IP naslov */
+    readonly ipAddress?: string;
+    /** User agent */
+    readonly userAgent?: string;
+    /** Seja */
+    readonly sessionId?: string;
+}
+
+/**
+ * Cilj revizijskega dogodka
+ */
+export interface AuditTarget {
+    /** Tip cilja */
+    readonly type: string;
+    /** Identifikator */
+    readonly id?: string;
+    /** Ime */
+    readonly name?: string;
+    /** Atributi */
+    readonly attributes?: Record<string, unknown>;
+}
+
+/**
+ * Kontekst revizijskega dogodka
+ */
+export interface AuditContext {
+    /** ID zahtevka */
+    readonly requestId?: string;
+    /** ID korelacije */
+    readonly correlationId?: string;
+    /** Vir */
+    readonly source: string;
+    /** Okolje */
+    readonly environment: string;
+    /** Verzija */
+    readonly version: string;
+    /** Dodatni kontekst */
+    readonly metadata?: Record<string, unknown>;
+}
+
+/**
+ * Filter za poizvedbe
+ */
+export interface AuditQueryFilter {
+    /** Od datuma */
+    readonly from?: Date;
+    /** Do datuma */
+    readonly to?: Date;
+    /** Kategorije */
+    readonly categories?: AuditCategory[];
+    /** Resnosti */
+    readonly severities?: AuditSeverity[];
+    /** Rezultati */
+    readonly outcomes?: AuditOutcome[];
+    /** ID akterja */
+    readonly actorId?: string;
+    /** Tip akterja */
+    readonly actorType?: string;
+    /** ID cilja */
+    readonly targetId?: string;
+    /** Tip cilja */
+    readonly targetType?: string;
+    /** Akcija */
+    readonly action?: string;
+    /** Iskalni niz */
+    readonly searchText?: string;
+}
+
+/**
+ * Rezultat poizvedbe
+ */
+export interface AuditQueryResult {
+    /** Dogodki */
+    readonly events: AuditEvent[];
+    /** Skupno število */
+    readonly total: number;
+    /** Stran */
+    readonly page: number;
+    /** Velikost strani */
+    readonly pageSize: number;
+    /** Ali ima več strani */
+    readonly hasMore: boolean;
+}
+
+/**
+ * Konfiguracija revizijskega sistema
+ */
+export interface AuditConfig {
+    /** Ali je omogočeno */
+    readonly enabled: boolean;
+    /** Vir */
+    readonly source: string;
+    /** Okolje */
+    readonly environment: string;
+    /** Verzija */
+    readonly version: string;
+    /** Čas hrambe (dni) */
+    readonly retentionDays: number;
+    /** Ali naj se uporablja hash veriga */
+    readonly useHashChain: boolean;
+    /** Shranjevanje */
+    readonly storage: AuditStorageConfig;
+}
+
+/**
+ * Konfiguracija shranjevanja
+ */
+export interface AuditStorageConfig {
+    /** Tip shranjevanja */
+    readonly type: 'memory' | 'file' | 'database' | 'siem';
+    /** Pot do datoteke (za file tip) */
+    readonly filePath?: string;
+    /** Povezava do baze (za database tip) */
+    readonly connectionString?: string;
+    /** SIEM endpoint (za siem tip) */
+    readonly siemEndpoint?: string;
+    /** Maksimalna velikost (za memory tip) */
+    readonly maxSize?: number;
+}
+
+// ============================================================================
+// POMOŽNE FUNKCIJE
+// ============================================================================
+
+/**
+ * Generira deterministični ID
+ */
+function generateAuditId(timestamp: number, counter: number): string {
+    const combined = `audit-${timestamp}-${counter}`;
+    let hash = 0;
+    for (let i = 0; i < combined.length; i++) {
+        const char = combined.charCodeAt(i);
+        hash = ((hash << 5) - hash) + char;
+        hash = hash & hash;
+    }
+    return `aud-${Math.abs(hash).toString(16).padStart(12, '0')}`;
+}
+
+/**
+ * Izračuna hash dogodka
+ */
+function calculateEventHash(event: Omit<AuditEvent, 'hash' | 'previousHash'>): string {
+    const data = JSON.stringify({
+        id: event.id,
+        timestamp: event.timestamp.toISOString(),
+        category: event.category,
+        severity: event.severity,
+        action: event.action,
+        outcome: event.outcome,
+        actor: event.actor,
+        target: event.target,
+        context: event.context,
+        details: event.details
+    });
+
+    // Deterministični hash
+    let hash = 0;
+    for (let i = 0; i < data.length; i++) {
+        const char = data.charCodeAt(i);
+        hash = ((hash << 5) - hash) + char;
+        hash = hash & hash;
+    }
+    
+    return Math.abs(hash).toString(16).padStart(16, '0');
+}
+
+// ============================================================================
+// GLAVNA IMPLEMENTACIJA
+// ============================================================================
+
+/**
+ * Revizijski sistem
+ * 
+ * Implementira revizijsko sled skladno z industrijskimi standardi.
+ */
+export class AuditSystem {
+    private readonly config: AuditConfig;
+    private readonly events: AuditEvent[];
+    private eventCounter: number;
+    private lastHash: string;
+    private readonly maxMemorySize: number;
+
+    constructor(config: AuditConfig) {
+        this.config = config;
+        this.events = [];
+        this.eventCounter = 0;
+        this.lastHash = '0000000000000000';
+        this.maxMemorySize = config.storage.maxSize ?? 100000;
+    }
+
+    /**
+     * Zabeleži revizijski dogodek
+     */
+    log(
+        category: AuditCategory,
+        action: string,
+        outcome: AuditOutcome,
+        actor: AuditActor,
+        options?: {
+            severity?: AuditSeverity;
+            target?: AuditTarget;
+            details?: Record<string, unknown>;
+            requestId?: string;
+            correlationId?: string;
+        }
+    ): AuditEvent {
+        if (!this.config.enabled) {
+            // Vrni prazen dogodek če je onemogočeno
+            return this.createEmptyEvent();
+        }
+
+        this.eventCounter++;
+        const now = new Date();
+        const id = generateAuditId(now.getTime(), this.eventCounter);
+
+        const severity = options?.severity ?? this.determineSeverity(category, outcome);
+
+        const partialEvent: Omit<AuditEvent, 'hash' | 'previousHash'> = {
+            id,
+            timestamp: now,
+            category,
+            severity,
+            action,
+            outcome,
+            actor: this.sanitizeActor(actor),
+            target: options?.target,
+            context: {
+                requestId: options?.requestId,
+                correlationId: options?.correlationId,
+                source: this.config.source,
+                environment: this.config.environment,
+                version: this.config.version
+            },
+            details: this.sanitizeDetails(options?.details)
+        };
+
+        const hash = calculateEventHash(partialEvent);
+        
+        const event: AuditEvent = {
+            ...partialEvent,
+            hash,
+            previousHash: this.config.useHashChain ? this.lastHash : undefined
+        };
+
+        this.lastHash = hash;
+        this.storeEvent(event);
+
+        return event;
+    }
+
+    /**
+     * Zabeleži uspešno avtentikacijo
+     */
+    logAuthentication(
+        actor: AuditActor,
+        outcome: AuditOutcome,
+        method: string,
+        details?: Record<string, unknown>
+    ): AuditEvent {
+        return this.log(
+            AuditCategory.AUTHENTICATION,
+            `auth.${method}`,
+            outcome,
+            actor,
+            {
+                severity: outcome === AuditOutcome.FAILURE ? AuditSeverity.HIGH : AuditSeverity.INFO,
+                details: { method, ...details }
+            }
+        );
+    }
+
+    /**
+     * Zabeleži avtorizacijo
+     */
+    logAuthorization(
+        actor: AuditActor,
+        resource: string,
+        action: string,
+        outcome: AuditOutcome,
+        details?: Record<string, unknown>
+    ): AuditEvent {
+        return this.log(
+            AuditCategory.AUTHORIZATION,
+            `authz.${action}`,
+            outcome,
+            actor,
+            {
+                severity: outcome === AuditOutcome.DENIED ? AuditSeverity.MEDIUM : AuditSeverity.INFO,
+                target: { type: 'resource', name: resource },
+                details
+            }
+        );
+    }
+
+    /**
+     * Zabeleži dostop do podatkov
+     */
+    logDataAccess(
+        actor: AuditActor,
+        resourceType: string,
+        resourceId: string,
+        action: string,
+        details?: Record<string, unknown>
+    ): AuditEvent {
+        return this.log(
+            AuditCategory.DATA_ACCESS,
+            `data.${action}`,
+            AuditOutcome.SUCCESS,
+            actor,
+            {
+                severity: AuditSeverity.INFO,
+                target: { type: resourceType, id: resourceId },
+                details
+            }
+        );
+    }
+
+    /**
+     * Zabeleži spremembo podatkov
+     */
+    logDataModification(
+        actor: AuditActor,
+        resourceType: string,
+        resourceId: string,
+        action: 'create' | 'update' | 'delete',
+        changes?: Record<string, unknown>
+    ): AuditEvent {
+        return this.log(
+            AuditCategory.DATA_MODIFICATION,
+            `data.${action}`,
+            AuditOutcome.SUCCESS,
+            actor,
+            {
+                severity: action === 'delete' ? AuditSeverity.MEDIUM : AuditSeverity.LOW,
+                target: { type: resourceType, id: resourceId },
+                details: { changes }
+            }
+        );
+    }
+
+    /**
+     * Zabeleži spremembo konfiguracije
+     */
+    logConfigurationChange(
+        actor: AuditActor,
+        configName: string,
+        oldValue: unknown,
+        newValue: unknown
+    ): AuditEvent {
+        return this.log(
+            AuditCategory.CONFIGURATION_CHANGE,
+            'config.update',
+            AuditOutcome.SUCCESS,
+            actor,
+            {
+                severity: AuditSeverity.HIGH,
+                target: { type: 'configuration', name: configName },
+                details: { oldValue: this.maskSensitive(oldValue), newValue: this.maskSensitive(newValue) }
+            }
+        );
+    }
+
+    /**
+     * Zabeleži upravljanje uporabnikov
+     */
+    logUserManagement(
+        actor: AuditActor,
+        action: string,
+        targetUserId: string,
+        details?: Record<string, unknown>
+    ): AuditEvent {
+        return this.log(
+            AuditCategory.USER_MANAGEMENT,
+            `user.${action}`,
+            AuditOutcome.SUCCESS,
+            actor,
+            {
+                severity: AuditSeverity.MEDIUM,
+                target: { type: 'user', id: targetUserId },
+                details
+            }
+        );
+    }
+
+    /**
+     * Zabeleži upravljanje ključev
+     */
+    logKeyManagement(
+        actor: AuditActor,
+        action: string,
+        keyId: string,
+        keyType: string
+    ): AuditEvent {
+        return this.log(
+            AuditCategory.KEY_MANAGEMENT,
+            `key.${action}`,
+            AuditOutcome.SUCCESS,
+            actor,
+            {
+                severity: AuditSeverity.HIGH,
+                target: { type: 'key', id: keyId, attributes: { keyType } }
+            }
+        );
+    }
+
+    /**
+     * Zabeleži varnostni dogodek
+     */
+    logSecurityEvent(
+        actor: AuditActor,
+        eventType: string,
+        severity: AuditSeverity,
+        details: Record<string, unknown>
+    ): AuditEvent {
+        return this.log(
+            AuditCategory.SECURITY_EVENT,
+            `security.${eventType}`,
+            AuditOutcome.SUCCESS,
+            actor,
+            { severity, details }
+        );
+    }
+
+    /**
+     * Poizvedba po dogodkih
+     */
+    query(
+        filter: AuditQueryFilter,
+        page: number = 1,
+        pageSize: number = 100
+    ): AuditQueryResult {
+        let filtered = this.events.filter(event => {
+            if (filter.from !== undefined && event.timestamp < filter.from) {
+                return false;
+            }
+            if (filter.to !== undefined && event.timestamp > filter.to) {
+                return false;
+            }
+            if (filter.categories !== undefined && !filter.categories.includes(event.category)) {
+                return false;
+            }
+            if (filter.severities !== undefined && !filter.severities.includes(event.severity)) {
+                return false;
+            }
+            if (filter.outcomes !== undefined && !filter.outcomes.includes(event.outcome)) {
+                return false;
+            }
+            if (filter.actorId !== undefined && event.actor.id !== filter.actorId) {
+                return false;
+            }
+            if (filter.actorType !== undefined && event.actor.type !== filter.actorType) {
+                return false;
+            }
+            if (filter.targetId !== undefined && event.target?.id !== filter.targetId) {
+                return false;
+            }
+            if (filter.targetType !== undefined && event.target?.type !== filter.targetType) {
+                return false;
+            }
+            if (filter.action !== undefined && !event.action.includes(filter.action)) {
+                return false;
+            }
+            return true;
+        });
+
+        // Sortiraj po času (najnovejši najprej)
+        filtered = filtered.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+
+        const total = filtered.length;
+        const start = (page - 1) * pageSize;
+        const end = start + pageSize;
+        const events = filtered.slice(start, end);
+
+        return {
+            events,
+            total,
+            page,
+            pageSize,
+            hasMore: end < total
+        };
+    }
+
+    /**
+     * Pridobi dogodek po ID
+     */
+    getById(id: string): AuditEvent | undefined {
+        return this.events.find(e => e.id === id);
+    }
+
+    /**
+     * Preveri integriteto verige
+     */
+    verifyIntegrity(): { valid: boolean; errors: string[] } {
+        const errors: string[] = [];
+
+        if (!this.config.useHashChain) {
+            return { valid: true, errors: [] };
+        }
+
+        let previousHash = '0000000000000000';
+
+        for (let i = 0; i < this.events.length; i++) {
+            const event = this.events[i];
+
+            // Preveri prejšnji hash
+            if (event.previousHash !== previousHash) {
+                errors.push(`Event ${event.id}: Previous hash mismatch`);
+            }
+
+            // Preveri hash dogodka
+            const calculatedHash = calculateEventHash({
+                id: event.id,
+                timestamp: event.timestamp,
+                category: event.category,
+                severity: event.severity,
+                action: event.action,
+                outcome: event.outcome,
+                actor: event.actor,
+                target: event.target,
+                context: event.context,
+                details: event.details
+            });
+
+            if (event.hash !== calculatedHash) {
+                errors.push(`Event ${event.id}: Hash mismatch`);
+            }
+
+            previousHash = event.hash;
+        }
+
+        return {
+            valid: errors.length === 0,
+            errors
+        };
+    }
+
+    /**
+     * Izvozi dogodke v CEF format
+     */
+    exportToCef(events: AuditEvent[]): string[] {
+        return events.map(event => {
+            const severity = this.mapSeverityToCef(event.severity);
+            const extension = [
+                `msg=${event.action}`,
+                `outcome=${event.outcome}`,
+                `suser=${event.actor.name ?? event.actor.id ?? 'unknown'}`,
+                `src=${event.actor.ipAddress ?? 'unknown'}`,
+                `rt=${event.timestamp.getTime()}`
+            ].join(' ');
+
+            return `CEF:0|{{ORGANIZACIJA}}|{{IME_PROJEKTA}}|{{VERZIJA}}|${event.category}|${event.action}|${severity}|${extension}`;
+        });
+    }
+
+    /**
+     * Pridobi statistiko
+     */
+    getStatistics(from?: Date, to?: Date): {
+        total: number;
+        byCategory: Record<AuditCategory, number>;
+        bySeverity: Record<AuditSeverity, number>;
+        byOutcome: Record<AuditOutcome, number>;
+    } {
+        let filtered = this.events;
+
+        if (from !== undefined) {
+            filtered = filtered.filter(e => e.timestamp >= from);
+        }
+        if (to !== undefined) {
+            filtered = filtered.filter(e => e.timestamp <= to);
+        }
+
+        const byCategory: Record<AuditCategory, number> = {
+            [AuditCategory.AUTHENTICATION]: 0,
+            [AuditCategory.AUTHORIZATION]: 0,
+            [AuditCategory.DATA_ACCESS]: 0,
+            [AuditCategory.DATA_MODIFICATION]: 0,
+            [AuditCategory.CONFIGURATION_CHANGE]: 0,
+            [AuditCategory.USER_MANAGEMENT]: 0,
+            [AuditCategory.KEY_MANAGEMENT]: 0,
+            [AuditCategory.SECURITY_EVENT]: 0,
+            [AuditCategory.SYSTEM_EVENT]: 0,
+            [AuditCategory.COMPLIANCE]: 0
+        };
+
+        const bySeverity: Record<AuditSeverity, number> = {
+            [AuditSeverity.CRITICAL]: 0,
+            [AuditSeverity.HIGH]: 0,
+            [AuditSeverity.MEDIUM]: 0,
+            [AuditSeverity.LOW]: 0,
+            [AuditSeverity.INFO]: 0
+        };
+
+        const byOutcome: Record<AuditOutcome, number> = {
+            [AuditOutcome.SUCCESS]: 0,
+            [AuditOutcome.FAILURE]: 0,
+            [AuditOutcome.DENIED]: 0,
+            [AuditOutcome.ERROR]: 0
+        };
+
+        for (const event of filtered) {
+            byCategory[event.category]++;
+            bySeverity[event.severity]++;
+            byOutcome[event.outcome]++;
+        }
+
+        return {
+            total: filtered.length,
+            byCategory,
+            bySeverity,
+            byOutcome
+        };
+    }
+
+    // ========================================================================
+    // PRIVATNE METODE
+    // ========================================================================
+
+    /**
+     * Shrani dogodek
+     */
+    private storeEvent(event: AuditEvent): void {
+        this.events.push(event);
+
+        // Omeji velikost v pomnilniku
+        if (this.events.length > this.maxMemorySize) {
+            this.events.shift();
+        }
+    }
+
+    /**
+     * Določi resnost glede na kategorijo in rezultat
+     */
+    private determineSeverity(category: AuditCategory, outcome: AuditOutcome): AuditSeverity {
+        if (outcome === AuditOutcome.ERROR) {
+            return AuditSeverity.HIGH;
+        }
+
+        switch (category) {
+            case AuditCategory.AUTHENTICATION:
+                return outcome === AuditOutcome.FAILURE ? AuditSeverity.HIGH : AuditSeverity.INFO;
+            case AuditCategory.AUTHORIZATION:
+                return outcome === AuditOutcome.DENIED ? AuditSeverity.MEDIUM : AuditSeverity.INFO;
+            case AuditCategory.KEY_MANAGEMENT:
+            case AuditCategory.CONFIGURATION_CHANGE:
+                return AuditSeverity.HIGH;
+            case AuditCategory.SECURITY_EVENT:
+                return AuditSeverity.HIGH;
+            default:
+                return AuditSeverity.INFO;
+        }
+    }
+
+    /**
+     * Sanitizira akterja (odstrani občutljive podatke)
+     */
+    private sanitizeActor(actor: AuditActor): AuditActor {
+        return {
+            type: actor.type,
+            id: actor.id,
+            name: actor.name,
+            ipAddress: actor.ipAddress,
+            userAgent: actor.userAgent ? actor.userAgent.substring(0, 200) : undefined,
+            sessionId: actor.sessionId
+        };
+    }
+
+    /**
+     * Sanitizira podrobnosti
+     */
+    private sanitizeDetails(details?: Record<string, unknown>): Record<string, unknown> | undefined {
+        if (details === undefined) {
+            return undefined;
+        }
+
+        const sanitized: Record<string, unknown> = {};
+        const sensitiveKeys = ['password', 'secret', 'token', 'key', 'credential', 'apiKey'];
+
+        for (const [key, value] of Object.entries(details)) {
+            const lowerKey = key.toLowerCase();
+            if (sensitiveKeys.some(sk => lowerKey.includes(sk))) {
+                sanitized[key] = '[REDACTED]';
+            } else {
+                sanitized[key] = value;
+            }
+        }
+
+        return sanitized;
+    }
+
+    /**
+     * Maskira občutljive vrednosti
+     */
+    private maskSensitive(value: unknown): unknown {
+        if (typeof value === 'string') {
+            if (value.length > 8) {
+                return value.substring(0, 4) + '****' + value.substring(value.length - 4);
+            }
+            return '****';
+        }
+        return value;
+    }
+
+    /**
+     * Preslika resnost v CEF format
+     */
+    private mapSeverityToCef(severity: AuditSeverity): number {
+        switch (severity) {
+            case AuditSeverity.CRITICAL: return 10;
+            case AuditSeverity.HIGH: return 7;
+            case AuditSeverity.MEDIUM: return 5;
+            case AuditSeverity.LOW: return 3;
+            case AuditSeverity.INFO: return 1;
+            default: return 0;
+        }
+    }
+
+    /**
+     * Ustvari prazen dogodek
+     */
+    private createEmptyEvent(): AuditEvent {
+        return {
+            id: '',
+            timestamp: new Date(),
+            category: AuditCategory.SYSTEM_EVENT,
+            severity: AuditSeverity.INFO,
+            action: 'noop',
+            outcome: AuditOutcome.SUCCESS,
+            actor: { type: 'system' },
+            context: {
+                source: this.config.source,
+                environment: this.config.environment,
+                version: this.config.version
+            },
+            hash: ''
+        };
+    }
+}
+
+// ============================================================================
+// TOVARNIŠKA FUNKCIJA
+// ============================================================================
+
+/**
+ * Ustvari revizijski sistem
+ */
+export function createAuditSystem(config?: Partial<AuditConfig>): AuditSystem {
+    const defaultConfig: AuditConfig = {
+        enabled: true,
+        source: '{{IME_PROJEKTA_SLUG}}',
+        environment: '{{OKOLJE}}',
+        version: '{{VERZIJA}}',
+        retentionDays: 2555,
+        useHashChain: true,
+        storage: {
+            type: 'memory',
+            maxSize: 100000
+        }
+    };
+
+    return new AuditSystem({
+        ...defaultConfig,
+        ...config
+    });
+}
+
+// ============================================================================
+// IZVOZ
+// ============================================================================
+
+export default AuditSystem;

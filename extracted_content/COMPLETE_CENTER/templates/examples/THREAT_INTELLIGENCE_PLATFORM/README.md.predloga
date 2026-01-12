@@ -1,0 +1,76 @@
+# {{IME_PROJEKTA}} - Threat Intelligence Platform
+
+## _traceability
+- requirement: ZAH-SEC-004 Threat Intelligence platforma
+- design: DSN-SEC-004 Referenčna implementacija CTI platforme
+- test: TST-SEC-004 Verifikacija Threat Intelligence primera
+
+## Opis
+
+Threat Intelligence Platform je enterprise-grade platforma za zbiranje, analizo in distribucijo obveščevalnih podatkov o grožnjah, vključno s STIX/TAXII integracijo, threat feeds, IOC management in attribution analysis.
+
+## Vključene komponente
+
+### Threat Feeds Integration
+- STIX/TAXII 2.1
+- Commercial threat feeds
+- Government threat feeds
+- Open source feeds
+- Dark web monitoring
+
+### IOC Management
+- IOC ingestion
+- IOC enrichment
+- IOC correlation
+- IOC aging/expiration
+- IOC distribution
+
+### Attribution Analysis
+- Threat actor profiling
+- TTP analysis
+- Campaign correlation
+- Infrastructure mapping
+- Motivation assessment
+
+### Threat Landscape
+- Industry-specific threats
+- Geographic threats
+- Emerging threats
+- Trend analysis
+- Risk scoring
+
+### Intelligence Sharing
+- ISAC integration
+- Partner sharing
+- Automated distribution
+- Access control
+- Audit logging
+
+## Skladnost
+
+- DO-178C DAL-C
+- IEC-61508 SIL-2
+- ISO-26262 ASIL-B
+- NIST 800-53
+- MITRE ATT&CK
+
+## SLA
+
+- Uptime: 99.99%
+- RTO: 30min
+- RPO: 5min
+- Feed Update: Real-time
+- IOC Processing: <1min
+
+## Zagon
+
+```bash
+npm install
+npm run build
+npm run threatintel:start
+npm run threatintel:feeds
+```
+
+## Licenca
+
+Enterprise License - {{ORGANIZACIJA}} - SECRET

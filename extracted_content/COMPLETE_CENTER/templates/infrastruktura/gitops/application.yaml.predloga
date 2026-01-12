@@ -1,0 +1,220 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: {{IME_PROJEKTA_SLUG}}
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: {{IME_PROJEKTA_SLUG}}
+    app.kubernetes.io/part-of: {{ORGANIZACIJA_SLUG}}
+    app.kubernetes.io/managed-by: argocd
+    domain: {{DOMENA_SLUG}}
+  annotations:
+    argocd.argoproj.io/manifest-generate-paths: .
+    notifications.argoproj.io/subscribe.on-sync-succeeded.slack: security-deployments
+    notifications.argoproj.io/subscribe.on-sync-failed.slack: security-alerts
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: {{ORGANIZACIJA_SLUG}}-security
+  
+  source:
+    repoURL: https://github.com/{{ORGANIZACIJA_SLUG}}/{{IME_PROJEKTA_SLUG}}.git
+    targetRevision: HEAD
+    path: infrastruktura/gitops
+    
+    helm:
+      releaseName: {{IME_PROJEKTA_SLUG}}
+      valueFiles:
+        - values.yaml
+        - values-{{OKOLJE}}.yaml
+      parameters:
+        - name: image.tag
+          value: "{{VERZIJA}}"
+        - name: replicaCount
+          value: "3"
+        - name: security.enabled
+          value: "true"
+        - name: security.mtls.enabled
+          value: "true"
+        - name: security.networkPolicy.enabled
+          value: "true"
+        - name: security.podSecurityPolicy.enabled
+          value: "true"
+        - name: observability.metrics.enabled
+          value: "true"
+        - name: observability.tracing.enabled
+          value: "true"
+        - name: observability.logging.enabled
+          value: "true"
+      
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: {{IME_PROJEKTA_SLUG}}
+  
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+      allowEmpty: false
+    syncOptions:
+      - CreateNamespace=true
+      - PrunePropagationPolicy=foreground
+      - PruneLast=true
+      - ApplyOutOfSyncOnly=true
+      - ServerSideApply=true
+      - RespectIgnoreDifferences=true
+    retry:
+      limit: 5
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m
+  
+  revisionHistoryLimit: 10
+  
+  ignoreDifferences:
+    - group: apps
+      kind: Deployment
+      jsonPointers:
+        - /spec/replicas
+    - group: ""
+      kind: Secret
+      jsonPointers:
+        - /data
+    - group: admissionregistration.k8s.io
+      kind: MutatingWebhookConfiguration
+      jqPathExpressions:
+        - .webhooks[]?.clientConfig.caBundle
+    - group: admissionregistration.k8s.io
+      kind: ValidatingWebhookConfiguration
+      jqPathExpressions:
+        - .webhooks[]?.clientConfig.caBundle
+  
+  info:
+    - name: Documentation
+      value: https://docs.{{ORGANIZACIJA_DOMENA}}/{{IME_PROJEKTA_SLUG}}
+    - name: Runbook
+      value: https://docs.{{ORGANIZACIJA_DOMENA}}/{{IME_PROJEKTA_SLUG}}/runbook
+    - name: Compliance
+      value: DO-178C, IEC-61508, ISO-26262, MIL-STD-882E
+
+---
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: {{ORGANIZACIJA_SLUG}}-security
+  namespace: argocd
+  labels:
+    project: {{ORGANIZACIJA_SLUG}}
+    domain: security
+spec:
+  description: Security systems project for {{ORGANIZACIJA}}
+  
+  sourceRepos:
+    - https://github.com/{{ORGANIZACIJA_SLUG}}/*.git
+    - https://charts.{{ORGANIZACIJA_DOMENA}}/*
+  
+  destinations:
+    - namespace: '{{IME_PROJEKTA_SLUG}}'
+      server: https://kubernetes.default.svc
+    - namespace: '{{IME_PROJEKTA_SLUG}}-*'
+      server: https://kubernetes.default.svc
+  
+  clusterResourceWhitelist:
+    - group: ''
+      kind: Namespace
+    - group: rbac.authorization.k8s.io
+      kind: ClusterRole
+    - group: rbac.authorization.k8s.io
+      kind: ClusterRoleBinding
+    - group: networking.k8s.io
+      kind: NetworkPolicy
+    - group: policy
+      kind: PodSecurityPolicy
+    - group: cert-manager.io
+      kind: ClusterIssuer
+  
+  namespaceResourceWhitelist:
+    - group: '*'
+      kind: '*'
+  
+  namespaceResourceBlacklist:
+    - group: ''
+      kind: ResourceQuota
+    - group: ''
+      kind: LimitRange
+  
+  roles:
+    - name: security-admin
+      description: Security administrators
+      policies:
+        - p, proj:{{ORGANIZACIJA_SLUG}}-security:security-admin, applications, *, {{ORGANIZACIJA_SLUG}}-security/*, allow
+        - p, proj:{{ORGANIZACIJA_SLUG}}-security:security-admin, clusters, get, *, allow
+        - p, proj:{{ORGANIZACIJA_SLUG}}-security:security-admin, repositories, get, *, allow
+        - p, proj:{{ORGANIZACIJA_SLUG}}-security:security-admin, logs, get, {{ORGANIZACIJA_SLUG}}-security/*, allow
+      groups:
+        - security-admins
+    
+    - name: security-viewer
+      description: Security viewers (read-only)
+      policies:
+        - p, proj:{{ORGANIZACIJA_SLUG}}-security:security-viewer, applications, get, {{ORGANIZACIJA_SLUG}}-security/*, allow
+        - p, proj:{{ORGANIZACIJA_SLUG}}-security:security-viewer, logs, get, {{ORGANIZACIJA_SLUG}}-security/*, allow
+      groups:
+        - security-viewers
+        - auditors
+  
+  syncWindows:
+    - kind: allow
+      schedule: '0 6-22 * * 1-5'
+      duration: 16h
+      applications:
+        - '*'
+      manualSync: true
+    - kind: deny
+      schedule: '0 22 * * *'
+      duration: 8h
+      applications:
+        - '*'
+      manualSync: false
+    - kind: allow
+      schedule: '* * * * *'
+      duration: 24h
+      applications:
+        - '*-hotfix'
+      manualSync: true
+  
+  signatureKeys:
+    - keyID: {{GPG_KEY_ID}}
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{IME_PROJEKTA_SLUG}}-argocd-cm
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: {{IME_PROJEKTA_SLUG}}
+    app.kubernetes.io/part-of: argocd
+data:
+  resource.customizations.health.argoproj.io_Application: |
+    hs = {}
+    hs.status = "Progressing"
+    hs.message = ""
+    if obj.status ~= nil then
+      if obj.status.health ~= nil then
+        hs.status = obj.status.health.status
+        if obj.status.health.message ~= nil then
+          hs.message = obj.status.health.message
+        end
+      end
+    end
+    return hs
+  
+  resource.customizations.ignoreDifferences.admissionregistration.k8s.io_MutatingWebhookConfiguration: |
+    jqPathExpressions:
+    - '.webhooks[]?.clientConfig.caBundle'
+  
+  resource.customizations.ignoreDifferences.admissionregistration.k8s.io_ValidatingWebhookConfiguration: |
+    jqPathExpressions:
+    - '.webhooks[]?.clientConfig.caBundle'

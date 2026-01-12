@@ -1,0 +1,33 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.4",
+  "serialNumber": "urn:uuid:varnostni_sistemi-sbom-001",
+  "version": 1,
+  "metadata": {
+    "timestamp": "{{DATUM}}",
+    "tools": [{"vendor": "MIA BUILD", "name": "SBOM Generator", "version": "1.0.0"}],
+    "component": {
+      "type": "application",
+      "name": "{{IME_PROJEKTA}}-varnostni_sistemi",
+      "version": "{{VERZIJA}}",
+      "description": "VARNOSTNI_SISTEMI komponenta MIA BUILD sistema",
+      "licenses": [{"license": {"id": "MIT"}}]
+    }
+  },
+  "components": [
+    {
+      "type": "library",
+      "name": "typescript",
+      "version": "5.0.0",
+      "purl": "pkg:npm/typescript@5.0.0",
+      "licenses": [{"license": {"id": "Apache-2.0"}}]
+    },
+    {
+      "type": "library",
+      "name": "varnostni_sistemi-core",
+      "version": "1.0.0",
+      "description": "Jedro za VARNOSTNI_SISTEMI",
+      "licenses": [{"license": {"id": "MIT"}}]
+    }
+  ]
+}

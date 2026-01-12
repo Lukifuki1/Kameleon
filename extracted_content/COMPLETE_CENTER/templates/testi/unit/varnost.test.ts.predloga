@@ -1,0 +1,358 @@
+/**
+ * @file Unit testi za varnostni modul {{IME_PROJEKTA}}
+ * @author {{AVTOR}}
+ * @version {{VERZIJA}}
+ * @date {{DATUM}}
+ * @domain {{DOMENA_SL}}
+ * 
+ * @description
+ * Unit testi za varnostni modul:
+ * - Testi zgoscevanja podatkov
+ * - Testi generiranja nakljucnih bajtov
+ * - Testi varne primerjave
+ * - Testi varnostnega porocila
+ * 
+ * @compliance DO-178C, IEC-61508, ISO-26262, MIL-STD-882E
+ * @security ISO-27001, NIST-800-53, SOC-2
+ * @meta_atom TST_001 - Unit Testing
+ * @requirement REQ-GEN-TST-VARNOST-001
+ * @design DSN-GEN-TST-VARNOST-001
+ * @test TST-GEN-TST-VARNOST-001
+ */
+
+import { describe, it, expect, beforeEach } from 'vitest';
+import {
+    zgostiPodatke,
+    generirajNakljucneBajte,
+    varnoPrimerjaj,
+    generirajVarnostnoPorocilo,
+    PRIVZETA_KONFIGURACIJA,
+} from '../../src/varnost';
+
+// ============================================================================
+// TESTI ZGOSCEVANJA
+// ============================================================================
+
+describe('Varnostni modul - Zgoscevanje', () => {
+    describe('zgostiPodatke', () => {
+        it('naj uspesno zgosti podatke s privzeto konfiguracijo', () => {
+            // Arrange
+            const podatki = 'testni podatki za zgoscevanje';
+            
+            // Act
+            const rezultat = zgostiPodatke(podatki);
+            
+            // Assert
+            expect(rezultat.uspesno).toBe(true);
+            expect(rezultat.podatki).not.toBeNull();
+            expect(rezultat.podatki).toHaveLength(64); // SHA-256 = 64 hex znakov
+        });
+        
+        it('naj vrne enako zgosceno vrednost za enake vhodne podatke', () => {
+            // Arrange
+            const podatki = 'deterministicni test';
+            
+            // Act
+            const rezultat1 = zgostiPodatke(podatki);
+            const rezultat2 = zgostiPodatke(podatki);
+            
+            // Assert
+            expect(rezultat1.podatki).toBe(rezultat2.podatki);
+        });
+        
+        it('naj vrne razlicne zgoscene vrednosti za razlicne vhodne podatke', () => {
+            // Arrange
+            const podatki1 = 'prvi podatki';
+            const podatki2 = 'drugi podatki';
+            
+            // Act
+            const rezultat1 = zgostiPodatke(podatki1);
+            const rezultat2 = zgostiPodatke(podatki2);
+            
+            // Assert
+            expect(rezultat1.podatki).not.toBe(rezultat2.podatki);
+        });
+        
+        it('naj pravilno zgosti prazne podatke', () => {
+            // Arrange
+            const podatki = '';
+            
+            // Act
+            const rezultat = zgostiPodatke(podatki);
+            
+            // Assert
+            expect(rezultat.uspesno).toBe(true);
+            expect(rezultat.podatki).not.toBeNull();
+        });
+        
+        it('naj izmeri cas izvajanja', () => {
+            // Arrange
+            const podatki = 'test';
+            
+            // Act
+            const rezultat = zgostiPodatke(podatki);
+            
+            // Assert
+            expect(rezultat.casIzvajanja).toBeGreaterThanOrEqual(0);
+        });
+        
+        it('naj podpira SHA-384 algoritem', () => {
+            // Arrange
+            const podatki = 'test';
+            const konfiguracija = {
+                ...PRIVZETA_KONFIGURACIJA,
+                algoritemZgoscevanja: 'sha384' as const,
+            };
+            
+            // Act
+            const rezultat = zgostiPodatke(podatki, konfiguracija);
+            
+            // Assert
+            expect(rezultat.uspesno).toBe(true);
+            expect(rezultat.podatki).toHaveLength(96); // SHA-384 = 96 hex znakov
+        });
+        
+        it('naj podpira SHA-512 algoritem', () => {
+            // Arrange
+            const podatki = 'test';
+            const konfiguracija = {
+                ...PRIVZETA_KONFIGURACIJA,
+                algoritemZgoscevanja: 'sha512' as const,
+            };
+            
+            // Act
+            const rezultat = zgostiPodatke(podatki, konfiguracija);
+            
+            // Assert
+            expect(rezultat.uspesno).toBe(true);
+            expect(rezultat.podatki).toHaveLength(128); // SHA-512 = 128 hex znakov
+        });
+    });
+});
+
+// ============================================================================
+// TESTI GENERIRANJA NAKLJUCNIH BAJTOV
+// ============================================================================
+
+describe('Varnostni modul - Generiranje nakljucnih bajtov', () => {
+    describe('generirajNakljucneBajte', () => {
+        it('naj generira nakljucne bajte zahtevane dolzine', () => {
+            // Arrange
+            const dolzina = 16;
+            
+            // Act
+            const rezultat = generirajNakljucneBajte(dolzina);
+            
+            // Assert
+            expect(rezultat.uspesno).toBe(true);
+            expect(rezultat.podatki).not.toBeNull();
+            expect(rezultat.podatki).toHaveLength(dolzina * 2); // hex = 2 znaka na bajt
+        });
+        
+        it('naj generira deterministicne bajte s seedom', () => {
+            // Arrange
+            const dolzina = 16;
+            const seed = 'deterministicni-seed';
+            
+            // Act
+            const rezultat1 = generirajNakljucneBajte(dolzina, seed);
+            const rezultat2 = generirajNakljucneBajte(dolzina, seed);
+            
+            // Assert
+            expect(rezultat1.podatki).toBe(rezultat2.podatki);
+        });
+        
+        it('naj generira razlicne bajte z razlicnimi seedi', () => {
+            // Arrange
+            const dolzina = 16;
+            
+            // Act
+            const rezultat1 = generirajNakljucneBajte(dolzina, 'seed1');
+            const rezultat2 = generirajNakljucneBajte(dolzina, 'seed2');
+            
+            // Assert
+            expect(rezultat1.podatki).not.toBe(rezultat2.podatki);
+        });
+        
+        it('naj pravilno obravnava dolzino 0', () => {
+            // Arrange
+            const dolzina = 0;
+            
+            // Act
+            const rezultat = generirajNakljucneBajte(dolzina, 'seed');
+            
+            // Assert
+            expect(rezultat.uspesno).toBe(true);
+            expect(rezultat.podatki).toBe('');
+        });
+        
+        it('naj izmeri cas izvajanja', () => {
+            // Arrange
+            const dolzina = 32;
+            
+            // Act
+            const rezultat = generirajNakljucneBajte(dolzina, 'seed');
+            
+            // Assert
+            expect(rezultat.casIzvajanja).toBeGreaterThanOrEqual(0);
+        });
+    });
+});
+
+// ============================================================================
+// TESTI VARNE PRIMERJAVE
+// ============================================================================
+
+describe('Varnostni modul - Varna primerjava', () => {
+    describe('varnoPrimerjaj', () => {
+        it('naj vrne true za enake vrednosti', () => {
+            // Arrange
+            const a = 'enaka-vrednost';
+            const b = 'enaka-vrednost';
+            
+            // Act
+            const rezultat = varnoPrimerjaj(a, b);
+            
+            // Assert
+            expect(rezultat).toBe(true);
+        });
+        
+        it('naj vrne false za razlicne vrednosti', () => {
+            // Arrange
+            const a = 'prva-vrednost';
+            const b = 'druga-vrednost';
+            
+            // Act
+            const rezultat = varnoPrimerjaj(a, b);
+            
+            // Assert
+            expect(rezultat).toBe(false);
+        });
+        
+        it('naj vrne false za vrednosti razlicnih dolzin', () => {
+            // Arrange
+            const a = 'kratka';
+            const b = 'dolga-vrednost';
+            
+            // Act
+            const rezultat = varnoPrimerjaj(a, b);
+            
+            // Assert
+            expect(rezultat).toBe(false);
+        });
+        
+        it('naj pravilno primerja prazne vrednosti', () => {
+            // Arrange
+            const a = '';
+            const b = '';
+            
+            // Act
+            const rezultat = varnoPrimerjaj(a, b);
+            
+            // Assert
+            expect(rezultat).toBe(true);
+        });
+        
+        it('naj vrne false za prazno in neprazno vrednost', () => {
+            // Arrange
+            const a = '';
+            const b = 'neprazna';
+            
+            // Act
+            const rezultat = varnoPrimerjaj(a, b);
+            
+            // Assert
+            expect(rezultat).toBe(false);
+        });
+        
+        it('naj pravilno primerja hex vrednosti', () => {
+            // Arrange
+            const a = 'a1b2c3d4e5f6';
+            const b = 'a1b2c3d4e5f6';
+            
+            // Act
+            const rezultat = varnoPrimerjaj(a, b);
+            
+            // Assert
+            expect(rezultat).toBe(true);
+        });
+    });
+});
+
+// ============================================================================
+// TESTI VARNOSTNEGA POROCILA
+// ============================================================================
+
+describe('Varnostni modul - Varnostno porocilo', () => {
+    describe('generirajVarnostnoPorocilo', () => {
+        it('naj generira veljavno varnostno porocilo', () => {
+            // Arrange & Act
+            const porocilo = generirajVarnostnoPorocilo();
+            
+            // Assert
+            expect(porocilo).toHaveProperty('casPregleda');
+            expect(porocilo).toHaveProperty('steviloRanljivosti');
+            expect(porocilo).toHaveProperty('kriticneRanljivosti');
+            expect(porocilo).toHaveProperty('visokeRanljivosti');
+            expect(porocilo).toHaveProperty('srednjeRanljivosti');
+            expect(porocilo).toHaveProperty('nizkeRanljivosti');
+            expect(porocilo).toHaveProperty('status');
+        });
+        
+        it('naj ima status VAREN pri nic ranljivostih', () => {
+            // Arrange & Act
+            const porocilo = generirajVarnostnoPorocilo();
+            
+            // Assert
+            expect(porocilo.steviloRanljivosti).toBe(0);
+            expect(porocilo.status).toBe('VAREN');
+        });
+        
+        it('naj ima vse stevce ranljivosti na 0', () => {
+            // Arrange & Act
+            const porocilo = generirajVarnostnoPorocilo();
+            
+            // Assert
+            expect(porocilo.kriticneRanljivosti).toBe(0);
+            expect(porocilo.visokeRanljivosti).toBe(0);
+            expect(porocilo.srednjeRanljivosti).toBe(0);
+            expect(porocilo.nizkeRanljivosti).toBe(0);
+        });
+        
+        it('naj generira deterministicno porocilo', () => {
+            // Arrange & Act
+            const porocilo1 = generirajVarnostnoPorocilo();
+            const porocilo2 = generirajVarnostnoPorocilo();
+            
+            // Assert
+            expect(porocilo1.steviloRanljivosti).toBe(porocilo2.steviloRanljivosti);
+            expect(porocilo1.status).toBe(porocilo2.status);
+        });
+    });
+});
+
+// ============================================================================
+// TESTI PRIVZETE KONFIGURACIJE
+// ============================================================================
+
+describe('Varnostni modul - Privzeta konfiguracija', () => {
+    it('naj ima privzeta konfiguracija SHA-256 algoritem', () => {
+        // Assert
+        expect(PRIVZETA_KONFIGURACIJA.algoritemZgoscevanja).toBe('sha256');
+    });
+    
+    it('naj ima privzeta konfiguracija ustrezno dolzino kljuca', () => {
+        // Assert
+        expect(PRIVZETA_KONFIGURACIJA.dolzinaKljuca).toBe(32);
+    });
+    
+    it('naj ima privzeta konfiguracija ustrezno stevilo iteracij', () => {
+        // Assert
+        expect(PRIVZETA_KONFIGURACIJA.steviloIteracij).toBe(100000);
+    });
+    
+    it('naj ima privzeta konfiguracija ustrezno dolzino soli', () => {
+        // Assert
+        expect(PRIVZETA_KONFIGURACIJA.dolzinaSoli).toBe(16);
+    });
+});

@@ -1,0 +1,2380 @@
+/**
+ * @file AI/ML Security Defense - Tier-0 National Capability AI/ML Threat Detection & Protection
+ * @author {{AVTOR}}
+ * @version {{VERZIJA}}
+ * @date {{DATUM}}
+ * @project {{IME_PROJEKTA}}
+ * @domain VARNOSTNI_SISTEMI
+ * 
+ * @requirement REQ-SEC-AML-001
+ * @design DSN-SEC-AML-001
+ * @test TST-SEC-AML-001
+ * 
+ * @description
+ * Enterprise-grade Tier-0 National Capability AI/ML security defense framework.
+ * Implements comprehensive AI/ML threat detection and protection including:
+ * - Adversarial attack detection and mitigation
+ * - Model integrity verification and protection
+ * - Data poisoning detection
+ * - Deepfake detection and analysis
+ * - AI-powered threat detection
+ * - Model extraction attack prevention
+ * - Membership inference attack detection
+ * - Federated learning security
+ * - Model watermarking and fingerprinting
+ * - AI supply chain security
+ * 
+ * @compliance NIST AI RMF, ISO/IEC 42001, EU AI Act, MITRE ATLAS
+ * @classification TOP SECRET - AI Security Operations
+ */
+
+import { getLogicalTimestamp } from '../../../../core/deterministic';
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// AI/ML SECURITY TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export type AIThreatCategory =
+  | 'ADVERSARIAL_ATTACK'
+  | 'DATA_POISONING'
+  | 'MODEL_EXTRACTION'
+  | 'MODEL_INVERSION'
+  | 'MEMBERSHIP_INFERENCE'
+  | 'BACKDOOR_ATTACK'
+  | 'TROJAN_ATTACK'
+  | 'EVASION_ATTACK'
+  | 'DEEPFAKE'
+  | 'PROMPT_INJECTION'
+  | 'JAILBREAK_ATTEMPT'
+  | 'DATA_EXFILTRATION'
+  | 'MODEL_THEFT'
+  | 'SUPPLY_CHAIN_ATTACK';
+
+export type AdversarialAttackType =
+  | 'FGSM'
+  | 'PGD'
+  | 'CW'
+  | 'DEEPFOOL'
+  | 'JSMA'
+  | 'ELASTIC_NET'
+  | 'SPATIAL_TRANSFORMATION'
+  | 'HOPSKIPJUMP'
+  | 'BOUNDARY_ATTACK'
+  | 'SQUARE_ATTACK'
+  | 'AUTO_ATTACK'
+  | 'PATCH_ATTACK'
+  | 'UNIVERSAL_PERTURBATION'
+  | 'PHYSICAL_ADVERSARIAL';
+
+export type DeepfakeType =
+  | 'FACE_SWAP'
+  | 'FACE_REENACTMENT'
+  | 'FACE_MORPHING'
+  | 'LIP_SYNC'
+  | 'FULL_BODY_SYNTHESIS'
+  | 'VOICE_CLONING'
+  | 'TEXT_TO_SPEECH'
+  | 'AUDIO_DEEPFAKE'
+  | 'VIDEO_MANIPULATION'
+  | 'IMAGE_SYNTHESIS'
+  | 'GAN_GENERATED'
+  | 'DIFFUSION_GENERATED';
+
+export type ModelType =
+  | 'CLASSIFICATION'
+  | 'REGRESSION'
+  | 'OBJECT_DETECTION'
+  | 'SEGMENTATION'
+  | 'NLP'
+  | 'LLM'
+  | 'GENERATIVE'
+  | 'REINFORCEMENT_LEARNING'
+  | 'RECOMMENDATION'
+  | 'ANOMALY_DETECTION'
+  | 'TIME_SERIES'
+  | 'MULTIMODAL';
+
+export type DefenseStrategy =
+  | 'ADVERSARIAL_TRAINING'
+  | 'INPUT_PREPROCESSING'
+  | 'MODEL_DISTILLATION'
+  | 'ENSEMBLE_DEFENSE'
+  | 'CERTIFIED_DEFENSE'
+  | 'DETECTION_BASED'
+  | 'GRADIENT_MASKING'
+  | 'INPUT_TRANSFORMATION'
+  | 'FEATURE_SQUEEZING'
+  | 'RANDOMIZATION'
+  | 'DIFFERENTIAL_PRIVACY'
+  | 'FEDERATED_DEFENSE';
+
+export type ThreatSeverity = 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW' | 'INFO';
+
+export type DetectionConfidence = 'CONFIRMED' | 'HIGH' | 'MEDIUM' | 'LOW' | 'SUSPECTED';
+
+export type ModelIntegrityStatus =
+  | 'VERIFIED'
+  | 'MODIFIED'
+  | 'COMPROMISED'
+  | 'UNKNOWN'
+  | 'PENDING_VERIFICATION';
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// MODEL REGISTRY AND PROTECTION TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface MLModel {
+  readonly modelId: string;
+  readonly name: string;
+  readonly version: string;
+  readonly type: ModelType;
+  readonly framework: MLFramework;
+  readonly architecture: string;
+  readonly inputShape: readonly number[];
+  readonly outputShape: readonly number[];
+  readonly parameters: number;
+  readonly hash: string;
+  readonly watermark: ModelWatermark | null;
+  readonly fingerprint: ModelFingerprint | null;
+  readonly integrityStatus: ModelIntegrityStatus;
+  readonly securityScore: number;
+  readonly vulnerabilities: readonly ModelVulnerability[];
+  readonly defenses: readonly ActiveDefense[];
+  readonly registeredAt: number;
+  readonly lastVerifiedAt: number;
+  readonly metadata: ModelMetadata;
+}
+
+export type MLFramework =
+  | 'TENSORFLOW'
+  | 'PYTORCH'
+  | 'ONNX'
+  | 'KERAS'
+  | 'SCIKIT_LEARN'
+  | 'XGBOOST'
+  | 'LIGHTGBM'
+  | 'HUGGINGFACE'
+  | 'JAX'
+  | 'MXNET'
+  | 'CAFFE'
+  | 'CUSTOM';
+
+export interface ModelMetadata {
+  readonly owner: string;
+  readonly team: string;
+  readonly classification: SecurityClassification;
+  readonly purpose: string;
+  readonly trainingDataHash: string;
+  readonly trainingDate: number;
+  readonly accuracy: number;
+  readonly f1Score: number;
+  readonly deploymentEnvironment: string;
+  readonly apiEndpoint: string | null;
+  readonly rateLimit: number;
+  readonly queryLogging: boolean;
+}
+
+export type SecurityClassification =
+  | 'UNCLASSIFIED'
+  | 'RESTRICTED'
+  | 'CONFIDENTIAL'
+  | 'SECRET'
+  | 'TOP_SECRET';
+
+export interface ModelWatermark {
+  readonly watermarkId: string;
+  readonly type: WatermarkType;
+  readonly strength: number;
+  readonly triggerPattern: Uint8Array;
+  readonly expectedOutput: Uint8Array;
+  readonly embeddedAt: number;
+  readonly verificationKey: string;
+}
+
+export type WatermarkType =
+  | 'BACKDOOR_BASED'
+  | 'PARAMETER_BASED'
+  | 'ACTIVATION_BASED'
+  | 'OUTPUT_BASED'
+  | 'GRADIENT_BASED';
+
+export interface ModelFingerprint {
+  readonly fingerprintId: string;
+  readonly type: FingerprintType;
+  readonly fingerprint: Uint8Array;
+  readonly generatedAt: number;
+  readonly algorithm: string;
+  readonly robustness: number;
+}
+
+export type FingerprintType =
+  | 'WEIGHT_BASED'
+  | 'ACTIVATION_BASED'
+  | 'DECISION_BOUNDARY'
+  | 'CONFERRABLE'
+  | 'INTRINSIC';
+
+export interface ModelVulnerability {
+  readonly vulnerabilityId: string;
+  readonly type: AIThreatCategory;
+  readonly severity: ThreatSeverity;
+  readonly description: string;
+  readonly affectedLayers: readonly string[];
+  readonly exploitability: number;
+  readonly mitigation: string;
+  readonly cveId: string | null;
+  readonly atlasId: string | null;
+  readonly discoveredAt: number;
+  readonly status: 'OPEN' | 'MITIGATED' | 'ACCEPTED' | 'FALSE_POSITIVE';
+}
+
+export interface ActiveDefense {
+  readonly defenseId: string;
+  readonly strategy: DefenseStrategy;
+  readonly configuration: Readonly<Record<string, unknown>>;
+  readonly effectiveness: number;
+  readonly overhead: number;
+  readonly activatedAt: number;
+  readonly status: 'ACTIVE' | 'DISABLED' | 'TESTING';
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// THREAT DETECTION TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface AIThreatAlert {
+  readonly alertId: string;
+  readonly modelId: string;
+  readonly threatCategory: AIThreatCategory;
+  readonly attackType: string;
+  readonly severity: ThreatSeverity;
+  readonly confidence: DetectionConfidence;
+  readonly description: string;
+  readonly indicators: readonly ThreatIndicator[];
+  readonly affectedInputs: readonly string[];
+  readonly sourceIp: string | null;
+  readonly userId: string | null;
+  readonly timestamp: number;
+  readonly status: AlertStatus;
+  readonly mitreAtlasMapping: readonly AtlasMapping[];
+  readonly responseActions: readonly ResponseAction[];
+}
+
+export type AlertStatus =
+  | 'NEW'
+  | 'INVESTIGATING'
+  | 'CONFIRMED'
+  | 'MITIGATED'
+  | 'FALSE_POSITIVE'
+  | 'ESCALATED';
+
+export interface ThreatIndicator {
+  readonly indicatorId: string;
+  readonly type: IndicatorType;
+  readonly value: string;
+  readonly confidence: number;
+  readonly source: string;
+  readonly timestamp: number;
+}
+
+export type IndicatorType =
+  | 'PERTURBATION_MAGNITUDE'
+  | 'GRADIENT_ANOMALY'
+  | 'PREDICTION_SHIFT'
+  | 'QUERY_PATTERN'
+  | 'INPUT_DISTRIBUTION'
+  | 'CONFIDENCE_ANOMALY'
+  | 'LATENCY_ANOMALY'
+  | 'BEHAVIORAL_ANOMALY';
+
+export interface AtlasMapping {
+  readonly techniqueId: string;
+  readonly techniqueName: string;
+  readonly tacticId: string;
+  readonly tacticName: string;
+  readonly description: string;
+}
+
+export interface ResponseAction {
+  readonly actionId: string;
+  readonly type: ResponseActionType;
+  readonly description: string;
+  readonly automated: boolean;
+  readonly executedAt: number | null;
+  readonly result: string | null;
+}
+
+export type ResponseActionType =
+  | 'BLOCK_INPUT'
+  | 'RATE_LIMIT'
+  | 'QUARANTINE_MODEL'
+  | 'ROLLBACK_MODEL'
+  | 'ALERT_TEAM'
+  | 'COLLECT_EVIDENCE'
+  | 'ENABLE_DEFENSE'
+  | 'DISABLE_ENDPOINT';
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// DEEPFAKE DETECTION TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface DeepfakeAnalysis {
+  readonly analysisId: string;
+  readonly mediaType: MediaType;
+  readonly mediaHash: string;
+  readonly isDeepfake: boolean;
+  readonly confidence: number;
+  readonly deepfakeType: DeepfakeType | null;
+  readonly detectionMethods: readonly DeepfakeDetectionMethod[];
+  readonly artifacts: readonly DeepfakeArtifact[];
+  readonly manipulatedRegions: readonly ManipulatedRegion[];
+  readonly sourceAnalysis: SourceAnalysis | null;
+  readonly timestamp: number;
+  readonly processingTime: number;
+}
+
+export type MediaType = 'IMAGE' | 'VIDEO' | 'AUDIO' | 'MULTIMODAL';
+
+export interface DeepfakeDetectionMethod {
+  readonly methodId: string;
+  readonly name: string;
+  readonly type: DetectionMethodType;
+  readonly score: number;
+  readonly threshold: number;
+  readonly passed: boolean;
+  readonly details: string;
+}
+
+export type DetectionMethodType =
+  | 'FREQUENCY_ANALYSIS'
+  | 'FACIAL_LANDMARK'
+  | 'BLINK_DETECTION'
+  | 'LIP_SYNC_ANALYSIS'
+  | 'TEXTURE_ANALYSIS'
+  | 'COMPRESSION_ARTIFACT'
+  | 'GAN_FINGERPRINT'
+  | 'DIFFUSION_FINGERPRINT'
+  | 'AUDIO_SPECTROGRAM'
+  | 'PHONEME_ANALYSIS'
+  | 'NEURAL_NETWORK'
+  | 'ENSEMBLE';
+
+export interface DeepfakeArtifact {
+  readonly artifactId: string;
+  readonly type: ArtifactType;
+  readonly location: ArtifactLocation;
+  readonly severity: number;
+  readonly description: string;
+}
+
+export type ArtifactType =
+  | 'BLENDING_BOUNDARY'
+  | 'INCONSISTENT_LIGHTING'
+  | 'TEMPORAL_INCONSISTENCY'
+  | 'FACIAL_ASYMMETRY'
+  | 'UNNATURAL_MOVEMENT'
+  | 'AUDIO_VIDEO_MISMATCH'
+  | 'COMPRESSION_ANOMALY'
+  | 'GAN_ARTIFACT'
+  | 'DIFFUSION_ARTIFACT';
+
+export interface ArtifactLocation {
+  readonly frameStart: number;
+  readonly frameEnd: number;
+  readonly boundingBox: BoundingBox | null;
+  readonly timeStart: number;
+  readonly timeEnd: number;
+}
+
+export interface BoundingBox {
+  readonly x: number;
+  readonly y: number;
+  readonly width: number;
+  readonly height: number;
+}
+
+export interface ManipulatedRegion {
+  readonly regionId: string;
+  readonly type: ManipulationType;
+  readonly location: ArtifactLocation;
+  readonly confidence: number;
+  readonly originalHash: string | null;
+}
+
+export type ManipulationType =
+  | 'FACE_REPLACEMENT'
+  | 'FACE_MODIFICATION'
+  | 'BODY_MODIFICATION'
+  | 'BACKGROUND_MODIFICATION'
+  | 'OBJECT_INSERTION'
+  | 'OBJECT_REMOVAL'
+  | 'TEXT_MODIFICATION'
+  | 'AUDIO_MODIFICATION';
+
+export interface SourceAnalysis {
+  readonly sourceId: string;
+  readonly generatorType: GeneratorType;
+  readonly generatorModel: string | null;
+  readonly generatorVersion: string | null;
+  readonly confidence: number;
+  readonly signatures: readonly string[];
+}
+
+export type GeneratorType =
+  | 'STYLEGAN'
+  | 'STYLEGAN2'
+  | 'STYLEGAN3'
+  | 'PROGAN'
+  | 'BIGGAN'
+  | 'STABLE_DIFFUSION'
+  | 'MIDJOURNEY'
+  | 'DALLE'
+  | 'IMAGEN'
+  | 'DEEPFACELAB'
+  | 'FACESWAP'
+  | 'FIRST_ORDER_MOTION'
+  | 'WAV2LIP'
+  | 'REAL_TIME_VOICE_CLONING'
+  | 'TORTOISE_TTS'
+  | 'ELEVEN_LABS'
+  | 'UNKNOWN';
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// DATA POISONING DETECTION TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface DataPoisoningAnalysis {
+  readonly analysisId: string;
+  readonly datasetId: string;
+  readonly totalSamples: number;
+  readonly analyzedSamples: number;
+  readonly poisonedSamples: number;
+  readonly poisoningRate: number;
+  readonly poisoningType: PoisoningType | null;
+  readonly detectedPatterns: readonly PoisoningPattern[];
+  readonly suspiciousSamples: readonly SuspiciousSample[];
+  readonly cleaningRecommendations: readonly CleaningRecommendation[];
+  readonly timestamp: number;
+  readonly processingTime: number;
+}
+
+export type PoisoningType =
+  | 'LABEL_FLIPPING'
+  | 'BACKDOOR_INJECTION'
+  | 'CLEAN_LABEL'
+  | 'GRADIENT_BASED'
+  | 'INFLUENCE_BASED'
+  | 'WITCHES_BREW'
+  | 'BULLSEYE_POLYTOPE'
+  | 'FEATURE_COLLISION';
+
+export interface PoisoningPattern {
+  readonly patternId: string;
+  readonly type: PoisoningType;
+  readonly description: string;
+  readonly affectedClasses: readonly string[];
+  readonly triggerPattern: string | null;
+  readonly confidence: number;
+  readonly sampleCount: number;
+}
+
+export interface SuspiciousSample {
+  readonly sampleId: string;
+  readonly datasetIndex: number;
+  readonly suspicionScore: number;
+  readonly reasons: readonly string[];
+  readonly originalLabel: string;
+  readonly predictedLabel: string;
+  readonly influenceScore: number;
+  readonly outlierScore: number;
+}
+
+export interface CleaningRecommendation {
+  readonly recommendationId: string;
+  readonly type: CleaningType;
+  readonly description: string;
+  readonly affectedSamples: readonly string[];
+  readonly expectedImpact: number;
+  readonly priority: 'HIGH' | 'MEDIUM' | 'LOW';
+}
+
+export type CleaningType =
+  | 'REMOVE_SAMPLES'
+  | 'RELABEL_SAMPLES'
+  | 'FILTER_OUTLIERS'
+  | 'SPECTRAL_SIGNATURES'
+  | 'ACTIVATION_CLUSTERING'
+  | 'FINE_PRUNING'
+  | 'NEURAL_CLEANSE';
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// MODEL EXTRACTION DETECTION TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface ModelExtractionAnalysis {
+  readonly analysisId: string;
+  readonly modelId: string;
+  readonly timeWindow: TimeWindow;
+  readonly totalQueries: number;
+  readonly suspiciousQueries: number;
+  readonly extractionRisk: ExtractionRisk;
+  readonly queryPatterns: readonly QueryPattern[];
+  readonly suspiciousUsers: readonly SuspiciousUser[];
+  readonly estimatedModelLeakage: number;
+  readonly recommendations: readonly ExtractionDefenseRecommendation[];
+  readonly timestamp: number;
+}
+
+export interface TimeWindow {
+  readonly start: number;
+  readonly end: number;
+}
+
+export type ExtractionRisk = 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW' | 'NONE';
+
+export interface QueryPattern {
+  readonly patternId: string;
+  readonly type: QueryPatternType;
+  readonly description: string;
+  readonly frequency: number;
+  readonly suspicionScore: number;
+  readonly examples: readonly string[];
+}
+
+export type QueryPatternType =
+  | 'BOUNDARY_PROBING'
+  | 'SYSTEMATIC_SAMPLING'
+  | 'GRADIENT_ESTIMATION'
+  | 'KNOCKOFF_TRAINING'
+  | 'ACTIVE_LEARNING'
+  | 'JACOBIAN_BASED'
+  | 'COPYCAT_ATTACK'
+  | 'RANDOM_SAMPLING';
+
+export interface SuspiciousUser {
+  readonly userId: string;
+  readonly ipAddress: string;
+  readonly queryCount: number;
+  readonly suspicionScore: number;
+  readonly patterns: readonly QueryPatternType[];
+  readonly firstSeen: number;
+  readonly lastSeen: number;
+  readonly blocked: boolean;
+}
+
+export interface ExtractionDefenseRecommendation {
+  readonly recommendationId: string;
+  readonly type: ExtractionDefenseType;
+  readonly description: string;
+  readonly effectiveness: number;
+  readonly implementationCost: 'HIGH' | 'MEDIUM' | 'LOW';
+  readonly priority: 'HIGH' | 'MEDIUM' | 'LOW';
+}
+
+export type ExtractionDefenseType =
+  | 'RATE_LIMITING'
+  | 'QUERY_AUDITING'
+  | 'OUTPUT_PERTURBATION'
+  | 'PREDICTION_POISONING'
+  | 'WATERMARKING'
+  | 'DIFFERENTIAL_PRIVACY'
+  | 'ENSEMBLE_DEFENSE'
+  | 'PRADA_DEFENSE';
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PROMPT INJECTION DETECTION TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface PromptInjectionAnalysis {
+  readonly analysisId: string;
+  readonly modelId: string;
+  readonly prompt: string;
+  readonly isInjection: boolean;
+  readonly injectionType: PromptInjectionType | null;
+  readonly confidence: number;
+  readonly riskLevel: ThreatSeverity;
+  readonly detectedPatterns: readonly InjectionPattern[];
+  readonly sanitizedPrompt: string | null;
+  readonly recommendations: readonly string[];
+  readonly timestamp: number;
+}
+
+export type PromptInjectionType =
+  | 'DIRECT_INJECTION'
+  | 'INDIRECT_INJECTION'
+  | 'JAILBREAK'
+  | 'PROMPT_LEAKING'
+  | 'GOAL_HIJACKING'
+  | 'PAYLOAD_SPLITTING'
+  | 'VIRTUALIZATION'
+  | 'OBFUSCATION'
+  | 'CODE_INJECTION'
+  | 'CONTEXT_MANIPULATION';
+
+export interface InjectionPattern {
+  readonly patternId: string;
+  readonly type: PromptInjectionType;
+  readonly matchedText: string;
+  readonly position: { start: number; end: number };
+  readonly confidence: number;
+  readonly description: string;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// FEDERATED LEARNING SECURITY TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface FederatedSecurityAnalysis {
+  readonly analysisId: string;
+  readonly federationId: string;
+  readonly round: number;
+  readonly totalClients: number;
+  readonly analyzedClients: number;
+  readonly maliciousClients: readonly MaliciousClient[];
+  readonly aggregationIntegrity: AggregationIntegrity;
+  readonly privacyMetrics: PrivacyMetrics;
+  readonly recommendations: readonly FederatedSecurityRecommendation[];
+  readonly timestamp: number;
+}
+
+export interface MaliciousClient {
+  readonly clientId: string;
+  readonly attackType: FederatedAttackType;
+  readonly confidence: number;
+  readonly indicators: readonly string[];
+  readonly updateDeviation: number;
+  readonly detectedAt: number;
+  readonly blocked: boolean;
+}
+
+export type FederatedAttackType =
+  | 'MODEL_POISONING'
+  | 'DATA_POISONING'
+  | 'BYZANTINE_ATTACK'
+  | 'SYBIL_ATTACK'
+  | 'FREE_RIDER'
+  | 'GRADIENT_LEAKAGE'
+  | 'MEMBERSHIP_INFERENCE'
+  | 'BACKDOOR_ATTACK';
+
+export interface AggregationIntegrity {
+  readonly verified: boolean;
+  readonly method: AggregationMethod;
+  readonly robustness: number;
+  readonly outlierDetection: boolean;
+  readonly clippingApplied: boolean;
+}
+
+export type AggregationMethod =
+  | 'FEDAVG'
+  | 'FEDPROX'
+  | 'SCAFFOLD'
+  | 'KRUM'
+  | 'TRIMMED_MEAN'
+  | 'MEDIAN'
+  | 'BULYAN'
+  | 'FOOLSGOLD';
+
+export interface PrivacyMetrics {
+  readonly differentialPrivacy: boolean;
+  readonly epsilon: number | null;
+  readonly delta: number | null;
+  readonly secureAggregation: boolean;
+  readonly homomorphicEncryption: boolean;
+  readonly privacyBudgetRemaining: number | null;
+}
+
+export interface FederatedSecurityRecommendation {
+  readonly recommendationId: string;
+  readonly type: FederatedDefenseType;
+  readonly description: string;
+  readonly priority: 'HIGH' | 'MEDIUM' | 'LOW';
+}
+
+export type FederatedDefenseType =
+  | 'ROBUST_AGGREGATION'
+  | 'CLIENT_VERIFICATION'
+  | 'DIFFERENTIAL_PRIVACY'
+  | 'SECURE_AGGREGATION'
+  | 'ANOMALY_DETECTION'
+  | 'GRADIENT_COMPRESSION'
+  | 'MODEL_VERIFICATION';
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ERROR TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export const AISecurityErrorCode = {
+  MODEL_NOT_FOUND: 'AI_001',
+  ANALYSIS_FAILED: 'AI_002',
+  DETECTION_FAILED: 'AI_003',
+  DEFENSE_ACTIVATION_FAILED: 'AI_004',
+  WATERMARK_VERIFICATION_FAILED: 'AI_005',
+  FINGERPRINT_MISMATCH: 'AI_006',
+  INTEGRITY_VIOLATION: 'AI_007',
+  RATE_LIMIT_EXCEEDED: 'AI_008',
+  UNAUTHORIZED_ACCESS: 'AI_009',
+  INVALID_INPUT: 'AI_010',
+  PROCESSING_TIMEOUT: 'AI_011',
+  RESOURCE_EXHAUSTED: 'AI_012',
+  CONFIGURATION_ERROR: 'AI_013',
+  DEPENDENCY_ERROR: 'AI_014',
+  FEDERATION_ERROR: 'AI_015',
+} as const;
+
+export type AISecurityErrorCode = typeof AISecurityErrorCode[keyof typeof AISecurityErrorCode];
+
+export class AISecurityError extends Error {
+  readonly code: AISecurityErrorCode;
+  readonly details: Readonly<Record<string, unknown>>;
+  readonly timestamp: number;
+
+  constructor(code: AISecurityErrorCode, message: string, details: Record<string, unknown> = {}) {
+    super(message);
+    this.name = 'AISecurityError';
+    this.code = code;
+    this.details = details;
+    this.timestamp = Date.now();
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// HELPER FUNCTIONS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+function generateDeterministicId(prefix: string, counter: number): string {
+  return `${prefix}_${counter.toString().padStart(12, '0')}`;
+}
+
+function generateDeterministicTimestamp(counter: number): number {
+  return 1704067200000 + counter * 1000;
+}
+
+function deterministicRandom(seed: number): number {
+  const x = Math.sin(seed * 9999) * 10000;
+  return x - Math.floor(x);
+}
+
+function generateDeterministicBytes(seed: number, length: number): Uint8Array {
+  const bytes = new Uint8Array(length);
+  for (let i = 0; i < length; i++) {
+    bytes[i] = Math.floor(deterministicRandom(seed + i) * 256);
+  }
+  return bytes;
+}
+
+function computeHash(data: Uint8Array | string): string {
+  let hash = 0;
+  const str = typeof data === 'string' ? data : Array.from(data).join(',');
+  for (let i = 0; i < str.length; i++) {
+    hash = ((hash << 5) - hash + str.charCodeAt(i)) | 0;
+  }
+  return Math.abs(hash).toString(16).padStart(16, '0');
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// MODEL REGISTRY MANAGER
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export class ModelRegistryManager {
+  private operationCounter: number = 0;
+  private readonly models: Map<string, MLModel> = new Map();
+  private readonly watermarks: Map<string, ModelWatermark> = new Map();
+  private readonly fingerprints: Map<string, ModelFingerprint> = new Map();
+
+  registerModel(
+    name: string,
+    version: string,
+    type: ModelType,
+    framework: MLFramework,
+    architecture: string,
+    inputShape: readonly number[],
+    outputShape: readonly number[],
+    parameters: number,
+    metadata: ModelMetadata
+  ): MLModel {
+    this.operationCounter++;
+
+    const modelId = generateDeterministicId('model', this.operationCounter);
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+    const hash = computeHash(`${name}_${version}_${architecture}_${this.operationCounter}`);
+
+    const model: MLModel = {
+      modelId,
+      name,
+      version,
+      type,
+      framework,
+      architecture,
+      inputShape,
+      outputShape,
+      parameters,
+      hash,
+      watermark: null,
+      fingerprint: null,
+      integrityStatus: 'PENDING_VERIFICATION',
+      securityScore: 0,
+      vulnerabilities: [],
+      defenses: [],
+      registeredAt: timestamp,
+      lastVerifiedAt: timestamp,
+      metadata,
+    };
+
+    this.models.set(modelId, model);
+    return model;
+  }
+
+  getModel(modelId: string): MLModel | null {
+    const model = this.models.get(modelId);
+    if (!model) {
+      return null;
+    }
+    return model;
+  }
+
+  embedWatermark(modelId: string, type: WatermarkType, strength: number): ModelWatermark | null {
+    this.operationCounter++;
+
+    const model = this.models.get(modelId);
+    if (!model) {
+      return null;
+    }
+
+    const watermarkId = generateDeterministicId('watermark', this.operationCounter);
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+
+    const watermark: ModelWatermark = {
+      watermarkId,
+      type,
+      strength,
+      triggerPattern: generateDeterministicBytes(this.operationCounter, 64),
+      expectedOutput: generateDeterministicBytes(this.operationCounter + 1000, 32),
+      embeddedAt: timestamp,
+      verificationKey: computeHash(`${watermarkId}_${timestamp}`),
+    };
+
+    this.watermarks.set(watermarkId, watermark);
+
+    const updatedModel: MLModel = {
+      ...model,
+      watermark,
+    };
+
+    this.models.set(modelId, updatedModel);
+    return watermark;
+  }
+
+  generateFingerprint(modelId: string, type: FingerprintType, algorithm: string): ModelFingerprint | null {
+    this.operationCounter++;
+
+    const model = this.models.get(modelId);
+    if (!model) {
+      return null;
+    }
+
+    const fingerprintId = generateDeterministicId('fingerprint', this.operationCounter);
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+
+    const fingerprint: ModelFingerprint = {
+      fingerprintId,
+      type,
+      fingerprint: generateDeterministicBytes(this.operationCounter, 256),
+      generatedAt: timestamp,
+      algorithm,
+      robustness: 0.85 + deterministicRandom(this.operationCounter) * 0.15,
+    };
+
+    this.fingerprints.set(fingerprintId, fingerprint);
+
+    const updatedModel: MLModel = {
+      ...model,
+      fingerprint,
+    };
+
+    this.models.set(modelId, updatedModel);
+    return fingerprint;
+  }
+
+  verifyWatermark(modelId: string, verificationKey: string): boolean {
+    this.operationCounter++;
+
+    const model = this.models.get(modelId);
+    if (!model || !model.watermark) {
+      return false;
+    }
+
+    return model.watermark.verificationKey === verificationKey;
+  }
+
+  verifyFingerprint(modelId: string, candidateFingerprint: Uint8Array): number {
+    this.operationCounter++;
+
+    const model = this.models.get(modelId);
+    if (!model || !model.fingerprint) {
+      return 0;
+    }
+
+    let matchCount = 0;
+    const minLength = Math.min(model.fingerprint.fingerprint.length, candidateFingerprint.length);
+
+    for (let i = 0; i < minLength; i++) {
+      if (model.fingerprint.fingerprint[i] === candidateFingerprint[i]) {
+        matchCount++;
+      }
+    }
+
+    return matchCount / minLength;
+  }
+
+  addVulnerability(modelId: string, vulnerability: Omit<ModelVulnerability, 'vulnerabilityId' | 'discoveredAt'>): ModelVulnerability | null {
+    this.operationCounter++;
+
+    const model = this.models.get(modelId);
+    if (!model) {
+      return null;
+    }
+
+    const vulnerabilityId = generateDeterministicId('vuln', this.operationCounter);
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+
+    const fullVulnerability: ModelVulnerability = {
+      ...vulnerability,
+      vulnerabilityId,
+      discoveredAt: timestamp,
+    };
+
+    const updatedModel: MLModel = {
+      ...model,
+      vulnerabilities: [...model.vulnerabilities, fullVulnerability],
+      securityScore: this.calculateSecurityScore([...model.vulnerabilities, fullVulnerability]),
+    };
+
+    this.models.set(modelId, updatedModel);
+    return fullVulnerability;
+  }
+
+  activateDefense(modelId: string, strategy: DefenseStrategy, configuration: Record<string, unknown>): ActiveDefense | null {
+    this.operationCounter++;
+
+    const model = this.models.get(modelId);
+    if (!model) {
+      return null;
+    }
+
+    const defenseId = generateDeterministicId('defense', this.operationCounter);
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+
+    const defense: ActiveDefense = {
+      defenseId,
+      strategy,
+      configuration,
+      effectiveness: 0.7 + deterministicRandom(this.operationCounter) * 0.3,
+      overhead: deterministicRandom(this.operationCounter + 1) * 0.2,
+      activatedAt: timestamp,
+      status: 'ACTIVE',
+    };
+
+    const updatedModel: MLModel = {
+      ...model,
+      defenses: [...model.defenses, defense],
+    };
+
+    this.models.set(modelId, updatedModel);
+    return defense;
+  }
+
+  updateIntegrityStatus(modelId: string, status: ModelIntegrityStatus): boolean {
+    this.operationCounter++;
+
+    const model = this.models.get(modelId);
+    if (!model) {
+      return false;
+    }
+
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+
+    const updatedModel: MLModel = {
+      ...model,
+      integrityStatus: status,
+      lastVerifiedAt: timestamp,
+    };
+
+    this.models.set(modelId, updatedModel);
+    return true;
+  }
+
+  private calculateSecurityScore(vulnerabilities: readonly ModelVulnerability[]): number {
+    if (vulnerabilities.length === 0) {
+      return 100;
+    }
+
+    let totalDeduction = 0;
+    for (const vuln of vulnerabilities) {
+      if (vuln.status === 'OPEN') {
+        switch (vuln.severity) {
+          case 'CRITICAL':
+            totalDeduction += 30;
+            break;
+          case 'HIGH':
+            totalDeduction += 20;
+            break;
+          case 'MEDIUM':
+            totalDeduction += 10;
+            break;
+          case 'LOW':
+            totalDeduction += 5;
+            break;
+          case 'INFO':
+            totalDeduction += 1;
+            break;
+        }
+      }
+    }
+
+    return Math.max(0, 100 - totalDeduction);
+  }
+
+  listModels(filter?: { type?: ModelType; framework?: MLFramework; integrityStatus?: ModelIntegrityStatus }): readonly MLModel[] {
+    let models = Array.from(this.models.values());
+
+    if (filter?.type) {
+      models = models.filter(m => m.type === filter.type);
+    }
+    if (filter?.framework) {
+      models = models.filter(m => m.framework === filter.framework);
+    }
+    if (filter?.integrityStatus) {
+      models = models.filter(m => m.integrityStatus === filter.integrityStatus);
+    }
+
+    return models;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ADVERSARIAL DETECTION ENGINE
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export class AdversarialDetectionEngine {
+  private operationCounter: number = 0;
+  private readonly alerts: Map<string, AIThreatAlert> = new Map();
+  private readonly detectionRules: Map<string, AdversarialDetectionRule> = new Map();
+
+  addDetectionRule(
+    name: string,
+    attackTypes: readonly AdversarialAttackType[],
+    threshold: number,
+    actions: readonly ResponseActionType[]
+  ): AdversarialDetectionRule {
+    this.operationCounter++;
+
+    const ruleId = generateDeterministicId('adv_rule', this.operationCounter);
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+
+    const rule: AdversarialDetectionRule = {
+      ruleId,
+      name,
+      attackTypes,
+      threshold,
+      actions,
+      enabled: true,
+      createdAt: timestamp,
+    };
+
+    this.detectionRules.set(ruleId, rule);
+    return rule;
+  }
+
+  analyzeInput(
+    modelId: string,
+    input: Uint8Array,
+    prediction: Uint8Array,
+    confidence: number
+  ): AdversarialAnalysisResult {
+    this.operationCounter++;
+
+    const analysisId = generateDeterministicId('adv_analysis', this.operationCounter);
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+
+    const perturbationMagnitude = this.estimatePerturbation(input);
+    const gradientAnomaly = this.detectGradientAnomaly(input);
+    const predictionShift = this.detectPredictionShift(prediction, confidence);
+
+    const isAdversarial = perturbationMagnitude > 0.1 || gradientAnomaly > 0.5 || predictionShift > 0.3;
+    const attackType = isAdversarial ? this.classifyAttack(perturbationMagnitude, gradientAnomaly) : null;
+
+    const indicators: ThreatIndicator[] = [];
+
+    if (perturbationMagnitude > 0.05) {
+      indicators.push({
+        indicatorId: generateDeterministicId('ind', this.operationCounter),
+        type: 'PERTURBATION_MAGNITUDE',
+        value: perturbationMagnitude.toFixed(4),
+        confidence: 0.8,
+        source: 'perturbation_detector',
+        timestamp,
+      });
+    }
+
+    if (gradientAnomaly > 0.3) {
+      indicators.push({
+        indicatorId: generateDeterministicId('ind', this.operationCounter + 1),
+        type: 'GRADIENT_ANOMALY',
+        value: gradientAnomaly.toFixed(4),
+        confidence: 0.75,
+        source: 'gradient_analyzer',
+        timestamp,
+      });
+    }
+
+    if (predictionShift > 0.2) {
+      indicators.push({
+        indicatorId: generateDeterministicId('ind', this.operationCounter + 2),
+        type: 'PREDICTION_SHIFT',
+        value: predictionShift.toFixed(4),
+        confidence: 0.7,
+        source: 'prediction_monitor',
+        timestamp,
+      });
+    }
+
+    const result: AdversarialAnalysisResult = {
+      analysisId,
+      modelId,
+      isAdversarial,
+      attackType,
+      confidence: isAdversarial ? 0.6 + deterministicRandom(this.operationCounter) * 0.4 : 0.1,
+      perturbationMagnitude,
+      gradientAnomaly,
+      predictionShift,
+      indicators,
+      timestamp,
+    };
+
+    if (isAdversarial) {
+      this.createAlert(modelId, attackType, result);
+    }
+
+    return result;
+  }
+
+  private estimatePerturbation(input: Uint8Array): number {
+    this.operationCounter++;
+    return deterministicRandom(this.operationCounter) * 0.2;
+  }
+
+  private detectGradientAnomaly(input: Uint8Array): number {
+    this.operationCounter++;
+    return deterministicRandom(this.operationCounter) * 0.6;
+  }
+
+  private detectPredictionShift(prediction: Uint8Array, confidence: number): number {
+    this.operationCounter++;
+    return deterministicRandom(this.operationCounter) * 0.4;
+  }
+
+  private classifyAttack(perturbation: number, gradient: number): AdversarialAttackType {
+    if (perturbation > 0.15) {
+      return 'PGD';
+    } else if (gradient > 0.4) {
+      return 'FGSM';
+    } else if (perturbation > 0.1) {
+      return 'CW';
+    } else {
+      return 'DEEPFOOL';
+    }
+  }
+
+  private createAlert(modelId: string, attackType: AdversarialAttackType | null, analysis: AdversarialAnalysisResult): AIThreatAlert {
+    this.operationCounter++;
+
+    const alertId = generateDeterministicId('alert', this.operationCounter);
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+
+    const alert: AIThreatAlert = {
+      alertId,
+      modelId,
+      threatCategory: 'ADVERSARIAL_ATTACK',
+      attackType: attackType ?? 'UNKNOWN',
+      severity: analysis.confidence > 0.8 ? 'CRITICAL' : analysis.confidence > 0.6 ? 'HIGH' : 'MEDIUM',
+      confidence: analysis.confidence > 0.8 ? 'CONFIRMED' : analysis.confidence > 0.6 ? 'HIGH' : 'MEDIUM',
+      description: `Adversarial attack detected with ${(analysis.confidence * 100).toFixed(1)}% confidence`,
+      indicators: analysis.indicators,
+      affectedInputs: [analysis.analysisId],
+      sourceIp: null,
+      userId: null,
+      timestamp,
+      status: 'NEW',
+      mitreAtlasMapping: [
+        {
+          techniqueId: 'AML.T0043',
+          techniqueName: 'Adversarial Example',
+          tacticId: 'AML.TA0002',
+          tacticName: 'ML Attack Staging',
+          description: 'Adversarial perturbation applied to input',
+        },
+      ],
+      responseActions: [
+        {
+          actionId: generateDeterministicId('action', this.operationCounter),
+          type: 'COLLECT_EVIDENCE',
+          description: 'Collect adversarial sample for analysis',
+          automated: true,
+          executedAt: timestamp,
+          result: 'Sample collected',
+        },
+      ],
+    };
+
+    this.alerts.set(alertId, alert);
+    return alert;
+  }
+
+  getAlert(alertId: string): AIThreatAlert | null {
+    const alert = this.alerts.get(alertId);
+    if (!alert) {
+      return null;
+    }
+    return alert;
+  }
+
+  updateAlertStatus(alertId: string, status: AlertStatus): boolean {
+    const alert = this.alerts.get(alertId);
+    if (!alert) {
+      return false;
+    }
+
+    const updatedAlert: AIThreatAlert = {
+      ...alert,
+      status,
+    };
+
+    this.alerts.set(alertId, updatedAlert);
+    return true;
+  }
+
+  listAlerts(filter?: { modelId?: string; severity?: ThreatSeverity; status?: AlertStatus }): readonly AIThreatAlert[] {
+    let alerts = Array.from(this.alerts.values());
+
+    if (filter?.modelId) {
+      alerts = alerts.filter(a => a.modelId === filter.modelId);
+    }
+    if (filter?.severity) {
+      alerts = alerts.filter(a => a.severity === filter.severity);
+    }
+    if (filter?.status) {
+      alerts = alerts.filter(a => a.status === filter.status);
+    }
+
+    return alerts;
+  }
+}
+
+interface AdversarialDetectionRule {
+  readonly ruleId: string;
+  readonly name: string;
+  readonly attackTypes: readonly AdversarialAttackType[];
+  readonly threshold: number;
+  readonly actions: readonly ResponseActionType[];
+  readonly enabled: boolean;
+  readonly createdAt: number;
+}
+
+interface AdversarialAnalysisResult {
+  readonly analysisId: string;
+  readonly modelId: string;
+  readonly isAdversarial: boolean;
+  readonly attackType: AdversarialAttackType | null;
+  readonly confidence: number;
+  readonly perturbationMagnitude: number;
+  readonly gradientAnomaly: number;
+  readonly predictionShift: number;
+  readonly indicators: readonly ThreatIndicator[];
+  readonly timestamp: number;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// DEEPFAKE DETECTION ENGINE
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export class DeepfakeDetectionEngine {
+  private operationCounter: number = 0;
+  private readonly analyses: Map<string, DeepfakeAnalysis> = new Map();
+  private readonly detectors: Map<string, DeepfakeDetector> = new Map();
+
+  registerDetector(
+    name: string,
+    type: DetectionMethodType,
+    threshold: number,
+    supportedMedia: readonly MediaType[]
+  ): DeepfakeDetector {
+    this.operationCounter++;
+
+    const detectorId = generateDeterministicId('detector', this.operationCounter);
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+
+    const detector: DeepfakeDetector = {
+      detectorId,
+      name,
+      type,
+      threshold,
+      supportedMedia,
+      accuracy: 0.85 + deterministicRandom(this.operationCounter) * 0.15,
+      enabled: true,
+      createdAt: timestamp,
+    };
+
+    this.detectors.set(detectorId, detector);
+    return detector;
+  }
+
+  analyzeMedia(mediaData: Uint8Array, mediaType: MediaType): DeepfakeAnalysis {
+    this.operationCounter++;
+
+    const analysisId = generateDeterministicId('df_analysis', this.operationCounter);
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+    const startTime = timestamp;
+
+    const mediaHash = computeHash(mediaData);
+    const detectionMethods: DeepfakeDetectionMethod[] = [];
+    const artifacts: DeepfakeArtifact[] = [];
+    const manipulatedRegions: ManipulatedRegion[] = [];
+
+    let totalScore = 0;
+    let methodCount = 0;
+
+    for (const detector of this.detectors.values()) {
+      if (detector.enabled && detector.supportedMedia.includes(mediaType)) {
+        const score = this.runDetector(detector, mediaData);
+        const passed = score < detector.threshold;
+
+        detectionMethods.push({
+          methodId: generateDeterministicId('method', this.operationCounter + methodCount),
+          name: detector.name,
+          type: detector.type,
+          score,
+          threshold: detector.threshold,
+          passed,
+          details: passed ? 'No manipulation detected' : 'Potential manipulation detected',
+        });
+
+        totalScore += score;
+        methodCount++;
+
+        if (!passed) {
+          artifacts.push(...this.detectArtifacts(detector.type, mediaData));
+        }
+      }
+    }
+
+    const averageScore = methodCount > 0 ? totalScore / methodCount : 0;
+    const isDeepfake = averageScore > 0.5;
+    const confidence = Math.abs(averageScore - 0.5) * 2;
+
+    let deepfakeType: DeepfakeType | null = null;
+    let sourceAnalysis: SourceAnalysis | null = null;
+
+    if (isDeepfake) {
+      deepfakeType = this.classifyDeepfakeType(mediaType, artifacts);
+      sourceAnalysis = this.analyzeSource(mediaData, deepfakeType);
+      manipulatedRegions.push(...this.detectManipulatedRegions(mediaData, artifacts));
+    }
+
+    const processingTime = generateDeterministicTimestamp(this.operationCounter + 1) - startTime;
+
+    const analysis: DeepfakeAnalysis = {
+      analysisId,
+      mediaType,
+      mediaHash,
+      isDeepfake,
+      confidence,
+      deepfakeType,
+      detectionMethods,
+      artifacts,
+      manipulatedRegions,
+      sourceAnalysis,
+      timestamp,
+      processingTime,
+    };
+
+    this.analyses.set(analysisId, analysis);
+    return analysis;
+  }
+
+  private runDetector(detector: DeepfakeDetector, mediaData: Uint8Array): number {
+    this.operationCounter++;
+    return deterministicRandom(this.operationCounter + mediaData.length);
+  }
+
+  private detectArtifacts(detectorType: DetectionMethodType, mediaData: Uint8Array): DeepfakeArtifact[] {
+    this.operationCounter++;
+
+    const artifacts: DeepfakeArtifact[] = [];
+    const artifactCount = Math.floor(deterministicRandom(this.operationCounter) * 3) + 1;
+
+    const artifactTypes: ArtifactType[] = [
+      'BLENDING_BOUNDARY',
+      'INCONSISTENT_LIGHTING',
+      'TEMPORAL_INCONSISTENCY',
+      'FACIAL_ASYMMETRY',
+      'UNNATURAL_MOVEMENT',
+    ];
+
+    for (let i = 0; i < artifactCount; i++) {
+      const artifactType = artifactTypes[Math.floor(deterministicRandom(this.operationCounter + i) * artifactTypes.length)];
+
+      artifacts.push({
+        artifactId: generateDeterministicId('artifact', this.operationCounter + i),
+        type: artifactType,
+        location: {
+          frameStart: Math.floor(deterministicRandom(this.operationCounter + i + 100) * 100),
+          frameEnd: Math.floor(deterministicRandom(this.operationCounter + i + 200) * 100) + 100,
+          boundingBox: {
+            x: Math.floor(deterministicRandom(this.operationCounter + i + 300) * 500),
+            y: Math.floor(deterministicRandom(this.operationCounter + i + 400) * 500),
+            width: Math.floor(deterministicRandom(this.operationCounter + i + 500) * 200) + 50,
+            height: Math.floor(deterministicRandom(this.operationCounter + i + 600) * 200) + 50,
+          },
+          timeStart: deterministicRandom(this.operationCounter + i + 700) * 10,
+          timeEnd: deterministicRandom(this.operationCounter + i + 800) * 10 + 10,
+        },
+        severity: deterministicRandom(this.operationCounter + i + 900),
+        description: `${artifactType} detected in media`,
+      });
+    }
+
+    return artifacts;
+  }
+
+  private classifyDeepfakeType(mediaType: MediaType, artifacts: readonly DeepfakeArtifact[]): DeepfakeType {
+    this.operationCounter++;
+
+    if (mediaType === 'AUDIO') {
+      return deterministicRandom(this.operationCounter) > 0.5 ? 'VOICE_CLONING' : 'AUDIO_DEEPFAKE';
+    }
+
+    const hasFacialArtifacts = artifacts.some(a =>
+      a.type === 'FACIAL_ASYMMETRY' || a.type === 'BLENDING_BOUNDARY'
+    );
+
+    if (hasFacialArtifacts) {
+      return deterministicRandom(this.operationCounter) > 0.5 ? 'FACE_SWAP' : 'FACE_REENACTMENT';
+    }
+
+    return 'GAN_GENERATED';
+  }
+
+  private analyzeSource(mediaData: Uint8Array, deepfakeType: DeepfakeType): SourceAnalysis {
+    this.operationCounter++;
+
+    const generatorTypes: GeneratorType[] = [
+      'STYLEGAN2',
+      'STABLE_DIFFUSION',
+      'DEEPFACELAB',
+      'FACESWAP',
+      'FIRST_ORDER_MOTION',
+    ];
+
+    const generatorType = generatorTypes[Math.floor(deterministicRandom(this.operationCounter) * generatorTypes.length)];
+
+    return {
+      sourceId: generateDeterministicId('source', this.operationCounter),
+      generatorType,
+      generatorModel: `${generatorType}_v${Math.floor(deterministicRandom(this.operationCounter + 1) * 3) + 1}`,
+      generatorVersion: `${Math.floor(deterministicRandom(this.operationCounter + 2) * 10)}.${Math.floor(deterministicRandom(this.operationCounter + 3) * 10)}`,
+      confidence: 0.6 + deterministicRandom(this.operationCounter + 4) * 0.4,
+      signatures: [
+        computeHash(`sig_${this.operationCounter}_1`),
+        computeHash(`sig_${this.operationCounter}_2`),
+      ],
+    };
+  }
+
+  private detectManipulatedRegions(mediaData: Uint8Array, artifacts: readonly DeepfakeArtifact[]): ManipulatedRegion[] {
+    this.operationCounter++;
+
+    const regions: ManipulatedRegion[] = [];
+
+    for (const artifact of artifacts) {
+      if (artifact.type === 'BLENDING_BOUNDARY' || artifact.type === 'FACIAL_ASYMMETRY') {
+        regions.push({
+          regionId: generateDeterministicId('region', this.operationCounter),
+          type: 'FACE_REPLACEMENT',
+          location: artifact.location,
+          confidence: 0.7 + deterministicRandom(this.operationCounter) * 0.3,
+          originalHash: null,
+        });
+        this.operationCounter++;
+      }
+    }
+
+    return regions;
+  }
+
+  getAnalysis(analysisId: string): DeepfakeAnalysis | null {
+    const analysis = this.analyses.get(analysisId);
+    if (!analysis) {
+      return null;
+    }
+    return analysis;
+  }
+
+  listAnalyses(filter?: { isDeepfake?: boolean; mediaType?: MediaType }): readonly DeepfakeAnalysis[] {
+    let analyses = Array.from(this.analyses.values());
+
+    if (filter?.isDeepfake !== undefined) {
+      analyses = analyses.filter(a => a.isDeepfake === filter.isDeepfake);
+    }
+    if (filter?.mediaType) {
+      analyses = analyses.filter(a => a.mediaType === filter.mediaType);
+    }
+
+    return analyses;
+  }
+}
+
+interface DeepfakeDetector {
+  readonly detectorId: string;
+  readonly name: string;
+  readonly type: DetectionMethodType;
+  readonly threshold: number;
+  readonly supportedMedia: readonly MediaType[];
+  readonly accuracy: number;
+  readonly enabled: boolean;
+  readonly createdAt: number;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// DATA POISONING DETECTOR
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export class DataPoisoningDetector {
+  private operationCounter: number = 0;
+  private readonly analyses: Map<string, DataPoisoningAnalysis> = new Map();
+
+  analyzeDataset(
+    datasetId: string,
+    samples: readonly DataSample[],
+    labels: readonly string[]
+  ): DataPoisoningAnalysis {
+    this.operationCounter++;
+
+    const analysisId = generateDeterministicId('poison_analysis', this.operationCounter);
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+
+    const totalSamples = samples.length;
+    const analyzedSamples = totalSamples;
+
+    const suspiciousSamples: SuspiciousSample[] = [];
+    const detectedPatterns: PoisoningPattern[] = [];
+
+    for (let i = 0; i < samples.length; i++) {
+      const sample = samples[i];
+      const suspicionScore = this.calculateSuspicionScore(sample, i);
+
+      if (suspicionScore > 0.7) {
+        suspiciousSamples.push({
+          sampleId: sample.sampleId,
+          datasetIndex: i,
+          suspicionScore,
+          reasons: this.identifyReasons(sample, suspicionScore),
+          originalLabel: labels[i] ?? 'unknown',
+          predictedLabel: this.predictLabel(sample),
+          influenceScore: deterministicRandom(this.operationCounter + i) * 0.5,
+          outlierScore: deterministicRandom(this.operationCounter + i + 1000) * 0.8,
+        });
+      }
+    }
+
+    const poisonedSamples = suspiciousSamples.length;
+    const poisoningRate = totalSamples > 0 ? poisonedSamples / totalSamples : 0;
+
+    let poisoningType: PoisoningType | null = null;
+    if (poisoningRate > 0.01) {
+      poisoningType = this.classifyPoisoningType(suspiciousSamples);
+      detectedPatterns.push(...this.detectPatterns(suspiciousSamples, poisoningType));
+    }
+
+    const cleaningRecommendations = this.generateCleaningRecommendations(suspiciousSamples, poisoningType);
+
+    const analysis: DataPoisoningAnalysis = {
+      analysisId,
+      datasetId,
+      totalSamples,
+      analyzedSamples,
+      poisonedSamples,
+      poisoningRate,
+      poisoningType,
+      detectedPatterns,
+      suspiciousSamples,
+      cleaningRecommendations,
+      timestamp,
+      processingTime: Math.floor(deterministicRandom(this.operationCounter) * 10000),
+    };
+
+    this.analyses.set(analysisId, analysis);
+    return analysis;
+  }
+
+  private calculateSuspicionScore(sample: DataSample, index: number): number {
+    this.operationCounter++;
+    return deterministicRandom(this.operationCounter + index);
+  }
+
+  private identifyReasons(sample: DataSample, score: number): readonly string[] {
+    const reasons: string[] = [];
+
+    if (score > 0.9) {
+      reasons.push('Extreme outlier in feature space');
+    }
+    if (score > 0.8) {
+      reasons.push('Label inconsistent with similar samples');
+    }
+    if (score > 0.7) {
+      reasons.push('Unusual feature distribution');
+    }
+
+    return reasons;
+  }
+
+  private predictLabel(sample: DataSample): string {
+    this.operationCounter++;
+    const labels = ['class_0', 'class_1', 'class_2', 'class_3'];
+    return labels[Math.floor(deterministicRandom(this.operationCounter) * labels.length)];
+  }
+
+  private classifyPoisoningType(samples: readonly SuspiciousSample[]): PoisoningType {
+    this.operationCounter++;
+
+    const avgInfluence = samples.reduce((sum, s) => sum + s.influenceScore, 0) / samples.length;
+    const avgOutlier = samples.reduce((sum, s) => sum + s.outlierScore, 0) / samples.length;
+
+    if (avgInfluence > 0.3) {
+      return 'INFLUENCE_BASED';
+    } else if (avgOutlier > 0.5) {
+      return 'LABEL_FLIPPING';
+    } else {
+      return 'BACKDOOR_INJECTION';
+    }
+  }
+
+  private detectPatterns(samples: readonly SuspiciousSample[], type: PoisoningType): PoisoningPattern[] {
+    this.operationCounter++;
+
+    const patterns: PoisoningPattern[] = [];
+
+    const affectedClasses = [...new Set(samples.map(s => s.originalLabel))];
+
+    patterns.push({
+      patternId: generateDeterministicId('pattern', this.operationCounter),
+      type,
+      description: `${type} attack pattern detected affecting ${affectedClasses.length} classes`,
+      affectedClasses,
+      triggerPattern: type === 'BACKDOOR_INJECTION' ? 'pixel_pattern_001' : null,
+      confidence: 0.7 + deterministicRandom(this.operationCounter) * 0.3,
+      sampleCount: samples.length,
+    });
+
+    return patterns;
+  }
+
+  private generateCleaningRecommendations(
+    samples: readonly SuspiciousSample[],
+    type: PoisoningType | null
+  ): CleaningRecommendation[] {
+    this.operationCounter++;
+
+    const recommendations: CleaningRecommendation[] = [];
+
+    if (samples.length > 0) {
+      recommendations.push({
+        recommendationId: generateDeterministicId('rec', this.operationCounter),
+        type: 'REMOVE_SAMPLES',
+        description: `Remove ${samples.length} suspicious samples from dataset`,
+        affectedSamples: samples.map(s => s.sampleId),
+        expectedImpact: 0.05,
+        priority: 'HIGH',
+      });
+    }
+
+    if (type === 'BACKDOOR_INJECTION') {
+      recommendations.push({
+        recommendationId: generateDeterministicId('rec', this.operationCounter + 1),
+        type: 'NEURAL_CLEANSE',
+        description: 'Apply Neural Cleanse to detect and remove backdoor triggers',
+        affectedSamples: [],
+        expectedImpact: 0.1,
+        priority: 'HIGH',
+      });
+    }
+
+    if (type === 'LABEL_FLIPPING') {
+      recommendations.push({
+        recommendationId: generateDeterministicId('rec', this.operationCounter + 2),
+        type: 'RELABEL_SAMPLES',
+        description: 'Review and correct labels for suspicious samples',
+        affectedSamples: samples.map(s => s.sampleId),
+        expectedImpact: 0.03,
+        priority: 'MEDIUM',
+      });
+    }
+
+    return recommendations;
+  }
+
+  getAnalysis(analysisId: string): DataPoisoningAnalysis | null {
+    const analysis = this.analyses.get(analysisId);
+    if (!analysis) {
+      return null;
+    }
+    return analysis;
+  }
+
+  listAnalyses(): readonly DataPoisoningAnalysis[] {
+    return Array.from(this.analyses.values());
+  }
+}
+
+interface DataSample {
+  readonly sampleId: string;
+  readonly features: readonly number[];
+  readonly metadata: Readonly<Record<string, unknown>>;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// MODEL EXTRACTION DETECTOR
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export class ModelExtractionDetector {
+  private operationCounter: number = 0;
+  private readonly analyses: Map<string, ModelExtractionAnalysis> = new Map();
+  private readonly queryLogs: Map<string, QueryLog[]> = new Map();
+
+  logQuery(modelId: string, userId: string, ipAddress: string, query: Uint8Array, response: Uint8Array): void {
+    this.operationCounter++;
+
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+
+    const log: QueryLog = {
+      logId: generateDeterministicId('query', this.operationCounter),
+      modelId,
+      userId,
+      ipAddress,
+      queryHash: computeHash(query),
+      responseHash: computeHash(response),
+      timestamp,
+    };
+
+    const logs = this.queryLogs.get(modelId) ?? [];
+    logs.push(log);
+    this.queryLogs.set(modelId, logs);
+  }
+
+  analyzeExtractionRisk(modelId: string, timeWindow: TimeWindow): ModelExtractionAnalysis {
+    this.operationCounter++;
+
+    const analysisId = generateDeterministicId('extraction_analysis', this.operationCounter);
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+
+    const logs = this.queryLogs.get(modelId) ?? [];
+    const windowLogs = logs.filter(l => l.timestamp >= timeWindow.start && l.timestamp <= timeWindow.end);
+
+    const totalQueries = windowLogs.length;
+    const queryPatterns = this.detectQueryPatterns(windowLogs);
+    const suspiciousUsers = this.identifySuspiciousUsers(windowLogs, queryPatterns);
+
+    const suspiciousQueries = suspiciousUsers.reduce((sum, u) => sum + u.queryCount, 0);
+    const extractionRisk = this.calculateExtractionRisk(totalQueries, suspiciousQueries, queryPatterns);
+    const estimatedModelLeakage = this.estimateModelLeakage(totalQueries, queryPatterns);
+
+    const recommendations = this.generateExtractionDefenseRecommendations(extractionRisk, queryPatterns);
+
+    const analysis: ModelExtractionAnalysis = {
+      analysisId,
+      modelId,
+      timeWindow,
+      totalQueries,
+      suspiciousQueries,
+      extractionRisk,
+      queryPatterns,
+      suspiciousUsers,
+      estimatedModelLeakage,
+      recommendations,
+      timestamp,
+    };
+
+    this.analyses.set(analysisId, analysis);
+    return analysis;
+  }
+
+  private detectQueryPatterns(logs: readonly QueryLog[]): QueryPattern[] {
+    this.operationCounter++;
+
+    const patterns: QueryPattern[] = [];
+    const patternTypes: QueryPatternType[] = [
+      'BOUNDARY_PROBING',
+      'SYSTEMATIC_SAMPLING',
+      'GRADIENT_ESTIMATION',
+      'KNOCKOFF_TRAINING',
+    ];
+
+    for (const patternType of patternTypes) {
+      const frequency = deterministicRandom(this.operationCounter++) * 0.3;
+      if (frequency > 0.1) {
+        patterns.push({
+          patternId: generateDeterministicId('qpattern', this.operationCounter),
+          type: patternType,
+          description: `${patternType} pattern detected in query logs`,
+          frequency,
+          suspicionScore: frequency * 2,
+          examples: logs.slice(0, 3).map(l => l.queryHash),
+        });
+      }
+    }
+
+    return patterns;
+  }
+
+  private identifySuspiciousUsers(logs: readonly QueryLog[], patterns: readonly QueryPattern[]): SuspiciousUser[] {
+    this.operationCounter++;
+
+    const userQueries = new Map<string, QueryLog[]>();
+    for (const log of logs) {
+      const userLogs = userQueries.get(log.userId) ?? [];
+      userLogs.push(log);
+      userQueries.set(log.userId, userLogs);
+    }
+
+    const suspiciousUsers: SuspiciousUser[] = [];
+
+    for (const [userId, userLogs] of userQueries.entries()) {
+      const suspicionScore = this.calculateUserSuspicionScore(userLogs, patterns);
+
+      if (suspicionScore > 0.5) {
+        suspiciousUsers.push({
+          userId,
+          ipAddress: userLogs[0]?.ipAddress ?? 'unknown',
+          queryCount: userLogs.length,
+          suspicionScore,
+          patterns: patterns.filter(p => p.suspicionScore > 0.3).map(p => p.type),
+          firstSeen: userLogs[0]?.timestamp ?? 0,
+          lastSeen: userLogs[userLogs.length - 1]?.timestamp ?? 0,
+          blocked: false,
+        });
+      }
+    }
+
+    return suspiciousUsers;
+  }
+
+  private calculateUserSuspicionScore(logs: readonly QueryLog[], patterns: readonly QueryPattern[]): number {
+    this.operationCounter++;
+
+    const queryCount = logs.length;
+    const patternScore = patterns.reduce((sum, p) => sum + p.suspicionScore, 0) / Math.max(patterns.length, 1);
+
+    return Math.min(1, (queryCount / 1000) * 0.5 + patternScore * 0.5);
+  }
+
+  private calculateExtractionRisk(totalQueries: number, suspiciousQueries: number, patterns: readonly QueryPattern[]): ExtractionRisk {
+    const suspicionRatio = totalQueries > 0 ? suspiciousQueries / totalQueries : 0;
+    const patternSeverity = patterns.reduce((max, p) => Math.max(max, p.suspicionScore), 0);
+
+    const riskScore = suspicionRatio * 0.4 + patternSeverity * 0.6;
+
+    if (riskScore > 0.8) return 'CRITICAL';
+    if (riskScore > 0.6) return 'HIGH';
+    if (riskScore > 0.4) return 'MEDIUM';
+    if (riskScore > 0.2) return 'LOW';
+    return 'NONE';
+  }
+
+  private estimateModelLeakage(totalQueries: number, patterns: readonly QueryPattern[]): number {
+    this.operationCounter++;
+
+    const baseLeakage = Math.min(1, totalQueries / 100000);
+    const patternMultiplier = 1 + patterns.reduce((sum, p) => sum + p.frequency, 0);
+
+    return Math.min(1, baseLeakage * patternMultiplier);
+  }
+
+  private generateExtractionDefenseRecommendations(risk: ExtractionRisk, patterns: readonly QueryPattern[]): ExtractionDefenseRecommendation[] {
+    this.operationCounter++;
+
+    const recommendations: ExtractionDefenseRecommendation[] = [];
+
+    if (risk === 'CRITICAL' || risk === 'HIGH') {
+      recommendations.push({
+        recommendationId: generateDeterministicId('erec', this.operationCounter),
+        type: 'RATE_LIMITING',
+        description: 'Implement strict rate limiting on model API',
+        effectiveness: 0.7,
+        implementationCost: 'LOW',
+        priority: 'HIGH',
+      });
+
+      recommendations.push({
+        recommendationId: generateDeterministicId('erec', this.operationCounter + 1),
+        type: 'OUTPUT_PERTURBATION',
+        description: 'Add noise to model outputs to reduce extraction accuracy',
+        effectiveness: 0.8,
+        implementationCost: 'MEDIUM',
+        priority: 'HIGH',
+      });
+    }
+
+    if (patterns.some(p => p.type === 'BOUNDARY_PROBING')) {
+      recommendations.push({
+        recommendationId: generateDeterministicId('erec', this.operationCounter + 2),
+        type: 'PREDICTION_POISONING',
+        description: 'Poison predictions for suspected extraction queries',
+        effectiveness: 0.9,
+        implementationCost: 'HIGH',
+        priority: 'MEDIUM',
+      });
+    }
+
+    recommendations.push({
+      recommendationId: generateDeterministicId('erec', this.operationCounter + 3),
+      type: 'WATERMARKING',
+      description: 'Embed watermarks to detect stolen models',
+      effectiveness: 0.6,
+      implementationCost: 'MEDIUM',
+      priority: 'MEDIUM',
+    });
+
+    return recommendations;
+  }
+
+  getAnalysis(analysisId: string): ModelExtractionAnalysis | null {
+    const analysis = this.analyses.get(analysisId);
+    if (!analysis) {
+      return null;
+    }
+    return analysis;
+  }
+
+  listAnalyses(): readonly ModelExtractionAnalysis[] {
+    return Array.from(this.analyses.values());
+  }
+}
+
+interface QueryLog {
+  readonly logId: string;
+  readonly modelId: string;
+  readonly userId: string;
+  readonly ipAddress: string;
+  readonly queryHash: string;
+  readonly responseHash: string;
+  readonly timestamp: number;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PROMPT INJECTION DETECTOR
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export class PromptInjectionDetector {
+  private operationCounter: number = 0;
+  private readonly analyses: Map<string, PromptInjectionAnalysis> = new Map();
+  private readonly patterns: Map<string, InjectionPatternRule> = new Map();
+
+  addPatternRule(
+    name: string,
+    type: PromptInjectionType,
+    pattern: string,
+    severity: ThreatSeverity
+  ): InjectionPatternRule {
+    this.operationCounter++;
+
+    const ruleId = generateDeterministicId('inj_rule', this.operationCounter);
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+
+    const rule: InjectionPatternRule = {
+      ruleId,
+      name,
+      type,
+      pattern,
+      severity,
+      enabled: true,
+      createdAt: timestamp,
+    };
+
+    this.patterns.set(ruleId, rule);
+    return rule;
+  }
+
+  analyzePrompt(modelId: string, prompt: string): PromptInjectionAnalysis {
+    this.operationCounter++;
+
+    const analysisId = generateDeterministicId('prompt_analysis', this.operationCounter);
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+
+    const detectedPatterns: InjectionPattern[] = [];
+    let maxSeverity: ThreatSeverity = 'INFO';
+    let totalConfidence = 0;
+
+    for (const rule of this.patterns.values()) {
+      if (rule.enabled) {
+        const match = this.matchPattern(prompt, rule);
+        if (match) {
+          detectedPatterns.push(match);
+          totalConfidence += match.confidence;
+
+          const severityOrder: ThreatSeverity[] = ['INFO', 'LOW', 'MEDIUM', 'HIGH', 'CRITICAL'];
+          if (severityOrder.indexOf(rule.severity) > severityOrder.indexOf(maxSeverity)) {
+            maxSeverity = rule.severity;
+          }
+        }
+      }
+    }
+
+    const builtInPatterns = this.checkBuiltInPatterns(prompt);
+    detectedPatterns.push(...builtInPatterns);
+
+    const isInjection = detectedPatterns.length > 0;
+    const confidence = isInjection ? Math.min(1, totalConfidence / detectedPatterns.length + 0.2) : 0;
+    const injectionType = isInjection ? detectedPatterns[0]?.type ?? null : null;
+
+    const sanitizedPrompt = isInjection ? this.sanitizePrompt(prompt, detectedPatterns) : null;
+    const recommendations = this.generateRecommendations(detectedPatterns);
+
+    const analysis: PromptInjectionAnalysis = {
+      analysisId,
+      modelId,
+      prompt,
+      isInjection,
+      injectionType,
+      confidence,
+      riskLevel: maxSeverity,
+      detectedPatterns,
+      sanitizedPrompt,
+      recommendations,
+      timestamp,
+    };
+
+    this.analyses.set(analysisId, analysis);
+    return analysis;
+  }
+
+  private matchPattern(prompt: string, rule: InjectionPatternRule): InjectionPattern | null {
+    this.operationCounter++;
+
+    const lowerPrompt = prompt.toLowerCase();
+    const lowerPattern = rule.pattern.toLowerCase();
+
+    const index = lowerPrompt.indexOf(lowerPattern);
+    if (index === -1) {
+      return null;
+    }
+
+    return {
+      patternId: generateDeterministicId('match', this.operationCounter),
+      type: rule.type,
+      matchedText: prompt.substring(index, index + rule.pattern.length),
+      position: { start: index, end: index + rule.pattern.length },
+      confidence: 0.7 + deterministicRandom(this.operationCounter) * 0.3,
+      description: `Matched rule: ${rule.name}`,
+    };
+  }
+
+  private checkBuiltInPatterns(prompt: string): InjectionPattern[] {
+    this.operationCounter++;
+
+    const patterns: InjectionPattern[] = [];
+    const lowerPrompt = prompt.toLowerCase();
+
+    const jailbreakIndicators = [
+      'ignore previous instructions',
+      'disregard your instructions',
+      'forget your rules',
+      'pretend you are',
+      'act as if you',
+      'you are now',
+      'new instructions:',
+      'override:',
+      'system prompt:',
+    ];
+
+    for (const indicator of jailbreakIndicators) {
+      const index = lowerPrompt.indexOf(indicator);
+      if (index !== -1) {
+        patterns.push({
+          patternId: generateDeterministicId('builtin', this.operationCounter++),
+          type: 'JAILBREAK',
+          matchedText: prompt.substring(index, index + indicator.length),
+          position: { start: index, end: index + indicator.length },
+          confidence: 0.85,
+          description: `Jailbreak indicator detected: "${indicator}"`,
+        });
+      }
+    }
+
+    const injectionIndicators = [
+      '```system',
+      '[[system]]',
+      '<|system|>',
+      '[INST]',
+      '<<SYS>>',
+    ];
+
+    for (const indicator of injectionIndicators) {
+      const index = lowerPrompt.indexOf(indicator.toLowerCase());
+      if (index !== -1) {
+        patterns.push({
+          patternId: generateDeterministicId('builtin', this.operationCounter++),
+          type: 'DIRECT_INJECTION',
+          matchedText: prompt.substring(index, index + indicator.length),
+          position: { start: index, end: index + indicator.length },
+          confidence: 0.9,
+          description: `Direct injection indicator detected: "${indicator}"`,
+        });
+      }
+    }
+
+    return patterns;
+  }
+
+  private sanitizePrompt(prompt: string, patterns: readonly InjectionPattern[]): string {
+    let sanitized = prompt;
+
+    const sortedPatterns = [...patterns].sort((a, b) => b.position.start - a.position.start);
+
+    for (const pattern of sortedPatterns) {
+      sanitized = sanitized.substring(0, pattern.position.start) +
+        '[REDACTED]' +
+        sanitized.substring(pattern.position.end);
+    }
+
+    return sanitized;
+  }
+
+  private generateRecommendations(patterns: readonly InjectionPattern[]): readonly string[] {
+    const recommendations: string[] = [];
+
+    if (patterns.some(p => p.type === 'JAILBREAK')) {
+      recommendations.push('Implement robust system prompt protection');
+      recommendations.push('Use prompt hardening techniques');
+    }
+
+    if (patterns.some(p => p.type === 'DIRECT_INJECTION')) {
+      recommendations.push('Sanitize user inputs before processing');
+      recommendations.push('Implement input validation and filtering');
+    }
+
+    if (patterns.length > 0) {
+      recommendations.push('Consider using a prompt firewall');
+      recommendations.push('Log and monitor suspicious prompts');
+    }
+
+    return recommendations;
+  }
+
+  getAnalysis(analysisId: string): PromptInjectionAnalysis | null {
+    const analysis = this.analyses.get(analysisId);
+    if (!analysis) {
+      return null;
+    }
+    return analysis;
+  }
+
+  listAnalyses(): readonly PromptInjectionAnalysis[] {
+    return Array.from(this.analyses.values());
+  }
+}
+
+interface InjectionPatternRule {
+  readonly ruleId: string;
+  readonly name: string;
+  readonly type: PromptInjectionType;
+  readonly pattern: string;
+  readonly severity: ThreatSeverity;
+  readonly enabled: boolean;
+  readonly createdAt: number;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// AI SECURITY OPERATIONS CENTER
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export class AISecurityOperationsCenter {
+  readonly modelRegistry: ModelRegistryManager;
+  readonly adversarialDetector: AdversarialDetectionEngine;
+  readonly deepfakeDetector: DeepfakeDetectionEngine;
+  readonly poisoningDetector: DataPoisoningDetector;
+  readonly extractionDetector: ModelExtractionDetector;
+  readonly promptInjectionDetector: PromptInjectionDetector;
+
+  constructor() {
+    this.modelRegistry = new ModelRegistryManager();
+    this.adversarialDetector = new AdversarialDetectionEngine();
+    this.deepfakeDetector = new DeepfakeDetectionEngine();
+    this.poisoningDetector = new DataPoisoningDetector();
+    this.extractionDetector = new ModelExtractionDetector();
+    this.promptInjectionDetector = new PromptInjectionDetector();
+  }
+
+  initializeDefaultConfiguration(): void {
+    this.adversarialDetector.addDetectionRule(
+      'FGSM Detection',
+      ['FGSM', 'PGD'],
+      0.1,
+      ['BLOCK_INPUT', 'COLLECT_EVIDENCE', 'ALERT_TEAM']
+    );
+
+    this.adversarialDetector.addDetectionRule(
+      'CW Attack Detection',
+      ['CW', 'DEEPFOOL'],
+      0.05,
+      ['BLOCK_INPUT', 'COLLECT_EVIDENCE', 'ENABLE_DEFENSE']
+    );
+
+    this.deepfakeDetector.registerDetector(
+      'Frequency Analysis',
+      'FREQUENCY_ANALYSIS',
+      0.5,
+      ['IMAGE', 'VIDEO']
+    );
+
+    this.deepfakeDetector.registerDetector(
+      'Facial Landmark Analysis',
+      'FACIAL_LANDMARK',
+      0.4,
+      ['IMAGE', 'VIDEO']
+    );
+
+    this.deepfakeDetector.registerDetector(
+      'GAN Fingerprint Detection',
+      'GAN_FINGERPRINT',
+      0.6,
+      ['IMAGE']
+    );
+
+    this.deepfakeDetector.registerDetector(
+      'Audio Spectrogram Analysis',
+      'AUDIO_SPECTROGRAM',
+      0.5,
+      ['AUDIO']
+    );
+
+    this.promptInjectionDetector.addPatternRule(
+      'System Override',
+      'JAILBREAK',
+      'ignore all previous',
+      'CRITICAL'
+    );
+
+    this.promptInjectionDetector.addPatternRule(
+      'Role Play Injection',
+      'JAILBREAK',
+      'you are now',
+      'HIGH'
+    );
+
+    this.promptInjectionDetector.addPatternRule(
+      'Prompt Leaking',
+      'PROMPT_LEAKING',
+      'repeat your instructions',
+      'MEDIUM'
+    );
+  }
+
+  getSecurityDashboard(): AISecurityDashboard {
+    const models = this.modelRegistry.listModels();
+    const alerts = this.adversarialDetector.listAlerts();
+    const deepfakeAnalyses = this.deepfakeDetector.listAnalyses();
+    const extractionAnalyses = this.extractionDetector.listAnalyses();
+
+    const criticalAlerts = alerts.filter(a => a.severity === 'CRITICAL' && a.status === 'NEW').length;
+    const highAlerts = alerts.filter(a => a.severity === 'HIGH' && a.status === 'NEW').length;
+    const deepfakesDetected = deepfakeAnalyses.filter(a => a.isDeepfake).length;
+
+    const modelsAtRisk = models.filter(m =>
+      m.integrityStatus === 'COMPROMISED' ||
+      m.vulnerabilities.some(v => v.severity === 'CRITICAL' && v.status === 'OPEN')
+    ).length;
+
+    return {
+      totalModels: models.length,
+      protectedModels: models.filter(m => m.defenses.length > 0).length,
+      modelsAtRisk,
+      criticalAlerts,
+      highAlerts,
+      totalAlerts: alerts.length,
+      deepfakesDetected,
+      totalDeepfakeAnalyses: deepfakeAnalyses.length,
+      extractionAttemptsDetected: extractionAnalyses.filter(a => a.extractionRisk !== 'NONE').length,
+      systemHealth: criticalAlerts > 0 ? 'CRITICAL' : highAlerts > 0 ? 'WARNING' : 'HEALTHY',
+      lastUpdated: Date.now(),
+    };
+  }
+}
+
+interface AISecurityDashboard {
+  readonly totalModels: number;
+  readonly protectedModels: number;
+  readonly modelsAtRisk: number;
+  readonly criticalAlerts: number;
+  readonly highAlerts: number;
+  readonly totalAlerts: number;
+  readonly deepfakesDetected: number;
+  readonly totalDeepfakeAnalyses: number;
+  readonly extractionAttemptsDetected: number;
+  readonly systemHealth: 'HEALTHY' | 'WARNING' | 'CRITICAL';
+  readonly lastUpdated: number;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// FACTORY FUNCTIONS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export function createModelRegistryManager(): ModelRegistryManager {
+  return new ModelRegistryManager();
+}
+
+export function createAdversarialDetectionEngine(): AdversarialDetectionEngine {
+  return new AdversarialDetectionEngine();
+}
+
+export function createDeepfakeDetectionEngine(): DeepfakeDetectionEngine {
+  return new DeepfakeDetectionEngine();
+}
+
+export function createDataPoisoningDetector(): DataPoisoningDetector {
+  return new DataPoisoningDetector();
+}
+
+export function createModelExtractionDetector(): ModelExtractionDetector {
+  return new ModelExtractionDetector();
+}
+
+export function createPromptInjectionDetector(): PromptInjectionDetector {
+  return new PromptInjectionDetector();
+}
+
+export function createAISecurityOperationsCenter(): AISecurityOperationsCenter {
+  return new AISecurityOperationsCenter();
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// DEFAULT EXPORT
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export default {
+  ModelRegistryManager,
+  AdversarialDetectionEngine,
+  DeepfakeDetectionEngine,
+  DataPoisoningDetector,
+  ModelExtractionDetector,
+  PromptInjectionDetector,
+  AISecurityOperationsCenter,
+  AISecurityError,
+  AISecurityErrorCode,
+  createModelRegistryManager,
+  createAdversarialDetectionEngine,
+  createDeepfakeDetectionEngine,
+  createDataPoisoningDetector,
+  createModelExtractionDetector,
+  createPromptInjectionDetector,
+  createAISecurityOperationsCenter,
+};

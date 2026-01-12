@@ -1,0 +1,539 @@
+/**
+ * @file Varnostni health check modul za {{IME_PROJEKTA}}
+ * @author {{AVTOR}}
+ * @version {{VERZIJA}}
+ * @date {{DATUM}}
+ * @domain {{DOMENA_SL}}
+ * 
+ * @requirement REQ-SEC-HC-001
+ * @design DSN-SEC-HC-001
+ * @test TST-SEC-HC-001
+ * 
+ * @description
+ * Specializiran health check modul za varnostne sisteme:
+ * - Preverjanje stanja varnostnih storitev
+ * - Preverjanje veljavnosti certifikatov
+ * - Preverjanje dostopnosti kljucnih storitev (HSM, KMS)
+ * - Preverjanje integritete varnostnih konfiguracij
+ * - Preverjanje skladnosti z varnostnimi politikami
+ * 
+ * @compliance DO-178C, IEC-61508, ISO-26262, MIL-STD-882E
+ * @security ISO-27001, NIST-800-53, SOC-2
+ * @meta_atom REL_004 - Health Checks
+ */
+
+import { getClock, Clock } from '@mia/core/clock';
+import { generateDeterministicId } from '@mia/core/deterministic';
+const clock: Clock = getClock();
+
+// ============================================================================
+// TIPI
+// ============================================================================
+
+/**
+ * Status zdravja
+ */
+export type HealthStatus = 'HEALTHY' | 'DEGRADED' | 'UNHEALTHY' | 'UNKNOWN';
+
+/**
+ * Tip varnostne komponente
+ */
+export type SecurityComponentType =
+    | 'authentication_service'
+    | 'authorization_service'
+    | 'encryption_service'
+    | 'key_management'
+    | 'certificate_authority'
+    | 'hsm'
+    | 'audit_service'
+    | 'threat_detection'
+    | 'firewall'
+    | 'intrusion_detection';
+
+/**
+ * Rezultat health checka
+ */
+export interface HealthCheckResult {
+    /** Ime komponente */
+    readonly componentName: string;
+    /** Tip komponente */
+    readonly componentType: SecurityComponentType;
+    /** Status */
+    readonly status: HealthStatus;
+    /** Sporocilo */
+    readonly message: string;
+    /** Cas preverjanja */
+    readonly timestamp: number;
+    /** Trajanje preverjanja v ms */
+    readonly duration: number;
+    /** Podrobnosti */
+    readonly details: Readonly<Record<string, unknown>>;
+    /** Kriticnost komponente */
+    readonly critical: boolean;
+}
+
+/**
+ * Agregirani health status
+ */
+export interface AggregatedHealthStatus {
+    /** Skupni status */
+    readonly overallStatus: HealthStatus;
+    /** Stevilo zdravih komponent */
+    readonly healthyCount: number;
+    /** Stevilo degradiranih komponent */
+    readonly degradedCount: number;
+    /** Stevilo nezdravih komponent */
+    readonly unhealthyCount: number;
+    /** Stevilo neznanih komponent */
+    readonly unknownCount: number;
+    /** Rezultati posameznih komponent */
+    readonly components: readonly HealthCheckResult[];
+    /** Cas preverjanja */
+    readonly timestamp: number;
+    /** Ali so vse kriticne komponente zdrave */
+    readonly criticalComponentsHealthy: boolean;
+}
+
+/**
+ * Konfiguracija health checka
+ */
+export interface SecurityHealthCheckConfig {
+    /** Ime storitve */
+    readonly service: string;
+    /** Interval preverjanja v ms */
+    readonly checkInterval: number;
+    /** Timeout za posamezno preverjanje v ms */
+    readonly checkTimeout: number;
+    /** Ali vkljuciti podrobnosti */
+    readonly includeDetails: boolean;
+    /** Endpoint za health check */
+    readonly endpoint: string;
+}
+
+/**
+ * Definicija health checka
+ */
+export interface HealthCheckDefinition {
+    /** Ime komponente */
+    readonly componentName: string;
+    /** Tip komponente */
+    readonly componentType: SecurityComponentType;
+    /** Funkcija za preverjanje */
+    readonly checkFn: () => Promise<HealthCheckResult>;
+    /** Ali je kriticna */
+    readonly critical: boolean;
+    /** Timeout v ms */
+    readonly timeout: number;
+}
+
+// ============================================================================
+// KONSTANTE
+// ============================================================================
+
+const DEFAULT_CONFIG: SecurityHealthCheckConfig = {
+    service: '{{IME_PROJEKTA}}',
+    checkInterval: 30000,
+    checkTimeout: 5000,
+    includeDetails: true,
+    endpoint: '/health',
+};
+
+// ============================================================================
+// STANJE
+// ============================================================================
+
+let currentConfig: SecurityHealthCheckConfig = DEFAULT_CONFIG;
+const healthChecks: Map<string, HealthCheckDefinition> = new Map();
+const lastResults: Map<string, HealthCheckResult> = new Map();
+let checkCounter = 0;
+
+// ============================================================================
+// FUNKCIJE
+// ============================================================================
+
+/**
+ * Nastavi konfiguracijo health checka
+ */
+export function configureHealthCheck(config: Partial<SecurityHealthCheckConfig>): void {
+    currentConfig = { ...currentConfig, ...config };
+}
+
+/**
+ * Registriraj health check
+ */
+export function registerHealthCheck(definition: HealthCheckDefinition): string {
+    checkCounter++;
+    const checkId = generateDeterministicId('health', checkCounter);
+    healthChecks.set(checkId, definition);
+    return checkId;
+}
+
+/**
+ * Odstrani health check
+ */
+export function unregisterHealthCheck(checkId: string): boolean {
+    lastResults.delete(checkId);
+    return healthChecks.delete(checkId);
+}
+
+/**
+ * Izvedi posamezen health check
+ */
+async function executeHealthCheck(
+    checkId: string,
+    definition: HealthCheckDefinition
+): Promise<HealthCheckResult> {
+    const startTime = clock.nowMs();
+    
+    try {
+        const timeoutPromise = new Promise<HealthCheckResult>((_, reject) => {
+            setTimeout(() => reject(new Error('Health check timeout')), definition.timeout);
+        });
+        
+        const checkPromise = definition.checkFn();
+        const result = await Promise.race([checkPromise, timeoutPromise]);
+        
+        lastResults.set(checkId, result);
+        return result;
+        
+    } catch (error) {
+        const result: HealthCheckResult = {
+            componentName: definition.componentName,
+            componentType: definition.componentType,
+            status: 'UNHEALTHY',
+            message: error instanceof Error ? error.message : 'Unknown error',
+            timestamp: clock.nowMs(),
+            duration: clock.nowMs() - startTime,
+            details: {},
+            critical: definition.critical,
+        };
+        
+        lastResults.set(checkId, result);
+        return result;
+    }
+}
+
+/**
+ * Izvedi vse health checke
+ */
+export async function executeAllHealthChecks(): Promise<AggregatedHealthStatus> {
+    const results: HealthCheckResult[] = [];
+    
+    for (const [checkId, definition] of healthChecks) {
+        const result = await executeHealthCheck(checkId, definition);
+        results.push(result);
+    }
+    
+    let healthyCount = 0;
+    let degradedCount = 0;
+    let unhealthyCount = 0;
+    let unknownCount = 0;
+    let criticalUnhealthy = false;
+    
+    for (const result of results) {
+        switch (result.status) {
+            case 'HEALTHY':
+                healthyCount++;
+                break;
+            case 'DEGRADED':
+                degradedCount++;
+                break;
+            case 'UNHEALTHY':
+                unhealthyCount++;
+                if (result.critical) {
+                    criticalUnhealthy = true;
+                }
+                break;
+            case 'UNKNOWN':
+                unknownCount++;
+                break;
+        }
+    }
+    
+    let overallStatus: HealthStatus;
+    if (criticalUnhealthy || unhealthyCount > 0) {
+        overallStatus = 'UNHEALTHY';
+    } else if (degradedCount > 0 || unknownCount > 0) {
+        overallStatus = 'DEGRADED';
+    } else {
+        overallStatus = 'HEALTHY';
+    }
+    
+    return {
+        overallStatus,
+        healthyCount,
+        degradedCount,
+        unhealthyCount,
+        unknownCount,
+        components: results,
+        timestamp: clock.nowMs(),
+        criticalComponentsHealthy: !criticalUnhealthy,
+    };
+}
+
+/**
+ * Pridobi zadnji rezultat za komponento
+ */
+export function getLastResult(checkId: string): HealthCheckResult | null {
+    return lastResults.get(checkId) || null;
+}
+
+/**
+ * Pridobi vse zadnje rezultate
+ */
+export function getAllLastResults(): readonly HealthCheckResult[] {
+    return Array.from(lastResults.values());
+}
+
+// ============================================================================
+// VARNOSTNO SPECIFICNI HEALTH CHECKI
+// ============================================================================
+
+/**
+ * Ustvari health check za avtentikacijsko storitev
+ */
+export function createAuthenticationServiceCheck(
+    checkFn: () => Promise<boolean>
+): HealthCheckDefinition {
+    return {
+        componentName: 'Authentication Service',
+        componentType: 'authentication_service',
+        critical: true,
+        timeout: currentConfig.checkTimeout,
+        checkFn: async (): Promise<HealthCheckResult> => {
+            const startTime = clock.nowMs();
+            try {
+                const healthy = await checkFn();
+                return {
+                    componentName: 'Authentication Service',
+                    componentType: 'authentication_service',
+                    status: healthy ? 'HEALTHY' : 'UNHEALTHY',
+                    message: healthy ? 'Avtentikacijska storitev deluje' : 'Avtentikacijska storitev ne deluje',
+                    timestamp: clock.nowMs(),
+                    duration: clock.nowMs() - startTime,
+                    details: {},
+                    critical: true,
+                };
+            } catch (error) {
+                return {
+                    componentName: 'Authentication Service',
+                    componentType: 'authentication_service',
+                    status: 'UNHEALTHY',
+                    message: error instanceof Error ? error.message : 'Unknown error',
+                    timestamp: clock.nowMs(),
+                    duration: clock.nowMs() - startTime,
+                    details: {},
+                    critical: true,
+                };
+            }
+        },
+    };
+}
+
+/**
+ * Ustvari health check za HSM
+ */
+export function createHSMCheck(
+    checkFn: () => Promise<{ connected: boolean; keyCount: number }>
+): HealthCheckDefinition {
+    return {
+        componentName: 'Hardware Security Module',
+        componentType: 'hsm',
+        critical: true,
+        timeout: currentConfig.checkTimeout,
+        checkFn: async (): Promise<HealthCheckResult> => {
+            const startTime = clock.nowMs();
+            try {
+                const result = await checkFn();
+                return {
+                    componentName: 'Hardware Security Module',
+                    componentType: 'hsm',
+                    status: result.connected ? 'HEALTHY' : 'UNHEALTHY',
+                    message: result.connected ? 'HSM povezan' : 'HSM ni povezan',
+                    timestamp: clock.nowMs(),
+                    duration: clock.nowMs() - startTime,
+                    details: currentConfig.includeDetails ? { keyCount: result.keyCount } : {},
+                    critical: true,
+                };
+            } catch (error) {
+                return {
+                    componentName: 'Hardware Security Module',
+                    componentType: 'hsm',
+                    status: 'UNHEALTHY',
+                    message: error instanceof Error ? error.message : 'Unknown error',
+                    timestamp: clock.nowMs(),
+                    duration: clock.nowMs() - startTime,
+                    details: {},
+                    critical: true,
+                };
+            }
+        },
+    };
+}
+
+/**
+ * Ustvari health check za certifikate
+ */
+export function createCertificateCheck(
+    checkFn: () => Promise<{ valid: boolean; expiresIn: number }>
+): HealthCheckDefinition {
+    return {
+        componentName: 'Certificate Validation',
+        componentType: 'certificate_authority',
+        critical: true,
+        timeout: currentConfig.checkTimeout,
+        checkFn: async (): Promise<HealthCheckResult> => {
+            const startTime = clock.nowMs();
+            try {
+                const result = await checkFn();
+                const daysUntilExpiry = result.expiresIn / (24 * 60 * 60 * 1000);
+                
+                let status: HealthStatus;
+                let message: string;
+                
+                if (!result.valid) {
+                    status = 'UNHEALTHY';
+                    message = 'Certifikat ni veljaven';
+                } else if (daysUntilExpiry < 7) {
+                    status = 'DEGRADED';
+                    message = `Certifikat potece cez ${Math.floor(daysUntilExpiry)} dni`;
+                } else {
+                    status = 'HEALTHY';
+                    message = 'Certifikat je veljaven';
+                }
+                
+                return {
+                    componentName: 'Certificate Validation',
+                    componentType: 'certificate_authority',
+                    status,
+                    message,
+                    timestamp: clock.nowMs(),
+                    duration: clock.nowMs() - startTime,
+                    details: currentConfig.includeDetails ? { daysUntilExpiry: Math.floor(daysUntilExpiry) } : {},
+                    critical: true,
+                };
+            } catch (error) {
+                return {
+                    componentName: 'Certificate Validation',
+                    componentType: 'certificate_authority',
+                    status: 'UNHEALTHY',
+                    message: error instanceof Error ? error.message : 'Unknown error',
+                    timestamp: clock.nowMs(),
+                    duration: clock.nowMs() - startTime,
+                    details: {},
+                    critical: true,
+                };
+            }
+        },
+    };
+}
+
+/**
+ * Ustvari health check za firewall
+ */
+export function createFirewallCheck(
+    checkFn: () => Promise<{ active: boolean; rulesCount: number }>
+): HealthCheckDefinition {
+    return {
+        componentName: 'Firewall',
+        componentType: 'firewall',
+        critical: true,
+        timeout: currentConfig.checkTimeout,
+        checkFn: async (): Promise<HealthCheckResult> => {
+            const startTime = clock.nowMs();
+            try {
+                const result = await checkFn();
+                return {
+                    componentName: 'Firewall',
+                    componentType: 'firewall',
+                    status: result.active ? 'HEALTHY' : 'UNHEALTHY',
+                    message: result.active ? 'Firewall aktiven' : 'Firewall ni aktiven',
+                    timestamp: clock.nowMs(),
+                    duration: clock.nowMs() - startTime,
+                    details: currentConfig.includeDetails ? { rulesCount: result.rulesCount } : {},
+                    critical: true,
+                };
+            } catch (error) {
+                return {
+                    componentName: 'Firewall',
+                    componentType: 'firewall',
+                    status: 'UNHEALTHY',
+                    message: error instanceof Error ? error.message : 'Unknown error',
+                    timestamp: clock.nowMs(),
+                    duration: clock.nowMs() - startTime,
+                    details: {},
+                    critical: true,
+                };
+            }
+        },
+    };
+}
+
+/**
+ * Ustvari health check za IDS
+ */
+export function createIDSCheck(
+    checkFn: () => Promise<{ running: boolean; signaturesLoaded: number }>
+): HealthCheckDefinition {
+    return {
+        componentName: 'Intrusion Detection System',
+        componentType: 'intrusion_detection',
+        critical: true,
+        timeout: currentConfig.checkTimeout,
+        checkFn: async (): Promise<HealthCheckResult> => {
+            const startTime = clock.nowMs();
+            try {
+                const result = await checkFn();
+                return {
+                    componentName: 'Intrusion Detection System',
+                    componentType: 'intrusion_detection',
+                    status: result.running ? 'HEALTHY' : 'UNHEALTHY',
+                    message: result.running ? 'IDS deluje' : 'IDS ne deluje',
+                    timestamp: clock.nowMs(),
+                    duration: clock.nowMs() - startTime,
+                    details: currentConfig.includeDetails ? { signaturesLoaded: result.signaturesLoaded } : {},
+                    critical: true,
+                };
+            } catch (error) {
+                return {
+                    componentName: 'Intrusion Detection System',
+                    componentType: 'intrusion_detection',
+                    status: 'UNHEALTHY',
+                    message: error instanceof Error ? error.message : 'Unknown error',
+                    timestamp: clock.nowMs(),
+                    duration: clock.nowMs() - startTime,
+                    details: {},
+                    critical: true,
+                };
+            }
+        },
+    };
+}
+
+/**
+ * Ponastavi health check stanje
+ */
+export function resetHealthChecks(): void {
+    healthChecks.clear();
+    lastResults.clear();
+    checkCounter = 0;
+}
+
+// ============================================================================
+// IZVOZ
+// ============================================================================
+
+export const SecurityHealthCheck = {
+    configure: configureHealthCheck,
+    register: registerHealthCheck,
+    unregister: unregisterHealthCheck,
+    executeAll: executeAllHealthChecks,
+    getLastResult,
+    getAllLastResults,
+    createAuthenticationServiceCheck,
+    createHSMCheck,
+    createCertificateCheck,
+    createFirewallCheck,
+    createIDSCheck,
+    reset: resetHealthChecks,
+};

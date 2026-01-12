@@ -1,0 +1,171 @@
+{
+  "$schema": "https://{{ORGANIZACIJA_DOMENA}}/schemas/tls-config.json",
+  "metadata": {
+    "projectName": "{{IME_PROJEKTA}}",
+    "version": "{{VERZIJA}}",
+    "domain": "{{DOMENA_SL}}",
+    "generatedAt": "{{DATUM}}"
+  },
+  "tls": {
+    "enabled": true,
+    "minVersion": "TLSv1.3",
+    "maxVersion": "TLSv1.3",
+    "preferServerCipherSuites": true
+  },
+  "cipherSuites": {
+    "tls13": [
+      "TLS_AES_256_GCM_SHA384",
+      "TLS_CHACHA20_POLY1305_SHA256",
+      "TLS_AES_128_GCM_SHA256"
+    ],
+    "tls12": [
+      "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384",
+      "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256",
+      "TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384",
+      "TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256"
+    ],
+    "blocked": [
+      "TLS_RSA_WITH_AES_256_CBC_SHA256",
+      "TLS_RSA_WITH_AES_128_CBC_SHA256",
+      "TLS_RSA_WITH_AES_256_CBC_SHA",
+      "TLS_RSA_WITH_AES_128_CBC_SHA",
+      "TLS_RSA_WITH_3DES_EDE_CBC_SHA"
+    ]
+  },
+  "curves": {
+    "allowed": [
+      "X25519",
+      "P-384",
+      "P-256"
+    ],
+    "preferred": "X25519"
+  },
+  "certificates": {
+    "server": {
+      "certFile": "/etc/ssl/certs/{{IME_PROJEKTA_SLUG}}.crt",
+      "keyFile": "/etc/ssl/private/{{IME_PROJEKTA_SLUG}}.key",
+      "caFile": "/etc/ssl/certs/ca-bundle.crt",
+      "keyType": "ECDSA",
+      "keySize": 384,
+      "signatureAlgorithm": "SHA384withECDSA",
+      "validityDays": 365,
+      "renewBeforeDays": 30
+    },
+    "client": {
+      "required": true,
+      "caFile": "/etc/ssl/certs/client-ca.crt",
+      "verifyDepth": 3,
+      "crlFile": "/etc/ssl/crl/client-crl.pem",
+      "ocspEnabled": true
+    }
+  },
+  "mtls": {
+    "enabled": true,
+    "clientCertRequired": true,
+    "allowedCNs": [
+      "*.{{ORGANIZACIJA_DOMENA}}",
+      "service-*.internal.{{ORGANIZACIJA_DOMENA}}"
+    ],
+    "allowedOUs": [
+      "Security Services",
+      "Internal Services"
+    ]
+  },
+  "ocsp": {
+    "enabled": true,
+    "stapling": true,
+    "responderUrl": "http://ocsp.{{ORGANIZACIJA_DOMENA}}",
+    "cacheTime": 3600,
+    "softFail": false
+  },
+  "crl": {
+    "enabled": true,
+    "distributionPoints": [
+      "http://crl.{{ORGANIZACIJA_DOMENA}}/{{IME_PROJEKTA_SLUG}}.crl"
+    ],
+    "updateInterval": 3600,
+    "cacheTime": 86400
+  },
+  "hsts": {
+    "enabled": true,
+    "maxAge": 31536000,
+    "includeSubDomains": true,
+    "preload": true
+  },
+  "pinning": {
+    "enabled": true,
+    "pins": [
+      {
+        "algorithm": "sha256",
+        "value": "{{PRIMARY_PIN_HASH}}"
+      },
+      {
+        "algorithm": "sha256",
+        "value": "{{BACKUP_PIN_HASH}}"
+      }
+    ],
+    "maxAge": 5184000,
+    "includeSubDomains": true,
+    "reportUri": "https://{{ORGANIZACIJA_DOMENA}}/hpkp-report"
+  },
+  "sessionTickets": {
+    "enabled": false,
+    "rotationInterval": 3600
+  },
+  "sessionCache": {
+    "enabled": true,
+    "size": 20480,
+    "timeout": 300
+  },
+  "alpn": {
+    "protocols": ["h2", "http/1.1"]
+  },
+  "sni": {
+    "enabled": true,
+    "strictMode": true
+  },
+  "renegotiation": {
+    "enabled": false,
+    "clientInitiated": false
+  },
+  "compression": {
+    "enabled": false
+  },
+  "monitoring": {
+    "certificateExpiry": {
+      "enabled": true,
+      "warningDays": 30,
+      "criticalDays": 7
+    },
+    "handshakeMetrics": {
+      "enabled": true,
+      "histogram": true
+    },
+    "errorLogging": {
+      "enabled": true,
+      "level": "warn"
+    }
+  },
+  "compliance": {
+    "pciDss": {
+      "enabled": true,
+      "version": "4.0"
+    },
+    "fips": {
+      "enabled": false,
+      "mode": "140-2"
+    },
+    "nist": {
+      "enabled": true,
+      "guidelines": "SP800-52r2"
+    }
+  },
+  "hardening": {
+    "disableWeakCiphers": true,
+    "disableCompression": true,
+    "disableRenegotiation": true,
+    "disableSessionTickets": true,
+    "enforceStrictSNI": true,
+    "requirePFS": true
+  }
+}

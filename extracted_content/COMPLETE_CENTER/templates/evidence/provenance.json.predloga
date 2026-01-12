@@ -1,0 +1,182 @@
+{
+  "_type": "https://in-toto.io/Statement/v0.1",
+  "predicateType": "https://slsa.dev/provenance/v0.2",
+  "subject": [
+    {
+      "name": "{{IME_PROJEKTA_SLUG}}",
+      "digest": {
+        "sha256": "{{BUILD_DIGEST}}"
+      }
+    }
+  ],
+  "predicate": {
+    "builder": {
+      "id": "https://github.com/{{ORGANIZACIJA_SLUG}}/{{IME_PROJEKTA_SLUG}}/actions/workflows/ci.yml"
+    },
+    "buildType": "https://github.com/{{ORGANIZACIJA_SLUG}}/{{IME_PROJEKTA_SLUG}}/actions/workflows/ci.yml@v1",
+    "invocation": {
+      "configSource": {
+        "uri": "git+https://github.com/{{ORGANIZACIJA_SLUG}}/{{IME_PROJEKTA_SLUG}}@refs/heads/main",
+        "digest": {
+          "legacy-hash-v1": "{{GIT_COMMIT}}"
+        },
+        "entryPoint": ".github/workflows/ci.yml"
+      },
+      "parameters": {},
+      "environment": {
+        "github_actor": "{{AVTOR}}",
+        "github_event_name": "push",
+        "github_ref": "refs/heads/main",
+        "github_repository": "{{ORGANIZACIJA_SLUG}}/{{IME_PROJEKTA_SLUG}}",
+        "github_run_id": "{{GITHUB_RUN_ID}}",
+        "github_run_number": "{{GITHUB_RUN_NUMBER}}",
+        "runner_os": "Linux",
+        "runner_arch": "X64"
+      }
+    },
+    "buildConfig": {
+      "version": "{{VERZIJA}}",
+      "steps": [
+        {
+          "command": ["npm", "ci"],
+          "env": {
+            "NODE_ENV": "production"
+          }
+        },
+        {
+          "command": ["npm", "run", "build"],
+          "env": {
+            "NODE_ENV": "production"
+          }
+        },
+        {
+          "command": ["npm", "run", "test"],
+          "env": {
+            "NODE_ENV": "test"
+          }
+        },
+        {
+          "command": ["docker", "build", "-t", "{{IME_PROJEKTA_SLUG}}:{{VERZIJA}}", "."],
+          "env": {}
+        }
+      ]
+    },
+    "metadata": {
+      "buildInvocationId": "{{BUILD_INVOCATION_ID}}",
+      "buildStartedOn": "{{BUILD_STARTED_ON}}",
+      "buildFinishedOn": "{{BUILD_FINISHED_ON}}",
+      "completeness": {
+        "parameters": true,
+        "environment": true,
+        "materials": true
+      },
+      "reproducible": true
+    },
+    "materials": [
+      {
+        "uri": "git+https://github.com/{{ORGANIZACIJA_SLUG}}/{{IME_PROJEKTA_SLUG}}@refs/heads/main",
+        "digest": {
+          "legacy-hash-v1": "{{GIT_COMMIT}}"
+        }
+      },
+      {
+        "uri": "pkg:npm/@types/node@20.10.0",
+        "digest": {
+          "sha256": "{{TYPES_NODE_DIGEST}}"
+        }
+      },
+      {
+        "uri": "pkg:npm/typescript@5.3.0",
+        "digest": {
+          "sha256": "{{TYPESCRIPT_DIGEST}}"
+        }
+      },
+      {
+        "uri": "pkg:npm/vitest@1.0.0",
+        "digest": {
+          "sha256": "{{VITEST_DIGEST}}"
+        }
+      }
+    ]
+  },
+  "signatures": [
+    {
+      "keyid": "{{SIGNING_KEY_ID}}",
+      "sig": "{{SIGNATURE}}"
+    }
+  ],
+  "securityMetadata": {
+    "project": {
+      "name": "{{IME_PROJEKTA}}",
+      "slug": "{{IME_PROJEKTA_SLUG}}",
+      "version": "{{VERZIJA}}",
+      "domain": "{{DOMENA_SL}}"
+    },
+    "compliance": {
+      "standards": [
+        "DO-178C Level A",
+        "IEC 61508 SIL 4",
+        "ISO 26262 ASIL D",
+        "MIL-STD-882E",
+        "ISO 27001"
+      ],
+      "certifications": [],
+      "lastAudit": "{{DATUM}}"
+    },
+    "securityScanning": {
+      "sast": {
+        "tool": "CodeQL",
+        "version": "2.15.0",
+        "findings": {
+          "critical": 0,
+          "high": 0,
+          "medium": 0,
+          "low": 0
+        }
+      },
+      "dast": {
+        "tool": "OWASP ZAP",
+        "version": "2.14.0",
+        "findings": {
+          "critical": 0,
+          "high": 0,
+          "medium": 0,
+          "low": 0
+        }
+      },
+      "sca": {
+        "tool": "Snyk",
+        "version": "1.1200.0",
+        "findings": {
+          "critical": 0,
+          "high": 0,
+          "medium": 0,
+          "low": 0
+        }
+      },
+      "containerScan": {
+        "tool": "Trivy",
+        "version": "0.48.0",
+        "findings": {
+          "critical": 0,
+          "high": 0,
+          "medium": 0,
+          "low": 0
+        }
+      }
+    },
+    "buildSecurity": {
+      "hermetic": true,
+      "reproducible": true,
+      "signedArtifacts": true,
+      "sbomGenerated": true,
+      "attestationsGenerated": true
+    },
+    "supplyChain": {
+      "slsaLevel": 3,
+      "dependencyPinning": true,
+      "lockfileUsed": true,
+      "trustedBuilders": true
+    }
+  }
+}

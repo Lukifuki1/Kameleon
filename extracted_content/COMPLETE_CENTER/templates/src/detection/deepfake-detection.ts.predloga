@@ -1,0 +1,1466 @@
+/**
+ * @file Deepfake Detection - Self-Contained Synthetic Media Analysis Platform
+ * @author {{AVTOR}}
+ * @version {{VERZIJA}}
+ * @date {{DATUM}}
+ * @project {{IME_PROJEKTA}}
+ * @domain VARNOSTNI_SISTEMI
+ * 
+ * @requirement REQ-SEC-DFD-001
+ * @design DSN-SEC-DFD-001
+ * @test TST-SEC-DFD-001
+ * 
+ * @description
+ * Enterprise-grade self-contained deepfake detection platform implementing
+ * comprehensive analysis of synthetic media including video, audio, and
+ * images. Detects face swaps, voice cloning, GAN artifacts, and manipulation
+ * signatures. All algorithms and models are natively implemented without
+ * external dependencies.
+ * 
+ * @classification TOP SECRET - Media Forensics Operations
+ * @authorization Required: Level 5 Security Clearance
+ * @dependencies NONE - Fully self-contained implementation
+ */
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// DEEPFAKE DETECTION TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export type MediaType =
+  | 'VIDEO'
+  | 'AUDIO'
+  | 'IMAGE'
+  | 'DOCUMENT'
+  | 'LIVE_STREAM';
+
+export type DeepfakeType =
+  | 'FACE_SWAP'
+  | 'FACE_REENACTMENT'
+  | 'FACE_MORPHING'
+  | 'LIP_SYNC'
+  | 'FULL_BODY_PUPPET'
+  | 'VOICE_CLONING'
+  | 'VOICE_CONVERSION'
+  | 'TEXT_TO_SPEECH'
+  | 'AUDIO_SPLICING'
+  | 'IMAGE_GENERATION'
+  | 'IMAGE_MANIPULATION'
+  | 'STYLE_TRANSFER'
+  | 'SUPER_RESOLUTION'
+  | 'INPAINTING'
+  | 'UNKNOWN';
+
+export type GenerationMethod =
+  | 'GAN'
+  | 'VAE'
+  | 'DIFFUSION'
+  | 'AUTOENCODER'
+  | 'TRANSFORMER'
+  | 'NEURAL_RADIANCE'
+  | 'TRADITIONAL'
+  | 'HYBRID'
+  | 'UNKNOWN';
+
+export type DetectionMethod =
+  | 'FREQUENCY_ANALYSIS'
+  | 'SPATIAL_ANALYSIS'
+  | 'TEMPORAL_ANALYSIS'
+  | 'BIOLOGICAL_SIGNALS'
+  | 'COMPRESSION_ARTIFACTS'
+  | 'GAN_FINGERPRINTS'
+  | 'FACIAL_LANDMARKS'
+  | 'AUDIO_SPECTRAL'
+  | 'PHONEME_ANALYSIS'
+  | 'METADATA_ANALYSIS'
+  | 'PROVENANCE_VERIFICATION'
+  | 'ENSEMBLE';
+
+export type ConfidenceLevel =
+  | 'DEFINITIVE'
+  | 'HIGH'
+  | 'MEDIUM'
+  | 'LOW'
+  | 'INCONCLUSIVE';
+
+export type AuthenticityStatus =
+  | 'AUTHENTIC'
+  | 'MANIPULATED'
+  | 'SYNTHETIC'
+  | 'PARTIALLY_MANIPULATED'
+  | 'UNKNOWN';
+
+export type AnalysisMode =
+  | 'QUICK'
+  | 'STANDARD'
+  | 'DEEP'
+  | 'FORENSIC'
+  | 'REAL_TIME';
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// DEEPFAKE DETECTION CONFIGURATION
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface DeepfakeDetectionConfig {
+  readonly platformId: string;
+  readonly name: string;
+  readonly version: string;
+  readonly mode: AnalysisMode;
+  readonly video: VideoAnalysisConfig;
+  readonly audio: AudioAnalysisConfig;
+  readonly image: ImageAnalysisConfig;
+  readonly ensemble: EnsembleConfig;
+  readonly provenance: ProvenanceConfig;
+  readonly reporting: ReportingConfig;
+  readonly storage: StorageConfig;
+  readonly performance: PerformanceConfig;
+  readonly security: SecurityConfig;
+  readonly metadata: PlatformMetadata;
+}
+
+export interface VideoAnalysisConfig {
+  readonly enabled: boolean;
+  readonly frameExtraction: FrameExtractionConfig;
+  readonly faceDetection: FaceDetectionConfig;
+  readonly faceAnalysis: FaceAnalysisConfig;
+  readonly temporalAnalysis: TemporalAnalysisConfig;
+  readonly compressionAnalysis: CompressionAnalysisConfig;
+  readonly biologicalSignals: BiologicalSignalsConfig;
+  readonly audioVideoSync: AudioVideoSyncConfig;
+}
+
+export interface FrameExtractionConfig {
+  readonly sampleRate: number;
+  readonly keyFramesOnly: boolean;
+  readonly maxFrames: number;
+  readonly resolution: ResolutionConfig;
+  readonly colorSpace: 'RGB' | 'BGR' | 'YUV' | 'LAB';
+}
+
+export interface ResolutionConfig {
+  readonly width: number;
+  readonly height: number;
+  readonly preserveAspectRatio: boolean;
+  readonly interpolation: 'NEAREST' | 'BILINEAR' | 'BICUBIC' | 'LANCZOS';
+}
+
+export interface FaceDetectionConfig {
+  readonly enabled: boolean;
+  readonly minFaceSize: number;
+  readonly maxFaces: number;
+  readonly confidenceThreshold: number;
+  readonly trackFaces: boolean;
+  readonly detectOcclusion: boolean;
+  readonly detectPose: boolean;
+}
+
+export interface FaceAnalysisConfig {
+  readonly enabled: boolean;
+  readonly landmarkDetection: LandmarkDetectionConfig;
+  readonly textureAnalysis: TextureAnalysisConfig;
+  readonly geometryAnalysis: GeometryAnalysisConfig;
+  readonly expressionAnalysis: ExpressionAnalysisConfig;
+  readonly identityVerification: IdentityVerificationConfig;
+}
+
+export interface LandmarkDetectionConfig {
+  readonly enabled: boolean;
+  readonly numLandmarks: 68 | 98 | 106 | 468;
+  readonly trackLandmarks: boolean;
+  readonly analyzeConsistency: boolean;
+}
+
+export interface TextureAnalysisConfig {
+  readonly enabled: boolean;
+  readonly analyzeBlending: boolean;
+  readonly analyzeNoise: boolean;
+  readonly analyzeSharpness: boolean;
+  readonly analyzeColorConsistency: boolean;
+  readonly analyzeSkinTexture: boolean;
+}
+
+export interface GeometryAnalysisConfig {
+  readonly enabled: boolean;
+  readonly analyze3DStructure: boolean;
+  readonly analyzeSymmetry: boolean;
+  readonly analyzeProportions: boolean;
+  readonly analyzePerspective: boolean;
+}
+
+export interface ExpressionAnalysisConfig {
+  readonly enabled: boolean;
+  readonly detectMicroExpressions: boolean;
+  readonly analyzeNaturalness: boolean;
+  readonly trackExpressionFlow: boolean;
+}
+
+export interface IdentityVerificationConfig {
+  readonly enabled: boolean;
+  readonly compareWithReference: boolean;
+  readonly referenceDatabase: string | null;
+  readonly similarityThreshold: number;
+}
+
+export interface TemporalAnalysisConfig {
+  readonly enabled: boolean;
+  readonly analyzeFlicker: boolean;
+  readonly analyzeJitter: boolean;
+  readonly analyzeMotionBlur: boolean;
+  readonly analyzeFrameConsistency: boolean;
+  readonly analyzeOpticalFlow: boolean;
+  readonly windowSize: number;
+}
+
+export interface CompressionAnalysisConfig {
+  readonly enabled: boolean;
+  readonly detectDoubleCompression: boolean;
+  readonly analyzeBlockArtifacts: boolean;
+  readonly analyzeQuantizationTables: boolean;
+  readonly detectReencoding: boolean;
+}
+
+export interface BiologicalSignalsConfig {
+  readonly enabled: boolean;
+  readonly detectBlinking: boolean;
+  readonly analyzeBlinkPattern: boolean;
+  readonly detectPulse: boolean;
+  readonly analyzePupilDilation: boolean;
+  readonly detectBreathing: boolean;
+  readonly analyzeGaze: boolean;
+}
+
+export interface AudioVideoSyncConfig {
+  readonly enabled: boolean;
+  readonly analyzeLipSync: boolean;
+  readonly analyzePhonemeAlignment: boolean;
+  readonly detectDesync: boolean;
+  readonly maxDesyncMs: number;
+}
+
+export interface AudioAnalysisConfig {
+  readonly enabled: boolean;
+  readonly preprocessing: AudioPreprocessingConfig;
+  readonly spectralAnalysis: SpectralAnalysisConfig;
+  readonly voiceAnalysis: VoiceAnalysisConfig;
+  readonly speechAnalysis: SpeechAnalysisConfig;
+  readonly environmentAnalysis: EnvironmentAnalysisConfig;
+  readonly compressionAnalysis: AudioCompressionConfig;
+}
+
+export interface AudioPreprocessingConfig {
+  readonly sampleRate: number;
+  readonly channels: 1 | 2;
+  readonly bitDepth: 16 | 24 | 32;
+  readonly normalize: boolean;
+  readonly removeNoise: boolean;
+  readonly removeSilence: boolean;
+}
+
+export interface SpectralAnalysisConfig {
+  readonly enabled: boolean;
+  readonly fftSize: number;
+  readonly hopLength: number;
+  readonly windowFunction: 'HANN' | 'HAMMING' | 'BLACKMAN' | 'KAISER';
+  readonly melBands: number;
+  readonly mfccCoefficients: number;
+  readonly analyzeHarmonics: boolean;
+  readonly analyzeFormants: boolean;
+}
+
+export interface VoiceAnalysisConfig {
+  readonly enabled: boolean;
+  readonly analyzePitch: boolean;
+  readonly analyzeTimbre: boolean;
+  readonly analyzeVocalTract: boolean;
+  readonly analyzeBreathiness: boolean;
+  readonly analyzeVibrato: boolean;
+  readonly detectVoiceCloning: boolean;
+  readonly detectVoiceConversion: boolean;
+}
+
+export interface SpeechAnalysisConfig {
+  readonly enabled: boolean;
+  readonly analyzeProsody: boolean;
+  readonly analyzeRhythm: boolean;
+  readonly analyzeIntonation: boolean;
+  readonly analyzePhonemes: boolean;
+  readonly detectSplicing: boolean;
+  readonly detectTTS: boolean;
+}
+
+export interface EnvironmentAnalysisConfig {
+  readonly enabled: boolean;
+  readonly analyzeRoomAcoustics: boolean;
+  readonly analyzeBackgroundNoise: boolean;
+  readonly detectInconsistencies: boolean;
+  readonly analyzeReverb: boolean;
+}
+
+export interface AudioCompressionConfig {
+  readonly enabled: boolean;
+  readonly detectCodec: boolean;
+  readonly analyzeArtifacts: boolean;
+  readonly detectReencoding: boolean;
+}
+
+export interface ImageAnalysisConfig {
+  readonly enabled: boolean;
+  readonly preprocessing: ImagePreprocessingConfig;
+  readonly frequencyAnalysis: FrequencyAnalysisConfig;
+  readonly noiseAnalysis: NoiseAnalysisConfig;
+  readonly compressionAnalysis: ImageCompressionConfig;
+  readonly ganFingerprints: GANFingerprintConfig;
+  readonly metadataAnalysis: MetadataAnalysisConfig;
+  readonly copyMoveDetection: CopyMoveDetectionConfig;
+  readonly splicingDetection: SplicingDetectionConfig;
+}
+
+export interface ImagePreprocessingConfig {
+  readonly resize: boolean;
+  readonly targetSize: readonly [number, number];
+  readonly normalize: boolean;
+  readonly colorSpace: 'RGB' | 'BGR' | 'YUV' | 'LAB' | 'HSV';
+}
+
+export interface FrequencyAnalysisConfig {
+  readonly enabled: boolean;
+  readonly analyzeDCT: boolean;
+  readonly analyzeDFT: boolean;
+  readonly analyzeWavelet: boolean;
+  readonly detectUpscaling: boolean;
+  readonly detectInterpolation: boolean;
+}
+
+export interface NoiseAnalysisConfig {
+  readonly enabled: boolean;
+  readonly analyzeNoisePattern: boolean;
+  readonly analyzeNoiseLevel: boolean;
+  readonly detectInconsistentNoise: boolean;
+  readonly analyzeSensorNoise: boolean;
+}
+
+export interface ImageCompressionConfig {
+  readonly enabled: boolean;
+  readonly detectJPEGArtifacts: boolean;
+  readonly analyzeQuantizationTables: boolean;
+  readonly detectDoubleCompression: boolean;
+  readonly analyzeBlockBoundaries: boolean;
+}
+
+export interface GANFingerprintConfig {
+  readonly enabled: boolean;
+  readonly detectGANArtifacts: boolean;
+  readonly identifyGANArchitecture: boolean;
+  readonly analyzeLatentSpace: boolean;
+  readonly detectCheckerboard: boolean;
+  readonly detectColorBleeding: boolean;
+}
+
+export interface MetadataAnalysisConfig {
+  readonly enabled: boolean;
+  readonly analyzeEXIF: boolean;
+  readonly analyzeXMP: boolean;
+  readonly analyzeIPTC: boolean;
+  readonly detectInconsistencies: boolean;
+  readonly verifyTimestamps: boolean;
+  readonly analyzeDeviceInfo: boolean;
+}
+
+export interface CopyMoveDetectionConfig {
+  readonly enabled: boolean;
+  readonly blockSize: number;
+  readonly overlapRatio: number;
+  readonly similarityThreshold: number;
+  readonly minMatchedBlocks: number;
+}
+
+export interface SplicingDetectionConfig {
+  readonly enabled: boolean;
+  readonly analyzeEdges: boolean;
+  readonly analyzeLighting: boolean;
+  readonly analyzeShadows: boolean;
+  readonly analyzeReflections: boolean;
+  readonly analyzePerspective: boolean;
+}
+
+export interface EnsembleConfig {
+  readonly enabled: boolean;
+  readonly methods: readonly DetectionMethod[];
+  readonly weights: Readonly<Record<DetectionMethod, number>>;
+  readonly aggregation: 'AVERAGE' | 'WEIGHTED' | 'VOTING' | 'STACKING';
+  readonly minMethods: number;
+  readonly confidenceThreshold: number;
+}
+
+export interface ProvenanceConfig {
+  readonly enabled: boolean;
+  readonly verifyC2PA: boolean;
+  readonly verifyCAI: boolean;
+  readonly verifyBlockchain: boolean;
+  readonly checkKnownSources: boolean;
+  readonly reverseImageSearch: boolean;
+}
+
+export interface ReportingConfig {
+  readonly enabled: boolean;
+  readonly format: 'JSON' | 'PDF' | 'HTML';
+  readonly includeEvidence: boolean;
+  readonly includeVisualization: boolean;
+  readonly includeTimeline: boolean;
+  readonly confidentialityLevel: 'PUBLIC' | 'INTERNAL' | 'CONFIDENTIAL' | 'SECRET';
+}
+
+export interface StorageConfig {
+  readonly type: 'FILESYSTEM' | 'DATABASE' | 'OBJECT_STORAGE';
+  readonly path: string;
+  readonly encryption: EncryptionConfig;
+  readonly retention: RetentionConfig;
+}
+
+export interface EncryptionConfig {
+  readonly enabled: boolean;
+  readonly algorithm: 'AES_256_GCM' | 'CHACHA20_POLY1305';
+  readonly keyManagement: 'LOCAL' | 'HSM' | 'KMS';
+}
+
+export interface RetentionConfig {
+  readonly enabled: boolean;
+  readonly maxAge: number;
+  readonly maxSize: number;
+  readonly archiveOld: boolean;
+}
+
+export interface PerformanceConfig {
+  readonly maxConcurrentAnalyses: number;
+  readonly gpuAcceleration: boolean;
+  readonly batchSize: number;
+  readonly timeout: number;
+  readonly cacheResults: boolean;
+}
+
+export interface SecurityConfig {
+  readonly authentication: AuthenticationConfig;
+  readonly authorization: AuthorizationConfig;
+  readonly audit: AuditConfig;
+}
+
+export interface AuthenticationConfig {
+  readonly enabled: boolean;
+  readonly methods: readonly ('API_KEY' | 'BEARER' | 'MTLS')[];
+  readonly sessionTimeout: number;
+}
+
+export interface AuthorizationConfig {
+  readonly enabled: boolean;
+  readonly model: 'RBAC' | 'ABAC';
+  readonly defaultRole: string;
+}
+
+export interface AuditConfig {
+  readonly enabled: boolean;
+  readonly logAccess: boolean;
+  readonly logAnalyses: boolean;
+  readonly retention: number;
+}
+
+export interface PlatformMetadata {
+  readonly createdAt: number;
+  readonly updatedAt: number;
+  readonly createdBy: string;
+  readonly version: string;
+  readonly tags: readonly string[];
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ANALYSIS RESULT TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface DeepfakeAnalysisResult {
+  readonly analysisId: string;
+  readonly mediaId: string;
+  readonly mediaType: MediaType;
+  readonly status: AuthenticityStatus;
+  readonly confidence: ConfidenceLevel;
+  readonly confidenceScore: number;
+  readonly deepfakeType: DeepfakeType | null;
+  readonly generationMethod: GenerationMethod | null;
+  readonly detectionResults: DetectionResults;
+  readonly evidence: readonly AnalysisEvidence[];
+  readonly timeline: readonly ManipulationTimeline[];
+  readonly provenance: ProvenanceResult | null;
+  readonly recommendations: readonly Recommendation[];
+  readonly metadata: AnalysisMetadata;
+}
+
+export interface DetectionResults {
+  readonly video: VideoAnalysisResult | null;
+  readonly audio: AudioAnalysisResult | null;
+  readonly image: ImageAnalysisResult | null;
+  readonly ensemble: EnsembleResult;
+}
+
+export interface VideoAnalysisResult {
+  readonly analysisId: string;
+  readonly duration: number;
+  readonly frameCount: number;
+  readonly fps: number;
+  readonly resolution: readonly [number, number];
+  readonly codec: string;
+  readonly overallScore: number;
+  readonly status: AuthenticityStatus;
+  readonly faceAnalysis: FaceAnalysisResult | null;
+  readonly temporalAnalysis: TemporalAnalysisResult;
+  readonly compressionAnalysis: CompressionAnalysisResult;
+  readonly biologicalSignals: BiologicalSignalsResult | null;
+  readonly audioVideoSync: AudioVideoSyncResult | null;
+  readonly frameResults: readonly FrameAnalysisResult[];
+  readonly anomalies: readonly VideoAnomaly[];
+}
+
+export interface FaceAnalysisResult {
+  readonly facesDetected: number;
+  readonly faceResults: readonly FaceResult[];
+  readonly consistencyScore: number;
+  readonly manipulationIndicators: readonly ManipulationIndicator[];
+}
+
+export interface FaceResult {
+  readonly faceId: string;
+  readonly trackId: string | null;
+  readonly boundingBox: BoundingBox;
+  readonly landmarks: readonly Landmark[];
+  readonly pose: FacePose;
+  readonly quality: FaceQuality;
+  readonly authenticity: FaceAuthenticity;
+  readonly identity: IdentityResult | null;
+}
+
+export interface BoundingBox {
+  readonly x: number;
+  readonly y: number;
+  readonly width: number;
+  readonly height: number;
+  readonly confidence: number;
+}
+
+export interface Landmark {
+  readonly name: string;
+  readonly x: number;
+  readonly y: number;
+  readonly confidence: number;
+}
+
+export interface FacePose {
+  readonly pitch: number;
+  readonly yaw: number;
+  readonly roll: number;
+}
+
+export interface FaceQuality {
+  readonly overallScore: number;
+  readonly sharpness: number;
+  readonly brightness: number;
+  readonly contrast: number;
+  readonly occlusion: number;
+}
+
+export interface FaceAuthenticity {
+  readonly score: number;
+  readonly status: AuthenticityStatus;
+  readonly textureScore: number;
+  readonly geometryScore: number;
+  readonly blendingScore: number;
+  readonly consistencyScore: number;
+  readonly indicators: readonly AuthenticityIndicator[];
+}
+
+export interface AuthenticityIndicator {
+  readonly indicatorId: string;
+  readonly type: IndicatorType;
+  readonly name: string;
+  readonly score: number;
+  readonly threshold: number;
+  readonly passed: boolean;
+  readonly description: string;
+  readonly location: IndicatorLocation | null;
+}
+
+export type IndicatorType =
+  | 'TEXTURE'
+  | 'GEOMETRY'
+  | 'BLENDING'
+  | 'TEMPORAL'
+  | 'BIOLOGICAL'
+  | 'COMPRESSION'
+  | 'FREQUENCY'
+  | 'NOISE'
+  | 'METADATA';
+
+export interface IndicatorLocation {
+  readonly frame: number | null;
+  readonly timestamp: number | null;
+  readonly region: BoundingBox | null;
+}
+
+export interface IdentityResult {
+  readonly matched: boolean;
+  readonly referenceId: string | null;
+  readonly similarity: number;
+  readonly confidence: number;
+}
+
+export interface ManipulationIndicator {
+  readonly indicatorId: string;
+  readonly type: ManipulationType;
+  readonly severity: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
+  readonly confidence: number;
+  readonly description: string;
+  readonly frames: readonly number[];
+  readonly regions: readonly BoundingBox[];
+}
+
+export type ManipulationType =
+  | 'FACE_SWAP'
+  | 'FACE_MORPH'
+  | 'EXPRESSION_TRANSFER'
+  | 'LIP_SYNC'
+  | 'TEXTURE_INCONSISTENCY'
+  | 'GEOMETRY_ANOMALY'
+  | 'BLENDING_ARTIFACT'
+  | 'TEMPORAL_INCONSISTENCY'
+  | 'BIOLOGICAL_ANOMALY';
+
+export interface TemporalAnalysisResult {
+  readonly consistencyScore: number;
+  readonly flickerDetected: boolean;
+  readonly flickerScore: number;
+  readonly jitterDetected: boolean;
+  readonly jitterScore: number;
+  readonly motionBlurConsistency: number;
+  readonly opticalFlowConsistency: number;
+  readonly anomalies: readonly TemporalAnomaly[];
+}
+
+export interface TemporalAnomaly {
+  readonly anomalyId: string;
+  readonly type: TemporalAnomalyType;
+  readonly startFrame: number;
+  readonly endFrame: number;
+  readonly severity: number;
+  readonly description: string;
+}
+
+export type TemporalAnomalyType =
+  | 'FLICKER'
+  | 'JITTER'
+  | 'MOTION_BLUR_INCONSISTENCY'
+  | 'FRAME_DROP'
+  | 'TEMPORAL_DISCONTINUITY'
+  | 'OPTICAL_FLOW_ANOMALY';
+
+export interface CompressionAnalysisResult {
+  readonly codec: string;
+  readonly bitrate: number;
+  readonly qualityScore: number;
+  readonly doubleCompressionDetected: boolean;
+  readonly doubleCompressionConfidence: number;
+  readonly blockArtifacts: BlockArtifactResult;
+  readonly quantizationAnalysis: QuantizationAnalysisResult;
+}
+
+export interface BlockArtifactResult {
+  readonly detected: boolean;
+  readonly score: number;
+  readonly inconsistentRegions: readonly BoundingBox[];
+}
+
+export interface QuantizationAnalysisResult {
+  readonly tables: readonly QuantizationTable[];
+  readonly inconsistencies: readonly QuantizationInconsistency[];
+}
+
+export interface QuantizationTable {
+  readonly tableId: number;
+  readonly values: readonly number[];
+  readonly quality: number;
+}
+
+export interface QuantizationInconsistency {
+  readonly type: string;
+  readonly description: string;
+  readonly confidence: number;
+}
+
+export interface BiologicalSignalsResult {
+  readonly blinkingAnalysis: BlinkingAnalysisResult;
+  readonly pulseAnalysis: PulseAnalysisResult | null;
+  readonly gazeAnalysis: GazeAnalysisResult | null;
+  readonly overallScore: number;
+  readonly anomalies: readonly BiologicalAnomaly[];
+}
+
+export interface BlinkingAnalysisResult {
+  readonly detected: boolean;
+  readonly blinkCount: number;
+  readonly blinkRate: number;
+  readonly averageBlinkDuration: number;
+  readonly naturalness: number;
+  readonly anomalies: readonly BlinkAnomaly[];
+}
+
+export interface BlinkAnomaly {
+  readonly frame: number;
+  readonly type: 'MISSING_BLINK' | 'UNNATURAL_BLINK' | 'ASYMMETRIC_BLINK';
+  readonly confidence: number;
+}
+
+export interface PulseAnalysisResult {
+  readonly detected: boolean;
+  readonly estimatedBPM: number;
+  readonly confidence: number;
+  readonly consistency: number;
+}
+
+export interface GazeAnalysisResult {
+  readonly tracked: boolean;
+  readonly naturalness: number;
+  readonly consistency: number;
+  readonly anomalies: readonly GazeAnomaly[];
+}
+
+export interface GazeAnomaly {
+  readonly frame: number;
+  readonly type: 'UNNATURAL_MOVEMENT' | 'INCONSISTENT_DIRECTION' | 'MISSING_TRACKING';
+  readonly confidence: number;
+}
+
+export interface BiologicalAnomaly {
+  readonly anomalyId: string;
+  readonly type: BiologicalAnomalyType;
+  readonly frame: number;
+  readonly confidence: number;
+  readonly description: string;
+}
+
+export type BiologicalAnomalyType =
+  | 'BLINK_ANOMALY'
+  | 'PULSE_ANOMALY'
+  | 'GAZE_ANOMALY'
+  | 'PUPIL_ANOMALY'
+  | 'BREATHING_ANOMALY';
+
+export interface AudioVideoSyncResult {
+  readonly inSync: boolean;
+  readonly averageOffset: number;
+  readonly maxOffset: number;
+  readonly lipSyncScore: number;
+  readonly phonemeAlignment: number;
+  readonly desyncRegions: readonly DesyncRegion[];
+}
+
+export interface DesyncRegion {
+  readonly startTime: number;
+  readonly endTime: number;
+  readonly offset: number;
+  readonly confidence: number;
+}
+
+export interface FrameAnalysisResult {
+  readonly frameNumber: number;
+  readonly timestamp: number;
+  readonly authenticityScore: number;
+  readonly faces: readonly FaceResult[];
+  readonly anomalies: readonly FrameAnomaly[];
+}
+
+export interface FrameAnomaly {
+  readonly type: string;
+  readonly severity: number;
+  readonly region: BoundingBox | null;
+  readonly description: string;
+}
+
+export interface VideoAnomaly {
+  readonly anomalyId: string;
+  readonly type: VideoAnomalyType;
+  readonly startFrame: number;
+  readonly endFrame: number;
+  readonly severity: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
+  readonly confidence: number;
+  readonly description: string;
+  readonly evidence: readonly string[];
+}
+
+export type VideoAnomalyType =
+  | 'FACE_MANIPULATION'
+  | 'TEMPORAL_INCONSISTENCY'
+  | 'COMPRESSION_ARTIFACT'
+  | 'BIOLOGICAL_ANOMALY'
+  | 'AUDIO_VIDEO_DESYNC'
+  | 'METADATA_INCONSISTENCY';
+
+export interface AudioAnalysisResult {
+  readonly analysisId: string;
+  readonly duration: number;
+  readonly sampleRate: number;
+  readonly channels: number;
+  readonly codec: string;
+  readonly overallScore: number;
+  readonly status: AuthenticityStatus;
+  readonly spectralAnalysis: SpectralAnalysisResult;
+  readonly voiceAnalysis: VoiceAnalysisResultData;
+  readonly speechAnalysis: SpeechAnalysisResultData;
+  readonly environmentAnalysis: EnvironmentAnalysisResult;
+  readonly compressionAnalysis: AudioCompressionResult;
+  readonly anomalies: readonly AudioAnomaly[];
+}
+
+export interface SpectralAnalysisResult {
+  readonly frequencyRange: readonly [number, number];
+  readonly dominantFrequencies: readonly number[];
+  readonly harmonicStructure: HarmonicStructure;
+  readonly formantAnalysis: FormantAnalysis;
+  readonly anomalies: readonly SpectralAnomaly[];
+}
+
+export interface HarmonicStructure {
+  readonly fundamental: number;
+  readonly harmonics: readonly number[];
+  readonly harmonicRatios: readonly number[];
+  readonly naturalness: number;
+}
+
+export interface FormantAnalysis {
+  readonly formants: readonly Formant[];
+  readonly consistency: number;
+  readonly naturalness: number;
+}
+
+export interface Formant {
+  readonly frequency: number;
+  readonly bandwidth: number;
+  readonly amplitude: number;
+}
+
+export interface SpectralAnomaly {
+  readonly anomalyId: string;
+  readonly type: SpectralAnomalyType;
+  readonly startTime: number;
+  readonly endTime: number;
+  readonly frequency: number;
+  readonly confidence: number;
+  readonly description: string;
+}
+
+export type SpectralAnomalyType =
+  | 'UNNATURAL_HARMONICS'
+  | 'MISSING_FREQUENCIES'
+  | 'ARTIFICIAL_PATTERNS'
+  | 'SPECTRAL_DISCONTINUITY'
+  | 'FORMANT_ANOMALY';
+
+export interface VoiceAnalysisResultData {
+  readonly speakerCount: number;
+  readonly speakers: readonly SpeakerResult[];
+  readonly voiceCloningDetected: boolean;
+  readonly voiceCloningConfidence: number;
+  readonly voiceConversionDetected: boolean;
+  readonly voiceConversionConfidence: number;
+}
+
+export interface SpeakerResult {
+  readonly speakerId: string;
+  readonly segments: readonly SpeakerSegment[];
+  readonly pitchAnalysis: PitchAnalysis;
+  readonly timbreAnalysis: TimbreAnalysis;
+  readonly naturalness: number;
+  readonly authenticity: number;
+}
+
+export interface SpeakerSegment {
+  readonly startTime: number;
+  readonly endTime: number;
+  readonly confidence: number;
+}
+
+export interface PitchAnalysis {
+  readonly meanPitch: number;
+  readonly pitchRange: readonly [number, number];
+  readonly pitchVariation: number;
+  readonly naturalness: number;
+}
+
+export interface TimbreAnalysis {
+  readonly brightness: number;
+  readonly warmth: number;
+  readonly roughness: number;
+  readonly breathiness: number;
+  readonly naturalness: number;
+}
+
+export interface SpeechAnalysisResultData {
+  readonly prosodyAnalysis: ProsodyAnalysis;
+  readonly rhythmAnalysis: RhythmAnalysis;
+  readonly phonemeAnalysis: PhonemeAnalysisResult;
+  readonly splicingDetected: boolean;
+  readonly splicingConfidence: number;
+  readonly ttsDetected: boolean;
+  readonly ttsConfidence: number;
+  readonly splicePoints: readonly SplicePoint[];
+}
+
+export interface ProsodyAnalysis {
+  readonly naturalness: number;
+  readonly consistency: number;
+  readonly emotionalContent: EmotionalContent;
+}
+
+export interface EmotionalContent {
+  readonly dominant: string;
+  readonly scores: Readonly<Record<string, number>>;
+}
+
+export interface RhythmAnalysis {
+  readonly tempo: number;
+  readonly regularity: number;
+  readonly naturalness: number;
+}
+
+export interface PhonemeAnalysisResult {
+  readonly phonemes: readonly PhonemeResult[];
+  readonly transitionNaturalness: number;
+  readonly coarticulationScore: number;
+}
+
+export interface PhonemeResult {
+  readonly phoneme: string;
+  readonly startTime: number;
+  readonly endTime: number;
+  readonly confidence: number;
+  readonly naturalness: number;
+}
+
+export interface SplicePoint {
+  readonly timestamp: number;
+  readonly confidence: number;
+  readonly type: 'CUT' | 'CROSSFADE' | 'OVERLAP';
+  readonly description: string;
+}
+
+export interface EnvironmentAnalysisResult {
+  readonly roomAcoustics: RoomAcousticsResult;
+  readonly backgroundNoise: BackgroundNoiseResult;
+  readonly consistency: number;
+  readonly anomalies: readonly EnvironmentAnomaly[];
+}
+
+export interface RoomAcousticsResult {
+  readonly reverbTime: number;
+  readonly roomSize: 'SMALL' | 'MEDIUM' | 'LARGE' | 'OUTDOOR';
+  readonly consistency: number;
+}
+
+export interface BackgroundNoiseResult {
+  readonly level: number;
+  readonly type: string;
+  readonly consistency: number;
+}
+
+export interface EnvironmentAnomaly {
+  readonly anomalyId: string;
+  readonly type: EnvironmentAnomalyType;
+  readonly startTime: number;
+  readonly endTime: number;
+  readonly confidence: number;
+  readonly description: string;
+}
+
+export type EnvironmentAnomalyType =
+  | 'REVERB_INCONSISTENCY'
+  | 'NOISE_INCONSISTENCY'
+  | 'ACOUSTIC_MISMATCH'
+  | 'ARTIFICIAL_ENVIRONMENT';
+
+export interface AudioCompressionResult {
+  readonly codec: string;
+  readonly bitrate: number;
+  readonly quality: number;
+  readonly reencodingDetected: boolean;
+  readonly reencodingConfidence: number;
+  readonly artifacts: readonly CompressionArtifact[];
+}
+
+export interface CompressionArtifact {
+  readonly type: string;
+  readonly startTime: number;
+  readonly endTime: number;
+  readonly severity: number;
+}
+
+export interface AudioAnomaly {
+  readonly anomalyId: string;
+  readonly type: AudioAnomalyType;
+  readonly startTime: number;
+  readonly endTime: number;
+  readonly severity: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
+  readonly confidence: number;
+  readonly description: string;
+  readonly evidence: readonly string[];
+}
+
+export type AudioAnomalyType =
+  | 'VOICE_CLONING'
+  | 'VOICE_CONVERSION'
+  | 'TTS_DETECTION'
+  | 'SPLICING'
+  | 'SPECTRAL_ANOMALY'
+  | 'ENVIRONMENT_INCONSISTENCY'
+  | 'COMPRESSION_ARTIFACT';
+
+export interface ImageAnalysisResult {
+  readonly analysisId: string;
+  readonly resolution: readonly [number, number];
+  readonly format: string;
+  readonly colorSpace: string;
+  readonly overallScore: number;
+  readonly status: AuthenticityStatus;
+  readonly frequencyAnalysis: FrequencyAnalysisResult;
+  readonly noiseAnalysis: NoiseAnalysisResult;
+  readonly compressionAnalysis: ImageCompressionResult;
+  readonly ganFingerprints: GANFingerprintResult;
+  readonly metadataAnalysis: MetadataAnalysisResult;
+  readonly copyMoveDetection: CopyMoveDetectionResult;
+  readonly splicingDetection: SplicingDetectionResult;
+  readonly faceAnalysis: FaceAnalysisResult | null;
+  readonly anomalies: readonly ImageAnomaly[];
+}
+
+export interface FrequencyAnalysisResult {
+  readonly dctAnalysis: DCTAnalysisResult;
+  readonly dftAnalysis: DFTAnalysisResult;
+  readonly waveletAnalysis: WaveletAnalysisResult | null;
+  readonly upscalingDetected: boolean;
+  readonly upscalingConfidence: number;
+  readonly interpolationDetected: boolean;
+  readonly interpolationType: string | null;
+}
+
+export interface DCTAnalysisResult {
+  readonly coefficients: readonly number[];
+  readonly anomalies: readonly FrequencyAnomaly[];
+}
+
+export interface DFTAnalysisResult {
+  readonly spectrum: readonly number[];
+  readonly anomalies: readonly FrequencyAnomaly[];
+}
+
+export interface WaveletAnalysisResult {
+  readonly coefficients: readonly number[];
+  readonly anomalies: readonly FrequencyAnomaly[];
+}
+
+export interface FrequencyAnomaly {
+  readonly type: string;
+  readonly frequency: number;
+  readonly magnitude: number;
+  readonly confidence: number;
+  readonly description: string;
+}
+
+export interface NoiseAnalysisResult {
+  readonly noiseLevel: number;
+  readonly noisePattern: NoisePattern;
+  readonly inconsistentRegions: readonly NoiseInconsistency[];
+  readonly sensorNoiseDetected: boolean;
+}
+
+export interface NoisePattern {
+  readonly type: 'GAUSSIAN' | 'UNIFORM' | 'POISSON' | 'SALT_PEPPER' | 'UNKNOWN';
+  readonly mean: number;
+  readonly variance: number;
+}
+
+export interface NoiseInconsistency {
+  readonly region: BoundingBox;
+  readonly expectedNoise: number;
+  readonly actualNoise: number;
+  readonly confidence: number;
+}
+
+export interface ImageCompressionResult {
+  readonly format: string;
+  readonly quality: number;
+  readonly doubleCompressionDetected: boolean;
+  readonly doubleCompressionConfidence: number;
+  readonly jpegArtifacts: JPEGArtifactResult;
+  readonly blockBoundaryAnalysis: BlockBoundaryResult;
+}
+
+export interface JPEGArtifactResult {
+  readonly detected: boolean;
+  readonly severity: number;
+  readonly regions: readonly BoundingBox[];
+}
+
+export interface BlockBoundaryResult {
+  readonly consistent: boolean;
+  readonly inconsistentRegions: readonly BoundingBox[];
+}
+
+export interface GANFingerprintResult {
+  readonly ganDetected: boolean;
+  readonly ganConfidence: number;
+  readonly architectureIdentified: string | null;
+  readonly architectureConfidence: number;
+  readonly artifacts: readonly GANArtifact[];
+}
+
+export interface GANArtifact {
+  readonly type: GANArtifactType;
+  readonly region: BoundingBox | null;
+  readonly confidence: number;
+  readonly description: string;
+}
+
+export type GANArtifactType =
+  | 'CHECKERBOARD'
+  | 'COLOR_BLEEDING'
+  | 'TEXTURE_REPETITION'
+  | 'BOUNDARY_ARTIFACT'
+  | 'LATENT_SPACE_ARTIFACT';
+
+export interface MetadataAnalysisResult {
+  readonly exif: EXIFAnalysisResult | null;
+  readonly xmp: XMPAnalysisResult | null;
+  readonly iptc: IPTCAnalysisResult | null;
+  readonly inconsistencies: readonly MetadataInconsistency[];
+  readonly tamperedMetadata: boolean;
+}
+
+export interface EXIFAnalysisResult {
+  readonly present: boolean;
+  readonly camera: string | null;
+  readonly lens: string | null;
+  readonly dateTime: number | null;
+  readonly gps: GPSData | null;
+  readonly software: string | null;
+  readonly anomalies: readonly string[];
+}
+
+export interface GPSData {
+  readonly latitude: number;
+  readonly longitude: number;
+  readonly altitude: number | null;
+}
+
+export interface XMPAnalysisResult {
+  readonly present: boolean;
+  readonly creator: string | null;
+  readonly createDate: number | null;
+  readonly modifyDate: number | null;
+  readonly history: readonly EditHistoryEntry[];
+  readonly anomalies: readonly string[];
+}
+
+export interface EditHistoryEntry {
+  readonly action: string;
+  readonly software: string;
+  readonly timestamp: number;
+}
+
+export interface IPTCAnalysisResult {
+  readonly present: boolean;
+  readonly headline: string | null;
+  readonly caption: string | null;
+  readonly copyright: string | null;
+  readonly anomalies: readonly string[];
+}
+
+export interface MetadataInconsistency {
+  readonly type: string;
+  readonly field: string;
+  readonly expected: string | null;
+  readonly actual: string | null;
+  readonly confidence: number;
+  readonly description: string;
+}
+
+export interface CopyMoveDetectionResult {
+  readonly detected: boolean;
+  readonly confidence: number;
+  readonly regions: readonly CopyMoveRegion[];
+}
+
+export interface CopyMoveRegion {
+  readonly source: BoundingBox;
+  readonly destination: BoundingBox;
+  readonly similarity: number;
+  readonly transformation: TransformationType;
+}
+
+export type TransformationType =
+  | 'NONE'
+  | 'ROTATION'
+  | 'SCALE'
+  | 'FLIP'
+  | 'COMBINED';
+
+export interface SplicingDetectionResult {
+  readonly detected: boolean;
+  readonly confidence: number;
+  readonly regions: readonly SplicingRegion[];
+}
+
+export interface SplicingRegion {
+  readonly region: BoundingBox;
+  readonly confidence: number;
+  readonly indicators: readonly SplicingIndicator[];
+}
+
+export interface SplicingIndicator {
+  readonly type: SplicingIndicatorType;
+  readonly confidence: number;
+  readonly description: string;
+}
+
+export type SplicingIndicatorType =
+  | 'EDGE_INCONSISTENCY'
+  | 'LIGHTING_MISMATCH'
+  | 'SHADOW_INCONSISTENCY'
+  | 'REFLECTION_MISMATCH'
+  | 'PERSPECTIVE_ERROR'
+  | 'NOISE_MISMATCH'
+  | 'COMPRESSION_MISMATCH';
+
+export interface ImageAnomaly {
+  readonly anomalyId: string;
+  readonly type: ImageAnomalyType;
+  readonly region: BoundingBox | null;
+  readonly severity: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
+  readonly confidence: number;
+  readonly description: string;
+  readonly evidence: readonly string[];
+}
+
+export type ImageAnomalyType =
+  | 'GAN_ARTIFACT'
+  | 'COPY_MOVE'
+  | 'SPLICING'
+  | 'FREQUENCY_ANOMALY'
+  | 'NOISE_INCONSISTENCY'
+  | 'COMPRESSION_ARTIFACT'
+  | 'METADATA_TAMPERING'
+  | 'FACE_MANIPULATION';
+
+export interface EnsembleResult {
+  readonly overallScore: number;
+  readonly status: AuthenticityStatus;
+  readonly confidence: ConfidenceLevel;
+  readonly methodResults: readonly MethodResult[];
+  readonly aggregatedIndicators: readonly AggregatedIndicator[];
+}
+
+export interface MethodResult {
+  readonly method: DetectionMethod;
+  readonly score: number;
+  readonly weight: number;
+  readonly contribution: number;
+  readonly status: AuthenticityStatus;
+}
+
+export interface AggregatedIndicator {
+  readonly type: string;
+  readonly score: number;
+  readonly sources: readonly string[];
+  readonly description: string;
+}
+
+export interface AnalysisEvidence {
+  readonly evidenceId: string;
+  readonly type: EvidenceType;
+  readonly title: string;
+  readonly description: string;
+  readonly data: string;
+  readonly visualization: string | null;
+  readonly timestamp: number;
+}
+
+export type EvidenceType =
+  | 'SCREENSHOT'
+  | 'HEATMAP'
+  | 'GRAPH'
+  | 'SPECTROGRAM'
+  | 'WAVEFORM'
+  | 'METADATA'
+  | 'COMPARISON';
+
+export interface ManipulationTimeline {
+  readonly eventId: string;
+  readonly timestamp: number;
+  readonly frame: number | null;
+  readonly type: string;
+  readonly description: string;
+  readonly confidence: number;
+  readonly region: BoundingBox | null;
+}
+
+export interface ProvenanceResult {
+  readonly verified: boolean;
+  readonly source: string | null;
+  readonly chain: readonly ProvenanceChainItem[];
+  readonly c2pa: C2PAResult | null;
+  readonly cai: CAIResult | null;
+  readonly blockchain: BlockchainProvenanceResult | null;
+}
+
+export interface ProvenanceChainItem {
+  readonly timestamp: number;
+  readonly action: string;
+  readonly actor: string | null;
+  readonly software: string | null;
+  readonly hash: string;
+}
+
+export interface C2PAResult {
+  readonly valid: boolean;
+  readonly manifest: Readonly<Record<string, unknown>>;
+  readonly claims: readonly C2PAClaim[];
+  readonly signatures: readonly C2PASignature[];
+}
+
+export interface C2PAClaim {
+  readonly claimId: string;
+  readonly type: string;
+  readonly value: unknown;
+  readonly verified: boolean;
+}
+
+export interface C2PASignature {
+  readonly signatureId: string;
+  readonly issuer: string;
+  readonly timestamp: number;
+  readonly valid: boolean;
+}
+
+export interface CAIResult {
+  readonly valid: boolean;
+  readonly assertions: readonly CAIAssertion[];
+}
+
+export interface CAIAssertion {
+  readonly assertionId: string;
+  readonly type: string;
+  readonly value: unknown;
+  readonly verified: boolean;
+}
+
+export interface BlockchainProvenanceResult {
+  readonly verified: boolean;
+  readonly network: string;
+  readonly transactionHash: string;
+  readonly blockNumber: number;
+  readonly timestamp: number;
+}
+
+export interface Recommendation {
+  readonly recommendationId: string;
+  readonly priority: 'IMMEDIATE' | 'HIGH' | 'MEDIUM' | 'LOW';
+  readonly category: string;
+  readonly title: string;
+  readonly description: string;
+  readonly actions: readonly string[];
+}
+
+export interface AnalysisMetadata {
+  readonly startTime: number;
+  readonly endTime: number;
+  readonly duration: number;
+  readonly platformVersion: string;
+  readonly analysisMode: AnalysisMode;
+  readonly methodsUsed: readonly DetectionMethod[];
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ANALYSIS SESSION TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface AnalysisSession {
+  readonly sessionId: string;
+  readonly platformId: string;
+  readonly state: SessionState;
+  readonly config: SessionConfig;
+  readonly progress: SessionProgress;
+  readonly results: readonly DeepfakeAnalysisResult[];
+  readonly errors: readonly SessionError[];
+  readonly startTime: number;
+  readonly endTime: number | null;
+  readonly metadata: SessionMetadata;
+}
+
+export type SessionState =
+  | 'PENDING'
+  | 'INITIALIZING'
+  | 'PROCESSING'
+  | 'ANALYZING'
+  | 'COMPLETED'
+  | 'FAILED'
+  | 'CANCELLED';
+
+export interface SessionConfig {
+  readonly mediaFiles: readonly MediaFile[];
+  readonly analysisMode: AnalysisMode;
+  readonly options: Readonly<Record<string, unknown>>;
+}
+
+export interface MediaFile {
+  readonly fileId: string;
+  readonly filename: string;
+  readonly path: string;
+  readonly type: MediaType;
+  readonly size: number;
+  readonly hash: string;
+}
+
+export interface SessionProgress {
+  readonly phase: SessionPhase;
+  readonly percentage: number;
+  readonly filesTotal: number;
+  readonly filesProcessed: number;
+  readonly currentFile: string | null;
+  readonly estimatedTimeRemaining: number | null;
+}
+
+export type SessionPhase =
+  | 'INITIALIZING'
+  | 'PREPROCESSING'
+  | 'ANALYZING_VIDEO'
+  | 'ANALYZING_AUDIO'
+  | 'ANALYZING_IMAGE'
+  | 'ENSEMBLE_ANALYSIS'
+  | 'GENERATING_REPORT'
+  | 'FINALIZING';
+
+export interface SessionError {
+  readonly errorId: string;
+  readonly timestamp: number;
+  readonly type: SessionErrorType;
+  readonly fileId: string | null;
+  readonly message: string;
+  readonly details: string | null;
+  readonly recoverable: boolean;
+}
+
+export type SessionErrorType =
+  | 'FILE_ERROR'
+  | 'PROCESSING_ERROR'
+  | 'ANALYSIS_ERROR'
+  | 'TIMEOUT'
+  | 'RESOURCE_ERROR'
+  | 'INTERNAL_ERROR';
+
+export interface SessionMetadata {
+  readonly platformVersion: string;
+  readonly startedBy: string;
+  readonly environment: string;
+  readonly tags: readonly string[];
+}

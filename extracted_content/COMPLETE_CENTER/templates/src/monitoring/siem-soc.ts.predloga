@@ -1,0 +1,1623 @@
+/**
+ * @file SIEM/SOC - Security Information and Event Management & Security Operations Center
+ * @author {{AVTOR}}
+ * @version {{VERZIJA}}
+ * @date {{DATUM}}
+ * @project {{IME_PROJEKTA}}
+ * @domain VARNOSTNI_SISTEMI
+ * 
+ * @requirement REQ-SEC-SIM-001
+ * @design DSN-SEC-SIM-001
+ * @test TST-SEC-SIM-001
+ * 
+ * @description
+ * Enterprise-grade SIEM/SOC framework implementing log aggregation, event correlation,
+ * alert management, threat detection, security analytics, compliance monitoring,
+ * and SOC workflow automation with full UI/UX center integration.
+ * 
+ * @compliance NIST CSF, ISO 27001, SOC 2, PCI DSS, HIPAA
+ * @classification CONFIDENTIAL - Security Operations
+ */
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SIEM TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export type LogSourceType =
+  | 'FIREWALL' | 'IDS_IPS' | 'ENDPOINT' | 'SERVER' | 'APPLICATION'
+  | 'DATABASE' | 'CLOUD' | 'NETWORK_DEVICE' | 'AUTHENTICATION'
+  | 'EMAIL' | 'WEB_PROXY' | 'DNS' | 'DHCP' | 'VPN' | 'WAF'
+  | 'DLP' | 'ANTIVIRUS' | 'EDR' | 'NDR' | 'CUSTOM';
+
+export type EventSeverity = 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW' | 'INFORMATIONAL';
+
+export type EventCategory =
+  | 'AUTHENTICATION' | 'AUTHORIZATION' | 'NETWORK' | 'ENDPOINT'
+  | 'APPLICATION' | 'DATA' | 'MALWARE' | 'POLICY' | 'SYSTEM'
+  | 'AUDIT' | 'THREAT' | 'COMPLIANCE' | 'OPERATIONAL';
+
+export type AlertStatus =
+  | 'NEW' | 'ACKNOWLEDGED' | 'IN_PROGRESS' | 'ESCALATED'
+  | 'RESOLVED' | 'CLOSED' | 'FALSE_POSITIVE' | 'SUPPRESSED';
+
+export type CorrelationRuleType =
+  | 'THRESHOLD' | 'SEQUENCE' | 'AGGREGATION' | 'PATTERN'
+  | 'ANOMALY' | 'BASELINE' | 'STATISTICAL' | 'ML_BASED';
+
+export type NormalizationFormat =
+  | 'CEF' | 'LEEF' | 'ECS' | 'OCSF' | 'STIX' | 'CUSTOM';
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// LOG SOURCE TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface LogSource {
+  readonly sourceId: string;
+  readonly name: string;
+  readonly description: string;
+  readonly type: LogSourceType;
+  readonly vendor: string;
+  readonly product: string;
+  readonly version: string | null;
+  readonly connection: LogSourceConnection;
+  readonly parsing: ParsingConfiguration;
+  readonly normalization: NormalizationConfiguration;
+  readonly enrichment: EnrichmentConfiguration;
+  readonly status: LogSourceStatus;
+  readonly statistics: LogSourceStatistics;
+  readonly metadata: LogSourceMetadata;
+}
+
+export interface LogSourceConnection {
+  readonly protocol: 'SYSLOG_UDP' | 'SYSLOG_TCP' | 'SYSLOG_TLS' | 'HTTP' | 'HTTPS' | 'KAFKA' | 'FILE' | 'DATABASE' | 'API' | 'AGENT';
+  readonly host: string | null;
+  readonly port: number | null;
+  readonly credentials: SourceCredentials | null;
+  readonly ssl: SSLConfiguration | null;
+  readonly polling: PollingConfiguration | null;
+  readonly bufferSize: number;
+  readonly timeout: number;
+  readonly retryPolicy: RetryPolicy;
+}
+
+export interface SourceCredentials {
+  readonly type: 'BASIC' | 'API_KEY' | 'OAUTH2' | 'CERTIFICATE' | 'KERBEROS';
+  readonly credentialId: string;
+}
+
+export interface SSLConfiguration {
+  readonly enabled: boolean;
+  readonly verifyHostname: boolean;
+  readonly verifyCertificate: boolean;
+  readonly clientCertificate: string | null;
+  readonly caCertificate: string | null;
+}
+
+export interface PollingConfiguration {
+  readonly enabled: boolean;
+  readonly interval: number;
+  readonly batchSize: number;
+  readonly checkpoint: string | null;
+}
+
+export interface RetryPolicy {
+  readonly maxRetries: number;
+  readonly initialDelay: number;
+  readonly maxDelay: number;
+  readonly backoffMultiplier: number;
+}
+
+export interface ParsingConfiguration {
+  readonly format: 'JSON' | 'XML' | 'CSV' | 'SYSLOG' | 'CEF' | 'LEEF' | 'REGEX' | 'GROK' | 'CUSTOM';
+  readonly parser: string;
+  readonly timestampField: string;
+  readonly timestampFormat: string;
+  readonly fieldMappings: readonly FieldMapping[];
+  readonly filters: readonly ParsingFilter[];
+}
+
+export interface FieldMapping {
+  readonly sourceField: string;
+  readonly targetField: string;
+  readonly transformation: string | null;
+  readonly defaultValue: unknown;
+}
+
+export interface ParsingFilter {
+  readonly field: string;
+  readonly operator: 'EQUALS' | 'NOT_EQUALS' | 'CONTAINS' | 'REGEX' | 'IN' | 'NOT_IN';
+  readonly value: unknown;
+  readonly action: 'INCLUDE' | 'EXCLUDE';
+}
+
+export interface NormalizationConfiguration {
+  readonly format: NormalizationFormat;
+  readonly schema: string;
+  readonly fieldMappings: readonly NormalizationMapping[];
+  readonly enrichFields: readonly string[];
+}
+
+export interface NormalizationMapping {
+  readonly sourceField: string;
+  readonly targetField: string;
+  readonly dataType: 'STRING' | 'INTEGER' | 'FLOAT' | 'BOOLEAN' | 'TIMESTAMP' | 'IP' | 'MAC' | 'URL' | 'EMAIL';
+  readonly transformation: string | null;
+}
+
+export interface EnrichmentConfiguration {
+  readonly enabled: boolean;
+  readonly sources: readonly EnrichmentSource[];
+  readonly caching: CachingConfiguration;
+}
+
+export interface EnrichmentSource {
+  readonly type: 'GEOIP' | 'THREAT_INTEL' | 'ASSET_INVENTORY' | 'USER_DIRECTORY' | 'DNS' | 'WHOIS' | 'CUSTOM';
+  readonly name: string;
+  readonly fields: readonly string[];
+  readonly priority: number;
+}
+
+export interface CachingConfiguration {
+  readonly enabled: boolean;
+  readonly ttl: number;
+  readonly maxSize: number;
+}
+
+export interface LogSourceStatus {
+  readonly status: 'ACTIVE' | 'INACTIVE' | 'ERROR' | 'MAINTENANCE';
+  readonly lastEventTime: number | null;
+  readonly lastError: string | null;
+  readonly lastErrorTime: number | null;
+  readonly healthScore: number;
+}
+
+export interface LogSourceStatistics {
+  readonly eventsPerSecond: number;
+  readonly eventsLast24Hours: number;
+  readonly bytesLast24Hours: number;
+  readonly parseErrors: number;
+  readonly enrichmentErrors: number;
+  readonly latencyMs: number;
+}
+
+export interface LogSourceMetadata {
+  readonly createdAt: number;
+  readonly createdBy: string;
+  readonly updatedAt: number;
+  readonly updatedBy: string;
+  readonly tags: readonly string[];
+  readonly complianceFrameworks: readonly string[];
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// EVENT TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface SecurityEvent {
+  readonly eventId: string;
+  readonly timestamp: number;
+  readonly receivedAt: number;
+  readonly source: EventSource;
+  readonly category: EventCategory;
+  readonly severity: EventSeverity;
+  readonly action: string;
+  readonly outcome: 'SUCCESS' | 'FAILURE' | 'UNKNOWN';
+  readonly message: string;
+  readonly actor: EventActor | null;
+  readonly target: EventTarget | null;
+  readonly network: NetworkInfo | null;
+  readonly process: ProcessInfo | null;
+  readonly file: FileInfo | null;
+  readonly registry: RegistryInfo | null;
+  readonly enrichment: EventEnrichment;
+  readonly raw: string;
+  readonly tags: readonly string[];
+  readonly customFields: Readonly<Record<string, unknown>>;
+}
+
+export interface EventSource {
+  readonly sourceId: string;
+  readonly sourceName: string;
+  readonly sourceType: LogSourceType;
+  readonly hostname: string;
+  readonly ipAddress: string;
+  readonly application: string | null;
+}
+
+export interface EventActor {
+  readonly userId: string | null;
+  readonly userName: string | null;
+  readonly userDomain: string | null;
+  readonly userEmail: string | null;
+  readonly userGroups: readonly string[];
+  readonly sessionId: string | null;
+  readonly processId: number | null;
+  readonly processName: string | null;
+}
+
+export interface EventTarget {
+  readonly hostname: string | null;
+  readonly ipAddress: string | null;
+  readonly port: number | null;
+  readonly protocol: string | null;
+  readonly service: string | null;
+  readonly resource: string | null;
+  readonly resourceType: string | null;
+}
+
+export interface NetworkInfo {
+  readonly sourceIp: string;
+  readonly sourcePort: number | null;
+  readonly destinationIp: string;
+  readonly destinationPort: number | null;
+  readonly protocol: string;
+  readonly direction: 'INBOUND' | 'OUTBOUND' | 'INTERNAL' | 'UNKNOWN';
+  readonly bytesIn: number | null;
+  readonly bytesOut: number | null;
+  readonly packetsIn: number | null;
+  readonly packetsOut: number | null;
+  readonly connectionState: string | null;
+}
+
+export interface ProcessInfo {
+  readonly pid: number;
+  readonly name: string;
+  readonly path: string | null;
+  readonly commandLine: string | null;
+  readonly hash: ProcessHash | null;
+  readonly parentPid: number | null;
+  readonly parentName: string | null;
+  readonly user: string | null;
+  readonly startTime: number | null;
+}
+
+export interface ProcessHash {
+  readonly md5: string | null;
+  readonly sha1: string | null;
+  readonly sha256: string | null;
+}
+
+export interface FileInfo {
+  readonly name: string;
+  readonly path: string;
+  readonly extension: string | null;
+  readonly size: number | null;
+  readonly hash: FileHash | null;
+  readonly owner: string | null;
+  readonly permissions: string | null;
+  readonly created: number | null;
+  readonly modified: number | null;
+  readonly accessed: number | null;
+}
+
+export interface FileHash {
+  readonly md5: string | null;
+  readonly sha1: string | null;
+  readonly sha256: string | null;
+}
+
+export interface RegistryInfo {
+  readonly hive: string;
+  readonly key: string;
+  readonly valueName: string | null;
+  readonly valueType: string | null;
+  readonly valueData: string | null;
+  readonly previousValue: string | null;
+}
+
+export interface EventEnrichment {
+  readonly geoip: GeoIPEnrichment | null;
+  readonly threatIntel: ThreatIntelEnrichment | null;
+  readonly assetInfo: AssetEnrichment | null;
+  readonly userInfo: UserEnrichment | null;
+  readonly reputation: ReputationEnrichment | null;
+}
+
+export interface GeoIPEnrichment {
+  readonly country: string;
+  readonly countryCode: string;
+  readonly region: string | null;
+  readonly city: string | null;
+  readonly latitude: number | null;
+  readonly longitude: number | null;
+  readonly asn: number | null;
+  readonly asnOrg: string | null;
+  readonly isp: string | null;
+}
+
+export interface ThreatIntelEnrichment {
+  readonly isMalicious: boolean;
+  readonly threatType: string | null;
+  readonly confidence: number;
+  readonly sources: readonly string[];
+  readonly tags: readonly string[];
+  readonly firstSeen: number | null;
+  readonly lastSeen: number | null;
+}
+
+export interface AssetEnrichment {
+  readonly assetId: string;
+  readonly assetName: string;
+  readonly assetType: string;
+  readonly criticality: string;
+  readonly owner: string | null;
+  readonly department: string | null;
+  readonly location: string | null;
+}
+
+export interface UserEnrichment {
+  readonly userId: string;
+  readonly displayName: string;
+  readonly email: string | null;
+  readonly department: string | null;
+  readonly manager: string | null;
+  readonly title: string | null;
+  readonly riskScore: number | null;
+}
+
+export interface ReputationEnrichment {
+  readonly score: number;
+  readonly category: string;
+  readonly sources: readonly string[];
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ALERT TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface SecurityAlert {
+  readonly alertId: string;
+  readonly title: string;
+  readonly description: string;
+  readonly severity: EventSeverity;
+  readonly status: AlertStatus;
+  readonly priority: number;
+  readonly category: EventCategory;
+  readonly source: AlertSource;
+  readonly rule: AlertRule;
+  readonly events: readonly string[];
+  readonly indicators: readonly AlertIndicator[];
+  readonly mitreMapping: readonly MitreMapping[];
+  readonly affectedAssets: readonly AffectedAsset[];
+  readonly assignee: string | null;
+  readonly workflow: AlertWorkflow;
+  readonly timeline: AlertTimeline;
+  readonly metadata: AlertMetadata;
+}
+
+export interface AlertSource {
+  readonly type: 'CORRELATION_RULE' | 'DETECTION_RULE' | 'ANOMALY_DETECTION' | 'THREAT_INTEL' | 'MANUAL' | 'EXTERNAL';
+  readonly sourceId: string;
+  readonly sourceName: string;
+}
+
+export interface AlertRule {
+  readonly ruleId: string;
+  readonly ruleName: string;
+  readonly ruleType: CorrelationRuleType;
+  readonly confidence: number;
+  readonly falsePositiveRate: number;
+}
+
+export interface AlertIndicator {
+  readonly type: 'IP_ADDRESS' | 'DOMAIN' | 'URL' | 'FILE_HASH' | 'EMAIL' | 'USER' | 'PROCESS' | 'REGISTRY' | 'OTHER';
+  readonly value: string;
+  readonly context: string;
+  readonly isMalicious: boolean | null;
+  readonly confidence: number;
+}
+
+export interface MitreMapping {
+  readonly tacticId: string;
+  readonly tacticName: string;
+  readonly techniqueId: string;
+  readonly techniqueName: string;
+  readonly subTechniqueId: string | null;
+}
+
+export interface AffectedAsset {
+  readonly assetId: string;
+  readonly hostname: string;
+  readonly ipAddress: string;
+  readonly assetType: string;
+  readonly criticality: string;
+  readonly role: 'SOURCE' | 'TARGET' | 'BOTH';
+}
+
+export interface AlertWorkflow {
+  readonly currentPhase: 'TRIAGE' | 'INVESTIGATION' | 'CONTAINMENT' | 'REMEDIATION' | 'CLOSED';
+  readonly actions: readonly WorkflowAction[];
+  readonly escalations: readonly Escalation[];
+  readonly sla: SLATracking;
+}
+
+export interface WorkflowAction {
+  readonly actionId: string;
+  readonly actionType: string;
+  readonly description: string;
+  readonly executedBy: string;
+  readonly executedAt: number;
+  readonly status: 'SUCCESS' | 'FAILURE' | 'PENDING';
+  readonly result: string | null;
+  readonly automated: boolean;
+}
+
+export interface Escalation {
+  readonly escalationId: string;
+  readonly level: number;
+  readonly escalatedTo: string;
+  readonly escalatedAt: number;
+  readonly reason: string;
+  readonly acknowledged: boolean;
+  readonly acknowledgedAt: number | null;
+}
+
+export interface SLATracking {
+  readonly acknowledgeBy: number;
+  readonly acknowledgedAt: number | null;
+  readonly resolveBy: number;
+  readonly resolvedAt: number | null;
+  readonly status: 'ON_TRACK' | 'AT_RISK' | 'BREACHED';
+}
+
+export interface AlertTimeline {
+  readonly created: number;
+  readonly firstEvent: number;
+  readonly lastEvent: number;
+  readonly acknowledged: number | null;
+  readonly assigned: number | null;
+  readonly resolved: number | null;
+  readonly closed: number | null;
+  readonly events: readonly TimelineEntry[];
+}
+
+export interface TimelineEntry {
+  readonly entryId: string;
+  readonly timestamp: number;
+  readonly eventType: string;
+  readonly description: string;
+  readonly actor: string;
+  readonly automated: boolean;
+}
+
+export interface AlertMetadata {
+  readonly createdAt: number;
+  readonly updatedAt: number;
+  readonly tags: readonly string[];
+  readonly customFields: Readonly<Record<string, unknown>>;
+  readonly relatedAlerts: readonly string[];
+  readonly relatedIncidents: readonly string[];
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// CORRELATION RULE TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface CorrelationRule {
+  readonly ruleId: string;
+  readonly name: string;
+  readonly description: string;
+  readonly type: CorrelationRuleType;
+  readonly enabled: boolean;
+  readonly severity: EventSeverity;
+  readonly category: EventCategory;
+  readonly logic: RuleLogic;
+  readonly conditions: readonly RuleCondition[];
+  readonly aggregation: AggregationConfig | null;
+  readonly threshold: ThresholdConfig | null;
+  readonly sequence: SequenceConfig | null;
+  readonly timeWindow: number;
+  readonly groupBy: readonly string[];
+  readonly output: RuleOutput;
+  readonly mitreMapping: readonly MitreMapping[];
+  readonly tuning: RuleTuning;
+  readonly statistics: RuleStatistics;
+  readonly metadata: RuleMetadata;
+}
+
+export interface RuleLogic {
+  readonly format: 'SPL' | 'KQL' | 'SIGMA' | 'YARA_L' | 'ESQL' | 'CUSTOM';
+  readonly query: string;
+  readonly filters: readonly string[];
+}
+
+export interface RuleCondition {
+  readonly field: string;
+  readonly operator: 'EQUALS' | 'NOT_EQUALS' | 'CONTAINS' | 'NOT_CONTAINS' | 'REGEX' | 'IN' | 'NOT_IN' | 'GREATER_THAN' | 'LESS_THAN' | 'EXISTS' | 'NOT_EXISTS';
+  readonly value: unknown;
+  readonly caseSensitive: boolean;
+}
+
+export interface AggregationConfig {
+  readonly function: 'COUNT' | 'SUM' | 'AVG' | 'MIN' | 'MAX' | 'DISTINCT_COUNT' | 'PERCENTILE';
+  readonly field: string | null;
+  readonly groupBy: readonly string[];
+  readonly having: HavingCondition | null;
+}
+
+export interface HavingCondition {
+  readonly operator: 'GREATER_THAN' | 'LESS_THAN' | 'EQUALS' | 'NOT_EQUALS';
+  readonly value: number;
+}
+
+export interface ThresholdConfig {
+  readonly count: number;
+  readonly timeWindow: number;
+  readonly groupBy: readonly string[];
+  readonly suppressionWindow: number | null;
+}
+
+export interface SequenceConfig {
+  readonly stages: readonly SequenceStage[];
+  readonly maxSpan: number;
+  readonly ordered: boolean;
+}
+
+export interface SequenceStage {
+  readonly stageId: string;
+  readonly name: string;
+  readonly conditions: readonly RuleCondition[];
+  readonly minOccurrences: number;
+  readonly maxOccurrences: number | null;
+}
+
+export interface RuleOutput {
+  readonly alertTitle: string;
+  readonly alertDescription: string;
+  readonly severity: EventSeverity;
+  readonly priority: number;
+  readonly tags: readonly string[];
+  readonly customFields: Readonly<Record<string, string>>;
+  readonly notifications: readonly NotificationConfig[];
+  readonly automations: readonly AutomationConfig[];
+}
+
+export interface NotificationConfig {
+  readonly channel: 'EMAIL' | 'SLACK' | 'TEAMS' | 'PAGERDUTY' | 'WEBHOOK' | 'SMS';
+  readonly recipients: readonly string[];
+  readonly template: string;
+  readonly throttle: number | null;
+}
+
+export interface AutomationConfig {
+  readonly type: 'PLAYBOOK' | 'SCRIPT' | 'API_CALL' | 'TICKET';
+  readonly target: string;
+  readonly parameters: Readonly<Record<string, unknown>>;
+  readonly condition: string | null;
+}
+
+export interface RuleTuning {
+  readonly suppressions: readonly Suppression[];
+  readonly exceptions: readonly RuleException[];
+  readonly riskModifiers: readonly RiskModifier[];
+}
+
+export interface Suppression {
+  readonly suppressionId: string;
+  readonly field: string;
+  readonly values: readonly string[];
+  readonly reason: string;
+  readonly expiresAt: number | null;
+  readonly createdBy: string;
+  readonly createdAt: number;
+}
+
+export interface RuleException {
+  readonly exceptionId: string;
+  readonly conditions: readonly RuleCondition[];
+  readonly reason: string;
+  readonly expiresAt: number | null;
+  readonly createdBy: string;
+  readonly createdAt: number;
+}
+
+export interface RiskModifier {
+  readonly modifierId: string;
+  readonly condition: RuleCondition;
+  readonly modifier: number;
+  readonly reason: string;
+}
+
+export interface RuleStatistics {
+  readonly totalFirings: number;
+  readonly firingsLast24Hours: number;
+  readonly firingsLast7Days: number;
+  readonly averageFiringsPerDay: number;
+  readonly truePositiveRate: number;
+  readonly falsePositiveRate: number;
+  readonly lastFired: number | null;
+}
+
+export interface RuleMetadata {
+  readonly createdAt: number;
+  readonly createdBy: string;
+  readonly updatedAt: number;
+  readonly updatedBy: string;
+  readonly version: number;
+  readonly tags: readonly string[];
+  readonly references: readonly string[];
+  readonly dataSource: readonly string[];
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SOC TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface SOCTeam {
+  readonly teamId: string;
+  readonly name: string;
+  readonly description: string;
+  readonly members: readonly SOCAnalyst[];
+  readonly shifts: readonly ShiftSchedule[];
+  readonly escalationPolicy: EscalationPolicy;
+  readonly metrics: SOCMetrics;
+}
+
+export interface SOCAnalyst {
+  readonly analystId: string;
+  readonly name: string;
+  readonly email: string;
+  readonly role: 'TIER1' | 'TIER2' | 'TIER3' | 'LEAD' | 'MANAGER';
+  readonly skills: readonly string[];
+  readonly certifications: readonly string[];
+  readonly currentShift: string | null;
+  readonly status: 'AVAILABLE' | 'BUSY' | 'AWAY' | 'OFFLINE';
+  readonly workload: AnalystWorkload;
+}
+
+export interface AnalystWorkload {
+  readonly assignedAlerts: number;
+  readonly openInvestigations: number;
+  readonly closedToday: number;
+  readonly averageHandleTime: number;
+}
+
+export interface ShiftSchedule {
+  readonly shiftId: string;
+  readonly name: string;
+  readonly startTime: string;
+  readonly endTime: string;
+  readonly timezone: string;
+  readonly daysOfWeek: readonly number[];
+  readonly analysts: readonly string[];
+  readonly minCoverage: number;
+}
+
+export interface EscalationPolicy {
+  readonly policyId: string;
+  readonly name: string;
+  readonly levels: readonly EscalationLevel[];
+  readonly defaultTimeout: number;
+}
+
+export interface EscalationLevel {
+  readonly level: number;
+  readonly name: string;
+  readonly targets: readonly string[];
+  readonly timeout: number;
+  readonly notificationChannels: readonly string[];
+}
+
+export interface SOCMetrics {
+  readonly alertsReceived24h: number;
+  readonly alertsClosed24h: number;
+  readonly meanTimeToAcknowledge: number;
+  readonly meanTimeToResolve: number;
+  readonly slaCompliance: number;
+  readonly truePositiveRate: number;
+  readonly falsePositiveRate: number;
+  readonly escalationRate: number;
+  readonly incidentsCreated24h: number;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// DASHBOARD TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface SOCDashboard {
+  readonly dashboardId: string;
+  readonly name: string;
+  readonly description: string;
+  readonly type: 'OPERATIONAL' | 'EXECUTIVE' | 'COMPLIANCE' | 'THREAT' | 'CUSTOM';
+  readonly layout: DashboardLayout;
+  readonly widgets: readonly DashboardWidget[];
+  readonly filters: readonly DashboardFilter[];
+  readonly refreshInterval: number;
+  readonly permissions: DashboardPermissions;
+  readonly metadata: DashboardMetadata;
+}
+
+export interface DashboardLayout {
+  readonly columns: number;
+  readonly rows: number;
+  readonly responsive: boolean;
+}
+
+export interface DashboardWidget {
+  readonly widgetId: string;
+  readonly type: WidgetType;
+  readonly title: string;
+  readonly position: WidgetPosition;
+  readonly dataSource: WidgetDataSource;
+  readonly visualization: WidgetVisualization;
+  readonly drilldown: DrilldownConfig | null;
+}
+
+export type WidgetType =
+  | 'METRIC' | 'CHART' | 'TABLE' | 'MAP' | 'TIMELINE'
+  | 'ALERT_LIST' | 'EVENT_STREAM' | 'HEATMAP' | 'GAUGE'
+  | 'SANKEY' | 'TREEMAP' | 'CUSTOM';
+
+export interface WidgetPosition {
+  readonly x: number;
+  readonly y: number;
+  readonly width: number;
+  readonly height: number;
+}
+
+export interface WidgetDataSource {
+  readonly type: 'QUERY' | 'METRIC' | 'ALERT' | 'EVENT' | 'EXTERNAL';
+  readonly query: string | null;
+  readonly metricId: string | null;
+  readonly timeRange: TimeRange;
+  readonly aggregation: string | null;
+  readonly groupBy: readonly string[];
+}
+
+export interface TimeRange {
+  readonly type: 'RELATIVE' | 'ABSOLUTE';
+  readonly value: string | number;
+  readonly start: number | null;
+  readonly end: number | null;
+}
+
+export interface WidgetVisualization {
+  readonly chartType: 'LINE' | 'BAR' | 'PIE' | 'DONUT' | 'AREA' | 'SCATTER' | 'HISTOGRAM' | null;
+  readonly colors: readonly string[];
+  readonly legend: boolean;
+  readonly labels: boolean;
+  readonly thresholds: readonly VisualizationThreshold[];
+}
+
+export interface VisualizationThreshold {
+  readonly value: number;
+  readonly color: string;
+  readonly label: string;
+}
+
+export interface DrilldownConfig {
+  readonly enabled: boolean;
+  readonly targetDashboard: string | null;
+  readonly targetSearch: string | null;
+  readonly parameters: Readonly<Record<string, string>>;
+}
+
+export interface DashboardFilter {
+  readonly filterId: string;
+  readonly field: string;
+  readonly label: string;
+  readonly type: 'DROPDOWN' | 'TEXT' | 'DATE_RANGE' | 'MULTI_SELECT';
+  readonly defaultValue: unknown;
+  readonly options: readonly FilterOption[];
+}
+
+export interface FilterOption {
+  readonly label: string;
+  readonly value: unknown;
+}
+
+export interface DashboardPermissions {
+  readonly owner: string;
+  readonly viewers: readonly string[];
+  readonly editors: readonly string[];
+  readonly isPublic: boolean;
+}
+
+export interface DashboardMetadata {
+  readonly createdAt: number;
+  readonly createdBy: string;
+  readonly updatedAt: number;
+  readonly updatedBy: string;
+  readonly tags: readonly string[];
+  readonly favorites: number;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SEARCH TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface SearchQuery {
+  readonly queryId: string;
+  readonly name: string | null;
+  readonly query: string;
+  readonly language: 'SPL' | 'KQL' | 'LUCENE' | 'SQL' | 'ESQL';
+  readonly timeRange: TimeRange;
+  readonly filters: readonly SearchFilter[];
+  readonly aggregations: readonly SearchAggregation[];
+  readonly sorting: readonly SearchSort[];
+  readonly limit: number;
+  readonly fields: readonly string[];
+}
+
+export interface SearchFilter {
+  readonly field: string;
+  readonly operator: string;
+  readonly value: unknown;
+}
+
+export interface SearchAggregation {
+  readonly name: string;
+  readonly type: 'COUNT' | 'SUM' | 'AVG' | 'MIN' | 'MAX' | 'PERCENTILE' | 'CARDINALITY' | 'TERMS' | 'DATE_HISTOGRAM';
+  readonly field: string | null;
+  readonly parameters: Readonly<Record<string, unknown>>;
+}
+
+export interface SearchSort {
+  readonly field: string;
+  readonly order: 'ASC' | 'DESC';
+}
+
+export interface SearchResult {
+  readonly queryId: string;
+  readonly executionTime: number;
+  readonly totalResults: number;
+  readonly returnedResults: number;
+  readonly events: readonly SecurityEvent[];
+  readonly aggregations: Readonly<Record<string, unknown>>;
+  readonly warnings: readonly string[];
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// UI/UX CENTER INTEGRATION
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface SIEMUIConfig {
+  readonly dashboardEnabled: boolean;
+  readonly realTimeUpdates: boolean;
+  readonly visualizations: readonly SIEMVisualization[];
+  readonly notifications: SIEMNotificationConfig;
+  readonly reporting: SIEMReportingConfig;
+  readonly search: SIEMSearchConfig;
+  readonly workflow: SIEMWorkflowConfig;
+}
+
+export type SIEMVisualization =
+  | 'ALERT_QUEUE' | 'EVENT_TIMELINE' | 'THREAT_MAP' | 'ATTACK_SURFACE'
+  | 'MITRE_HEATMAP' | 'TOP_SOURCES' | 'TOP_DESTINATIONS' | 'USER_ACTIVITY'
+  | 'NETWORK_FLOW' | 'PROCESS_TREE' | 'COMPLIANCE_STATUS' | 'SOC_METRICS';
+
+export interface SIEMNotificationConfig {
+  readonly criticalAlert: boolean;
+  readonly highAlert: boolean;
+  readonly slaWarning: boolean;
+  readonly slaBreach: boolean;
+  readonly ruleTriggered: boolean;
+  readonly sourceDown: boolean;
+  readonly anomalyDetected: boolean;
+  readonly complianceViolation: boolean;
+}
+
+export interface SIEMReportingConfig {
+  readonly autoGenerate: boolean;
+  readonly schedules: readonly ReportSchedule[];
+  readonly templates: readonly string[];
+  readonly distribution: readonly string[];
+  readonly retention: number;
+}
+
+export interface ReportSchedule {
+  readonly reportType: string;
+  readonly frequency: 'HOURLY' | 'DAILY' | 'WEEKLY' | 'MONTHLY';
+  readonly time: string;
+  readonly recipients: readonly string[];
+}
+
+export interface SIEMSearchConfig {
+  readonly defaultTimeRange: string;
+  readonly maxResults: number;
+  readonly enableAutoComplete: boolean;
+  readonly enableSavedSearches: boolean;
+  readonly enableScheduledSearches: boolean;
+  readonly searchHistory: number;
+}
+
+export interface SIEMWorkflowConfig {
+  readonly autoAssignment: boolean;
+  readonly autoEscalation: boolean;
+  readonly autoEnrichment: boolean;
+  readonly playbookIntegration: boolean;
+  readonly ticketingIntegration: boolean;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ERROR TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export enum SIEMErrorCode {
+  SOURCE_CONNECTION_ERROR = 'SIEM_E001',
+  PARSING_ERROR = 'SIEM_E002',
+  CORRELATION_ERROR = 'SIEM_E003',
+  SEARCH_ERROR = 'SIEM_E004',
+  ALERT_PROCESSING_ERROR = 'SIEM_E005',
+  ENRICHMENT_ERROR = 'SIEM_E006',
+  STORAGE_ERROR = 'SIEM_E007',
+  CONFIGURATION_ERROR = 'SIEM_E008',
+}
+
+export class SIEMError extends Error {
+  constructor(
+    public readonly code: SIEMErrorCode,
+    message: string,
+    public readonly details: Readonly<Record<string, unknown>> = {}
+  ) {
+    super(`[${code}] ${message}`);
+    this.name = 'SIEMError';
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// DETERMINISTIC UTILITIES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+function deterministicHash(input: string): number {
+  let hash = 0;
+  for (let i = 0; i < input.length; i++) {
+    const char = input.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash;
+  }
+  return Math.abs(hash);
+}
+
+function generateDeterministicId(prefix: string, seed: number): string {
+  const hash = deterministicHash(`${prefix}-${seed}`);
+  const jitter = Math.abs(Math.sin(seed * 12.9898) * 43758.5453) % 1;
+  return `${prefix}-${hash.toString(16)}-${Math.floor(jitter * 10000).toString(16)}`;
+}
+
+function generateDeterministicTimestamp(seed: number): number {
+  const baseTime = 1704067200000;
+  const offset = Math.abs(deterministicHash(`timestamp-${seed}`)) % 86400000;
+  return baseTime + offset;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// LOG SOURCE MANAGER
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export class LogSourceManager {
+  private operationCounter: number = 0;
+  private readonly sources: Map<string, LogSource> = new Map();
+
+  addSource(
+    name: string,
+    description: string,
+    type: LogSourceType,
+    vendor: string,
+    product: string,
+    connection: LogSourceConnection,
+    parsing: ParsingConfiguration
+  ): LogSource {
+    this.operationCounter++;
+
+    const sourceId = generateDeterministicId('source', this.operationCounter);
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+
+    const source: LogSource = {
+      sourceId,
+      name,
+      description,
+      type,
+      vendor,
+      product,
+      version: null,
+      connection,
+      parsing,
+      normalization: {
+        format: 'ECS',
+        schema: 'ecs-8.0',
+        fieldMappings: [],
+        enrichFields: [],
+      },
+      enrichment: {
+        enabled: true,
+        sources: [
+          { type: 'GEOIP', name: 'MaxMind GeoIP', fields: ['source.ip', 'destination.ip'], priority: 1 },
+          { type: 'THREAT_INTEL', name: 'Threat Intel', fields: ['source.ip', 'destination.ip', 'url.full'], priority: 2 },
+        ],
+        caching: { enabled: true, ttl: 3600000, maxSize: 100000 },
+      },
+      status: {
+        status: 'ACTIVE',
+        lastEventTime: null,
+        lastError: null,
+        lastErrorTime: null,
+        healthScore: 100,
+      },
+      statistics: {
+        eventsPerSecond: 0,
+        eventsLast24Hours: 0,
+        bytesLast24Hours: 0,
+        parseErrors: 0,
+        enrichmentErrors: 0,
+        latencyMs: 0,
+      },
+      metadata: {
+        createdAt: timestamp,
+        createdBy: 'system',
+        updatedAt: timestamp,
+        updatedBy: 'system',
+        tags: [],
+        complianceFrameworks: [],
+      },
+    };
+
+    this.sources.set(sourceId, source);
+    return source;
+  }
+
+  updateSourceStatus(sourceId: string, status: Partial<LogSourceStatus>): LogSource | null {
+    this.operationCounter++;
+
+    const source = this.sources.get(sourceId);
+    if (!source) return null;
+
+    const updatedSource: LogSource = {
+      ...source,
+      status: { ...source.status, ...status },
+      metadata: {
+        ...source.metadata,
+        updatedAt: generateDeterministicTimestamp(this.operationCounter),
+      },
+    };
+
+    this.sources.set(sourceId, updatedSource);
+    return updatedSource;
+  }
+
+  getSources(): ReadonlyMap<string, LogSource> {
+    return this.sources;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// EVENT PROCESSOR
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export class EventProcessor {
+  private operationCounter: number = 0;
+  private readonly events: Map<string, SecurityEvent> = new Map();
+
+  processEvent(
+    source: EventSource,
+    category: EventCategory,
+    severity: EventSeverity,
+    action: string,
+    outcome: 'SUCCESS' | 'FAILURE' | 'UNKNOWN',
+    message: string,
+    raw: string
+  ): SecurityEvent {
+    this.operationCounter++;
+
+    const eventId = generateDeterministicId('event', this.operationCounter);
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+
+    const event: SecurityEvent = {
+      eventId,
+      timestamp,
+      receivedAt: timestamp,
+      source,
+      category,
+      severity,
+      action,
+      outcome,
+      message,
+      actor: null,
+      target: null,
+      network: null,
+      process: null,
+      file: null,
+      registry: null,
+      enrichment: {
+        geoip: null,
+        threatIntel: null,
+        assetInfo: null,
+        userInfo: null,
+        reputation: null,
+      },
+      raw,
+      tags: [],
+      customFields: {},
+    };
+
+    this.events.set(eventId, event);
+    return event;
+  }
+
+  getEvents(): ReadonlyMap<string, SecurityEvent> {
+    return this.events;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ALERT MANAGER
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export class AlertManager {
+  private operationCounter: number = 0;
+  private readonly alerts: Map<string, SecurityAlert> = new Map();
+
+  createAlert(
+    title: string,
+    description: string,
+    severity: EventSeverity,
+    category: EventCategory,
+    source: AlertSource,
+    rule: AlertRule,
+    events: readonly string[]
+  ): SecurityAlert {
+    this.operationCounter++;
+
+    const alertId = generateDeterministicId('alert', this.operationCounter);
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+
+    const slaMap: Record<EventSeverity, number> = {
+      CRITICAL: 900000,
+      HIGH: 3600000,
+      MEDIUM: 14400000,
+      LOW: 86400000,
+      INFORMATIONAL: 604800000,
+    };
+
+    const alert: SecurityAlert = {
+      alertId,
+      title,
+      description,
+      severity,
+      status: 'NEW',
+      priority: this.calculatePriority(severity),
+      category,
+      source,
+      rule,
+      events,
+      indicators: [],
+      mitreMapping: [],
+      affectedAssets: [],
+      assignee: null,
+      workflow: {
+        currentPhase: 'TRIAGE',
+        actions: [],
+        escalations: [],
+        sla: {
+          acknowledgeBy: timestamp + slaMap[severity] / 4,
+          acknowledgedAt: null,
+          resolveBy: timestamp + slaMap[severity],
+          resolvedAt: null,
+          status: 'ON_TRACK',
+        },
+      },
+      timeline: {
+        created: timestamp,
+        firstEvent: timestamp,
+        lastEvent: timestamp,
+        acknowledged: null,
+        assigned: null,
+        resolved: null,
+        closed: null,
+        events: [{
+          entryId: generateDeterministicId('entry', this.operationCounter),
+          timestamp,
+          eventType: 'CREATED',
+          description: 'Alert created',
+          actor: 'system',
+          automated: true,
+        }],
+      },
+      metadata: {
+        createdAt: timestamp,
+        updatedAt: timestamp,
+        tags: [],
+        customFields: {},
+        relatedAlerts: [],
+        relatedIncidents: [],
+      },
+    };
+
+    this.alerts.set(alertId, alert);
+    return alert;
+  }
+
+  private calculatePriority(severity: EventSeverity): number {
+    const priorityMap: Record<EventSeverity, number> = {
+      CRITICAL: 1,
+      HIGH: 2,
+      MEDIUM: 3,
+      LOW: 4,
+      INFORMATIONAL: 5,
+    };
+    return priorityMap[severity];
+  }
+
+  updateAlertStatus(alertId: string, status: AlertStatus, actor: string): SecurityAlert | null {
+    this.operationCounter++;
+
+    const alert = this.alerts.get(alertId);
+    if (!alert) return null;
+
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+
+    const timelineUpdate: Partial<AlertTimeline> = {};
+    if (status === 'ACKNOWLEDGED') timelineUpdate.acknowledged = timestamp;
+    if (status === 'RESOLVED') timelineUpdate.resolved = timestamp;
+    if (status === 'CLOSED') timelineUpdate.closed = timestamp;
+
+    const updatedAlert: SecurityAlert = {
+      ...alert,
+      status,
+      timeline: {
+        ...alert.timeline,
+        ...timelineUpdate,
+        events: [
+          ...alert.timeline.events,
+          {
+            entryId: generateDeterministicId('entry', this.operationCounter),
+            timestamp,
+            eventType: 'STATUS_CHANGE',
+            description: `Status changed to ${status}`,
+            actor,
+            automated: false,
+          },
+        ],
+      },
+      metadata: {
+        ...alert.metadata,
+        updatedAt: timestamp,
+      },
+    };
+
+    this.alerts.set(alertId, updatedAlert);
+    return updatedAlert;
+  }
+
+  assignAlert(alertId: string, assignee: string, actor: string): SecurityAlert | null {
+    this.operationCounter++;
+
+    const alert = this.alerts.get(alertId);
+    if (!alert) return null;
+
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+
+    const updatedAlert: SecurityAlert = {
+      ...alert,
+      assignee,
+      timeline: {
+        ...alert.timeline,
+        assigned: timestamp,
+        events: [
+          ...alert.timeline.events,
+          {
+            entryId: generateDeterministicId('entry', this.operationCounter),
+            timestamp,
+            eventType: 'ASSIGNED',
+            description: `Assigned to ${assignee}`,
+            actor,
+            automated: false,
+          },
+        ],
+      },
+      metadata: {
+        ...alert.metadata,
+        updatedAt: timestamp,
+      },
+    };
+
+    this.alerts.set(alertId, updatedAlert);
+    return updatedAlert;
+  }
+
+  getAlerts(): ReadonlyMap<string, SecurityAlert> {
+    return this.alerts;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// CORRELATION ENGINE
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export class CorrelationEngine {
+  private operationCounter: number = 0;
+  private readonly rules: Map<string, CorrelationRule> = new Map();
+  private readonly alertManager: AlertManager;
+
+  constructor(alertManager: AlertManager) {
+    this.alertManager = alertManager;
+    this.initializeDefaultRules();
+  }
+
+  private initializeDefaultRules(): void {
+    const defaultRules: CorrelationRule[] = [
+      {
+        ruleId: 'rule-001',
+        name: 'Brute Force Authentication',
+        description: 'Detects multiple failed authentication attempts from the same source',
+        type: 'THRESHOLD',
+        enabled: true,
+        severity: 'HIGH',
+        category: 'AUTHENTICATION',
+        logic: { format: 'SPL', query: 'event.category:authentication AND event.outcome:failure', filters: [] },
+        conditions: [{ field: 'event.outcome', operator: 'EQUALS', value: 'failure', caseSensitive: false }],
+        aggregation: { function: 'COUNT', field: null, groupBy: ['source.ip', 'user.name'], having: { operator: 'GREATER_THAN', value: 5 } },
+        threshold: { count: 5, timeWindow: 300000, groupBy: ['source.ip'], suppressionWindow: 3600000 },
+        sequence: null,
+        timeWindow: 300000,
+        groupBy: ['source.ip', 'user.name'],
+        output: {
+          alertTitle: 'Brute Force Authentication Detected',
+          alertDescription: 'Multiple failed authentication attempts detected from {{source.ip}} for user {{user.name}}',
+          severity: 'HIGH',
+          priority: 2,
+          tags: ['brute-force', 'authentication'],
+          customFields: {},
+          notifications: [{ channel: 'SLACK', recipients: ['#security-alerts'], template: 'brute_force_alert', throttle: 3600000 }],
+          automations: [],
+        },
+        mitreMapping: [{ tacticId: 'TA0006', tacticName: 'Credential Access', techniqueId: 'T1110', techniqueName: 'Brute Force', subTechniqueId: null }],
+        tuning: { suppressions: [], exceptions: [], riskModifiers: [] },
+        statistics: { totalFirings: 0, firingsLast24Hours: 0, firingsLast7Days: 0, averageFiringsPerDay: 0, truePositiveRate: 0, falsePositiveRate: 0, lastFired: null },
+        metadata: { createdAt: 1704067200000, createdBy: 'system', updatedAt: 1704067200000, updatedBy: 'system', version: 1, tags: ['authentication', 'credential-access'], references: ['https://attack.mitre.org/techniques/T1110/'], dataSource: ['authentication_logs'] },
+      },
+      {
+        ruleId: 'rule-002',
+        name: 'Lateral Movement Detection',
+        description: 'Detects potential lateral movement using remote execution tools',
+        type: 'SEQUENCE',
+        enabled: true,
+        severity: 'CRITICAL',
+        category: 'THREAT',
+        logic: { format: 'SPL', query: 'process.name IN (psexec.exe, wmic.exe, winrm.exe, powershell.exe)', filters: [] },
+        conditions: [{ field: 'process.name', operator: 'IN', value: ['psexec.exe', 'wmic.exe', 'winrm.exe'], caseSensitive: false }],
+        aggregation: null,
+        threshold: null,
+        sequence: {
+          stages: [
+            { stageId: 'stage-1', name: 'Initial Access', conditions: [{ field: 'event.action', operator: 'EQUALS', value: 'logon', caseSensitive: false }], minOccurrences: 1, maxOccurrences: null },
+            { stageId: 'stage-2', name: 'Remote Execution', conditions: [{ field: 'process.name', operator: 'IN', value: ['psexec.exe', 'wmic.exe'], caseSensitive: false }], minOccurrences: 1, maxOccurrences: null },
+          ],
+          maxSpan: 3600000,
+          ordered: true,
+        },
+        timeWindow: 3600000,
+        groupBy: ['user.name', 'host.name'],
+        output: {
+          alertTitle: 'Lateral Movement Detected',
+          alertDescription: 'Potential lateral movement detected from {{source.host}} to {{destination.host}}',
+          severity: 'CRITICAL',
+          priority: 1,
+          tags: ['lateral-movement', 'apt'],
+          customFields: {},
+          notifications: [{ channel: 'PAGERDUTY', recipients: ['security-oncall'], template: 'critical_alert', throttle: null }],
+          automations: [{ type: 'PLAYBOOK', target: 'isolate_host', parameters: {}, condition: null }],
+        },
+        mitreMapping: [{ tacticId: 'TA0008', tacticName: 'Lateral Movement', techniqueId: 'T1021', techniqueName: 'Remote Services', subTechniqueId: 'T1021.002' }],
+        tuning: { suppressions: [], exceptions: [], riskModifiers: [] },
+        statistics: { totalFirings: 0, firingsLast24Hours: 0, firingsLast7Days: 0, averageFiringsPerDay: 0, truePositiveRate: 0, falsePositiveRate: 0, lastFired: null },
+        metadata: { createdAt: 1704067200000, createdBy: 'system', updatedAt: 1704067200000, updatedBy: 'system', version: 1, tags: ['lateral-movement', 'remote-execution'], references: ['https://attack.mitre.org/techniques/T1021/'], dataSource: ['endpoint_logs', 'authentication_logs'] },
+      },
+    ];
+
+    for (const rule of defaultRules) {
+      this.rules.set(rule.ruleId, rule);
+    }
+  }
+
+  addRule(rule: CorrelationRule): void {
+    this.rules.set(rule.ruleId, rule);
+  }
+
+  evaluateEvents(events: readonly SecurityEvent[]): readonly SecurityAlert[] {
+    this.operationCounter++;
+
+    const alerts: SecurityAlert[] = [];
+
+    for (const rule of this.rules.values()) {
+      if (!rule.enabled) continue;
+
+      const matchingEvents = events.filter(event => this.matchesRule(event, rule));
+
+      if (matchingEvents.length >= (rule.threshold?.count ?? 1)) {
+        const alert = this.alertManager.createAlert(
+          rule.output.alertTitle,
+          rule.output.alertDescription,
+          rule.output.severity,
+          rule.category,
+          { type: 'CORRELATION_RULE', sourceId: rule.ruleId, sourceName: rule.name },
+          { ruleId: rule.ruleId, ruleName: rule.name, ruleType: rule.type, confidence: 0.8, falsePositiveRate: rule.statistics.falsePositiveRate },
+          matchingEvents.map(e => e.eventId)
+        );
+        alerts.push(alert);
+      }
+    }
+
+    return alerts;
+  }
+
+  private matchesRule(event: SecurityEvent, rule: CorrelationRule): boolean {
+    for (const condition of rule.conditions) {
+      const fieldValue = this.getFieldValue(event, condition.field);
+      if (!this.evaluateCondition(fieldValue, condition)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  private getFieldValue(event: SecurityEvent, field: string): unknown {
+    const parts = field.split('.');
+    let value: unknown = event;
+    for (const part of parts) {
+      if (value === null || value === undefined) return undefined;
+      value = (value as Record<string, unknown>)[part];
+    }
+    return value;
+  }
+
+  private evaluateCondition(fieldValue: unknown, condition: RuleCondition): boolean {
+    const { operator, value, caseSensitive } = condition;
+
+    if (fieldValue === undefined || fieldValue === null) {
+      return operator === 'NOT_EXISTS';
+    }
+
+    const normalizedFieldValue = caseSensitive ? String(fieldValue) : String(fieldValue).toLowerCase();
+    const normalizedValue = caseSensitive ? String(value) : String(value).toLowerCase();
+
+    switch (operator) {
+      case 'EQUALS':
+        return normalizedFieldValue === normalizedValue;
+      case 'NOT_EQUALS':
+        return normalizedFieldValue !== normalizedValue;
+      case 'CONTAINS':
+        return normalizedFieldValue.includes(normalizedValue);
+      case 'NOT_CONTAINS':
+        return !normalizedFieldValue.includes(normalizedValue);
+      case 'REGEX':
+        return new RegExp(String(value), caseSensitive ? '' : 'i').test(String(fieldValue));
+      case 'IN':
+        return Array.isArray(value) && value.some(v => normalizedFieldValue === (caseSensitive ? String(v) : String(v).toLowerCase()));
+      case 'NOT_IN':
+        return Array.isArray(value) && !value.some(v => normalizedFieldValue === (caseSensitive ? String(v) : String(v).toLowerCase()));
+      case 'EXISTS':
+        return true;
+      case 'NOT_EXISTS':
+        return false;
+      default:
+        return false;
+    }
+  }
+
+  getRules(): ReadonlyMap<string, CorrelationRule> {
+    return this.rules;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SIEM MANAGER
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export class SIEMManager {
+  private readonly logSourceManager: LogSourceManager;
+  private readonly eventProcessor: EventProcessor;
+  private readonly alertManager: AlertManager;
+  private readonly correlationEngine: CorrelationEngine;
+  private readonly uiConfig: SIEMUIConfig;
+
+  constructor(uiConfig: SIEMUIConfig) {
+    this.logSourceManager = new LogSourceManager();
+    this.eventProcessor = new EventProcessor();
+    this.alertManager = new AlertManager();
+    this.correlationEngine = new CorrelationEngine(this.alertManager);
+    this.uiConfig = uiConfig;
+  }
+
+  addLogSource(
+    name: string,
+    description: string,
+    type: LogSourceType,
+    vendor: string,
+    product: string,
+    connection: LogSourceConnection,
+    parsing: ParsingConfiguration
+  ): LogSource {
+    return this.logSourceManager.addSource(name, description, type, vendor, product, connection, parsing);
+  }
+
+  processEvent(
+    source: EventSource,
+    category: EventCategory,
+    severity: EventSeverity,
+    action: string,
+    outcome: 'SUCCESS' | 'FAILURE' | 'UNKNOWN',
+    message: string,
+    raw: string
+  ): SecurityEvent {
+    return this.eventProcessor.processEvent(source, category, severity, action, outcome, message, raw);
+  }
+
+  createAlert(
+    title: string,
+    description: string,
+    severity: EventSeverity,
+    category: EventCategory,
+    source: AlertSource,
+    rule: AlertRule,
+    events: readonly string[]
+  ): SecurityAlert {
+    return this.alertManager.createAlert(title, description, severity, category, source, rule, events);
+  }
+
+  getLogSourceManager(): LogSourceManager {
+    return this.logSourceManager;
+  }
+
+  getEventProcessor(): EventProcessor {
+    return this.eventProcessor;
+  }
+
+  getAlertManager(): AlertManager {
+    return this.alertManager;
+  }
+
+  getCorrelationEngine(): CorrelationEngine {
+    return this.correlationEngine;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// DEFAULT CONFIGURATIONS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export function createDefaultSIEMUIConfig(): SIEMUIConfig {
+  return {
+    dashboardEnabled: true,
+    realTimeUpdates: true,
+    visualizations: [
+      'ALERT_QUEUE', 'EVENT_TIMELINE', 'THREAT_MAP', 'ATTACK_SURFACE',
+      'MITRE_HEATMAP', 'TOP_SOURCES', 'TOP_DESTINATIONS', 'SOC_METRICS',
+    ],
+    notifications: {
+      criticalAlert: true,
+      highAlert: true,
+      slaWarning: true,
+      slaBreach: true,
+      ruleTriggered: true,
+      sourceDown: true,
+      anomalyDetected: true,
+      complianceViolation: true,
+    },
+    reporting: {
+      autoGenerate: true,
+      schedules: [
+        { reportType: 'DAILY_SUMMARY', frequency: 'DAILY', time: '08:00', recipients: ['soc-team@company.com'] },
+        { reportType: 'WEEKLY_EXECUTIVE', frequency: 'WEEKLY', time: '09:00', recipients: ['security-leadership@company.com'] },
+      ],
+      templates: ['daily_summary', 'weekly_executive', 'compliance_report'],
+      distribution: ['soc-team@company.com'],
+      retention: 31536000000,
+    },
+    search: {
+      defaultTimeRange: '24h',
+      maxResults: 10000,
+      enableAutoComplete: true,
+      enableSavedSearches: true,
+      enableScheduledSearches: true,
+      searchHistory: 100,
+    },
+    workflow: {
+      autoAssignment: true,
+      autoEscalation: true,
+      autoEnrichment: true,
+      playbookIntegration: true,
+      ticketingIntegration: true,
+    },
+  };
+}

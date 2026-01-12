@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/schema",
+  "$id": "https://mia-build.io/schemas/varnostni_sistemi/v1",
+  "title": "VARNOSTNI_SISTEMI Configuration Schema",
+  "description": "JSON Schema za konfiguracijo VARNOSTNI_SISTEMI domene",
+  "type": "object",
+  "required": ["projectName", "domain", "version"],
+  "properties": {
+    "projectName": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100,
+      "pattern": "^[a-zA-Z][a-zA-Z0-9_-]*$",
+      "description": "Ime projekta"
+    },
+    "domain": {
+      "type": "string",
+      "description": "Identifikator domene"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+      "description": "Verzija projekta (semver)"
+    },
+    "profile": {
+      "type": "string",
+      "enum": ["enterprise", "regulated", "defense"],
+      "default": "enterprise",
+      "description": "Varnostni profil"
+    },
+    "modules": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["moduleId", "enabled"],
+        "properties": {
+          "moduleId": { "type": "string" },
+          "enabled": { "type": "boolean" },
+          "configuration": { "type": "object" }
+        }
+      },
+      "description": "Seznam modulov za vkljucitev"
+    },
+    "buildOptions": {
+      "type": "object",
+      "properties": {
+        "deterministic": { "type": "boolean", "default": true },
+        "generateEvidence": { "type": "boolean", "default": true },
+        "offlineMode": { "type": "boolean", "default": false }
+      }
+    }
+  },
+  "additionalProperties": false
+}

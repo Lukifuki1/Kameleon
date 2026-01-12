@@ -1,0 +1,237 @@
+# ==============================================================================
+# Docker Compose za {{IME_PROJEKTA}}
+# ==============================================================================
+# @file Docker Compose konfiguracija za lokalni razvoj varnostnega sistema
+# @author {{AVTOR}}
+# @version {{VERZIJA}}
+# @date {{DATUM}}
+# @domain {{DOMENA_SL}}
+#
+# @description
+# Docker Compose za lokalni razvoj varnostnih sistemov z:
+# - Varnostnim sistemom (glavna aplikacija)
+# - PostgreSQL podatkovno bazo z enkripcijo
+# - Redis za upravljanje sej
+# - Vault za upravljanje skrivnosti
+# - Prometheus za metrike
+# - Grafana za vizualizacijo
+# - Jaeger za sledenje
+#
+# @compliance DO-178C, IEC-61508, ISO-26262, MIL-STD-882E
+# @security ISO-27001, NIST-800-53, SOC-2
+# @meta_atom DEP_004 - Local Development Environment
+# ==============================================================================
+
+version: '3.9'
+
+services:
+  # ============================================================================
+  # VARNOSTNI SISTEM
+  # ============================================================================
+  security-system:
+    build:
+      context: .
+      dockerfile: infrastruktura/Dockerfile
+      target: production
+    container_name: {{IME_PROJEKTA_SLUG}}-app
+    restart: unless-stopped
+    ports:
+      - "8443:8443"
+      - "9090:9090"
+    environment:
+      NODE_ENV: development
+      LOG_LEVEL: debug
+      LOG_FORMAT: json
+      DATABASE_URL: postgresql://{{IME_PROJEKTA_SLUG}}:${DB_PASSWORD:-development}@postgres:5432/{{IME_PROJEKTA_SLUG}}?sslmode=require
+      REDIS_URL: redis://redis:6379
+      VAULT_ADDR: http://vault:8200
+      VAULT_TOKEN: ${VAULT_TOKEN:-development}
+      JAEGER_ENDPOINT: http://jaeger:14268/api/traces
+      METRICS_ENABLED: "true"
+      TRACING_ENABLED: "true"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      vault:
+        condition: service_started
+    networks:
+      - security-network
+    volumes:
+      - ./src:/app/src:ro
+      - ./konfiguracija:/app/konfiguracija:ro
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:8443/health', (r) => process.exit(r.statusCode === 200 ? 0 : 1))"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    tmpfs:
+      - /tmp:size=100M,mode=1777
+
+  # ============================================================================
+  # POSTGRESQL Z ENKRIPCIJO
+  # ============================================================================
+  postgres:
+    image: postgres:16-alpine
+    container_name: {{IME_PROJEKTA_SLUG}}-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: {{IME_PROJEKTA_SLUG}}
+      POSTGRES_USER: {{IME_PROJEKTA_SLUG}}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-development}
+      POSTGRES_INITDB_ARGS: "--data-checksums"
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./infrastruktura/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    networks:
+      - security-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U {{IME_PROJEKTA_SLUG}} -d {{IME_PROJEKTA_SLUG}}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    command:
+      - "postgres"
+      - "-c"
+      - "ssl=on"
+      - "-c"
+      - "ssl_cert_file=/var/lib/postgresql/server.crt"
+      - "-c"
+      - "ssl_key_file=/var/lib/postgresql/server.key"
+      - "-c"
+      - "log_statement=all"
+      - "-c"
+      - "log_connections=on"
+      - "-c"
+      - "log_disconnections=on"
+
+  # ============================================================================
+  # REDIS ZA SEJE
+  # ============================================================================
+  redis:
+    image: redis:7-alpine
+    container_name: {{IME_PROJEKTA_SLUG}}-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - security-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    command:
+      - "redis-server"
+      - "--appendonly"
+      - "yes"
+      - "--requirepass"
+      - "${REDIS_PASSWORD:-development}"
+
+  # ============================================================================
+  # HASHICORP VAULT ZA SKRIVNOSTI
+  # ============================================================================
+  vault:
+    image: hashicorp/vault:1.15
+    container_name: {{IME_PROJEKTA_SLUG}}-vault
+    restart: unless-stopped
+    ports:
+      - "8200:8200"
+    environment:
+      VAULT_DEV_ROOT_TOKEN_ID: ${VAULT_TOKEN:-development}
+      VAULT_DEV_LISTEN_ADDRESS: 0.0.0.0:8200
+    cap_add:
+      - IPC_LOCK
+    networks:
+      - security-network
+    volumes:
+      - vault-data:/vault/data
+
+  # ============================================================================
+  # PROMETHEUS ZA METRIKE
+  # ============================================================================
+  prometheus:
+    image: prom/prometheus:v2.48.0
+    container_name: {{IME_PROJEKTA_SLUG}}-prometheus
+    restart: unless-stopped
+    ports:
+      - "9091:9090"
+    volumes:
+      - ./infrastruktura/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    networks:
+      - security-network
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--web.enable-lifecycle"
+
+  # ============================================================================
+  # GRAFANA ZA VIZUALIZACIJO
+  # ============================================================================
+  grafana:
+    image: grafana/grafana:10.2.2
+    container_name: {{IME_PROJEKTA_SLUG}}-grafana
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-development}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./infrastruktura/grafana/provisioning:/etc/grafana/provisioning:ro
+    networks:
+      - security-network
+    depends_on:
+      - prometheus
+
+  # ============================================================================
+  # JAEGER ZA SLEDENJE
+  # ============================================================================
+  jaeger:
+    image: jaegertracing/all-in-one:1.52
+    container_name: {{IME_PROJEKTA_SLUG}}-jaeger
+    restart: unless-stopped
+    ports:
+      - "16686:16686"
+      - "14268:14268"
+    environment:
+      COLLECTOR_OTLP_ENABLED: "true"
+    networks:
+      - security-network
+
+# ==============================================================================
+# OMREZJA
+# ==============================================================================
+networks:
+  security-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.28.0.0/16
+
+# ==============================================================================
+# VOLUMNI
+# ==============================================================================
+volumes:
+  postgres-data:
+    driver: local
+  redis-data:
+    driver: local
+  vault-data:
+    driver: local
+  prometheus-data:
+    driver: local
+  grafana-data:
+    driver: local

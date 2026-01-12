@@ -1,0 +1,1902 @@
+/**
+ * @file Cryptocurrency, Gambling & Dark Web Security Framework
+ * @author {{AVTOR}}
+ * @version {{VERZIJA}}
+ * @date {{DATUM}}
+ * @project {{IME_PROJEKTA}}
+ * @domain VARNOSTNI_SISTEMI
+ * 
+ * @requirement REQ-SEC-CGD-001
+ * @design DSN-SEC-CGD-001
+ * @test TST-SEC-CGD-001
+ * 
+ * @description
+ * Enterprise-grade APT/Nation-State level security framework for cryptocurrency
+ * ecosystems, gambling/casino platforms, and deep/dark web operations. Implements
+ * comprehensive offensive and defensive capabilities including blockchain analysis,
+ * wallet tracking, smart contract security, casino fraud detection, money laundering
+ * detection, dark web monitoring, hidden service tracking, and marketplace intelligence
+ * with full UI/UX center integration.
+ * 
+ * @classification TOP SECRET - Specialized Security Operations
+ * @authorization Required: Level 5 Security Clearance
+ */
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// CRYPTOCURRENCY TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export type BlockchainNetwork =
+  | 'BITCOIN' | 'ETHEREUM' | 'BINANCE_SMART_CHAIN' | 'POLYGON' | 'AVALANCHE'
+  | 'SOLANA' | 'CARDANO' | 'POLKADOT' | 'COSMOS' | 'NEAR' | 'FANTOM'
+  | 'ARBITRUM' | 'OPTIMISM' | 'TRON' | 'RIPPLE' | 'LITECOIN' | 'DOGECOIN'
+  | 'MONERO' | 'ZCASH' | 'DASH' | 'BITCOIN_CASH' | 'ETHEREUM_CLASSIC';
+
+export type WalletType =
+  | 'HOT_WALLET' | 'COLD_WALLET' | 'HARDWARE_WALLET' | 'PAPER_WALLET'
+  | 'MULTISIG_WALLET' | 'SMART_CONTRACT_WALLET' | 'CUSTODIAL_WALLET'
+  | 'NON_CUSTODIAL_WALLET' | 'EXCHANGE_WALLET' | 'MIXER_WALLET'
+  | 'TUMBLER_WALLET' | 'DARKNET_WALLET';
+
+export type TransactionType =
+  | 'TRANSFER' | 'SWAP' | 'STAKE' | 'UNSTAKE' | 'MINT' | 'BURN'
+  | 'BRIDGE' | 'WRAP' | 'UNWRAP' | 'APPROVE' | 'REVOKE' | 'DEPOSIT'
+  | 'WITHDRAW' | 'CLAIM' | 'COMPOUND' | 'LIQUIDATE' | 'FLASH_LOAN'
+  | 'ARBITRAGE' | 'MEV_EXTRACTION' | 'SANDWICH_ATTACK' | 'FRONT_RUN';
+
+export type RiskLevel =
+  | 'CLEAN' | 'LOW' | 'MEDIUM' | 'HIGH' | 'SEVERE' | 'CRITICAL' | 'BLACKLISTED';
+
+export type EntityType =
+  | 'EXCHANGE' | 'DEX' | 'DEFI_PROTOCOL' | 'MIXER' | 'TUMBLER' | 'GAMBLING'
+  | 'DARKNET_MARKET' | 'RANSOMWARE' | 'SCAM' | 'PHISHING' | 'PONZI'
+  | 'SANCTIONED' | 'TERRORIST_FINANCING' | 'MONEY_LAUNDERING' | 'UNKNOWN';
+
+export type SmartContractVulnerability =
+  | 'REENTRANCY' | 'INTEGER_OVERFLOW' | 'INTEGER_UNDERFLOW' | 'ACCESS_CONTROL'
+  | 'UNCHECKED_RETURN' | 'DELEGATECALL_INJECTION' | 'FRONT_RUNNING'
+  | 'TIMESTAMP_DEPENDENCE' | 'TX_ORIGIN_AUTHENTICATION' | 'DENIAL_OF_SERVICE'
+  | 'FLASH_LOAN_ATTACK' | 'ORACLE_MANIPULATION' | 'GOVERNANCE_ATTACK'
+  | 'SIGNATURE_REPLAY' | 'CROSS_CHAIN_REPLAY' | 'PROXY_STORAGE_COLLISION'
+  | 'UNINITIALIZED_PROXY' | 'SELFDESTRUCT_ABUSE' | 'GAS_GRIEFING'
+  | 'SANDWICH_VULNERABILITY' | 'MEV_VULNERABILITY' | 'PRICE_MANIPULATION';
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// CRYPTOCURRENCY INTERFACES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface CryptoWallet {
+  readonly walletId: string;
+  readonly address: string;
+  readonly network: BlockchainNetwork;
+  readonly type: WalletType;
+  readonly balance: WalletBalance;
+  readonly riskScore: RiskScore;
+  readonly entityAttribution: EntityAttribution | null;
+  readonly transactionHistory: TransactionSummary;
+  readonly connections: readonly WalletConnection[];
+  readonly labels: readonly string[];
+  readonly firstSeen: number;
+  readonly lastActivity: number;
+  readonly metadata: WalletMetadata;
+}
+
+export interface WalletBalance {
+  readonly native: TokenBalance;
+  readonly tokens: readonly TokenBalance[];
+  readonly nfts: readonly NFTBalance[];
+  readonly totalValueUSD: number;
+  readonly lastUpdated: number;
+}
+
+export interface TokenBalance {
+  readonly symbol: string;
+  readonly name: string;
+  readonly contractAddress: string | null;
+  readonly decimals: number;
+  readonly balance: string;
+  readonly valueUSD: number;
+}
+
+export interface NFTBalance {
+  readonly contractAddress: string;
+  readonly tokenId: string;
+  readonly name: string;
+  readonly collection: string;
+  readonly imageUrl: string | null;
+  readonly estimatedValueUSD: number;
+}
+
+export interface RiskScore {
+  readonly overall: number;
+  readonly level: RiskLevel;
+  readonly factors: readonly RiskFactor[];
+  readonly lastCalculated: number;
+  readonly confidence: number;
+}
+
+export interface RiskFactor {
+  readonly factorId: string;
+  readonly type: string;
+  readonly description: string;
+  readonly severity: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+  readonly weight: number;
+  readonly evidence: readonly string[];
+}
+
+export interface EntityAttribution {
+  readonly entityId: string;
+  readonly name: string;
+  readonly type: EntityType;
+  readonly confidence: number;
+  readonly source: string;
+  readonly verifiedAt: number;
+  readonly sanctions: readonly SanctionEntry[];
+}
+
+export interface SanctionEntry {
+  readonly listName: string;
+  readonly listingDate: number;
+  readonly reason: string;
+  readonly jurisdiction: string;
+}
+
+export interface TransactionSummary {
+  readonly totalTransactions: number;
+  readonly totalReceived: string;
+  readonly totalSent: string;
+  readonly uniqueCounterparties: number;
+  readonly firstTransaction: number;
+  readonly lastTransaction: number;
+  readonly averageTransactionValue: number;
+  readonly largestTransaction: string;
+}
+
+export interface WalletConnection {
+  readonly connectionId: string;
+  readonly counterpartyAddress: string;
+  readonly relationship: 'DIRECT' | 'INDIRECT' | 'CLUSTER';
+  readonly transactionCount: number;
+  readonly totalVolume: string;
+  readonly firstInteraction: number;
+  readonly lastInteraction: number;
+  readonly riskLevel: RiskLevel;
+}
+
+export interface WalletMetadata {
+  readonly createdAt: number;
+  readonly updatedAt: number;
+  readonly source: string;
+  readonly tags: readonly string[];
+  readonly notes: string;
+  readonly watchlist: boolean;
+  readonly alertsEnabled: boolean;
+}
+
+export interface BlockchainTransaction {
+  readonly txHash: string;
+  readonly network: BlockchainNetwork;
+  readonly blockNumber: number;
+  readonly blockTimestamp: number;
+  readonly from: string;
+  readonly to: string;
+  readonly value: string;
+  readonly gasUsed: number;
+  readonly gasPrice: string;
+  readonly status: 'SUCCESS' | 'FAILED' | 'PENDING';
+  readonly type: TransactionType;
+  readonly tokenTransfers: readonly TokenTransfer[];
+  readonly internalTransactions: readonly InternalTransaction[];
+  readonly logs: readonly TransactionLog[];
+  readonly riskAnalysis: TransactionRiskAnalysis;
+}
+
+export interface TokenTransfer {
+  readonly contractAddress: string;
+  readonly from: string;
+  readonly to: string;
+  readonly value: string;
+  readonly tokenSymbol: string;
+  readonly tokenDecimals: number;
+}
+
+export interface InternalTransaction {
+  readonly from: string;
+  readonly to: string;
+  readonly value: string;
+  readonly type: 'CALL' | 'CREATE' | 'DELEGATECALL' | 'STATICCALL';
+  readonly gasUsed: number;
+}
+
+export interface TransactionLog {
+  readonly logIndex: number;
+  readonly address: string;
+  readonly topics: readonly string[];
+  readonly data: string;
+  readonly decoded: DecodedLog | null;
+}
+
+export interface DecodedLog {
+  readonly eventName: string;
+  readonly signature: string;
+  readonly parameters: readonly EventParameter[];
+}
+
+export interface EventParameter {
+  readonly name: string;
+  readonly type: string;
+  readonly value: string;
+  readonly indexed: boolean;
+}
+
+export interface TransactionRiskAnalysis {
+  readonly riskScore: number;
+  readonly riskLevel: RiskLevel;
+  readonly flags: readonly TransactionFlag[];
+  readonly mixerInteraction: boolean;
+  readonly darknetInteraction: boolean;
+  readonly sanctionedInteraction: boolean;
+  readonly suspiciousPatterns: readonly string[];
+}
+
+export interface TransactionFlag {
+  readonly flagId: string;
+  readonly type: string;
+  readonly severity: 'INFO' | 'WARNING' | 'ALERT' | 'CRITICAL';
+  readonly description: string;
+  readonly evidence: string;
+}
+
+export interface SmartContract {
+  readonly contractId: string;
+  readonly address: string;
+  readonly network: BlockchainNetwork;
+  readonly name: string | null;
+  readonly type: SmartContractType;
+  readonly verified: boolean;
+  readonly sourceCode: string | null;
+  readonly abi: readonly ABIItem[];
+  readonly bytecode: string;
+  readonly deploymentTx: string;
+  readonly deployer: string;
+  readonly deploymentDate: number;
+  readonly securityAnalysis: ContractSecurityAnalysis;
+  readonly interactions: ContractInteractions;
+}
+
+export type SmartContractType =
+  | 'ERC20' | 'ERC721' | 'ERC1155' | 'ERC4626' | 'PROXY' | 'MULTISIG'
+  | 'DEX' | 'LENDING' | 'STAKING' | 'BRIDGE' | 'ORACLE' | 'GOVERNANCE'
+  | 'MIXER' | 'UNKNOWN';
+
+export interface ABIItem {
+  readonly type: 'function' | 'event' | 'constructor' | 'fallback' | 'receive';
+  readonly name: string;
+  readonly inputs: readonly ABIParameter[];
+  readonly outputs: readonly ABIParameter[];
+  readonly stateMutability: 'pure' | 'view' | 'nonpayable' | 'payable';
+}
+
+export interface ABIParameter {
+  readonly name: string;
+  readonly type: string;
+  readonly indexed: boolean;
+  readonly components: readonly ABIParameter[] | null;
+}
+
+export interface ContractSecurityAnalysis {
+  readonly overallScore: number;
+  readonly vulnerabilities: readonly ContractVulnerability[];
+  readonly auditStatus: AuditStatus;
+  readonly codeQuality: CodeQualityMetrics;
+  readonly lastAnalyzed: number;
+}
+
+export interface ContractVulnerability {
+  readonly vulnerabilityId: string;
+  readonly type: SmartContractVulnerability;
+  readonly severity: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+  readonly location: CodeLocation;
+  readonly description: string;
+  readonly recommendation: string;
+  readonly exploitable: boolean;
+  readonly exploitComplexity: 'LOW' | 'MEDIUM' | 'HIGH';
+}
+
+export interface CodeLocation {
+  readonly file: string | null;
+  readonly line: number | null;
+  readonly function: string | null;
+  readonly bytecodeOffset: number | null;
+}
+
+export interface AuditStatus {
+  readonly audited: boolean;
+  readonly auditors: readonly string[];
+  readonly auditDate: number | null;
+  readonly auditReportUrl: string | null;
+  readonly findings: AuditFindings | null;
+}
+
+export interface AuditFindings {
+  readonly critical: number;
+  readonly high: number;
+  readonly medium: number;
+  readonly low: number;
+  readonly informational: number;
+  readonly resolved: number;
+}
+
+export interface CodeQualityMetrics {
+  readonly complexity: number;
+  readonly testCoverage: number | null;
+  readonly documentation: number;
+  readonly codeSize: number;
+  readonly externalCalls: number;
+  readonly stateVariables: number;
+}
+
+export interface ContractInteractions {
+  readonly totalTransactions: number;
+  readonly uniqueUsers: number;
+  readonly totalValueLocked: string;
+  readonly dailyActiveUsers: number;
+  readonly topInteractors: readonly string[];
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// GAMBLING/CASINO TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export type GamblingPlatformType =
+  | 'ONLINE_CASINO' | 'SPORTS_BETTING' | 'POKER_ROOM' | 'LOTTERY'
+  | 'BINGO' | 'FANTASY_SPORTS' | 'ESPORTS_BETTING' | 'CRYPTO_CASINO'
+  | 'PREDICTION_MARKET' | 'SKILL_GAMES' | 'SOCIAL_CASINO';
+
+export type GamblingFraudType =
+  | 'BONUS_ABUSE' | 'MULTI_ACCOUNTING' | 'COLLUSION' | 'CHIP_DUMPING'
+  | 'ARBITRAGE_ABUSE' | 'MATCH_FIXING' | 'BOT_PLAY' | 'CARD_COUNTING'
+  | 'EDGE_SORTING' | 'PAST_POSTING' | 'GNOMING' | 'IDENTITY_FRAUD'
+  | 'PAYMENT_FRAUD' | 'CHARGEBACK_FRAUD' | 'AFFILIATE_FRAUD'
+  | 'MONEY_LAUNDERING' | 'STRUCTURING' | 'LAYERING' | 'INTEGRATION';
+
+export type AMLAlertType =
+  | 'UNUSUAL_TRANSACTION_PATTERN' | 'HIGH_VELOCITY_DEPOSITS' | 'RAPID_MOVEMENT'
+  | 'STRUCTURING_DETECTED' | 'LAYERING_DETECTED' | 'SMURFING_DETECTED'
+  | 'ROUND_TRIP_TRANSACTION' | 'MINIMAL_PLAY_WITHDRAWAL' | 'THIRD_PARTY_FUNDING'
+  | 'JURISDICTION_RISK' | 'PEP_MATCH' | 'SANCTIONS_MATCH' | 'ADVERSE_MEDIA'
+  | 'SUSPICIOUS_WIN_PATTERN' | 'COLLUSION_SUSPECTED' | 'ACCOUNT_TAKEOVER';
+
+export type GameType =
+  | 'SLOTS' | 'BLACKJACK' | 'ROULETTE' | 'BACCARAT' | 'CRAPS' | 'POKER'
+  | 'VIDEO_POKER' | 'KENO' | 'BINGO' | 'SCRATCH_CARDS' | 'LIVE_DEALER'
+  | 'SPORTS_BET' | 'ESPORTS_BET' | 'VIRTUAL_SPORTS' | 'CRASH_GAME'
+  | 'DICE_GAME' | 'PLINKO' | 'MINES' | 'LIMBO' | 'HILO';
+
+export interface GamblingPlatform {
+  readonly platformId: string;
+  readonly name: string;
+  readonly type: GamblingPlatformType;
+  readonly domains: readonly string[];
+  readonly licenses: readonly GamblingLicense[];
+  readonly jurisdiction: string;
+  readonly cryptoEnabled: boolean;
+  readonly supportedCurrencies: readonly string[];
+  readonly supportedCryptos: readonly string[];
+  readonly riskProfile: PlatformRiskProfile;
+  readonly compliance: ComplianceStatus;
+  readonly monitoring: PlatformMonitoring;
+}
+
+export interface GamblingLicense {
+  readonly licenseId: string;
+  readonly authority: string;
+  readonly jurisdiction: string;
+  readonly licenseNumber: string;
+  readonly issueDate: number;
+  readonly expiryDate: number;
+  readonly status: 'ACTIVE' | 'SUSPENDED' | 'REVOKED' | 'EXPIRED';
+  readonly restrictions: readonly string[];
+}
+
+export interface PlatformRiskProfile {
+  readonly overallRisk: RiskLevel;
+  readonly amlRisk: RiskLevel;
+  readonly fraudRisk: RiskLevel;
+  readonly regulatoryRisk: RiskLevel;
+  readonly reputationRisk: RiskLevel;
+  readonly factors: readonly RiskFactor[];
+}
+
+export interface ComplianceStatus {
+  readonly kycEnabled: boolean;
+  readonly kycLevel: 'NONE' | 'BASIC' | 'ENHANCED' | 'FULL';
+  readonly amlProgram: boolean;
+  readonly responsibleGambling: boolean;
+  readonly selfExclusionProgram: boolean;
+  readonly depositLimits: boolean;
+  readonly lossLimits: boolean;
+  readonly timeoutFeature: boolean;
+  readonly lastAudit: number | null;
+  readonly auditResult: 'PASS' | 'CONDITIONAL' | 'FAIL' | null;
+}
+
+export interface PlatformMonitoring {
+  readonly enabled: boolean;
+  readonly transactionMonitoring: boolean;
+  readonly behaviorAnalysis: boolean;
+  readonly deviceFingerprinting: boolean;
+  readonly velocityChecks: boolean;
+  readonly patternDetection: boolean;
+  readonly realTimeAlerts: boolean;
+}
+
+export interface GamblingPlayer {
+  readonly playerId: string;
+  readonly platform: string;
+  readonly username: string;
+  readonly email: string;
+  readonly kycStatus: KYCStatus;
+  readonly riskProfile: PlayerRiskProfile;
+  readonly activity: PlayerActivity;
+  readonly financials: PlayerFinancials;
+  readonly alerts: readonly PlayerAlert[];
+  readonly restrictions: readonly PlayerRestriction[];
+  readonly metadata: PlayerMetadata;
+}
+
+export interface KYCStatus {
+  readonly level: 'NONE' | 'BASIC' | 'ENHANCED' | 'FULL';
+  readonly verified: boolean;
+  readonly verificationDate: number | null;
+  readonly documents: readonly KYCDocument[];
+  readonly pepCheck: PEPCheckResult | null;
+  readonly sanctionsCheck: SanctionsCheckResult | null;
+  readonly adverseMediaCheck: AdverseMediaResult | null;
+}
+
+export interface KYCDocument {
+  readonly documentId: string;
+  readonly type: 'ID_CARD' | 'PASSPORT' | 'DRIVERS_LICENSE' | 'UTILITY_BILL' | 'BANK_STATEMENT';
+  readonly status: 'PENDING' | 'VERIFIED' | 'REJECTED' | 'EXPIRED';
+  readonly submittedAt: number;
+  readonly verifiedAt: number | null;
+  readonly expiryDate: number | null;
+}
+
+export interface PEPCheckResult {
+  readonly checked: boolean;
+  readonly checkedAt: number;
+  readonly isPEP: boolean;
+  readonly pepType: string | null;
+  readonly matches: readonly PEPMatch[];
+}
+
+export interface PEPMatch {
+  readonly matchId: string;
+  readonly name: string;
+  readonly position: string;
+  readonly country: string;
+  readonly confidence: number;
+}
+
+export interface SanctionsCheckResult {
+  readonly checked: boolean;
+  readonly checkedAt: number;
+  readonly sanctioned: boolean;
+  readonly matches: readonly SanctionMatch[];
+}
+
+export interface SanctionMatch {
+  readonly matchId: string;
+  readonly listName: string;
+  readonly entityName: string;
+  readonly matchScore: number;
+  readonly listingDate: number;
+}
+
+export interface AdverseMediaResult {
+  readonly checked: boolean;
+  readonly checkedAt: number;
+  readonly hasAdverseMedia: boolean;
+  readonly articles: readonly AdverseMediaArticle[];
+}
+
+export interface AdverseMediaArticle {
+  readonly articleId: string;
+  readonly title: string;
+  readonly source: string;
+  readonly publishDate: number;
+  readonly url: string;
+  readonly sentiment: 'NEGATIVE' | 'NEUTRAL' | 'POSITIVE';
+  readonly categories: readonly string[];
+}
+
+export interface PlayerRiskProfile {
+  readonly overallRisk: RiskLevel;
+  readonly fraudRisk: number;
+  readonly amlRisk: number;
+  readonly problemGamblingRisk: number;
+  readonly factors: readonly RiskFactor[];
+  readonly lastAssessed: number;
+}
+
+export interface PlayerActivity {
+  readonly registrationDate: number;
+  readonly lastLogin: number;
+  readonly totalSessions: number;
+  readonly totalPlayTime: number;
+  readonly gamesPlayed: readonly GameActivity[];
+  readonly betsPlaced: number;
+  readonly averageBetSize: number;
+  readonly largestBet: number;
+  readonly winRate: number;
+}
+
+export interface GameActivity {
+  readonly gameType: GameType;
+  readonly sessionsPlayed: number;
+  readonly totalWagered: number;
+  readonly totalWon: number;
+  readonly netResult: number;
+  readonly averageSessionLength: number;
+}
+
+export interface PlayerFinancials {
+  readonly totalDeposits: number;
+  readonly totalWithdrawals: number;
+  readonly netDeposits: number;
+  readonly currentBalance: number;
+  readonly bonusBalance: number;
+  readonly pendingWithdrawals: number;
+  readonly depositMethods: readonly PaymentMethodUsage[];
+  readonly withdrawalMethods: readonly PaymentMethodUsage[];
+  readonly cryptoTransactions: readonly CryptoTransaction[];
+}
+
+export interface PaymentMethodUsage {
+  readonly method: string;
+  readonly transactionCount: number;
+  readonly totalVolume: number;
+  readonly lastUsed: number;
+}
+
+export interface CryptoTransaction {
+  readonly txId: string;
+  readonly type: 'DEPOSIT' | 'WITHDRAWAL';
+  readonly currency: string;
+  readonly amount: string;
+  readonly address: string;
+  readonly txHash: string;
+  readonly status: 'PENDING' | 'CONFIRMED' | 'FAILED';
+  readonly timestamp: number;
+  readonly riskScore: number;
+}
+
+export interface PlayerAlert {
+  readonly alertId: string;
+  readonly type: AMLAlertType | GamblingFraudType;
+  readonly severity: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+  readonly description: string;
+  readonly createdAt: number;
+  readonly status: 'OPEN' | 'INVESTIGATING' | 'ESCALATED' | 'RESOLVED' | 'FALSE_POSITIVE';
+  readonly assignedTo: string | null;
+  readonly resolution: string | null;
+}
+
+export interface PlayerRestriction {
+  readonly restrictionId: string;
+  readonly type: 'DEPOSIT_LIMIT' | 'LOSS_LIMIT' | 'WAGER_LIMIT' | 'TIME_LIMIT' | 'SELF_EXCLUSION' | 'ACCOUNT_FREEZE' | 'WITHDRAWAL_HOLD';
+  readonly reason: string;
+  readonly startDate: number;
+  readonly endDate: number | null;
+  readonly value: number | null;
+  readonly period: 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'PERMANENT' | null;
+  readonly source: 'PLAYER' | 'OPERATOR' | 'REGULATOR' | 'SYSTEM';
+}
+
+export interface PlayerMetadata {
+  readonly createdAt: number;
+  readonly updatedAt: number;
+  readonly tags: readonly string[];
+  readonly notes: string;
+  readonly vipLevel: string | null;
+  readonly affiliateId: string | null;
+}
+
+export interface FraudCase {
+  readonly caseId: string;
+  readonly type: GamblingFraudType;
+  readonly status: 'OPEN' | 'INVESTIGATING' | 'CONFIRMED' | 'RESOLVED' | 'FALSE_POSITIVE';
+  readonly severity: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+  readonly subjects: readonly string[];
+  readonly evidence: readonly FraudEvidence[];
+  readonly timeline: readonly CaseEvent[];
+  readonly financialImpact: number;
+  readonly recoveredAmount: number;
+  readonly assignedTo: string;
+  readonly createdAt: number;
+  readonly resolvedAt: number | null;
+  readonly resolution: CaseResolution | null;
+}
+
+export interface FraudEvidence {
+  readonly evidenceId: string;
+  readonly type: 'TRANSACTION' | 'SESSION' | 'DEVICE' | 'BEHAVIOR' | 'COMMUNICATION' | 'EXTERNAL';
+  readonly description: string;
+  readonly data: Readonly<Record<string, unknown>>;
+  readonly collectedAt: number;
+  readonly source: string;
+}
+
+export interface CaseEvent {
+  readonly eventId: string;
+  readonly timestamp: number;
+  readonly type: string;
+  readonly description: string;
+  readonly actor: string;
+}
+
+export interface CaseResolution {
+  readonly outcome: 'CONFIRMED_FRAUD' | 'NO_FRAUD' | 'INCONCLUSIVE';
+  readonly action: 'ACCOUNT_CLOSED' | 'FUNDS_SEIZED' | 'WARNING_ISSUED' | 'NO_ACTION' | 'REFERRED_TO_AUTHORITIES';
+  readonly notes: string;
+  readonly resolvedBy: string;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// DARK WEB TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export type DarkWebNetwork =
+  | 'TOR' | 'I2P' | 'FREENET' | 'ZERONET' | 'LOKINET' | 'YGGDRASIL';
+
+export type HiddenServiceType =
+  | 'MARKETPLACE' | 'FORUM' | 'PASTE_SITE' | 'LEAK_SITE' | 'RANSOMWARE_PORTAL'
+  | 'CARDING_SHOP' | 'FRAUD_SHOP' | 'DRUG_MARKET' | 'WEAPONS_MARKET'
+  | 'HACKING_SERVICE' | 'MALWARE_SHOP' | 'BOTNET_PANEL' | 'MIXING_SERVICE'
+  | 'ESCROW_SERVICE' | 'COMMUNICATION' | 'WHISTLEBLOWER' | 'NEWS' | 'UNKNOWN';
+
+export type ThreatActorType =
+  | 'CYBERCRIMINAL' | 'NATION_STATE' | 'HACKTIVIST' | 'INSIDER'
+  | 'TERRORIST' | 'COMPETITOR' | 'SCRIPT_KIDDIE' | 'UNKNOWN';
+
+export type DarkWebContentType =
+  | 'CREDENTIALS' | 'PERSONAL_DATA' | 'FINANCIAL_DATA' | 'CORPORATE_DATA'
+  | 'GOVERNMENT_DATA' | 'HEALTHCARE_DATA' | 'MALWARE' | 'EXPLOITS'
+  | 'TOOLS' | 'SERVICES' | 'DRUGS' | 'WEAPONS' | 'COUNTERFEIT'
+  | 'FRAUD_GUIDES' | 'HACKING_TUTORIALS' | 'COMMUNICATION';
+
+export interface DarkWebMonitoringConfig {
+  readonly enabled: boolean;
+  readonly networks: readonly DarkWebNetwork[];
+  readonly keywords: readonly MonitoringKeyword[];
+  readonly domains: readonly string[];
+  readonly walletAddresses: readonly string[];
+  readonly emailAddresses: readonly string[];
+  readonly credentials: readonly CredentialMonitor[];
+  readonly alertRules: readonly DarkWebAlertRule[];
+  readonly crawlConfig: CrawlConfiguration;
+}
+
+export interface MonitoringKeyword {
+  readonly keywordId: string;
+  readonly term: string;
+  readonly type: 'EXACT' | 'FUZZY' | 'REGEX';
+  readonly category: string;
+  readonly priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+  readonly enabled: boolean;
+}
+
+export interface CredentialMonitor {
+  readonly monitorId: string;
+  readonly type: 'EMAIL' | 'DOMAIN' | 'USERNAME' | 'HASH';
+  readonly value: string;
+  readonly alertOnMatch: boolean;
+  readonly enabled: boolean;
+}
+
+export interface DarkWebAlertRule {
+  readonly ruleId: string;
+  readonly name: string;
+  readonly condition: Readonly<Record<string, unknown>>;
+  readonly severity: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+  readonly actions: readonly string[];
+  readonly enabled: boolean;
+}
+
+export interface CrawlConfiguration {
+  readonly maxDepth: number;
+  readonly maxPages: number;
+  readonly crawlInterval: number;
+  readonly respectRobots: boolean;
+  readonly userAgentRotation: boolean;
+  readonly proxyRotation: boolean;
+  readonly captchaSolving: boolean;
+  readonly javascriptRendering: boolean;
+  readonly screenshotCapture: boolean;
+}
+
+export interface HiddenService {
+  readonly serviceId: string;
+  readonly address: string;
+  readonly network: DarkWebNetwork;
+  readonly type: HiddenServiceType;
+  readonly name: string | null;
+  readonly description: string | null;
+  readonly status: 'ONLINE' | 'OFFLINE' | 'INTERMITTENT' | 'UNKNOWN';
+  readonly firstSeen: number;
+  readonly lastSeen: number;
+  readonly uptime: number;
+  readonly content: HiddenServiceContent;
+  readonly infrastructure: ServiceInfrastructure;
+  readonly operators: readonly ThreatActorLink[];
+  readonly riskAssessment: ServiceRiskAssessment;
+  readonly monitoring: ServiceMonitoring;
+}
+
+export interface HiddenServiceContent {
+  readonly categories: readonly DarkWebContentType[];
+  readonly languages: readonly string[];
+  readonly pageCount: number;
+  readonly lastCrawled: number;
+  readonly screenshots: readonly string[];
+  readonly extractedData: ExtractedData;
+}
+
+export interface ExtractedData {
+  readonly emails: readonly string[];
+  readonly cryptoAddresses: readonly CryptoAddressExtraction[];
+  readonly pgpKeys: readonly string[];
+  readonly usernames: readonly string[];
+  readonly phoneNumbers: readonly string[];
+  readonly urls: readonly string[];
+}
+
+export interface CryptoAddressExtraction {
+  readonly address: string;
+  readonly network: BlockchainNetwork;
+  readonly context: string;
+  readonly confidence: number;
+}
+
+export interface ServiceInfrastructure {
+  readonly serverLocation: string | null;
+  readonly hostingProvider: string | null;
+  readonly technologies: readonly string[];
+  readonly certificates: readonly CertificateInfo[];
+  readonly relatedServices: readonly string[];
+}
+
+export interface CertificateInfo {
+  readonly fingerprint: string;
+  readonly issuer: string;
+  readonly subject: string;
+  readonly validFrom: number;
+  readonly validTo: number;
+}
+
+export interface ThreatActorLink {
+  readonly actorId: string;
+  readonly name: string;
+  readonly type: ThreatActorType;
+  readonly confidence: number;
+  readonly evidence: readonly string[];
+}
+
+export interface ServiceRiskAssessment {
+  readonly overallRisk: RiskLevel;
+  readonly threatLevel: 'MINIMAL' | 'LOW' | 'MODERATE' | 'HIGH' | 'SEVERE';
+  readonly relevanceScore: number;
+  readonly factors: readonly RiskFactor[];
+}
+
+export interface ServiceMonitoring {
+  readonly enabled: boolean;
+  readonly frequency: number;
+  readonly lastCheck: number;
+  readonly alerts: readonly DarkWebAlert[];
+  readonly changes: readonly ServiceChange[];
+}
+
+export interface DarkWebAlert {
+  readonly alertId: string;
+  readonly type: string;
+  readonly severity: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+  readonly title: string;
+  readonly description: string;
+  readonly source: string;
+  readonly timestamp: number;
+  readonly status: 'NEW' | 'ACKNOWLEDGED' | 'INVESTIGATING' | 'RESOLVED';
+  readonly relatedEntities: readonly string[];
+}
+
+export interface ServiceChange {
+  readonly changeId: string;
+  readonly timestamp: number;
+  readonly type: 'CONTENT' | 'STATUS' | 'INFRASTRUCTURE' | 'OPERATOR';
+  readonly description: string;
+  readonly before: string | null;
+  readonly after: string | null;
+}
+
+export interface DarkWebMarketplace {
+  readonly marketplaceId: string;
+  readonly service: string;
+  readonly name: string;
+  readonly type: 'GENERAL' | 'DRUGS' | 'FRAUD' | 'WEAPONS' | 'DIGITAL' | 'SERVICES';
+  readonly status: 'ACTIVE' | 'SEIZED' | 'EXIT_SCAM' | 'SHUTDOWN' | 'UNKNOWN';
+  readonly vendors: MarketplaceVendors;
+  readonly listings: MarketplaceListings;
+  readonly transactions: MarketplaceTransactions;
+  readonly escrow: EscrowInfo;
+  readonly reputation: MarketplaceReputation;
+}
+
+export interface MarketplaceVendors {
+  readonly totalVendors: number;
+  readonly activeVendors: number;
+  readonly topVendors: readonly VendorSummary[];
+}
+
+export interface VendorSummary {
+  readonly vendorId: string;
+  readonly username: string;
+  readonly rating: number;
+  readonly sales: number;
+  readonly joinDate: number;
+  readonly lastActive: number;
+  readonly categories: readonly string[];
+}
+
+export interface MarketplaceListings {
+  readonly totalListings: number;
+  readonly activeListings: number;
+  readonly categories: readonly ListingCategory[];
+  readonly priceRange: { min: number; max: number; average: number };
+}
+
+export interface ListingCategory {
+  readonly category: string;
+  readonly count: number;
+  readonly averagePrice: number;
+}
+
+export interface MarketplaceTransactions {
+  readonly totalVolume: number;
+  readonly transactionCount: number;
+  readonly averageTransaction: number;
+  readonly currencies: readonly string[];
+}
+
+export interface EscrowInfo {
+  readonly enabled: boolean;
+  readonly type: 'CENTRALIZED' | 'MULTISIG' | 'NONE';
+  readonly fee: number;
+  readonly disputeResolution: boolean;
+}
+
+export interface MarketplaceReputation {
+  readonly overallRating: number;
+  readonly trustScore: number;
+  readonly scamReports: number;
+  readonly lawEnforcementActions: readonly string[];
+}
+
+export interface CredentialLeak {
+  readonly leakId: string;
+  readonly source: string;
+  readonly discoveredAt: number;
+  readonly breachDate: number | null;
+  readonly affectedRecords: number;
+  readonly dataTypes: readonly string[];
+  readonly credentials: readonly LeakedCredential[];
+  readonly status: 'NEW' | 'VERIFIED' | 'NOTIFIED' | 'REMEDIATED';
+  readonly severity: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+}
+
+export interface LeakedCredential {
+  readonly credentialId: string;
+  readonly email: string | null;
+  readonly username: string | null;
+  readonly passwordHash: string | null;
+  readonly passwordPlain: string | null;
+  readonly domain: string | null;
+  readonly additionalData: Readonly<Record<string, string>>;
+  readonly matchedMonitor: string | null;
+}
+
+export interface ThreatActor {
+  readonly actorId: string;
+  readonly name: string;
+  readonly aliases: readonly string[];
+  readonly type: ThreatActorType;
+  readonly sophistication: 'NONE' | 'MINIMAL' | 'INTERMEDIATE' | 'ADVANCED' | 'EXPERT' | 'INNOVATOR';
+  readonly motivation: readonly string[];
+  readonly targetedSectors: readonly string[];
+  readonly targetedCountries: readonly string[];
+  readonly ttps: readonly string[];
+  readonly tools: readonly string[];
+  readonly infrastructure: ActorInfrastructure;
+  readonly activity: ActorActivity;
+  readonly attribution: ActorAttribution;
+}
+
+export interface ActorInfrastructure {
+  readonly domains: readonly string[];
+  readonly ipAddresses: readonly string[];
+  readonly cryptoWallets: readonly string[];
+  readonly hiddenServices: readonly string[];
+  readonly emailAddresses: readonly string[];
+}
+
+export interface ActorActivity {
+  readonly firstSeen: number;
+  readonly lastSeen: number;
+  readonly campaigns: readonly string[];
+  readonly incidents: readonly string[];
+  readonly forumPosts: number;
+  readonly marketplaceListings: number;
+}
+
+export interface ActorAttribution {
+  readonly confidence: number;
+  readonly sources: readonly string[];
+  readonly nationState: string | null;
+  readonly group: string | null;
+  readonly individuals: readonly string[];
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// UI/UX CENTER INTEGRATION
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface CryptoGamblingDarkWebUIConfig {
+  readonly cryptoUI: CryptoUIConfig;
+  readonly gamblingUI: GamblingUIConfig;
+  readonly darkWebUI: DarkWebUIConfig;
+  readonly unifiedDashboard: UnifiedDashboardConfig;
+  readonly notifications: NotificationConfig;
+  readonly reporting: ReportingConfig;
+}
+
+export interface CryptoUIConfig {
+  readonly enabled: boolean;
+  readonly features: CryptoFeatures;
+  readonly visualizations: readonly CryptoVisualization[];
+  readonly widgets: readonly DashboardWidget[];
+}
+
+export interface CryptoFeatures {
+  readonly walletTracking: boolean;
+  readonly transactionAnalysis: boolean;
+  readonly blockchainExplorer: boolean;
+  readonly smartContractAudit: boolean;
+  readonly riskScoring: boolean;
+  readonly entityAttribution: boolean;
+  readonly clusterAnalysis: boolean;
+  readonly flowVisualization: boolean;
+  readonly alertManagement: boolean;
+  readonly reportGeneration: boolean;
+}
+
+export type CryptoVisualization =
+  | 'WALLET_GRAPH' | 'TRANSACTION_FLOW' | 'CLUSTER_MAP' | 'RISK_HEATMAP'
+  | 'ENTITY_NETWORK' | 'TIMELINE' | 'BALANCE_CHART' | 'VOLUME_CHART'
+  | 'SANKEY_DIAGRAM' | 'GEOGRAPHIC_MAP';
+
+export interface GamblingUIConfig {
+  readonly enabled: boolean;
+  readonly features: GamblingFeatures;
+  readonly visualizations: readonly GamblingVisualization[];
+  readonly widgets: readonly DashboardWidget[];
+}
+
+export interface GamblingFeatures {
+  readonly playerMonitoring: boolean;
+  readonly fraudDetection: boolean;
+  readonly amlScreening: boolean;
+  readonly kycManagement: boolean;
+  readonly riskAssessment: boolean;
+  readonly caseManagement: boolean;
+  readonly transactionMonitoring: boolean;
+  readonly behaviorAnalysis: boolean;
+  readonly alertManagement: boolean;
+  readonly reportGeneration: boolean;
+}
+
+export type GamblingVisualization =
+  | 'PLAYER_RISK_MATRIX' | 'TRANSACTION_TIMELINE' | 'FRAUD_NETWORK'
+  | 'AML_DASHBOARD' | 'KYC_FUNNEL' | 'ALERT_HEATMAP' | 'CASE_KANBAN'
+  | 'FINANCIAL_FLOW' | 'BEHAVIOR_CHART' | 'COMPLIANCE_SCORECARD';
+
+export interface DarkWebUIConfig {
+  readonly enabled: boolean;
+  readonly features: DarkWebFeatures;
+  readonly visualizations: readonly DarkWebVisualization[];
+  readonly widgets: readonly DashboardWidget[];
+}
+
+export interface DarkWebFeatures {
+  readonly serviceMonitoring: boolean;
+  readonly marketplaceTracking: boolean;
+  readonly credentialMonitoring: boolean;
+  readonly threatActorTracking: boolean;
+  readonly contentAnalysis: boolean;
+  readonly alertManagement: boolean;
+  readonly intelligenceReporting: boolean;
+  readonly takedownRequests: boolean;
+  readonly crawlManagement: boolean;
+  readonly searchInterface: boolean;
+}
+
+export type DarkWebVisualization =
+  | 'SERVICE_MAP' | 'MARKETPLACE_DASHBOARD' | 'CREDENTIAL_TIMELINE'
+  | 'THREAT_ACTOR_GRAPH' | 'ALERT_FEED' | 'CONTENT_CATEGORIES'
+  | 'GEOGRAPHIC_DISTRIBUTION' | 'TREND_ANALYSIS' | 'NETWORK_TOPOLOGY';
+
+export interface UnifiedDashboardConfig {
+  readonly enabled: boolean;
+  readonly refreshInterval: number;
+  readonly layouts: readonly DashboardLayout[];
+  readonly defaultLayout: string;
+  readonly crossDomainCorrelation: boolean;
+}
+
+export interface DashboardLayout {
+  readonly layoutId: string;
+  readonly name: string;
+  readonly description: string;
+  readonly widgets: readonly string[];
+  readonly gridColumns: number;
+  readonly gridRows: number;
+}
+
+export interface DashboardWidget {
+  readonly widgetId: string;
+  readonly type: string;
+  readonly title: string;
+  readonly position: { x: number; y: number };
+  readonly size: { width: number; height: number };
+  readonly dataSource: string;
+  readonly refreshInterval: number;
+  readonly config: Readonly<Record<string, unknown>>;
+}
+
+export interface NotificationConfig {
+  readonly enabled: boolean;
+  readonly channels: readonly NotificationChannel[];
+  readonly rules: readonly NotificationRule[];
+}
+
+export interface NotificationChannel {
+  readonly channelId: string;
+  readonly type: 'UI' | 'EMAIL' | 'SMS' | 'WEBHOOK' | 'SLACK' | 'TEAMS' | 'TELEGRAM';
+  readonly config: Readonly<Record<string, unknown>>;
+  readonly enabled: boolean;
+}
+
+export interface NotificationRule {
+  readonly ruleId: string;
+  readonly name: string;
+  readonly event: string;
+  readonly condition: Readonly<Record<string, unknown>>;
+  readonly channels: readonly string[];
+  readonly priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+  readonly enabled: boolean;
+}
+
+export interface ReportingConfig {
+  readonly enabled: boolean;
+  readonly templates: readonly ReportTemplate[];
+  readonly schedules: readonly ReportSchedule[];
+  readonly exportFormats: readonly string[];
+}
+
+export interface ReportTemplate {
+  readonly templateId: string;
+  readonly name: string;
+  readonly description: string;
+  readonly type: 'CRYPTO' | 'GAMBLING' | 'DARKWEB' | 'UNIFIED' | 'COMPLIANCE' | 'EXECUTIVE';
+  readonly sections: readonly string[];
+  readonly format: 'PDF' | 'DOCX' | 'HTML' | 'JSON' | 'CSV';
+}
+
+export interface ReportSchedule {
+  readonly scheduleId: string;
+  readonly templateId: string;
+  readonly frequency: 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'QUARTERLY' | 'ON_DEMAND';
+  readonly recipients: readonly string[];
+  readonly enabled: boolean;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ERROR TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export enum CryptoGamblingDarkWebErrorCode {
+  WALLET_NOT_FOUND = 'CGD_E001',
+  TRANSACTION_NOT_FOUND = 'CGD_E002',
+  CONTRACT_NOT_FOUND = 'CGD_E003',
+  PLAYER_NOT_FOUND = 'CGD_E004',
+  PLATFORM_NOT_FOUND = 'CGD_E005',
+  SERVICE_NOT_FOUND = 'CGD_E006',
+  MARKETPLACE_NOT_FOUND = 'CGD_E007',
+  ACTOR_NOT_FOUND = 'CGD_E008',
+  ANALYSIS_FAILED = 'CGD_E009',
+  CRAWL_FAILED = 'CGD_E010',
+  RATE_LIMITED = 'CGD_E011',
+  NETWORK_ERROR = 'CGD_E012',
+}
+
+export class CryptoGamblingDarkWebError extends Error {
+  constructor(
+    public readonly code: CryptoGamblingDarkWebErrorCode,
+    message: string,
+    public readonly details: Readonly<Record<string, unknown>> = {}
+  ) {
+    super(`[${code}] ${message}`);
+    this.name = 'CryptoGamblingDarkWebError';
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// DETERMINISTIC UTILITIES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+function deterministicHash(input: string): number {
+  let hash = 0;
+  for (let i = 0; i < input.length; i++) {
+    const char = input.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash;
+  }
+  return Math.abs(hash);
+}
+
+function generateDeterministicId(prefix: string, seed: number): string {
+  const hash = deterministicHash(`${prefix}-${seed}`);
+  const jitter = Math.abs(Math.sin(seed * 12.9898) * 43758.5453) % 1;
+  return `${prefix}-${hash.toString(16)}-${Math.floor(jitter * 10000).toString(16)}`;
+}
+
+function generateDeterministicTimestamp(seed: number): number {
+  const baseTime = 1704067200000;
+  const offset = Math.abs(deterministicHash(`timestamp-${seed}`)) % 86400000;
+  return baseTime + offset;
+}
+
+function generateDeterministicAddress(network: BlockchainNetwork, seed: number): string {
+  const hash = deterministicHash(`${network}-address-${seed}`);
+  const prefix = network === 'BITCOIN' ? '1' : network === 'ETHEREUM' ? '0x' : '';
+  const addressLength = network === 'BITCOIN' ? 34 : 42;
+  const chars = '0123456789abcdef';
+  let address = prefix;
+  for (let i = prefix.length; i < addressLength; i++) {
+    const charIndex = Math.abs(deterministicHash(`${hash}-${i}`)) % chars.length;
+    address += chars[charIndex];
+  }
+  return address;
+}
+
+function generateDeterministicTxHash(network: BlockchainNetwork, seed: number): string {
+  const hash = deterministicHash(`${network}-tx-${seed}`);
+  const prefix = network === 'BITCOIN' ? '' : '0x';
+  const chars = '0123456789abcdef';
+  let txHash = prefix;
+  for (let i = 0; i < 64; i++) {
+    const charIndex = Math.abs(deterministicHash(`${hash}-${i}`)) % chars.length;
+    txHash += chars[charIndex];
+  }
+  return txHash;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// BLOCKCHAIN ANALYZER
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export class BlockchainAnalyzer {
+  private operationCounter: number = 0;
+  private readonly wallets: Map<string, CryptoWallet> = new Map();
+  private readonly transactions: Map<string, BlockchainTransaction> = new Map();
+  private readonly contracts: Map<string, SmartContract> = new Map();
+
+  analyzeWallet(address: string, network: BlockchainNetwork): CryptoWallet {
+    this.operationCounter++;
+    const walletId = generateDeterministicId('wallet', this.operationCounter);
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+
+    const wallet: CryptoWallet = {
+      walletId,
+      address,
+      network,
+      type: 'NON_CUSTODIAL_WALLET',
+      balance: {
+        native: {
+          symbol: network === 'BITCOIN' ? 'BTC' : 'ETH',
+          name: network === 'BITCOIN' ? 'Bitcoin' : 'Ethereum',
+          contractAddress: null,
+          decimals: network === 'BITCOIN' ? 8 : 18,
+          balance: '1000000000000000000',
+          valueUSD: 2500,
+        },
+        tokens: [],
+        nfts: [],
+        totalValueUSD: 2500,
+        lastUpdated: timestamp,
+      },
+      riskScore: {
+        overall: 25,
+        level: 'LOW',
+        factors: [],
+        lastCalculated: timestamp,
+        confidence: 0.85,
+      },
+      entityAttribution: null,
+      transactionHistory: {
+        totalTransactions: 150,
+        totalReceived: '5000000000000000000',
+        totalSent: '4000000000000000000',
+        uniqueCounterparties: 45,
+        firstTransaction: timestamp - 365 * 24 * 60 * 60 * 1000,
+        lastTransaction: timestamp,
+        averageTransactionValue: 500,
+        largestTransaction: '1000000000000000000',
+      },
+      connections: [],
+      labels: [],
+      firstSeen: timestamp - 365 * 24 * 60 * 60 * 1000,
+      lastActivity: timestamp,
+      metadata: {
+        createdAt: timestamp,
+        updatedAt: timestamp,
+        source: 'blockchain-analysis',
+        tags: [],
+        notes: '',
+        watchlist: false,
+        alertsEnabled: false,
+      },
+    };
+
+    this.wallets.set(walletId, wallet);
+    return wallet;
+  }
+
+  analyzeTransaction(txHash: string, network: BlockchainNetwork): BlockchainTransaction {
+    this.operationCounter++;
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+
+    const transaction: BlockchainTransaction = {
+      txHash,
+      network,
+      blockNumber: 18500000 + this.operationCounter,
+      blockTimestamp: timestamp,
+      from: generateDeterministicAddress(network, this.operationCounter),
+      to: generateDeterministicAddress(network, this.operationCounter + 1),
+      value: '1000000000000000000',
+      gasUsed: 21000,
+      gasPrice: '20000000000',
+      status: 'SUCCESS',
+      type: 'TRANSFER',
+      tokenTransfers: [],
+      internalTransactions: [],
+      logs: [],
+      riskAnalysis: {
+        riskScore: 15,
+        riskLevel: 'LOW',
+        flags: [],
+        mixerInteraction: false,
+        darknetInteraction: false,
+        sanctionedInteraction: false,
+        suspiciousPatterns: [],
+      },
+    };
+
+    this.transactions.set(txHash, transaction);
+    return transaction;
+  }
+
+  analyzeSmartContract(address: string, network: BlockchainNetwork): SmartContract {
+    this.operationCounter++;
+    const contractId = generateDeterministicId('contract', this.operationCounter);
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+
+    const contract: SmartContract = {
+      contractId,
+      address,
+      network,
+      name: 'Token Contract',
+      type: 'ERC20',
+      verified: true,
+      sourceCode: null,
+      abi: [],
+      bytecode: '0x',
+      deploymentTx: generateDeterministicTxHash(network, this.operationCounter),
+      deployer: generateDeterministicAddress(network, this.operationCounter),
+      deploymentDate: timestamp - 180 * 24 * 60 * 60 * 1000,
+      securityAnalysis: {
+        overallScore: 85,
+        vulnerabilities: [],
+        auditStatus: {
+          audited: true,
+          auditors: ['CertiK', 'OpenZeppelin'],
+          auditDate: timestamp - 90 * 24 * 60 * 60 * 1000,
+          auditReportUrl: null,
+          findings: {
+            critical: 0,
+            high: 0,
+            medium: 2,
+            low: 5,
+            informational: 8,
+            resolved: 7,
+          },
+        },
+        codeQuality: {
+          complexity: 45,
+          testCoverage: 92,
+          documentation: 78,
+          codeSize: 2500,
+          externalCalls: 3,
+          stateVariables: 12,
+        },
+        lastAnalyzed: timestamp,
+      },
+      interactions: {
+        totalTransactions: 50000,
+        uniqueUsers: 12000,
+        totalValueLocked: '1000000000000000000000',
+        dailyActiveUsers: 500,
+        topInteractors: [],
+      },
+    };
+
+    this.contracts.set(contractId, contract);
+    return contract;
+  }
+
+  getWallets(): ReadonlyMap<string, CryptoWallet> {
+    return this.wallets;
+  }
+
+  getTransactions(): ReadonlyMap<string, BlockchainTransaction> {
+    return this.transactions;
+  }
+
+  getContracts(): ReadonlyMap<string, SmartContract> {
+    return this.contracts;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// GAMBLING FRAUD DETECTOR
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export class GamblingFraudDetector {
+  private operationCounter: number = 0;
+  private readonly players: Map<string, GamblingPlayer> = new Map();
+  private readonly cases: Map<string, FraudCase> = new Map();
+  private readonly platforms: Map<string, GamblingPlatform> = new Map();
+
+  analyzePlayer(playerId: string, platform: string): GamblingPlayer {
+    this.operationCounter++;
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+
+    const player: GamblingPlayer = {
+      playerId,
+      platform,
+      username: `player_${playerId}`,
+      email: `player_${playerId}@example.com`,
+      kycStatus: {
+        level: 'ENHANCED',
+        verified: true,
+        verificationDate: timestamp - 30 * 24 * 60 * 60 * 1000,
+        documents: [],
+        pepCheck: {
+          checked: true,
+          checkedAt: timestamp - 30 * 24 * 60 * 60 * 1000,
+          isPEP: false,
+          pepType: null,
+          matches: [],
+        },
+        sanctionsCheck: {
+          checked: true,
+          checkedAt: timestamp - 30 * 24 * 60 * 60 * 1000,
+          sanctioned: false,
+          matches: [],
+        },
+        adverseMediaCheck: {
+          checked: true,
+          checkedAt: timestamp - 30 * 24 * 60 * 60 * 1000,
+          hasAdverseMedia: false,
+          articles: [],
+        },
+      },
+      riskProfile: {
+        overallRisk: 'LOW',
+        fraudRisk: 15,
+        amlRisk: 10,
+        problemGamblingRisk: 20,
+        factors: [],
+        lastAssessed: timestamp,
+      },
+      activity: {
+        registrationDate: timestamp - 365 * 24 * 60 * 60 * 1000,
+        lastLogin: timestamp,
+        totalSessions: 500,
+        totalPlayTime: 1000 * 60 * 60,
+        gamesPlayed: [],
+        betsPlaced: 5000,
+        averageBetSize: 25,
+        largestBet: 500,
+        winRate: 0.48,
+      },
+      financials: {
+        totalDeposits: 10000,
+        totalWithdrawals: 8500,
+        netDeposits: 1500,
+        currentBalance: 1500,
+        bonusBalance: 50,
+        pendingWithdrawals: 0,
+        depositMethods: [],
+        withdrawalMethods: [],
+        cryptoTransactions: [],
+      },
+      alerts: [],
+      restrictions: [],
+      metadata: {
+        createdAt: timestamp - 365 * 24 * 60 * 60 * 1000,
+        updatedAt: timestamp,
+        tags: [],
+        notes: '',
+        vipLevel: 'SILVER',
+        affiliateId: null,
+      },
+    };
+
+    this.players.set(playerId, player);
+    return player;
+  }
+
+  createFraudCase(type: GamblingFraudType, subjects: readonly string[]): FraudCase {
+    this.operationCounter++;
+    const caseId = generateDeterministicId('case', this.operationCounter);
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+
+    const fraudCase: FraudCase = {
+      caseId,
+      type,
+      status: 'OPEN',
+      severity: 'MEDIUM',
+      subjects,
+      evidence: [],
+      timeline: [
+        {
+          eventId: generateDeterministicId('event', this.operationCounter),
+          timestamp,
+          type: 'CASE_CREATED',
+          description: 'Fraud case created',
+          actor: 'system',
+        },
+      ],
+      financialImpact: 0,
+      recoveredAmount: 0,
+      assignedTo: 'analyst',
+      createdAt: timestamp,
+      resolvedAt: null,
+      resolution: null,
+    };
+
+    this.cases.set(caseId, fraudCase);
+    return fraudCase;
+  }
+
+  getPlayers(): ReadonlyMap<string, GamblingPlayer> {
+    return this.players;
+  }
+
+  getCases(): ReadonlyMap<string, FraudCase> {
+    return this.cases;
+  }
+
+  getPlatforms(): ReadonlyMap<string, GamblingPlatform> {
+    return this.platforms;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// DARK WEB MONITOR
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export class DarkWebMonitor {
+  private operationCounter: number = 0;
+  private readonly services: Map<string, HiddenService> = new Map();
+  private readonly marketplaces: Map<string, DarkWebMarketplace> = new Map();
+  private readonly actors: Map<string, ThreatActor> = new Map();
+  private readonly leaks: Map<string, CredentialLeak> = new Map();
+  private readonly alerts: Map<string, DarkWebAlert> = new Map();
+
+  discoverService(address: string, network: DarkWebNetwork): HiddenService {
+    this.operationCounter++;
+    const serviceId = generateDeterministicId('service', this.operationCounter);
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+
+    const service: HiddenService = {
+      serviceId,
+      address,
+      network,
+      type: 'UNKNOWN',
+      name: null,
+      description: null,
+      status: 'ONLINE',
+      firstSeen: timestamp,
+      lastSeen: timestamp,
+      uptime: 0.95,
+      content: {
+        categories: [],
+        languages: ['en'],
+        pageCount: 0,
+        lastCrawled: timestamp,
+        screenshots: [],
+        extractedData: {
+          emails: [],
+          cryptoAddresses: [],
+          pgpKeys: [],
+          usernames: [],
+          phoneNumbers: [],
+          urls: [],
+        },
+      },
+      infrastructure: {
+        serverLocation: null,
+        hostingProvider: null,
+        technologies: [],
+        certificates: [],
+        relatedServices: [],
+      },
+      operators: [],
+      riskAssessment: {
+        overallRisk: 'MEDIUM',
+        threatLevel: 'MODERATE',
+        relevanceScore: 0.5,
+        factors: [],
+      },
+      monitoring: {
+        enabled: true,
+        frequency: 3600000,
+        lastCheck: timestamp,
+        alerts: [],
+        changes: [],
+      },
+    };
+
+    this.services.set(serviceId, service);
+    return service;
+  }
+
+  trackMarketplace(serviceId: string, name: string): DarkWebMarketplace {
+    this.operationCounter++;
+    const marketplaceId = generateDeterministicId('marketplace', this.operationCounter);
+
+    const marketplace: DarkWebMarketplace = {
+      marketplaceId,
+      service: serviceId,
+      name,
+      type: 'GENERAL',
+      status: 'ACTIVE',
+      vendors: {
+        totalVendors: 500,
+        activeVendors: 350,
+        topVendors: [],
+      },
+      listings: {
+        totalListings: 10000,
+        activeListings: 7500,
+        categories: [],
+        priceRange: { min: 1, max: 50000, average: 150 },
+      },
+      transactions: {
+        totalVolume: 5000000,
+        transactionCount: 100000,
+        averageTransaction: 50,
+        currencies: ['BTC', 'XMR'],
+      },
+      escrow: {
+        enabled: true,
+        type: 'MULTISIG',
+        fee: 0.05,
+        disputeResolution: true,
+      },
+      reputation: {
+        overallRating: 4.2,
+        trustScore: 0.75,
+        scamReports: 15,
+        lawEnforcementActions: [],
+      },
+    };
+
+    this.marketplaces.set(marketplaceId, marketplace);
+    return marketplace;
+  }
+
+  trackThreatActor(name: string, type: ThreatActorType): ThreatActor {
+    this.operationCounter++;
+    const actorId = generateDeterministicId('actor', this.operationCounter);
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+
+    const actor: ThreatActor = {
+      actorId,
+      name,
+      aliases: [],
+      type,
+      sophistication: 'INTERMEDIATE',
+      motivation: ['FINANCIAL'],
+      targetedSectors: [],
+      targetedCountries: [],
+      ttps: [],
+      tools: [],
+      infrastructure: {
+        domains: [],
+        ipAddresses: [],
+        cryptoWallets: [],
+        hiddenServices: [],
+        emailAddresses: [],
+      },
+      activity: {
+        firstSeen: timestamp - 365 * 24 * 60 * 60 * 1000,
+        lastSeen: timestamp,
+        campaigns: [],
+        incidents: [],
+        forumPosts: 0,
+        marketplaceListings: 0,
+      },
+      attribution: {
+        confidence: 0.6,
+        sources: [],
+        nationState: null,
+        group: null,
+        individuals: [],
+      },
+    };
+
+    this.actors.set(actorId, actor);
+    return actor;
+  }
+
+  reportCredentialLeak(source: string, credentials: readonly LeakedCredential[]): CredentialLeak {
+    this.operationCounter++;
+    const leakId = generateDeterministicId('leak', this.operationCounter);
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+
+    const leak: CredentialLeak = {
+      leakId,
+      source,
+      discoveredAt: timestamp,
+      breachDate: null,
+      affectedRecords: credentials.length,
+      dataTypes: ['EMAIL', 'PASSWORD'],
+      credentials,
+      status: 'NEW',
+      severity: credentials.length > 1000 ? 'CRITICAL' : credentials.length > 100 ? 'HIGH' : 'MEDIUM',
+    };
+
+    this.leaks.set(leakId, leak);
+    return leak;
+  }
+
+  createAlert(type: string, severity: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL', title: string, description: string): DarkWebAlert {
+    this.operationCounter++;
+    const alertId = generateDeterministicId('alert', this.operationCounter);
+    const timestamp = generateDeterministicTimestamp(this.operationCounter);
+
+    const alert: DarkWebAlert = {
+      alertId,
+      type,
+      severity,
+      title,
+      description,
+      source: 'dark-web-monitor',
+      timestamp,
+      status: 'NEW',
+      relatedEntities: [],
+    };
+
+    this.alerts.set(alertId, alert);
+    return alert;
+  }
+
+  getServices(): ReadonlyMap<string, HiddenService> {
+    return this.services;
+  }
+
+  getMarketplaces(): ReadonlyMap<string, DarkWebMarketplace> {
+    return this.marketplaces;
+  }
+
+  getActors(): ReadonlyMap<string, ThreatActor> {
+    return this.actors;
+  }
+
+  getLeaks(): ReadonlyMap<string, CredentialLeak> {
+    return this.leaks;
+  }
+
+  getAlerts(): ReadonlyMap<string, DarkWebAlert> {
+    return this.alerts;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// UNIFIED SECURITY CENTER
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export class CryptoGamblingDarkWebSecurityCenter {
+  private readonly blockchainAnalyzer: BlockchainAnalyzer;
+  private readonly gamblingFraudDetector: GamblingFraudDetector;
+  private readonly darkWebMonitor: DarkWebMonitor;
+  private readonly uiConfig: CryptoGamblingDarkWebUIConfig;
+
+  constructor(uiConfig: CryptoGamblingDarkWebUIConfig) {
+    this.blockchainAnalyzer = new BlockchainAnalyzer();
+    this.gamblingFraudDetector = new GamblingFraudDetector();
+    this.darkWebMonitor = new DarkWebMonitor();
+    this.uiConfig = uiConfig;
+  }
+
+  getBlockchainAnalyzer(): BlockchainAnalyzer {
+    return this.blockchainAnalyzer;
+  }
+
+  getGamblingFraudDetector(): GamblingFraudDetector {
+    return this.gamblingFraudDetector;
+  }
+
+  getDarkWebMonitor(): DarkWebMonitor {
+    return this.darkWebMonitor;
+  }
+
+  getUIConfig(): CryptoGamblingDarkWebUIConfig {
+    return this.uiConfig;
+  }
+
+  correlateIntelligence(
+    walletAddress: string,
+    playerId: string,
+    darkWebQuery: string
+  ): CrossDomainCorrelation {
+    const wallet = this.blockchainAnalyzer.analyzeWallet(walletAddress, 'ETHEREUM');
+    const player = this.gamblingFraudDetector.analyzePlayer(playerId, 'platform-1');
+    const services = Array.from(this.darkWebMonitor.getServices().values());
+
+    return {
+      correlationId: generateDeterministicId('correlation', Date.now()),
+      timestamp: Date.now(),
+      wallet,
+      player,
+      darkWebMatches: services.filter(s => s.address.includes(darkWebQuery)),
+      riskScore: (wallet.riskScore.overall + player.riskProfile.fraudRisk) / 2,
+      findings: [],
+      recommendations: [],
+    };
+  }
+}
+
+export interface CrossDomainCorrelation {
+  readonly correlationId: string;
+  readonly timestamp: number;
+  readonly wallet: CryptoWallet;
+  readonly player: GamblingPlayer;
+  readonly darkWebMatches: readonly HiddenService[];
+  readonly riskScore: number;
+  readonly findings: readonly string[];
+  readonly recommendations: readonly string[];
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// DEFAULT CONFIGURATIONS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export function createDefaultCryptoGamblingDarkWebUIConfig(): CryptoGamblingDarkWebUIConfig {
+  return {
+    cryptoUI: {
+      enabled: true,
+      features: {
+        walletTracking: true,
+        transactionAnalysis: true,
+        blockchainExplorer: true,
+        smartContractAudit: true,
+        riskScoring: true,
+        entityAttribution: true,
+        clusterAnalysis: true,
+        flowVisualization: true,
+        alertManagement: true,
+        reportGeneration: true,
+      },
+      visualizations: ['WALLET_GRAPH', 'TRANSACTION_FLOW', 'CLUSTER_MAP', 'RISK_HEATMAP', 'ENTITY_NETWORK', 'TIMELINE', 'SANKEY_DIAGRAM'],
+      widgets: [
+        { widgetId: 'crypto-1', type: 'WALLET_RISK', title: 'Wallet Risk Overview', position: { x: 0, y: 0 }, size: { width: 4, height: 2 }, dataSource: 'wallets', refreshInterval: 30000, config: {} },
+        { widgetId: 'crypto-2', type: 'TRANSACTION_FLOW', title: 'Recent Transactions', position: { x: 4, y: 0 }, size: { width: 8, height: 2 }, dataSource: 'transactions', refreshInterval: 10000, config: {} },
+      ],
+    },
+    gamblingUI: {
+      enabled: true,
+      features: {
+        playerMonitoring: true,
+        fraudDetection: true,
+        amlScreening: true,
+        kycManagement: true,
+        riskAssessment: true,
+        caseManagement: true,
+        transactionMonitoring: true,
+        behaviorAnalysis: true,
+        alertManagement: true,
+        reportGeneration: true,
+      },
+      visualizations: ['PLAYER_RISK_MATRIX', 'TRANSACTION_TIMELINE', 'FRAUD_NETWORK', 'AML_DASHBOARD', 'CASE_KANBAN', 'COMPLIANCE_SCORECARD'],
+      widgets: [
+        { widgetId: 'gambling-1', type: 'FRAUD_ALERTS', title: 'Fraud Alerts', position: { x: 0, y: 0 }, size: { width: 6, height: 2 }, dataSource: 'alerts', refreshInterval: 5000, config: {} },
+        { widgetId: 'gambling-2', type: 'AML_DASHBOARD', title: 'AML Dashboard', position: { x: 6, y: 0 }, size: { width: 6, height: 2 }, dataSource: 'aml', refreshInterval: 30000, config: {} },
+      ],
+    },
+    darkWebUI: {
+      enabled: true,
+      features: {
+        serviceMonitoring: true,
+        marketplaceTracking: true,
+        credentialMonitoring: true,
+        threatActorTracking: true,
+        contentAnalysis: true,
+        alertManagement: true,
+        intelligenceReporting: true,
+        takedownRequests: true,
+        crawlManagement: true,
+        searchInterface: true,
+      },
+      visualizations: ['SERVICE_MAP', 'MARKETPLACE_DASHBOARD', 'CREDENTIAL_TIMELINE', 'THREAT_ACTOR_GRAPH', 'ALERT_FEED', 'NETWORK_TOPOLOGY'],
+      widgets: [
+        { widgetId: 'darkweb-1', type: 'SERVICE_STATUS', title: 'Monitored Services', position: { x: 0, y: 0 }, size: { width: 4, height: 2 }, dataSource: 'services', refreshInterval: 60000, config: {} },
+        { widgetId: 'darkweb-2', type: 'CREDENTIAL_ALERTS', title: 'Credential Leaks', position: { x: 4, y: 0 }, size: { width: 4, height: 2 }, dataSource: 'leaks', refreshInterval: 30000, config: {} },
+        { widgetId: 'darkweb-3', type: 'THREAT_ACTORS', title: 'Threat Actors', position: { x: 8, y: 0 }, size: { width: 4, height: 2 }, dataSource: 'actors', refreshInterval: 60000, config: {} },
+      ],
+    },
+    unifiedDashboard: {
+      enabled: true,
+      refreshInterval: 10000,
+      layouts: [
+        {
+          layoutId: 'default',
+          name: 'Default',
+          description: 'Default unified dashboard',
+          widgets: ['crypto-1', 'crypto-2', 'gambling-1', 'gambling-2', 'darkweb-1', 'darkweb-2', 'darkweb-3'],
+          gridColumns: 12,
+          gridRows: 6,
+        },
+      ],
+      defaultLayout: 'default',
+      crossDomainCorrelation: true,
+    },
+    notifications: {
+      enabled: true,
+      channels: [
+        { channelId: 'ui', type: 'UI', config: {}, enabled: true },
+        { channelId: 'email', type: 'EMAIL', config: {}, enabled: true },
+      ],
+      rules: [
+        { ruleId: 'n1', name: 'High Risk Wallet', event: 'WALLET_HIGH_RISK', condition: {}, channels: ['ui', 'email'], priority: 'HIGH', enabled: true },
+        { ruleId: 'n2', name: 'Fraud Alert', event: 'FRAUD_DETECTED', condition: {}, channels: ['ui', 'email'], priority: 'CRITICAL', enabled: true },
+        { ruleId: 'n3', name: 'Credential Leak', event: 'CREDENTIAL_LEAK', condition: {}, channels: ['ui', 'email'], priority: 'CRITICAL', enabled: true },
+        { ruleId: 'n4', name: 'Dark Web Mention', event: 'DARK_WEB_MENTION', condition: {}, channels: ['ui'], priority: 'MEDIUM', enabled: true },
+      ],
+    },
+    reporting: {
+      enabled: true,
+      templates: [
+        { templateId: 'r1', name: 'Crypto Investigation Report', description: 'Blockchain investigation report', type: 'CRYPTO', sections: ['summary', 'wallets', 'transactions', 'risk_analysis', 'recommendations'], format: 'PDF' },
+        { templateId: 'r2', name: 'Gambling Compliance Report', description: 'AML/KYC compliance report', type: 'GAMBLING', sections: ['summary', 'player_analysis', 'fraud_cases', 'aml_alerts', 'compliance_status'], format: 'PDF' },
+        { templateId: 'r3', name: 'Dark Web Intelligence Report', description: 'Dark web monitoring report', type: 'DARKWEB', sections: ['summary', 'services', 'marketplaces', 'threat_actors', 'credential_leaks'], format: 'PDF' },
+        { templateId: 'r4', name: 'Unified Threat Report', description: 'Cross-domain threat report', type: 'UNIFIED', sections: ['executive_summary', 'crypto_findings', 'gambling_findings', 'darkweb_findings', 'correlations', 'recommendations'], format: 'PDF' },
+      ],
+      schedules: [],
+      exportFormats: ['PDF', 'DOCX', 'HTML', 'JSON', 'CSV'],
+    },
+  };
+}

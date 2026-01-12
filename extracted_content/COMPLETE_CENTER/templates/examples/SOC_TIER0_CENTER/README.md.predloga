@@ -1,0 +1,151 @@
+# {{IME_PROJEKTA}} - Tier 0 Security Operations Center
+
+## _traceability
+- requirement: ZAH-SEC-001 Tier 0 SOC z popolnim Red & Blue team
+- design: DSN-SEC-001 Referenčna implementacija nacionalnega varnostnega centra
+- test: TST-SEC-001 Verifikacija Tier 0 SOC primera
+
+## Opis
+
+Tier 0 Security Operations Center je najvišji nivo varnostnega operativnega centra z popolnimi zmogljivostmi za Red Team, Blue Team, Threat Intelligence, Malware Analysis, Forensics, SIGINT, FININT, OSINT in vse specializirane varnostne operacije.
+
+## Vključene komponente
+
+### Red Team Operations
+- Reconnaissance in OSINT
+- Vulnerability scanning
+- Exploitation frameworks
+- Persistence mechanisms
+- Lateral movement
+- Command & Control (C2)
+- Data exfiltration
+
+### Blue Team Operations
+- SIEM/SOC monitoring
+- Threat detection
+- Incident response
+- Forensic analysis
+- Threat hunting
+- Vulnerability management
+
+### Threat Intelligence
+- STIX/TAXII integration
+- Threat feeds aggregation
+- IOC management
+- Attribution analysis
+- Campaign tracking
+
+### Malware Analysis
+- Static analysis
+- Dynamic analysis
+- Behavioral analysis
+- Code reconstruction
+- Reverse engineering
+
+### Forensics
+- Device forensics
+- Memory forensics
+- Network forensics
+- Disk forensics
+- Mobile forensics
+
+### Intelligence Operations
+- SIGINT (Signals Intelligence)
+- FININT (Financial Intelligence)
+- OSINT (Open Source Intelligence)
+- HUMINT (Human Intelligence)
+- Counter-Intelligence
+
+### Visualization
+- 2D real-time dashboards
+- 3D network topology
+- Attack path visualization
+- Threat landscape maps
+
+### Stealth & Anti-Forensics
+- Covert operations
+- Evidence destruction
+- Evasion techniques
+- Counter-surveillance
+
+## Skladnost
+
+- DO-178C DAL-A
+- IEC-61508 SIL-4
+- ISO-26262 ASIL-D
+- MIL-STD-882E
+- NIST 800-53
+- ISO 27001
+- SOC 2 Type II
+
+## SLA
+
+- Uptime: 99.999%
+- RTO: 15min
+- RPO: 1min
+- MTTR: 30min
+- Detection Time: <1min
+- Response Time: <5min
+
+## Arhitektura
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    TIER 0 SOC COMMAND CENTER                     │
+├─────────────────────────────────────────────────────────────────┤
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐              │
+│  │  RED TEAM   │  │  BLUE TEAM  │  │   THREAT    │              │
+│  │  OPERATIONS │  │  OPERATIONS │  │   INTEL     │              │
+│  └─────────────┘  └─────────────┘  └─────────────┘              │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐              │
+│  │   MALWARE   │  │  FORENSICS  │  │   SIGINT    │              │
+│  │   ANALYSIS  │  │   CENTER    │  │   CENTER    │              │
+│  └─────────────┘  └─────────────┘  └─────────────┘              │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐              │
+│  │   FININT    │  │    OSINT    │  │   COUNTER   │              │
+│  │   CENTER    │  │   PLATFORM  │  │   INTEL     │              │
+│  └─────────────┘  └─────────────┘  └─────────────┘              │
+├─────────────────────────────────────────────────────────────────┤
+│              3D VISUALIZATION & COMMAND DASHBOARD                │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+## Zagon
+
+```bash
+npm install
+npm run build
+npm run soc:start
+npm run soc:monitor
+```
+
+## Konfiguracija
+
+Vsa konfiguracija je v `config/soc-config.yaml`:
+
+```yaml
+soc:
+  tier: 0
+  classification: TOP_SECRET
+  operations:
+    red_team: enabled
+    blue_team: enabled
+    threat_intel: enabled
+    malware_analysis: enabled
+    forensics: enabled
+    sigint: enabled
+    finint: enabled
+    osint: enabled
+    counter_intel: enabled
+  visualization:
+    2d_dashboards: enabled
+    3d_topology: enabled
+    real_time: enabled
+  stealth:
+    covert_ops: enabled
+    anti_forensics: enabled
+```
+
+## Licenca
+
+Enterprise License - {{ORGANIZACIJA}} - TOP SECRET

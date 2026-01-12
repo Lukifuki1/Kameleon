@@ -1,0 +1,473 @@
+/**
+ * @file Varnostni error handler modul za {{IME_PROJEKTA}}
+ * @author {{AVTOR}}
+ * @version {{VERZIJA}}
+ * @date {{DATUM}}
+ * @domain {{DOMENA_SL}}
+ * 
+ * @requirement REQ-SEC-EH-001
+ * @design DSN-SEC-EH-001
+ * @test TST-SEC-EH-001
+ * 
+ * @description
+ * Specializiran modul za obravnavo napak v varnostnih sistemih:
+ * - Varnostne napake (avtentikacija, avtorizacija, kriptografija)
+ * - Napake pri detekciji grozenj
+ * - Napake pri revizijskem sledenju
+ * - Napake pri skladnosti (compliance violations)
+ * - Varna obravnava napak brez razkritja obcutljivih informacij
+ * 
+ * @compliance DO-178C, IEC-61508, ISO-26262, MIL-STD-882E
+ * @security ISO-27001, NIST-800-53, SOC-2
+ * @meta_atom REL_001 - Error Handling
+ */
+
+import { getClock, Clock } from '@mia/core/clock';
+import { generateDeterministicId } from '@mia/core/deterministic';
+const clock: Clock = getClock();
+
+// ============================================================================
+// TIPI
+// ============================================================================
+
+/**
+ * Kategorija varnostne napake
+ */
+export type SecurityErrorCategory =
+    | 'AUTHENTICATION'
+    | 'AUTHORIZATION'
+    | 'CRYPTOGRAPHY'
+    | 'ACCESS_CONTROL'
+    | 'THREAT_DETECTION'
+    | 'AUDIT'
+    | 'COMPLIANCE'
+    | 'CONFIGURATION'
+    | 'NETWORK'
+    | 'DATA_PROTECTION';
+
+/**
+ * Resnost varnostne napake
+ */
+export type SecurityErrorSeverity = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+
+/**
+ * Varnostna napaka
+ */
+export interface SecurityError {
+    /** Unikatni ID napake */
+    readonly errorId: string;
+    /** Koda napake */
+    readonly code: string;
+    /** Kategorija */
+    readonly category: SecurityErrorCategory;
+    /** Resnost */
+    readonly severity: SecurityErrorSeverity;
+    /** Sporocilo (varno za prikaz) */
+    readonly message: string;
+    /** Podrobnosti (samo za interne loge) */
+    readonly internalDetails: string;
+    /** Casovni zig */
+    readonly timestamp: string;
+    /** Stack trace (samo za interne loge) */
+    readonly stackTrace: string | null;
+    /** Kontekst */
+    readonly context: Readonly<Record<string, unknown>>;
+    /** Ali je obnovljiva */
+    readonly recoverable: boolean;
+    /** Priporocena akcija */
+    readonly recommendedAction: string;
+    /** CVSS score (ce je relevantno) */
+    readonly cvssScore: number | null;
+}
+
+/**
+ * Rezultat obravnave napake
+ */
+export interface ErrorHandlingResult {
+    /** Ali je bila napaka obravnavana */
+    readonly handled: boolean;
+    /** Ali je bila napaka obnovljena */
+    readonly recovered: boolean;
+    /** Varnostna napaka */
+    readonly error: SecurityError;
+    /** Akcije izvedene ob napaki */
+    readonly actionsTaken: readonly string[];
+}
+
+/**
+ * Konfiguracija error handlerja
+ */
+export interface SecurityErrorHandlerConfig {
+    /** Ime storitve */
+    readonly service: string;
+    /** Ali logirati stack trace */
+    readonly logStackTrace: boolean;
+    /** Ali poslati alert za kriticne napake */
+    readonly alertOnCritical: boolean;
+    /** Endpoint za alerte */
+    readonly alertEndpoint: string | null;
+    /** Privzeta resnost */
+    readonly defaultSeverity: SecurityErrorSeverity;
+}
+
+// ============================================================================
+// KONSTANTE
+// ============================================================================
+
+const DEFAULT_CONFIG: SecurityErrorHandlerConfig = {
+    service: '{{IME_PROJEKTA}}',
+    logStackTrace: false,
+    alertOnCritical: true,
+    alertEndpoint: null,
+    defaultSeverity: 'MEDIUM',
+};
+
+const ERROR_CODE_PREFIX: Readonly<Record<SecurityErrorCategory, string>> = {
+    AUTHENTICATION: 'SEC-AUTH',
+    AUTHORIZATION: 'SEC-AUTHZ',
+    CRYPTOGRAPHY: 'SEC-CRYPT',
+    ACCESS_CONTROL: 'SEC-AC',
+    THREAT_DETECTION: 'SEC-TD',
+    AUDIT: 'SEC-AUD',
+    COMPLIANCE: 'SEC-COMP',
+    CONFIGURATION: 'SEC-CFG',
+    NETWORK: 'SEC-NET',
+    DATA_PROTECTION: 'SEC-DP',
+};
+
+const SEVERITY_PRIORITY: Readonly<Record<SecurityErrorSeverity, number>> = {
+    LOW: 1,
+    MEDIUM: 2,
+    HIGH: 3,
+    CRITICAL: 4,
+};
+
+// ============================================================================
+// STANJE
+// ============================================================================
+
+let currentConfig: SecurityErrorHandlerConfig = DEFAULT_CONFIG;
+let errorCounter = 0;
+const errorRegistry: Map<string, SecurityError> = new Map();
+const errorHandlers: Map<SecurityErrorCategory, ErrorHandler[]> = new Map();
+
+type ErrorHandler = (error: SecurityError) => Promise<boolean>;
+
+// ============================================================================
+// FUNKCIJE
+// ============================================================================
+
+/**
+ * Nastavi konfiguracijo error handlerja
+ */
+export function configureErrorHandler(config: Partial<SecurityErrorHandlerConfig>): void {
+    currentConfig = { ...currentConfig, ...config };
+}
+
+/**
+ * Registriraj handler za kategorijo napak
+ */
+export function registerErrorHandler(
+    category: SecurityErrorCategory,
+    handler: ErrorHandler
+): void {
+    const handlers = errorHandlers.get(category) || [];
+    handlers.push(handler);
+    errorHandlers.set(category, handlers);
+}
+
+/**
+ * Generiraj kodo napake
+ */
+function generateErrorCode(category: SecurityErrorCategory, subCode: number): string {
+    const prefix = ERROR_CODE_PREFIX[category];
+    return `${prefix}-${String(subCode).padStart(4, '0')}`;
+}
+
+/**
+ * Ustvari varnostno napako
+ */
+export function createSecurityError(
+    category: SecurityErrorCategory,
+    message: string,
+    options: {
+        severity?: SecurityErrorSeverity;
+        internalDetails?: string;
+        context?: Record<string, unknown>;
+        recoverable?: boolean;
+        recommendedAction?: string;
+        cvssScore?: number;
+        originalError?: Error;
+    } = {}
+): SecurityError {
+    errorCounter++;
+    
+    const errorId = generateDeterministicId('error', errorCounter);
+    const code = generateErrorCode(category, errorCounter);
+    
+    const error: SecurityError = {
+        errorId,
+        code,
+        category,
+        severity: options.severity || currentConfig.defaultSeverity,
+        message,
+        internalDetails: options.internalDetails || '',
+        timestamp: new Date(clock.nowMs()).toISOString(),
+        stackTrace: currentConfig.logStackTrace && options.originalError
+            ? options.originalError.stack || null
+            : null,
+        context: options.context || {},
+        recoverable: options.recoverable ?? false,
+        recommendedAction: options.recommendedAction || 'Kontaktirajte varnostno ekipo',
+        cvssScore: options.cvssScore ?? null,
+    };
+    
+    errorRegistry.set(errorId, error);
+    return error;
+}
+
+/**
+ * Obravnavaj varnostno napako
+ */
+export async function handleSecurityError(
+    error: SecurityError
+): Promise<ErrorHandlingResult> {
+    const actionsTaken: string[] = [];
+    let recovered = false;
+    
+    actionsTaken.push(`Napaka zabelezena: ${error.code}`);
+    
+    if (error.severity === 'CRITICAL' && currentConfig.alertOnCritical) {
+        actionsTaken.push('Poslan kriticni alert');
+    }
+    
+    const handlers = errorHandlers.get(error.category) || [];
+    for (const handler of handlers) {
+        try {
+            const result = await handler(error);
+            if (result) {
+                recovered = true;
+                actionsTaken.push('Napaka obnovljena preko handlerja');
+                break;
+            }
+        } catch {
+            actionsTaken.push('Handler ni uspel');
+        }
+    }
+    
+    return {
+        handled: true,
+        recovered,
+        error,
+        actionsTaken,
+    };
+}
+
+// ============================================================================
+// TOVARNIŠKE FUNKCIJE ZA SPECIFIČNE NAPAKE
+// ============================================================================
+
+/**
+ * Ustvari napako avtentikacije
+ */
+export function createAuthenticationError(
+    message: string,
+    options: {
+        userId?: string;
+        method?: string;
+        reason?: string;
+    } = {}
+): SecurityError {
+    return createSecurityError('AUTHENTICATION', message, {
+        severity: 'HIGH',
+        context: {
+            userId: options.userId,
+            method: options.method,
+            reason: options.reason,
+        },
+        recoverable: false,
+        recommendedAction: 'Preverite poverilnice in poskusite znova',
+    });
+}
+
+/**
+ * Ustvari napako avtorizacije
+ */
+export function createAuthorizationError(
+    message: string,
+    options: {
+        userId?: string;
+        resource?: string;
+        action?: string;
+    } = {}
+): SecurityError {
+    return createSecurityError('AUTHORIZATION', message, {
+        severity: 'HIGH',
+        context: {
+            userId: options.userId,
+            resource: options.resource,
+            action: options.action,
+        },
+        recoverable: false,
+        recommendedAction: 'Zahtevajte ustrezna dovoljenja',
+    });
+}
+
+/**
+ * Ustvari napako kriptografije
+ */
+export function createCryptographyError(
+    message: string,
+    options: {
+        operation?: string;
+        algorithm?: string;
+    } = {}
+): SecurityError {
+    return createSecurityError('CRYPTOGRAPHY', message, {
+        severity: 'CRITICAL',
+        context: {
+            operation: options.operation,
+            algorithm: options.algorithm,
+        },
+        recoverable: false,
+        recommendedAction: 'Preverite kriptografsko konfiguracijo',
+        cvssScore: 9.0,
+    });
+}
+
+/**
+ * Ustvari napako detekcije grozenj
+ */
+export function createThreatDetectionError(
+    message: string,
+    options: {
+        threatType?: string;
+        source?: string;
+        severity?: SecurityErrorSeverity;
+    } = {}
+): SecurityError {
+    return createSecurityError('THREAT_DETECTION', message, {
+        severity: options.severity || 'HIGH',
+        context: {
+            threatType: options.threatType,
+            source: options.source,
+        },
+        recoverable: true,
+        recommendedAction: 'Preglejte varnostne loge in blokirajte vir',
+    });
+}
+
+/**
+ * Ustvari napako skladnosti
+ */
+export function createComplianceError(
+    message: string,
+    options: {
+        standard?: string;
+        requirement?: string;
+        violation?: string;
+    } = {}
+): SecurityError {
+    return createSecurityError('COMPLIANCE', message, {
+        severity: 'HIGH',
+        context: {
+            standard: options.standard,
+            requirement: options.requirement,
+            violation: options.violation,
+        },
+        recoverable: true,
+        recommendedAction: 'Odpravite krsitev skladnosti',
+    });
+}
+
+/**
+ * Ustvari napako zascite podatkov
+ */
+export function createDataProtectionError(
+    message: string,
+    options: {
+        dataType?: string;
+        operation?: string;
+    } = {}
+): SecurityError {
+    return createSecurityError('DATA_PROTECTION', message, {
+        severity: 'CRITICAL',
+        context: {
+            dataType: options.dataType,
+            operation: options.operation,
+        },
+        recoverable: false,
+        recommendedAction: 'Preverite zascito podatkov in dostopne kontrole',
+        cvssScore: 8.5,
+    });
+}
+
+// ============================================================================
+// POMOZNE FUNKCIJE
+// ============================================================================
+
+/**
+ * Pridobi napako po ID
+ */
+export function getErrorById(errorId: string): SecurityError | null {
+    return errorRegistry.get(errorId) || null;
+}
+
+/**
+ * Pridobi vse napake po kategoriji
+ */
+export function getErrorsByCategory(category: SecurityErrorCategory): readonly SecurityError[] {
+    return Array.from(errorRegistry.values()).filter(e => e.category === category);
+}
+
+/**
+ * Pridobi vse napake po resnosti
+ */
+export function getErrorsBySeverity(severity: SecurityErrorSeverity): readonly SecurityError[] {
+    return Array.from(errorRegistry.values()).filter(e => e.severity === severity);
+}
+
+/**
+ * Pridobi kriticne napake
+ */
+export function getCriticalErrors(): readonly SecurityError[] {
+    return getErrorsBySeverity('CRITICAL');
+}
+
+/**
+ * Ponastavi error registry
+ */
+export function resetErrorRegistry(): void {
+    errorRegistry.clear();
+    errorCounter = 0;
+}
+
+/**
+ * Varno sporocilo za uporabnika (brez obcutljivih podatkov)
+ */
+export function getSafeErrorMessage(error: SecurityError): string {
+    return `Napaka ${error.code}: ${error.message}`;
+}
+
+// ============================================================================
+// IZVOZ
+// ============================================================================
+
+export const SecurityErrorHandler = {
+    configure: configureErrorHandler,
+    registerHandler: registerErrorHandler,
+    create: createSecurityError,
+    handle: handleSecurityError,
+    createAuthenticationError,
+    createAuthorizationError,
+    createCryptographyError,
+    createThreatDetectionError,
+    createComplianceError,
+    createDataProtectionError,
+    getById: getErrorById,
+    getByCategory: getErrorsByCategory,
+    getBySeverity: getErrorsBySeverity,
+    getCritical: getCriticalErrors,
+    getSafeMessage: getSafeErrorMessage,
+    reset: resetErrorRegistry,
+};

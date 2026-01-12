@@ -1,0 +1,435 @@
+/**
+ * @file Varnostne metrike modul za {{IME_PROJEKTA}}
+ * @author {{AVTOR}}
+ * @version {{VERZIJA}}
+ * @date {{DATUM}}
+ * @domain {{DOMENA_SL}}
+ * 
+ * @requirement REQ-SEC-MET-001
+ * @design DSN-SEC-MET-001
+ * @test TST-SEC-MET-001
+ * 
+ * @description
+ * Specializiran modul za zbiranje varnostnih metrik:
+ * - Stevilo poskusov avtentikacije (uspesnih/neuspesnih)
+ * - Stevilo blokiranih zahtev (firewall, WAF, IDS)
+ * - Stevilo zaznanih grozenj in ranljivosti
+ * - Cas odziva varnostnih kontrol
+ * - Pokritost varnostnega skeniranja
+ * 
+ * @compliance DO-178C, IEC-61508, ISO-26262, MIL-STD-882E
+ * @security ISO-27001, NIST-800-53, SOC-2
+ * @meta_atom OBS_002 - Metrics Collection
+ */
+
+import { getClock, Clock } from '@mia/core/clock';
+const clock: Clock = getClock();
+
+// ============================================================================
+// TIPI
+// ============================================================================
+
+/**
+ * Tip varnostne metrike
+ */
+export type SecurityMetricType = 
+    | 'counter'
+    | 'gauge'
+    | 'histogram'
+    | 'summary';
+
+/**
+ * Kategorija varnostne metrike
+ */
+export type SecurityMetricCategory =
+    | 'authentication'
+    | 'authorization'
+    | 'firewall'
+    | 'intrusion_detection'
+    | 'vulnerability'
+    | 'encryption'
+    | 'compliance'
+    | 'incident_response';
+
+/**
+ * Varnostna metrika
+ */
+export interface SecurityMetric {
+    /** Ime metrike */
+    readonly name: string;
+    /** Tip metrike */
+    readonly type: SecurityMetricType;
+    /** Kategorija */
+    readonly category: SecurityMetricCategory;
+    /** Vrednost */
+    readonly value: number;
+    /** Oznake */
+    readonly labels: Readonly<Record<string, string>>;
+    /** Casovni zig */
+    readonly timestamp: number;
+    /** Enota */
+    readonly unit: string;
+    /** Opis */
+    readonly description: string;
+}
+
+/**
+ * Histogram bucket
+ */
+export interface HistogramBucket {
+    readonly le: number;
+    readonly count: number;
+}
+
+/**
+ * Histogram metrika
+ */
+export interface HistogramMetric extends SecurityMetric {
+    readonly type: 'histogram';
+    readonly buckets: readonly HistogramBucket[];
+    readonly sum: number;
+    readonly count: number;
+}
+
+/**
+ * Konfiguracija varnostnih metrik
+ */
+export interface SecurityMetricsConfig {
+    /** Ime storitve */
+    readonly service: string;
+    /** Interval zbiranja v ms */
+    readonly collectionInterval: number;
+    /** Endpoint za izvoz */
+    readonly endpoint: string;
+    /** Ali je omogoceno */
+    readonly enabled: boolean;
+    /** Privzete oznake */
+    readonly defaultLabels: Readonly<Record<string, string>>;
+}
+
+// ============================================================================
+// KONSTANTE
+// ============================================================================
+
+const DEFAULT_CONFIG: SecurityMetricsConfig = {
+    service: '{{IME_PROJEKTA}}',
+    collectionInterval: 15000,
+    endpoint: '/metrics',
+    enabled: true,
+    defaultLabels: {
+        service: '{{IME_PROJEKTA}}',
+        version: '{{VERZIJA}}',
+        domain: '{{DOMENA_SL}}',
+    },
+};
+
+const DEFAULT_HISTOGRAM_BUCKETS = [0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10];
+
+// ============================================================================
+// STANJE
+// ============================================================================
+
+let currentConfig: SecurityMetricsConfig = DEFAULT_CONFIG;
+const metricsRegistry: Map<string, SecurityMetric> = new Map();
+const histogramData: Map<string, { values: number[]; sum: number; count: number }> = new Map();
+
+// ============================================================================
+// FUNKCIJE
+// ============================================================================
+
+/**
+ * Nastavi konfiguracijo metrik
+ */
+export function configureMetrics(config: Partial<SecurityMetricsConfig>): void {
+    currentConfig = { ...currentConfig, ...config };
+}
+
+/**
+ * Generiraj kljuc metrike
+ */
+function generateMetricKey(name: string, labels: Record<string, string>): string {
+    const sortedLabels = Object.entries(labels)
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([k, v]) => `${k}="${v}"`)
+        .join(',');
+    return `${name}{${sortedLabels}}`;
+}
+
+/**
+ * Zabeleži counter metriko
+ */
+export function recordCounter(
+    name: string,
+    category: SecurityMetricCategory,
+    value: number = 1,
+    labels: Record<string, string> = {},
+    description: string = ''
+): void {
+    if (!currentConfig.enabled) return;
+    
+    const allLabels = { ...currentConfig.defaultLabels, ...labels };
+    const key = generateMetricKey(name, allLabels);
+    
+    const existing = metricsRegistry.get(key);
+    const newValue = existing ? existing.value + value : value;
+    
+    const metric: SecurityMetric = {
+        name,
+        type: 'counter',
+        category,
+        value: newValue,
+        labels: allLabels,
+        timestamp: clock.nowMs(),
+        unit: 'count',
+        description,
+    };
+    
+    metricsRegistry.set(key, metric);
+}
+
+/**
+ * Zabeleži gauge metriko
+ */
+export function recordGauge(
+    name: string,
+    category: SecurityMetricCategory,
+    value: number,
+    labels: Record<string, string> = {},
+    unit: string = '',
+    description: string = ''
+): void {
+    if (!currentConfig.enabled) return;
+    
+    const allLabels = { ...currentConfig.defaultLabels, ...labels };
+    const key = generateMetricKey(name, allLabels);
+    
+    const metric: SecurityMetric = {
+        name,
+        type: 'gauge',
+        category,
+        value,
+        labels: allLabels,
+        timestamp: clock.nowMs(),
+        unit,
+        description,
+    };
+    
+    metricsRegistry.set(key, metric);
+}
+
+/**
+ * Zabeleži histogram metriko
+ */
+export function recordHistogram(
+    name: string,
+    category: SecurityMetricCategory,
+    value: number,
+    labels: Record<string, string> = {},
+    buckets: readonly number[] = DEFAULT_HISTOGRAM_BUCKETS,
+    description: string = ''
+): void {
+    if (!currentConfig.enabled) return;
+    
+    const allLabels = { ...currentConfig.defaultLabels, ...labels };
+    const key = generateMetricKey(name, allLabels);
+    
+    let data = histogramData.get(key);
+    if (!data) {
+        data = { values: [], sum: 0, count: 0 };
+        histogramData.set(key, data);
+    }
+    
+    data.values.push(value);
+    data.sum += value;
+    data.count += 1;
+    
+    const histogramBuckets: HistogramBucket[] = buckets.map(le => ({
+        le,
+        count: data!.values.filter(v => v <= le).length,
+    }));
+    
+    const metric: HistogramMetric = {
+        name,
+        type: 'histogram',
+        category,
+        value: data.sum / data.count,
+        labels: allLabels,
+        timestamp: clock.nowMs(),
+        unit: 'seconds',
+        description,
+        buckets: histogramBuckets,
+        sum: data.sum,
+        count: data.count,
+    };
+    
+    metricsRegistry.set(key, metric);
+}
+
+// ============================================================================
+// VARNOSTNO SPECIFICNE METRIKE
+// ============================================================================
+
+/**
+ * Zabeleži poskus avtentikacije
+ */
+export function recordAuthenticationAttempt(
+    success: boolean,
+    method: string,
+    labels: Record<string, string> = {}
+): void {
+    recordCounter(
+        'security_authentication_attempts_total',
+        'authentication',
+        1,
+        { ...labels, success: String(success), method },
+        'Skupno stevilo poskusov avtentikacije'
+    );
+}
+
+/**
+ * Zabeleži blokirano zahtevo
+ */
+export function recordBlockedRequest(
+    reason: string,
+    source: string,
+    labels: Record<string, string> = {}
+): void {
+    recordCounter(
+        'security_blocked_requests_total',
+        'firewall',
+        1,
+        { ...labels, reason, source },
+        'Skupno stevilo blokiranih zahtev'
+    );
+}
+
+/**
+ * Zabeleži zaznano groznjo
+ */
+export function recordThreatDetected(
+    threatType: string,
+    severity: string,
+    labels: Record<string, string> = {}
+): void {
+    recordCounter(
+        'security_threats_detected_total',
+        'intrusion_detection',
+        1,
+        { ...labels, threat_type: threatType, severity },
+        'Skupno stevilo zaznanih grozenj'
+    );
+}
+
+/**
+ * Zabeleži cas odziva varnostne kontrole
+ */
+export function recordSecurityControlLatency(
+    controlName: string,
+    latencyMs: number,
+    labels: Record<string, string> = {}
+): void {
+    recordHistogram(
+        'security_control_latency_seconds',
+        'compliance',
+        latencyMs / 1000,
+        { ...labels, control: controlName },
+        DEFAULT_HISTOGRAM_BUCKETS,
+        'Cas odziva varnostne kontrole v sekundah'
+    );
+}
+
+/**
+ * Zabeleži pokritost skeniranja ranljivosti
+ */
+export function recordVulnerabilityScanCoverage(
+    coverage: number,
+    scanType: string,
+    labels: Record<string, string> = {}
+): void {
+    recordGauge(
+        'security_vulnerability_scan_coverage',
+        'vulnerability',
+        coverage,
+        { ...labels, scan_type: scanType },
+        'percent',
+        'Pokritost skeniranja ranljivosti v odstotkih'
+    );
+}
+
+/**
+ * Zabeleži stevilo aktivnih sej
+ */
+export function recordActiveSessions(
+    count: number,
+    sessionType: string,
+    labels: Record<string, string> = {}
+): void {
+    recordGauge(
+        'security_active_sessions',
+        'authentication',
+        count,
+        { ...labels, session_type: sessionType },
+        'count',
+        'Stevilo aktivnih sej'
+    );
+}
+
+// ============================================================================
+// IZVOZ METRIK
+// ============================================================================
+
+/**
+ * Pridobi vse metrike
+ */
+export function collectMetrics(): readonly SecurityMetric[] {
+    return Array.from(metricsRegistry.values());
+}
+
+/**
+ * Formatiraj metrike v Prometheus format
+ */
+export function formatPrometheus(): string {
+    const lines: string[] = [];
+    
+    for (const metric of metricsRegistry.values()) {
+        const labels = Object.entries(metric.labels)
+            .map(([k, v]) => `${k}="${v}"`)
+            .join(',');
+        
+        if (metric.description) {
+            lines.push(`# HELP ${metric.name} ${metric.description}`);
+        }
+        lines.push(`# TYPE ${metric.name} ${metric.type}`);
+        lines.push(`${metric.name}{${labels}} ${metric.value}`);
+    }
+    
+    return lines.join('\n');
+}
+
+/**
+ * Ponastavi vse metrike
+ */
+export function resetMetrics(): void {
+    metricsRegistry.clear();
+    histogramData.clear();
+}
+
+// ============================================================================
+// IZVOZ
+// ============================================================================
+
+export const SecurityMetrics = {
+    configure: configureMetrics,
+    recordCounter,
+    recordGauge,
+    recordHistogram,
+    recordAuthenticationAttempt,
+    recordBlockedRequest,
+    recordThreatDetected,
+    recordSecurityControlLatency,
+    recordVulnerabilityScanCoverage,
+    recordActiveSessions,
+    collect: collectMetrics,
+    formatPrometheus,
+    reset: resetMetrics,
+};

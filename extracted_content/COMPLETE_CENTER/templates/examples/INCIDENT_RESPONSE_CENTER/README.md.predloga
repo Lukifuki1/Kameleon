@@ -1,0 +1,91 @@
+# {{IME_PROJEKTA}} - Incident Response Center
+
+## _traceability
+- requirement: ZAH-SEC-009 Incident Response center
+- design: DSN-SEC-009 Referenčna implementacija odziva na incidente
+- test: TST-SEC-009 Verifikacija Incident Response primera
+
+## Opis
+
+Incident Response Center je enterprise-grade platforma za upravljanje varnostnih incidentov od detekcije do razrešitve, vključno z avtomatiziranimi playbooki in SOAR zmogljivostmi.
+
+## Vključene komponente
+
+### Incident Detection
+- Alert aggregation
+- Alert correlation
+- False positive reduction
+- Severity classification
+- Automated triage
+
+### Incident Triage
+- Initial assessment
+- Impact analysis
+- Scope determination
+- Priority assignment
+- Team assignment
+
+### Containment
+- Network isolation
+- Endpoint quarantine
+- Account suspension
+- Service shutdown
+- Evidence preservation
+
+### Eradication
+- Malware removal
+- Backdoor elimination
+- Vulnerability patching
+- Configuration hardening
+- Access revocation
+
+### Recovery
+- System restoration
+- Service recovery
+- Data restoration
+- Validation testing
+- Monitoring enhancement
+
+### Post-Incident
+- Root cause analysis
+- Lessons learned
+- Process improvement
+- Documentation
+- Stakeholder communication
+
+### SOAR Integration
+- Playbook automation
+- Orchestration workflows
+- Third-party integration
+- Case management
+- Metrics tracking
+
+## Skladnost
+
+- DO-178C DAL-B
+- IEC-61508 SIL-3
+- ISO-26262 ASIL-C
+- NIST 800-61
+- ISO 27035
+
+## SLA
+
+- Uptime: 99.99%
+- RTO: 15min
+- RPO: 1min
+- MTTD: <5min
+- MTTR: <30min
+- Containment: <15min
+
+## Zagon
+
+```bash
+npm install
+npm run build
+npm run ir:start
+npm run ir:monitor
+```
+
+## Licenca
+
+Enterprise License - {{ORGANIZACIJA}} - CONFIDENTIAL

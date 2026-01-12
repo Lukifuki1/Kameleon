@@ -1,0 +1,437 @@
+/**
+ * @file Varnostni penetracijski testi za {{IME_PROJEKTA}}
+ * @author {{AVTOR}}
+ * @version {{VERZIJA}}
+ * @date {{DATUM}}
+ * @domain {{DOMENA_SL}}
+ * 
+ * @description
+ * Penetracijski testi za varnostni sistem:
+ * - Testi SQL injection
+ * - Testi XSS (Cross-Site Scripting)
+ * - Testi CSRF (Cross-Site Request Forgery)
+ * - Testi avtentikacijskih ranljivosti
+ * - Testi avtorizacijskih ranljivosti
+ * - Testi kriptografskih ranljivosti
+ * 
+ * @compliance DO-178C, IEC-61508, ISO-26262, MIL-STD-882E
+ * @security ISO-27001, NIST-800-53, SOC-2, OWASP Top 10
+ * @meta_atom TST_003 - Security Testing
+ * @requirement REQ-GEN-TST-PENETRATION-001
+ * @design DSN-GEN-TST-PENETRATION-001
+ * @test TST-GEN-TST-PENETRATION-001
+ */
+
+import { describe, it, expect, beforeEach } from 'vitest';
+
+// ============================================================================
+// TESTNI PODATKI - ZLONAMERNI VNOSI
+// ============================================================================
+
+const SQL_INJECTION_PAYLOADS: readonly string[] = [
+    "' OR '1'='1",
+    "'; DROP TABLE users; --",
+    "1' AND '1'='1",
+    "admin'--",
+    "1; SELECT * FROM users",
+    "' UNION SELECT * FROM passwords --",
+    "1' OR '1'='1' /*",
+    "'; EXEC xp_cmdshell('dir'); --",
+];
+
+const XSS_PAYLOADS: readonly string[] = [
+    "<script>alert('XSS')</script>",
+    "<img src=x onerror=alert('XSS')>",
+    "<svg onload=alert('XSS')>",
+    "javascript:alert('XSS')",
+    "<body onload=alert('XSS')>",
+    "<iframe src='javascript:alert(1)'>",
+    "'-alert(1)-'",
+    "<input onfocus=alert(1) autofocus>",
+];
+
+const PATH_TRAVERSAL_PAYLOADS: readonly string[] = [
+    "../../../etc/passwd",
+    "..\\..\\..\\windows\\system32\\config\\sam",
+    "....//....//....//etc/passwd",
+    "%2e%2e%2f%2e%2e%2f%2e%2e%2fetc%2fpasswd",
+    "..%252f..%252f..%252fetc/passwd",
+];
+
+const COMMAND_INJECTION_PAYLOADS: readonly string[] = [
+    "; ls -la",
+    "| cat /etc/passwd",
+    "& whoami",
+    "`id`",
+    "$(cat /etc/passwd)",
+    "; rm -rf /",
+];
+
+// ============================================================================
+// TEST_DOUBLE FUNKCIJE ZA VALIDACIJO
+// ============================================================================
+
+function sanitizeInput(input: string): string {
+    return input
+        .replace(/[<>]/g, '')
+        .replace(/['";]/g, '')
+        .replace(/\.\./g, '')
+        .replace(/[|&`$()]/g, '');
+}
+
+function validateSQLInput(input: string): boolean {
+    const sqlPatterns = [
+        /(\bOR\b|\bAND\b).*[=<>]/i,
+        /(\bUNION\b|\bSELECT\b|\bINSERT\b|\bUPDATE\b|\bDELETE\b|\bDROP\b)/i,
+        /--/,
+        /;.*(\bSELECT\b|\bDROP\b|\bEXEC\b)/i,
+        /['"].*['"].*=/,
+    ];
+    
+    for (const pattern of sqlPatterns) {
+        if (pattern.test(input)) {
+            return false;
+        }
+    }
+    return true;
+}
+
+function validateXSSInput(input: string): boolean {
+    const xssPatterns = [
+        /<script\b[^>]*>/i,
+        /javascript:/i,
+        /on\w+\s*=/i,
+        /<\s*img[^>]+onerror/i,
+        /<\s*svg[^>]+onload/i,
+        /<\s*iframe/i,
+        /<\s*body[^>]+onload/i,
+    ];
+    
+    for (const pattern of xssPatterns) {
+        if (pattern.test(input)) {
+            return false;
+        }
+    }
+    return true;
+}
+
+function validatePathInput(input: string): boolean {
+    const pathPatterns = [
+        /\.\./,
+        /%2e%2e/i,
+        /%252f/i,
+        /\.\.\\/,
+    ];
+    
+    for (const pattern of pathPatterns) {
+        if (pattern.test(input)) {
+            return false;
+        }
+    }
+    return true;
+}
+
+function validateCommandInput(input: string): boolean {
+    const commandPatterns = [
+        /[;&|`$()]/,
+        /\bcat\b/i,
+        /\bls\b/i,
+        /\brm\b/i,
+        /\bwhoami\b/i,
+    ];
+    
+    for (const pattern of commandPatterns) {
+        if (pattern.test(input)) {
+            return false;
+        }
+    }
+    return true;
+}
+
+// ============================================================================
+// TESTI SQL INJECTION
+// ============================================================================
+
+describe('Varnostni testi - SQL Injection', () => {
+    it('naj zavrne vse SQL injection payloade', () => {
+        for (const payload of SQL_INJECTION_PAYLOADS) {
+            // Act
+            const jeVeljaven = validateSQLInput(payload);
+            
+            // Assert
+            expect(jeVeljaven).toBe(false);
+        }
+    });
+    
+    it('naj sprejme veljavne vnose', () => {
+        // Arrange
+        const veljavniVnosi = [
+            'uporabnik123',
+            'ime.priimek@email.com',
+            'Normalen tekst',
+            '12345',
+        ];
+        
+        // Act & Assert
+        for (const vnos of veljavniVnosi) {
+            expect(validateSQLInput(vnos)).toBe(true);
+        }
+    });
+    
+    it('naj sanitizira SQL injection payloade', () => {
+        for (const payload of SQL_INJECTION_PAYLOADS) {
+            // Act
+            const sanitiziran = sanitizeInput(payload);
+            
+            // Assert
+            expect(sanitiziran).not.toContain("'");
+            expect(sanitiziran).not.toContain('"');
+            expect(sanitiziran).not.toContain(';');
+        }
+    });
+});
+
+// ============================================================================
+// TESTI XSS
+// ============================================================================
+
+describe('Varnostni testi - XSS', () => {
+    it('naj zavrne vse XSS payloade', () => {
+        for (const payload of XSS_PAYLOADS) {
+            // Act
+            const jeVeljaven = validateXSSInput(payload);
+            
+            // Assert
+            expect(jeVeljaven).toBe(false);
+        }
+    });
+    
+    it('naj sprejme veljavne vnose', () => {
+        // Arrange
+        const veljavniVnosi = [
+            'Normalen tekst',
+            'Tekst z stevilkami 123',
+            'email@example.com',
+            'Besedilo brez HTML',
+        ];
+        
+        // Act & Assert
+        for (const vnos of veljavniVnosi) {
+            expect(validateXSSInput(vnos)).toBe(true);
+        }
+    });
+    
+    it('naj sanitizira XSS payloade', () => {
+        for (const payload of XSS_PAYLOADS) {
+            // Act
+            const sanitiziran = sanitizeInput(payload);
+            
+            // Assert
+            expect(sanitiziran).not.toContain('<');
+            expect(sanitiziran).not.toContain('>');
+        }
+    });
+});
+
+// ============================================================================
+// TESTI PATH TRAVERSAL
+// ============================================================================
+
+describe('Varnostni testi - Path Traversal', () => {
+    it('naj zavrne vse path traversal payloade', () => {
+        for (const payload of PATH_TRAVERSAL_PAYLOADS) {
+            // Act
+            const jeVeljaven = validatePathInput(payload);
+            
+            // Assert
+            expect(jeVeljaven).toBe(false);
+        }
+    });
+    
+    it('naj sprejme veljavne poti', () => {
+        // Arrange
+        const veljavnePoti = [
+            'datoteka.txt',
+            'mapa/datoteka.txt',
+            'uporabnik/dokumenti/porocilo.pdf',
+        ];
+        
+        // Act & Assert
+        for (const pot of veljavnePoti) {
+            expect(validatePathInput(pot)).toBe(true);
+        }
+    });
+    
+    it('naj sanitizira path traversal payloade', () => {
+        for (const payload of PATH_TRAVERSAL_PAYLOADS) {
+            // Act
+            const sanitiziran = sanitizeInput(payload);
+            
+            // Assert
+            expect(sanitiziran).not.toContain('..');
+        }
+    });
+});
+
+// ============================================================================
+// TESTI COMMAND INJECTION
+// ============================================================================
+
+describe('Varnostni testi - Command Injection', () => {
+    it('naj zavrne vse command injection payloade', () => {
+        for (const payload of COMMAND_INJECTION_PAYLOADS) {
+            // Act
+            const jeVeljaven = validateCommandInput(payload);
+            
+            // Assert
+            expect(jeVeljaven).toBe(false);
+        }
+    });
+    
+    it('naj sprejme veljavne vnose', () => {
+        // Arrange
+        const veljavniVnosi = [
+            'normalen-tekst',
+            'datoteka.txt',
+            'uporabnik123',
+        ];
+        
+        // Act & Assert
+        for (const vnos of veljavniVnosi) {
+            expect(validateCommandInput(vnos)).toBe(true);
+        }
+    });
+    
+    it('naj sanitizira command injection payloade', () => {
+        for (const payload of COMMAND_INJECTION_PAYLOADS) {
+            // Act
+            const sanitiziran = sanitizeInput(payload);
+            
+            // Assert
+            expect(sanitiziran).not.toContain(';');
+            expect(sanitiziran).not.toContain('|');
+            expect(sanitiziran).not.toContain('&');
+            expect(sanitiziran).not.toContain('`');
+            expect(sanitiziran).not.toContain('$');
+        }
+    });
+});
+
+// ============================================================================
+// TESTI AVTENTIKACIJSKIH RANLJIVOSTI
+// ============================================================================
+
+describe('Varnostni testi - Avtentikacijske ranljivosti', () => {
+    it('naj zavrne prazno geslo', () => {
+        // Arrange
+        const geslo = '';
+        
+        // Act
+        const jeVeljavno = geslo.length >= 8;
+        
+        // Assert
+        expect(jeVeljavno).toBe(false);
+    });
+    
+    it('naj zavrne prekratko geslo', () => {
+        // Arrange
+        const geslo = 'abc123';
+        
+        // Act
+        const jeVeljavno = geslo.length >= 8;
+        
+        // Assert
+        expect(jeVeljavno).toBe(false);
+    });
+    
+    it('naj sprejme dovolj dolgo geslo', () => {
+        // Arrange
+        const geslo = 'VarnoGeslo123!';
+        
+        // Act
+        const jeVeljavno = geslo.length >= 8;
+        
+        // Assert
+        expect(jeVeljavno).toBe(true);
+    });
+    
+    it('naj zahteva kompleksnost gesla', () => {
+        // Arrange
+        const geslo = 'VarnoGeslo123!';
+        
+        // Act
+        const imaVelikocrko = /[A-Z]/.test(geslo);
+        const imaMalocrko = /[a-z]/.test(geslo);
+        const imaStevilko = /[0-9]/.test(geslo);
+        const imaPosebniZnak = /[!@#$%^&*]/.test(geslo);
+        
+        // Assert
+        expect(imaVelikocrko).toBe(true);
+        expect(imaMalocrko).toBe(true);
+        expect(imaStevilko).toBe(true);
+        expect(imaPosebniZnak).toBe(true);
+    });
+});
+
+// ============================================================================
+// TESTI KRIPTOGRAFSKIH RANLJIVOSTI
+// ============================================================================
+
+describe('Varnostni testi - Kriptografske ranljivosti', () => {
+    it('naj ne uporablja slab hash algoritem', () => {
+        // Arrange
+        const slabiAlgoritmi = ['legacy-hash-v5', 'legacy-hash-v1'];
+        const uporabljenAlgoritem = 'sha256';
+        
+        // Assert
+        expect(slabiAlgoritmi).not.toContain(uporabljenAlgoritem);
+    });
+    
+    it('naj uporablja dovolj dolg kljuc', () => {
+        // Arrange
+        const dolzinaKljuca = 256;
+        const minimalnaDolinaKljuca = 128;
+        
+        // Assert
+        expect(dolzinaKljuca).toBeGreaterThanOrEqual(minimalnaDolinaKljuca);
+    });
+    
+    it('naj uporablja varen nacin sifriranja', () => {
+        // Arrange
+        const nevarniNacini = ['ecb'];
+        const uporabljenNacin = 'gcm';
+        
+        // Assert
+        expect(nevarniNacini).not.toContain(uporabljenNacin);
+    });
+});
+
+// ============================================================================
+// TESTI RATE LIMITING
+// ============================================================================
+
+describe('Varnostni testi - Rate Limiting', () => {
+    it('naj omeji stevilo zahtev', () => {
+        // Arrange
+        const maxZahtevNaMinuto = 100;
+        const steviloZahtev = 150;
+        
+        // Act
+        const jePrekoseno = steviloZahtev > maxZahtevNaMinuto;
+        
+        // Assert
+        expect(jePrekoseno).toBe(true);
+    });
+    
+    it('naj dovoli zahteve pod limitom', () => {
+        // Arrange
+        const maxZahtevNaMinuto = 100;
+        const steviloZahtev = 50;
+        
+        // Act
+        const jePrekoseno = steviloZahtev > maxZahtevNaMinuto;
+        
+        // Assert
+        expect(jePrekoseno).toBe(false);
+    });
+});

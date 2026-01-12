@@ -1,0 +1,130 @@
+# ARHITEKTURNI OPIS
+
+**Projekt:** {{IME_PROJEKTA}}
+**Verzija:** {{VERZIJA}}
+**Domena:** Varnostni sistemi
+**Datum:** {{DATUM}}
+**Avtor:** {{AVTOR}}
+
+---
+
+## 1. UVOD
+
+### 1.1 Namen
+Ta dokument opisuje arhitekturo projekta {{IME_PROJEKTA}} v domeni **Varnostni sistemi** (VARNOSTNI_SISTEMI).
+
+### 1.2 Opis domene
+Kriptografija in zascita podatkov
+
+### 1.3 Kljucni koncepti za VARNOSTNI_SISTEMI
+- encryption
+- authentication
+- authorization
+- firewall
+- vulnerability
+
+---
+
+## 2. ARHITEKTURNI PREGLED ZA Varnostni sistemi
+
+### 2.1 Kategorije
+- Kriptografija
+- Avtentikacija
+- Varnostna skladnost in sledljivost
+
+### 2.2 Moduli za VARNOSTNI_SISTEMI
+- AES
+- RSA
+- TOTP
+- Sledljivost varnostnih zahtev
+- Generiranje kriptografskih dokazov
+
+### 2.3 Komponente
+
+```
+{{IME_PROJEKTA}} (VARNOSTNI_SISTEMI)
+├── src/
+│   ├── jedro.ts          # Jedro sistema za Varnostni sistemi
+│   │   ├── DOMENA_VARNOSTNI_SISTEMI_KONSTANTE
+│   │   ├── KonfiguracijaJedra
+│   │   ├── RezultatOperacije
+│   │   ├── inicializirajJedro()
+│   │   ├── izvediOperacijo()
+│   │   └── pridobiStanje()
+│   └── index.ts          # Vstopna tocka
+├── testi/
+│   └── jedro.test.ts     # Testi za Varnostni sistemi
+├── dokumentacija/
+│   ├── SPECIFIKACIJA_ZAHTEV.md
+│   ├── NACRT_VERIFIKACIJE.md
+│   ├── ARHITEKTURNI_OPIS.md
+│   └── POLITIKA_KODIRANJA.md
+└── evidence/
+    └── dokazila za VARNOSTNI_SISTEMI
+```
+
+---
+
+## 3. DOMENSKO-SPECIFICNA ARHITEKTURA ZA VARNOSTNI_SISTEMI
+
+### 3.1 Domenski tipi
+
+```typescript
+interface VARNOSTNISISTEMIKonfiguracija {
+    readonly domena: 'VARNOSTNI_SISTEMI';
+    readonly kategorije: readonly string[];
+    readonly moduli: readonly string[];
+    readonly funkcije: readonly string[];
+    readonly kljucniBesede: readonly string[];
+}
+```
+
+### 3.2 Domenski vmesniki
+
+```typescript
+interface KonfiguracijaJedra {
+    readonly imeProjekta: string;
+    readonly verzija: string;
+    readonly domena: 'VARNOSTNI_SISTEMI';
+    readonly moduli: readonly string[];
+    readonly funkcije: readonly string[];
+    readonly deterministicniNacin: boolean;
+    readonly domenaPodatki: typeof DOMENA_VARNOSTNI_SISTEMI_KONSTANTE;
+}
+```
+
+---
+
+## 4. VARNOSTNA ARHITEKTURA ZA Varnostni sistemi
+
+### 4.1 Varnostni nivoji
+- **SIL-2:** Nivo varnostne integritete
+- **DO-178C:** Skladnost z letalskimi standardi
+- **IEC 61508:** Skladnost s funkcionalnimi varnostnimi standardi
+- **ISO 26262:** Skladnost z avtomobilskimi standardi
+- **MIL-STD-882E:** Skladnost z vojaskimi standardi
+
+### 4.2 Varnostni mehanizmi za VARNOSTNI_SISTEMI
+- Podpisovanje artefaktov (COSIGN)
+- SBOM generiranje (SYFT)
+- Varnostno skeniranje (TRIVY)
+
+---
+
+## 5. DETERMINISTICNA ARHITEKTURA ZA VARNOSTNI_SISTEMI
+
+### 5.1 Principi
+- Identicen vhod -> identicen izhod
+- Brez odvisnosti od casa
+- Brez nakljucnih vrednosti
+- Brez omreznih klicev med gradnjo
+
+### 5.2 Implementacija za Varnostni sistemi
+- Uporaba `@mia/core/clock` za cas
+- Deterministicni ID generatorji
+- Ponovljivi testi
+
+---
+
+**Domena:** Varnostni sistemi
+**Konec dokumenta**

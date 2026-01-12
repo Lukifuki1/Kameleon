@@ -1,0 +1,322 @@
+{
+  "$schema": "https://{{ORGANIZACIJA_DOMENA}}/schemas/security-scan-config.json",
+  "metadata": {
+    "projectName": "{{IME_PROJEKTA}}",
+    "version": "{{VERZIJA}}",
+    "domain": "{{DOMENA_SL}}",
+    "generatedAt": "{{DATUM}}"
+  },
+  "scanning": {
+    "enabled": true,
+    "schedule": "0 2 * * *",
+    "onPush": true,
+    "onPullRequest": true,
+    "blockOnFailure": true
+  },
+  "sast": {
+    "enabled": true,
+    "tools": [
+      {
+        "name": "CodeQL",
+        "enabled": true,
+        "languages": ["typescript", "javascript"],
+        "queries": ["security-extended", "security-and-quality"],
+        "config": {
+          "paths": ["src/**/*.ts"],
+          "pathsIgnore": ["**/*.test.ts", "**/*.spec.ts", "node_modules/**"]
+        }
+      },
+      {
+        "name": "Semgrep",
+        "enabled": true,
+        "rulesets": [
+          "p/typescript",
+          "p/nodejs",
+          "p/owasp-top-ten",
+          "p/cwe-top-25",
+          "p/security-audit"
+        ],
+        "config": {
+          "severity": ["ERROR", "WARNING"],
+          "exclude": ["test/**", "**/*.test.ts"]
+        }
+      },
+      {
+        "name": "ESLint Security",
+        "enabled": true,
+        "plugins": ["security", "no-secrets"],
+        "rules": {
+          "security/detect-object-injection": "warn",
+          "security/detect-non-literal-regexp": "error",
+          "security/detect-eval-with-expression": "error",
+          "security/detect-no-csrf-before-method-override": "error",
+          "security/detect-possible-timing-attacks": "error",
+          "no-secrets/no-secrets": "error"
+        }
+      }
+    ],
+    "thresholds": {
+      "critical": 0,
+      "high": 0,
+      "medium": 5,
+      "low": 10
+    }
+  },
+  "dast": {
+    "enabled": true,
+    "tools": [
+      {
+        "name": "OWASP ZAP",
+        "enabled": true,
+        "scanType": "full",
+        "targetUrl": "{{TARGET_URL}}",
+        "config": {
+          "spider": {
+            "maxDepth": 10,
+            "maxChildren": 0
+          },
+          "activeScan": {
+            "policy": "Default Policy",
+            "strength": "HIGH",
+            "threshold": "MEDIUM"
+          },
+          "authentication": {
+            "type": "form",
+            "loginUrl": "/auth/login",
+            "usernameField": "username",
+            "passwordField": "password"
+          }
+        }
+      }
+    ],
+    "schedule": "0 3 * * 0",
+    "thresholds": {
+      "critical": 0,
+      "high": 0,
+      "medium": 3,
+      "low": 10
+    }
+  },
+  "sca": {
+    "enabled": true,
+    "tools": [
+      {
+        "name": "Snyk",
+        "enabled": true,
+        "config": {
+          "severityThreshold": "high",
+          "failOn": "upgradable",
+          "prune": true
+        }
+      },
+      {
+        "name": "npm audit",
+        "enabled": true,
+        "config": {
+          "level": "high",
+          "production": true
+        }
+      },
+      {
+        "name": "OWASP Dependency Check",
+        "enabled": true,
+        "config": {
+          "failBuildOnCVSS": 7,
+          "suppressionFile": ".dependency-check-suppressions.xml"
+        }
+      }
+    ],
+    "schedule": "0 1 * * *",
+    "thresholds": {
+      "critical": 0,
+      "high": 0,
+      "medium": 5,
+      "low": 20
+    },
+    "autoFix": {
+      "enabled": true,
+      "createPR": true,
+      "maxPRs": 5
+    }
+  },
+  "containerScan": {
+    "enabled": true,
+    "tools": [
+      {
+        "name": "Trivy",
+        "enabled": true,
+        "config": {
+          "severity": ["CRITICAL", "HIGH", "MEDIUM"],
+          "ignoreUnfixed": false,
+          "scanners": ["vuln", "secret", "config"],
+          "timeout": "10m"
+        }
+      },
+      {
+        "name": "Grype",
+        "enabled": true,
+        "config": {
+          "failOn": "high",
+          "scope": "all-layers"
+        }
+      }
+    ],
+    "thresholds": {
+      "critical": 0,
+      "high": 0,
+      "medium": 3,
+      "low": 10
+    },
+    "baseImages": {
+      "allowed": [
+        "gcr.io/distroless/nodejs20-debian12",
+        "node:20-alpine",
+        "node:20-slim"
+      ],
+      "blocked": [
+        "node:latest",
+        "ubuntu:latest"
+      ]
+    }
+  },
+  "secretScan": {
+    "enabled": true,
+    "tools": [
+      {
+        "name": "Gitleaks",
+        "enabled": true,
+        "config": {
+          "configPath": ".gitleaks.toml",
+          "verbose": true,
+          "redact": true
+        }
+      },
+      {
+        "name": "TruffleHog",
+        "enabled": true,
+        "config": {
+          "entropy": true,
+          "regex": true,
+          "maxDepth": 50
+        }
+      }
+    ],
+    "patterns": [
+      {
+        "name": "AWS Access Key",
+        "pattern": "AKIA[0-9A-Z]{16}",
+        "severity": "critical"
+      },
+      {
+        "name": "AWS Secret Key",
+        "pattern": "[0-9a-zA-Z/+]{40}",
+        "severity": "critical"
+      },
+      {
+        "name": "Private Key",
+        "pattern": "-----BEGIN.*PRIVATE KEY-----",
+        "severity": "critical"
+      },
+      {
+        "name": "JWT Token",
+        "pattern": "eyJ[A-Za-z0-9-_]+\\.eyJ[A-Za-z0-9-_]+\\.[A-Za-z0-9-_]+",
+        "severity": "high"
+      },
+      {
+        "name": "Generic API Key",
+        "pattern": "[aA][pP][iI][_-]?[kK][eE][yY].*['\"][0-9a-zA-Z]{32,}['\"]",
+        "severity": "high"
+      }
+    ],
+    "allowlist": [
+      {
+        "path": "**/*.test.ts",
+        "reason": "Test files may contain mock secrets"
+      },
+      {
+        "path": "**/fixtures/**",
+        "reason": "Test fixtures"
+      }
+    ]
+  },
+  "iacScan": {
+    "enabled": true,
+    "tools": [
+      {
+        "name": "Checkov",
+        "enabled": true,
+        "config": {
+          "framework": ["kubernetes", "dockerfile", "terraform"],
+          "softFail": false,
+          "compactOutput": true
+        }
+      },
+      {
+        "name": "KICS",
+        "enabled": true,
+        "config": {
+          "type": ["Kubernetes", "Dockerfile", "Terraform"],
+          "excludeSeverity": ["info"]
+        }
+      }
+    ],
+    "thresholds": {
+      "critical": 0,
+      "high": 0,
+      "medium": 5,
+      "low": 10
+    }
+  },
+  "compliance": {
+    "enabled": true,
+    "frameworks": [
+      {
+        "name": "CIS Kubernetes Benchmark",
+        "version": "1.8",
+        "enabled": true
+      },
+      {
+        "name": "CIS Docker Benchmark",
+        "version": "1.5",
+        "enabled": true
+      },
+      {
+        "name": "NIST 800-53",
+        "version": "rev5",
+        "enabled": true
+      },
+      {
+        "name": "SOC 2",
+        "version": "2017",
+        "enabled": true
+      }
+    ]
+  },
+  "reporting": {
+    "formats": ["json", "sarif", "html", "junit"],
+    "outputDir": "./security-reports",
+    "uploadToDefectDojo": {
+      "enabled": true,
+      "url": "https://defectdojo.{{ORGANIZACIJA_DOMENA}}",
+      "productName": "{{IME_PROJEKTA}}"
+    },
+    "notifications": {
+      "slack": {
+        "enabled": true,
+        "channel": "#security-alerts",
+        "onlyOnFailure": false
+      },
+      "email": {
+        "enabled": true,
+        "recipients": ["security@{{ORGANIZACIJA_DOMENA}}"],
+        "onlyOnFailure": true
+      }
+    }
+  },
+  "exceptions": {
+    "file": ".security-exceptions.yaml",
+    "requireApproval": true,
+    "maxAge": "90d",
+    "reviewers": ["security-team"]
+  }
+}

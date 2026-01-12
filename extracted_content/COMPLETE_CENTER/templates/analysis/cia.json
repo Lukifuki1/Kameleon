@@ -1,0 +1,374 @@
+{
+  "_metadata": {
+    "template_version": "1.0.0",
+    "template_type": "cia_security_analysis",
+    "domain_id": "DOMENA_08",
+    "domain_name": "VARNOSTNI_SISTEMI",
+    "compliance_standards": ["ISO-27001", "NIST-CSF", "SOC-2", "PCI-DSS", "GDPR"],
+    "generated_at": "2026-01-10T00:00:00Z"
+  },
+  "_traceability": {
+    "requirement_id": "REQ-VARNOSTNI_SISTEMI-CIA-001",
+    "design_id": "DES-VARNOSTNI_SISTEMI-CIA-001",
+    "test_id": "TST-VARNOSTNI_SISTEMI-CIA-001"
+  },
+  "cia_analysis": {
+    "document_id": "CIA-DOMENA08-1.0.0",
+    "title_sl": "CIA analiza za varnostne sisteme",
+    "revision": "1.0.0",
+    "status": "ACTIVE",
+    "confidentiality": {
+      "category_id": "CIA-C",
+      "category_name": "Confidentiality (Zaupnost)",
+      "description_sl": "Zagotavljanje, da so informacije dostopne samo pooblascenim osebam",
+      "classification_levels": [
+        {
+          "level_id": "CL-PUBLIC",
+          "name_sl": "Javno",
+          "description_sl": "Informacije, ki so namenjene javni objavi",
+          "handling_requirements": "Brez posebnih zahtev"
+        },
+        {
+          "level_id": "CL-INTERNAL",
+          "name_sl": "Interno",
+          "description_sl": "Informacije za interno uporabo v organizaciji",
+          "handling_requirements": "Dostop samo za zaposlene, osnovno sifriranje"
+        },
+        {
+          "level_id": "CL-CONFIDENTIAL",
+          "name_sl": "Zaupno",
+          "description_sl": "Obcutljive poslovne informacije",
+          "handling_requirements": "Dostop na podlagi potrebe, sifriranje v mirovanju in prenosu, revizijska sled"
+        },
+        {
+          "level_id": "CL-SECRET",
+          "name_sl": "Tajno",
+          "description_sl": "Visoko obcutljive informacije z resnimi posledicami ob razkritju",
+          "handling_requirements": "Stroga kontrola dostopa, HSM za kljuce, loceno omrezje, MFA"
+        }
+      ],
+      "assets": [
+        {
+          "asset_id": "ASSET-08-C-001",
+          "name_sl": "Uporabniske poverilnice",
+          "classification": "CL-SECRET",
+          "data_types": ["gesla", "API kljuci", "certifikati", "biometricni podatki"],
+          "storage_location": "HSM, sifrirana baza",
+          "controls": [
+            {
+              "control_id": "CTRL-08-C-001-01",
+              "name_sl": "Hashiranje gesel z Argon2id",
+              "implementation_status": "IMPLEMENTED",
+              "effectiveness": "HIGH"
+            },
+            {
+              "control_id": "CTRL-08-C-001-02",
+              "name_sl": "Shranjevanje kljucev v HSM",
+              "implementation_status": "IMPLEMENTED",
+              "effectiveness": "HIGH"
+            },
+            {
+              "control_id": "CTRL-08-C-001-03",
+              "name_sl": "Sifriranje biometricnih podatkov z AES-256-GCM",
+              "implementation_status": "IMPLEMENTED",
+              "effectiveness": "HIGH"
+            }
+          ],
+          "residual_risk": "LOW"
+        },
+        {
+          "asset_id": "ASSET-08-C-002",
+          "name_sl": "Kriptografski kljuci",
+          "classification": "CL-SECRET",
+          "data_types": ["simetricni kljuci", "asimetricni kljuci", "certifikati"],
+          "storage_location": "HSM FIPS 140-3 Level 3",
+          "controls": [
+            {
+              "control_id": "CTRL-08-C-002-01",
+              "name_sl": "Kljuci nikoli ne zapustijo HSM",
+              "implementation_status": "IMPLEMENTED",
+              "effectiveness": "HIGH"
+            },
+            {
+              "control_id": "CTRL-08-C-002-02",
+              "name_sl": "Rotacija kljucev vsake 90 dni",
+              "implementation_status": "IMPLEMENTED",
+              "effectiveness": "MEDIUM"
+            },
+            {
+              "control_id": "CTRL-08-C-002-03",
+              "name_sl": "Dual control za kriticne operacije",
+              "implementation_status": "IMPLEMENTED",
+              "effectiveness": "HIGH"
+            }
+          ],
+          "residual_risk": "LOW"
+        },
+        {
+          "asset_id": "ASSET-08-C-003",
+          "name_sl": "Revizijski dnevniki",
+          "classification": "CL-CONFIDENTIAL",
+          "data_types": ["prijave", "dostopi", "spremembe", "napake"],
+          "storage_location": "SIEM, nespremenljivo shranjevanje",
+          "controls": [
+            {
+              "control_id": "CTRL-08-C-003-01",
+              "name_sl": "Sifriranje dnevnikov v mirovanju",
+              "implementation_status": "IMPLEMENTED",
+              "effectiveness": "HIGH"
+            },
+            {
+              "control_id": "CTRL-08-C-003-02",
+              "name_sl": "Omejen dostop do dnevnikov",
+              "implementation_status": "IMPLEMENTED",
+              "effectiveness": "HIGH"
+            }
+          ],
+          "residual_risk": "LOW"
+        }
+      ]
+    },
+    "integrity": {
+      "category_id": "CIA-I",
+      "category_name": "Integrity (Celovitost)",
+      "description_sl": "Zagotavljanje tocnosti in popolnosti informacij ter sistemov",
+      "integrity_levels": [
+        {
+          "level_id": "IL-LOW",
+          "name_sl": "Nizka",
+          "description_sl": "Manjse posledice ob krsitvi celovitosti",
+          "verification_frequency": "Tedensko"
+        },
+        {
+          "level_id": "IL-MEDIUM",
+          "name_sl": "Srednja",
+          "description_sl": "Zmerne posledice ob krsitvi celovitosti",
+          "verification_frequency": "Dnevno"
+        },
+        {
+          "level_id": "IL-HIGH",
+          "name_sl": "Visoka",
+          "description_sl": "Resne posledice ob krsitvi celovitosti",
+          "verification_frequency": "V realnem casu"
+        },
+        {
+          "level_id": "IL-CRITICAL",
+          "name_sl": "Kriticna",
+          "description_sl": "Katastrofalne posledice ob krsitvi celovitosti",
+          "verification_frequency": "Kontinuirano z redundanco"
+        }
+      ],
+      "assets": [
+        {
+          "asset_id": "ASSET-08-I-001",
+          "name_sl": "Varnostne politike in konfiguracije",
+          "integrity_level": "IL-CRITICAL",
+          "data_types": ["ACL", "RBAC pravila", "varnostne nastavitve"],
+          "controls": [
+            {
+              "control_id": "CTRL-08-I-001-01",
+              "name_sl": "Verzioniranje konfiguracij z Git",
+              "implementation_status": "IMPLEMENTED",
+              "effectiveness": "HIGH"
+            },
+            {
+              "control_id": "CTRL-08-I-001-02",
+              "name_sl": "Digitalno podpisovanje konfiguracij",
+              "implementation_status": "IMPLEMENTED",
+              "effectiveness": "HIGH"
+            },
+            {
+              "control_id": "CTRL-08-I-001-03",
+              "name_sl": "Avtomatska detekcija sprememb",
+              "implementation_status": "IMPLEMENTED",
+              "effectiveness": "HIGH"
+            }
+          ],
+          "residual_risk": "LOW"
+        },
+        {
+          "asset_id": "ASSET-08-I-002",
+          "name_sl": "Avtentikacijski tokeni",
+          "integrity_level": "IL-CRITICAL",
+          "data_types": ["JWT", "session tokens", "refresh tokens"],
+          "controls": [
+            {
+              "control_id": "CTRL-08-I-002-01",
+              "name_sl": "Digitalno podpisovanje tokenov (RS256/ES256)",
+              "implementation_status": "IMPLEMENTED",
+              "effectiveness": "HIGH"
+            },
+            {
+              "control_id": "CTRL-08-I-002-02",
+              "name_sl": "Kratka veljavnost tokenov",
+              "implementation_status": "IMPLEMENTED",
+              "effectiveness": "MEDIUM"
+            },
+            {
+              "control_id": "CTRL-08-I-002-03",
+              "name_sl": "Token binding",
+              "implementation_status": "IMPLEMENTED",
+              "effectiveness": "HIGH"
+            }
+          ],
+          "residual_risk": "LOW"
+        },
+        {
+          "asset_id": "ASSET-08-I-003",
+          "name_sl": "Revizijska sled",
+          "integrity_level": "IL-CRITICAL",
+          "data_types": ["dnevniski zapisi", "casovni zigi", "digitalni podpisi"],
+          "controls": [
+            {
+              "control_id": "CTRL-08-I-003-01",
+              "name_sl": "Append-only shranjevanje",
+              "implementation_status": "IMPLEMENTED",
+              "effectiveness": "HIGH"
+            },
+            {
+              "control_id": "CTRL-08-I-003-02",
+              "name_sl": "Kriptografsko verizenje zapisov",
+              "implementation_status": "IMPLEMENTED",
+              "effectiveness": "HIGH"
+            },
+            {
+              "control_id": "CTRL-08-I-003-03",
+              "name_sl": "Neodvisno casovno zigosanje (TSA)",
+              "implementation_status": "IMPLEMENTED",
+              "effectiveness": "HIGH"
+            }
+          ],
+          "residual_risk": "LOW"
+        }
+      ]
+    },
+    "availability": {
+      "category_id": "CIA-A",
+      "category_name": "Availability (Razpolozljivost)",
+      "description_sl": "Zagotavljanje pravocasnega in zanesljivega dostopa do informacij",
+      "availability_tiers": [
+        {
+          "tier_id": "AT-STANDARD",
+          "name_sl": "Standardna",
+          "sla_uptime": "99.0%",
+          "max_downtime_monthly": "7.2 ur",
+          "rto": "24 ur",
+          "rpo": "24 ur"
+        },
+        {
+          "tier_id": "AT-HIGH",
+          "name_sl": "Visoka",
+          "sla_uptime": "99.9%",
+          "max_downtime_monthly": "43.8 min",
+          "rto": "4 ure",
+          "rpo": "1 ura"
+        },
+        {
+          "tier_id": "AT-CRITICAL",
+          "name_sl": "Kriticna",
+          "sla_uptime": "99.99%",
+          "max_downtime_monthly": "4.38 min",
+          "rto": "15 min",
+          "rpo": "5 min"
+        },
+        {
+          "tier_id": "AT-MISSION_CRITICAL",
+          "name_sl": "Misijsko kriticna",
+          "sla_uptime": "99.999%",
+          "max_downtime_monthly": "26.3 s",
+          "rto": "0 (hot standby)",
+          "rpo": "0 (sinhrona replikacija)"
+        }
+      ],
+      "services": [
+        {
+          "service_id": "SVC-08-A-001",
+          "name_sl": "Avtentikacijska storitev",
+          "availability_tier": "AT-MISSION_CRITICAL",
+          "dependencies": ["HSM", "baza uporabnikov", "LDAP/AD"],
+          "controls": [
+            {
+              "control_id": "CTRL-08-A-001-01",
+              "name_sl": "Geografsko porazdeljena arhitektura",
+              "implementation_status": "IMPLEMENTED",
+              "effectiveness": "HIGH"
+            },
+            {
+              "control_id": "CTRL-08-A-001-02",
+              "name_sl": "Avtomatski failover",
+              "implementation_status": "IMPLEMENTED",
+              "effectiveness": "HIGH"
+            },
+            {
+              "control_id": "CTRL-08-A-001-03",
+              "name_sl": "DDoS zascita",
+              "implementation_status": "IMPLEMENTED",
+              "effectiveness": "HIGH"
+            }
+          ],
+          "residual_risk": "LOW"
+        },
+        {
+          "service_id": "SVC-08-A-002",
+          "name_sl": "Avtorizacijska storitev",
+          "availability_tier": "AT-CRITICAL",
+          "dependencies": ["policy engine", "baza pravic"],
+          "controls": [
+            {
+              "control_id": "CTRL-08-A-002-01",
+              "name_sl": "Lokalno predpomnjenje politik",
+              "implementation_status": "IMPLEMENTED",
+              "effectiveness": "HIGH"
+            },
+            {
+              "control_id": "CTRL-08-A-002-02",
+              "name_sl": "Redundantni policy engine",
+              "implementation_status": "IMPLEMENTED",
+              "effectiveness": "HIGH"
+            }
+          ],
+          "residual_risk": "LOW"
+        },
+        {
+          "service_id": "SVC-08-A-003",
+          "name_sl": "Kriptografska storitev",
+          "availability_tier": "AT-CRITICAL",
+          "dependencies": ["HSM cluster", "key management"],
+          "controls": [
+            {
+              "control_id": "CTRL-08-A-003-01",
+              "name_sl": "HSM cluster z N+1 redundanco",
+              "implementation_status": "IMPLEMENTED",
+              "effectiveness": "HIGH"
+            },
+            {
+              "control_id": "CTRL-08-A-003-02",
+              "name_sl": "Avtomatska rotacija ob odpovedi",
+              "implementation_status": "IMPLEMENTED",
+              "effectiveness": "HIGH"
+            }
+          ],
+          "residual_risk": "LOW"
+        }
+      ]
+    },
+    "analysis_summary": {
+      "total_assets": 6,
+      "total_services": 3,
+      "total_controls": 24,
+      "implemented_controls": 24,
+      "control_effectiveness": {
+        "high": 21,
+        "medium": 3,
+        "low": 0
+      },
+      "residual_risk_distribution": {
+        "critical": 0,
+        "high": 0,
+        "medium": 0,
+        "low": 9
+      },
+      "compliance_status": "COMPLIANT"
+    }
+  }
+}

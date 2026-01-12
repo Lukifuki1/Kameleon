@@ -1,0 +1,224 @@
+{
+  "spdxVersion": "SPDX-2.3",
+  "dataLicense": "CC0-1.0",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "name": "{{IME_PROJEKTA_SLUG}}-sbom",
+  "documentNamespace": "https://{{ORGANIZACIJA_DOMENA}}/sbom/{{IME_PROJEKTA_SLUG}}/{{VERZIJA}}",
+  "creationInfo": {
+    "created": "{{DATUM}}T00:00:00Z",
+    "creators": [
+      "Tool: MIA BUILD Generator-{{VERZIJA}}",
+      "Organization: {{ORGANIZACIJA}}"
+    ],
+    "licenseListVersion": "3.21"
+  },
+  "documentDescribes": [
+    "SPDXRef-Package-{{IME_PROJEKTA_SLUG}}"
+  ],
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-Package-{{IME_PROJEKTA_SLUG}}",
+      "name": "{{IME_PROJEKTA_SLUG}}",
+      "versionInfo": "{{VERZIJA}}",
+      "packageFileName": "{{IME_PROJEKTA_SLUG}}-{{VERZIJA}}.tgz",
+      "supplier": "Organization: {{ORGANIZACIJA}}",
+      "originator": "Organization: {{ORGANIZACIJA}}",
+      "downloadLocation": "https://github.com/{{ORGANIZACIJA_SLUG}}/{{IME_PROJEKTA_SLUG}}/releases/tag/v{{VERZIJA}}",
+      "filesAnalyzed": true,
+      "packageVerificationCode": {
+        "packageVerificationCodeValue": "{{VERIFICATION_CODE}}"
+      },
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "{{PACKAGE_SHA256}}"
+        },
+        {
+          "algorithm": "SHA512",
+          "checksumValue": "{{PACKAGE_SHA512}}"
+        }
+      ],
+      "homepage": "https://{{ORGANIZACIJA_DOMENA}}/{{IME_PROJEKTA_SLUG}}",
+      "licenseConcluded": "Proprietary",
+      "licenseDeclared": "Proprietary",
+      "copyrightText": "Copyright (c) {{LETO}} {{ORGANIZACIJA}}",
+      "summary": "Varnostni sistem {{IME_PROJEKTA}} - {{DOMENA_SL}}",
+      "description": "Enterprise varnostni sistem skladen z DO-178C, IEC 61508, ISO 26262, MIL-STD-882E standardi.",
+      "primaryPackagePurpose": "APPLICATION",
+      "releaseDate": "{{DATUM}}T00:00:00Z",
+      "builtDate": "{{DATUM}}T00:00:00Z",
+      "externalRefs": [
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:{{ORGANIZACIJA_SLUG}}:{{IME_PROJEKTA_SLUG}}:{{VERZIJA}}:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:npm/@{{ORGANIZACIJA_SLUG}}/{{IME_PROJEKTA_SLUG}}@{{VERZIJA}}"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-Package-typescript",
+      "name": "typescript",
+      "versionInfo": "5.3.0",
+      "supplier": "Organization: Microsoft",
+      "downloadLocation": "https://registry.npmjs.org/typescript/-/typescript-5.3.0.tgz",
+      "filesAnalyzed": false,
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "{{TYPESCRIPT_SHA256}}"
+        }
+      ],
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "copyrightText": "Copyright (c) Microsoft Corporation",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:npm/typescript@5.3.0"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-Package-vitest",
+      "name": "vitest",
+      "versionInfo": "1.0.0",
+      "supplier": "Organization: Vitest",
+      "downloadLocation": "https://registry.npmjs.org/vitest/-/vitest-1.0.0.tgz",
+      "filesAnalyzed": false,
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "{{VITEST_SHA256}}"
+        }
+      ],
+      "licenseConcluded": "MIT",
+      "licenseDeclared": "MIT",
+      "copyrightText": "Copyright (c) Vitest Contributors",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:npm/vitest@1.0.0"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-Package-jose",
+      "name": "jose",
+      "versionInfo": "5.2.0",
+      "supplier": "Organization: Filip Skokan",
+      "downloadLocation": "https://registry.npmjs.org/jose/-/jose-5.2.0.tgz",
+      "filesAnalyzed": false,
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "{{JOSE_SHA256}}"
+        }
+      ],
+      "licenseConcluded": "MIT",
+      "licenseDeclared": "MIT",
+      "copyrightText": "Copyright (c) Filip Skokan",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:npm/jose@5.2.0"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-Package-prom-client",
+      "name": "prom-client",
+      "versionInfo": "15.1.0",
+      "supplier": "Organization: Simon Nyberg",
+      "downloadLocation": "https://registry.npmjs.org/prom-client/-/prom-client-15.1.0.tgz",
+      "filesAnalyzed": false,
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "{{PROM_CLIENT_SHA256}}"
+        }
+      ],
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "copyrightText": "Copyright (c) Simon Nyberg",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:npm/prom-client@15.1.0"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-Package-winston",
+      "name": "winston",
+      "versionInfo": "3.11.0",
+      "supplier": "Organization: Charlie Robbins",
+      "downloadLocation": "https://registry.npmjs.org/winston/-/winston-3.11.0.tgz",
+      "filesAnalyzed": false,
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "{{WINSTON_SHA256}}"
+        }
+      ],
+      "licenseConcluded": "MIT",
+      "licenseDeclared": "MIT",
+      "copyrightText": "Copyright (c) Charlie Robbins",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:npm/winston@3.11.0"
+        }
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "spdxElementId": "SPDXRef-DOCUMENT",
+      "relationshipType": "DESCRIBES",
+      "relatedSpdxElement": "SPDXRef-Package-{{IME_PROJEKTA_SLUG}}"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-{{IME_PROJEKTA_SLUG}}",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-typescript"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-{{IME_PROJEKTA_SLUG}}",
+      "relationshipType": "DEV_DEPENDENCY_OF",
+      "relatedSpdxElement": "SPDXRef-Package-vitest"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-{{IME_PROJEKTA_SLUG}}",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-jose"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-{{IME_PROJEKTA_SLUG}}",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-prom-client"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-{{IME_PROJEKTA_SLUG}}",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-winston"
+    }
+  ],
+  "annotations": [
+    {
+      "annotationDate": "{{DATUM}}T00:00:00Z",
+      "annotationType": "OTHER",
+      "annotator": "Tool: MIA BUILD Generator",
+      "comment": "SBOM generated for security compliance. Compliant with DO-178C, IEC 61508, ISO 26262, MIL-STD-882E."
+    }
+  ]
+}
