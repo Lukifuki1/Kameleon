@@ -42,8 +42,8 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-LOCAL_INTEL_DB_PATH = os.environ.get("LOCAL_INTEL_DB_PATH", "/var/lib/tyranthos/threat_intel.db")
-FEED_CACHE_DIR = os.environ.get("FEED_CACHE_DIR", "/var/lib/tyranthos/feeds")
+LOCAL_INTEL_DB_PATH = os.environ.get("LOCAL_INTEL_DB_PATH", "/tmp/tyranthos/threat_intel.db")
+FEED_CACHE_DIR = os.environ.get("FEED_CACHE_DIR", "/tmp/tyranthos/feeds")
 FEED_UPDATE_INTERVAL = int(os.environ.get("FEED_UPDATE_INTERVAL", "3600"))
 
 
@@ -1331,6 +1331,11 @@ class LocalThreatIntelligence:
         self.matcher = IOCMatcher(self.database)
         self._update_thread = None
         self._stop_event = threading.Event()
+    
+    @property
+    def feed_configs(self) -> List[ThreatFeedConfig]:
+        """Get configured threat feeds"""
+        return ThreatFeedIngester.FREE_FEEDS
     
     def start_auto_update(self, interval: int = None):
         """Start automatic feed updates"""

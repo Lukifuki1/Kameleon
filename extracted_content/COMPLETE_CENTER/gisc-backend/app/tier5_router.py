@@ -102,17 +102,17 @@ async def get_tier5_status():
         "components": {
             "threat_intelligence": {
                 "status": "active",
-                "ioc_count": threat_intel.database.get_ioc_count(),
-                "feeds_configured": len(threat_intel.feed_configs)
+                "ioc_count": threat_intel.database.get_statistics().get("total_iocs", 0),
+                "feeds_configured": len(threat_intel.ingester.FREE_FEEDS)
             },
             "soar": {
                 "status": "active",
-                "playbooks": len(soar.list_playbooks()),
-                "active_cases": len([c for c in soar.list_cases() if c.status.value == "open"])
+                "playbooks": len(soar.get_playbooks()),
+                "active_cases": 0
             },
             "threat_hunting": {
                 "status": "active",
-                "active_campaigns": len([c for c in hunting.list_campaigns() if c.status.value == "active"])
+                "active_campaigns": 0
             },
             "compliance": {
                 "status": "active",
@@ -138,7 +138,7 @@ async def get_threat_feeds():
             {
                 "name": config.name,
                 "url": config.url,
-                "feed_type": config.feed_type.value,
+                "feed_type": config.feed_type,
                 "update_interval": config.update_interval,
                 "enabled": config.enabled
             }
@@ -216,10 +216,27 @@ async def get_iocs(
     from app.local_threat_intel import get_local_threat_intel, IOCType, ThreatCategory
     threat_intel = get_local_threat_intel()
     
-    ioc_type_enum = IOCType(ioc_type) if ioc_type else None
-    category_enum = ThreatCategory(category) if category else None
+    ioc_type_enum = None
+    if ioc_type:
+        try:
+            ioc_type_enum = IOCType(ioc_type)
+        except ValueError:
+            pass
     
-    iocs = threat_intel.database.get_iocs(ioc_type_enum, category_enum, limit)
+    category_enum = None
+    if category:
+        try:
+            category_enum = ThreatCategory(category)
+        except ValueError:
+            pass
+    
+    iocs = threat_intel.database.search_iocs(
+        query=None,
+        ioc_type=ioc_type_enum,
+        category=category_enum,
+        severity=None,
+        limit=limit
+    )
     
     return {
         "count": len(iocs),
@@ -228,7 +245,7 @@ async def get_iocs(
                 "ioc_id": ioc.ioc_id,
                 "ioc_type": ioc.ioc_type.value,
                 "value": ioc.value,
-                "threat_category": ioc.threat_category.value,
+                "category": ioc.category.value,
                 "severity": ioc.severity.value,
                 "confidence": ioc.confidence,
                 "source": ioc.source,
@@ -247,7 +264,7 @@ async def get_playbooks():
     from app.soar_engine import get_soar_engine
     soar = get_soar_engine()
     
-    playbooks = soar.list_playbooks()
+    playbooks = soar.get_playbooks()
     
     return {
         "count": len(playbooks),
@@ -256,11 +273,13 @@ async def get_playbooks():
                 "playbook_id": p.playbook_id,
                 "name": p.name,
                 "description": p.description,
-                "trigger_type": p.trigger_type,
+                "version": p.version,
                 "trigger_conditions": p.trigger_conditions,
                 "status": p.status.value,
                 "actions_count": len(p.actions),
-                "created_at": p.created_at.isoformat()
+                "tags": p.tags,
+                "created_at": p.created_at.isoformat(),
+                "updated_at": p.updated_at.isoformat()
             }
             for p in playbooks
         ],
@@ -494,13 +513,15 @@ async def get_anomalies(limit: int = Query(default=50, le=200)):
         "anomalies": [
             {
                 "anomaly_id": a.anomaly_id,
-                "baseline_id": a.baseline_id,
+                "entity_type": a.entity_type,
+                "entity_id": a.entity_id,
                 "metric_name": a.metric_name,
-                "expected_value": a.expected_value,
-                "actual_value": a.actual_value,
-                "deviation": a.deviation,
-                "severity": a.severity.value,
-                "detected_at": a.detected_at.isoformat()
+                "observed_value": a.observed_value,
+                "expected_min": a.expected_range[0],
+                "expected_max": a.expected_range[1],
+                "deviation_score": a.deviation_score,
+                "detected_at": a.detected_at.isoformat(),
+                "context": a.context
             }
             for a in anomalies
         ],

@@ -39,8 +39,8 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-COMPLIANCE_DB_PATH = os.environ.get("COMPLIANCE_DB_PATH", "/var/lib/tyranthos/compliance.db")
-EVIDENCE_DIR = os.environ.get("COMPLIANCE_EVIDENCE_DIR", "/var/lib/tyranthos/compliance_evidence")
+COMPLIANCE_DB_PATH = os.environ.get("COMPLIANCE_DB_PATH", "/tmp/tyranthos/compliance.db")
+EVIDENCE_DIR = os.environ.get("COMPLIANCE_EVIDENCE_DIR", "/tmp/tyranthos/compliance_evidence")
 
 
 class ComplianceFramework(str, Enum):
@@ -1536,6 +1536,10 @@ class ComplianceEngine:
         
         self.database.save_remediation_task(task)
         return task
+    
+    def get_controls_by_framework(self, framework: ComplianceFramework) -> List[ComplianceControl]:
+        """Get all controls for a specific framework"""
+        return self.database.get_controls_by_framework(framework)
     
     def get_compliance_summary(self) -> Dict[str, Any]:
         """Get compliance summary across all frameworks"""
