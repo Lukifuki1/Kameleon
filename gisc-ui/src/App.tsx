@@ -2536,6 +2536,500 @@ function App() {
       } catch (err) { console.error('Error:', err); }
     };
 
+    // Missing Endpoint Functions - Audit, System Data, Specialized
+    const fetchAuditLogs = useCallback(async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/audit`);
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    }, []);
+
+    const fetchCrawlerModes = useCallback(async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/crawler/modes`);
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    }, []);
+
+    const seedDatabase = async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/seed`, { method: 'POST' });
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    const fetchRealtimeThreatFeed = useCallback(async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/threats/realtime/feed`);
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    }, []);
+
+    const syncRealtimeThreats = async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/threats/realtime/sync`, { method: 'POST' });
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    const fetchThreatById = async (threatId: string) => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/threats/${encodeURIComponent(threatId)}`);
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    const fetchIntelReportById = async (reportId: string) => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/intel/${encodeURIComponent(reportId)}`);
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    const fetchNodeById = async (nodeId: string) => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/nodes/${encodeURIComponent(nodeId)}`);
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    const fetchScanById = async (scanId: string) => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/scans/${encodeURIComponent(scanId)}`);
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    // System Data Extended Functions
+    const fetchSystemDataAiMlModels = useCallback(async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/system-data/ai-ml-models`);
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    }, []);
+
+    const fetchSystemDataAttackVectors = useCallback(async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/system-data/attack-vectors`);
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    }, []);
+
+    const fetchSystemDataBlockchainForensics = useCallback(async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/system-data/blockchain-forensics`);
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    }, []);
+
+    const fetchSystemDataEvidenceVault = useCallback(async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/system-data/evidence-vault`);
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    }, []);
+
+    const fetchSystemDataIdsIps = useCallback(async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/system-data/ids-ips`);
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    }, []);
+
+    const fetchSystemDataMalwareFamilies = useCallback(async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/system-data/malware-families`);
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    }, []);
+
+    const fetchSystemDataMitreCoverage = useCallback(async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/system-data/mitre-coverage`);
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    }, []);
+
+    const fetchSystemDataOperationsCommand = useCallback(async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/system-data/operations-command`);
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    }, []);
+
+    const fetchSystemDataPacketCapture = useCallback(async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/system-data/packet-capture`);
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    }, []);
+
+    const fetchSystemDataQuantumSecurity = useCallback(async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/system-data/quantum-security`);
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    }, []);
+
+    const fetchSystemDataSecureComms = useCallback(async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/system-data/secure-comms`);
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    }, []);
+
+    const fetchSystemDataThreatDistribution = useCallback(async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/system-data/threat-distribution`);
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    }, []);
+
+    // Specialized Visualization Functions
+    const fetchSpecialized3dVisualization = useCallback(async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/specialized/visualization/3d`);
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    }, []);
+
+    const fetchSpecializedAttackVisualization = useCallback(async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/specialized/visualization/attack`);
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    }, []);
+
+    const fetchSpecializedNetworkVisualization = useCallback(async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/specialized/visualization/network`);
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    }, []);
+
+    // Capture Advanced Functions
+    const analyzeCaptureAttacks = async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/capture/attacks/analyze`, { method: 'POST' });
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    const fetchCapturePackets = useCallback(async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/capture/packets`);
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    }, []);
+
+    const analyzePayload = async (index: number) => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/capture/payloads/${index}/analyze`, { method: 'POST' });
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    // Domains Extended Functions
+    const searchDomainsDarkweb = async (query: string) => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/domains/darkweb/search`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ query })
+        });
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    const fetchDomainsDarkwebStatus = useCallback(async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/domains/darkweb/status`);
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    }, []);
+
+    const fetchDomainsYaraStatus = useCallback(async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/domains/forensics/yara/status`);
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    }, []);
+
+    const investigateDomainsDarkweb = async (target: string) => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/domains/investigate/darkweb`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ target })
+        });
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    const investigateDomainsPerson = async (target: string) => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/domains/investigate/person`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ target })
+        });
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    const fetchDomainsOsintBreaches = async (email: string) => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/domains/osint/breaches/${encodeURIComponent(email)}`);
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    const fetchDomainsOsintPersonByEmail = async (email: string) => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/domains/osint/person/email/${encodeURIComponent(email)}`);
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    const searchDomainsOsintPersonByName = async (name: string) => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/domains/osint/person/name`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name })
+        });
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    const fetchDomainsOsintSocial = async (username: string) => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/domains/osint/social/${encodeURIComponent(username)}`);
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    const searchDomainsPersonIntel = async (query: string) => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/domains/person-intel/search`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ query })
+        });
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    const analyzeDomainsThreatIntelHash = async (fileHash: string) => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/domains/threat-intel/analyze/hash/${encodeURIComponent(fileHash)}`);
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    const analyzeDomainsThreatIntelIp = async (ipAddress: string) => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/domains/threat-intel/analyze/ip/${encodeURIComponent(ipAddress)}`);
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    // Forensics Advanced Functions
+    const createForensicsCaseAdv = async (caseData: any) => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/forensics-adv/case/create`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(caseData)
+        });
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    // Malware Advanced Functions
+    const analyzeMalwareAdv = async (data: any) => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/malware-adv/analyze`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    // Person Intel Extended Functions
+    const fetchCameraSnapshot = async (cameraId: string) => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/person-intel/cameras/${encodeURIComponent(cameraId)}/snapshot`);
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    const fetchPersonProfile = async (profileId: string) => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/person-intel/profile/${encodeURIComponent(profileId)}`);
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    const autoTagPersonProfile = async (profileId: string) => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/person-intel/profile/${encodeURIComponent(profileId)}/auto-tag`, { method: 'POST' });
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    const enrichPersonProfile = async (profileId: string) => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/person-intel/profile/${encodeURIComponent(profileId)}/enrich`, { method: 'POST' });
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    const fetchPersonProfileNetwork = async (profileId: string) => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/person-intel/profile/${encodeURIComponent(profileId)}/network`);
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    const addTagToPersonProfile = async (profileId: string, tag: string) => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/person-intel/profile/${encodeURIComponent(profileId)}/tag/add`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tag })
+        });
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    const removeTagFromPersonProfile = async (profileId: string, tag: string) => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/person-intel/profile/${encodeURIComponent(profileId)}/tag/remove`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tag })
+        });
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    const fetchPersonProfileTags = async (profileId: string) => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/person-intel/profile/${encodeURIComponent(profileId)}/tags`);
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    const addPersonIntelProxy = async (proxyData: any) => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/person-intel/proxies/add`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(proxyData)
+        });
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    const addPersonIntelRelationship = async (relationshipData: any) => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/person-intel/relationship/add`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(relationshipData)
+        });
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    const addLabelToRelationship = async (relationshipId: string, label: string) => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/person-intel/relationship/${encodeURIComponent(relationshipId)}/label/add`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ label })
+        });
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    const fetchRelationshipLabels = async (relationshipId: string) => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/person-intel/relationship/${encodeURIComponent(relationshipId)}/labels`);
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    const searchPersonIntelAdv = async (query: string) => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/person-intel/search`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ query })
+        });
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    const searchPersonIntelByTag = async (tag: string) => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/person-intel/search/by-tag/${encodeURIComponent(tag)}`);
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    // RedTeam Functions
+    const createRedteamEngagement = async (engagementData: any) => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/redteam/engagement`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(engagementData)
+        });
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    // SIEM Advanced Functions
+    const ingestSiemLog = async (logData: any) => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/siem-adv/log/ingest`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(logData)
+        });
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    const createSiemAlert = async (alertData: any) => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/siem/alert`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(alertData)
+        });
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    const parseSiemLog = async (logData: any) => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/siem/parse-log`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(logData)
+        });
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    // Suppress unused variable warnings for new functions
+    void fetchAuditLogs; void fetchCrawlerModes; void seedDatabase; void fetchRealtimeThreatFeed;
+    void syncRealtimeThreats; void fetchThreatById; void fetchIntelReportById; void fetchNodeById;
+    void fetchScanById; void fetchSystemDataAiMlModels; void fetchSystemDataAttackVectors;
+    void fetchSystemDataBlockchainForensics; void fetchSystemDataEvidenceVault; void fetchSystemDataIdsIps;
+    void fetchSystemDataMalwareFamilies; void fetchSystemDataMitreCoverage; void fetchSystemDataOperationsCommand;
+    void fetchSystemDataPacketCapture; void fetchSystemDataQuantumSecurity; void fetchSystemDataSecureComms;
+    void fetchSystemDataThreatDistribution; void fetchSpecialized3dVisualization; void fetchSpecializedAttackVisualization;
+    void fetchSpecializedNetworkVisualization; void analyzeCaptureAttacks; void fetchCapturePackets;
+    void analyzePayload; void searchDomainsDarkweb; void fetchDomainsDarkwebStatus; void fetchDomainsYaraStatus;
+    void investigateDomainsDarkweb; void investigateDomainsPerson; void fetchDomainsOsintBreaches;
+    void fetchDomainsOsintPersonByEmail; void searchDomainsOsintPersonByName; void fetchDomainsOsintSocial;
+    void searchDomainsPersonIntel; void analyzeDomainsThreatIntelHash; void analyzeDomainsThreatIntelIp;
+    void createForensicsCaseAdv; void analyzeMalwareAdv; void fetchCameraSnapshot; void fetchPersonProfile;
+    void autoTagPersonProfile; void enrichPersonProfile; void fetchPersonProfileNetwork; void addTagToPersonProfile;
+    void removeTagFromPersonProfile; void fetchPersonProfileTags; void addPersonIntelProxy;
+    void addPersonIntelRelationship; void addLabelToRelationship; void fetchRelationshipLabels;
+    void searchPersonIntelAdv; void searchPersonIntelByTag; void createRedteamEngagement;
+    void ingestSiemLog; void createSiemAlert; void parseSiemLog;
+
     useEffect(() => {
       const timer = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(timer);
