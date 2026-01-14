@@ -989,8 +989,11 @@ case "${1:-}" in
         }
         ;;
     
-    help|*)
+    help)
         echo "Usage: $0 {command}"
+        echo ""
+        echo "Quick Start (no arguments):"
+        echo "  ./START_SYSTEM.sh           - Install dependencies and start system"
         echo ""
         echo "Installation Commands:"
         echo "  full-install    - Install ALL components (requires root)"
@@ -1011,8 +1014,37 @@ case "${1:-}" in
         echo "  logs            - Show system logs"
         echo ""
         echo "Examples:"
-        echo "  sudo ./START_SYSTEM.sh full-install  # First time setup"
-        echo "  ./START_SYSTEM.sh start              # Start everything"
+        echo "  ./START_SYSTEM.sh                    # Quick start (recommended)"
+        echo "  sudo ./START_SYSTEM.sh full-install  # Full setup with security tools"
         echo "  ./START_SYSTEM.sh start-app          # Start without security tools"
+        ;;
+    
+    *)
+        # Default: Install dependencies and start the system
+        log_step "TYRANTHOS - AUTOMATIC INSTALLATION & STARTUP"
+        log_info "No arguments provided - running automatic setup..."
+        echo ""
+        
+        install_python_deps
+        install_node_deps
+        
+        # Set network capabilities for packet capture (optional, may fail without root)
+        sudo setcap cap_net_raw,cap_net_admin=eip /usr/bin/tcpdump 2>/dev/null || true
+        
+        start_backend
+        start_frontend
+        sleep 3
+        check_status
+        echo ""
+        log_info "============================================"
+        log_info "TYRANTHOS SYSTEM READY - 100% OPERATIONAL"
+        log_info "============================================"
+        log_info "Backend API:  http://localhost:8000"
+        log_info "API Docs:     http://localhost:8000/docs"
+        log_info "Frontend UI:  http://localhost:5173"
+        log_info "============================================"
+        log_info "Press Ctrl+C to stop"
+        log_info "Run './START_SYSTEM.sh help' for more options"
+        wait
         ;;
 esac

@@ -66,51 +66,37 @@ cd Kameleon
 
 #### 2. Avtomatski zagon (priporočeno)
 
-Skripta bo avtomatsko namestila vse odvisnosti in zagnala sistem:
+Preprosto zaženite skripto brez argumentov - vse bo avtomatsko nameščeno in zagnano:
 
 ```bash
 ./START_SYSTEM.sh
 ```
 
-To bo:
-- Namestilo Python odvisnosti (poetry install)
-- Namestilo Node.js odvisnosti (npm install)
-- Zagnalo Backend API na portu 8000
-- Zagnalo Frontend UI na portu 3000
+Skripta bo avtomatsko:
+- Namestila Python odvisnosti (poetry install ali pip)
+- Namestila Node.js odvisnosti (npm install)
+- Zagnala Backend API na portu 8000
+- Zagnala Frontend UI na portu 5173
+- Prikazala status sistema
 
-#### 3. Alternativni načini zagona
+#### 3. Dostop do sistema
 
-Samo namestitev odvisnosti (brez zagona):
-```bash
-./START_SYSTEM.sh install
-```
+Po zagonu so dostopni naslednji naslovi:
 
-Zagon sistema (po namestitvi):
-```bash
-./START_SYSTEM.sh start
-```
+| Storitev | URL |
+|----------|-----|
+| **Frontend UI** | http://localhost:5173 |
+| **Backend API** | http://localhost:8000 |
+| **API Dokumentacija** | http://localhost:8000/docs |
 
-Zagon samo aplikacije (brez varnostnih orodij):
-```bash
-./START_SYSTEM.sh start-app
-```
-
-#### 4. Dostop do sistema
-
-- **Frontend UI**: http://localhost:3000
-- **Backend API**: http://localhost:8000
-- **API Dokumentacija**: http://localhost:8000/docs
-
-#### 5. Ustavitev sistema
+#### 4. Dodatni ukazi
 
 ```bash
-./START_SYSTEM.sh stop
-```
-
-#### 6. Preverjanje statusa
-
-```bash
-./START_SYSTEM.sh status
+./START_SYSTEM.sh help           # Prikaži vse razpoložljive ukaze
+./START_SYSTEM.sh stop           # Ustavi sistem
+./START_SYSTEM.sh status         # Preveri status sistema
+./START_SYSTEM.sh start-app      # Zaženi samo aplikacijo (brez varnostnih orodij)
+sudo ./START_SYSTEM.sh full-install  # Namesti vse vključno z varnostnimi orodji
 ```
 
 ---
