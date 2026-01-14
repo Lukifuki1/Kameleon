@@ -890,6 +890,46 @@ class ForensicsEngine:
         case.timeline = timeline
         return timeline
     
+    def get_forensics_status(self) -> Dict[str, Any]:
+        """Get forensics engine status"""
+        return {
+            "status": "OPERATIONAL",
+            "timestamp": datetime.utcnow().isoformat(),
+            "components": {
+                "disk_forensics": {
+                    "status": "active",
+                    "capabilities": ["disk_image_analysis", "file_carving", "ntfs_artifacts"]
+                },
+                "memory_forensics": {
+                    "status": "active",
+                    "capabilities": ["memory_dump_analysis", "malware_detection", "process_analysis"]
+                },
+                "network_forensics": {
+                    "status": "active",
+                    "capabilities": ["pcap_analysis", "dns_extraction", "http_extraction"]
+                },
+                "mobile_forensics": {
+                    "status": "active",
+                    "capabilities": ["android_backup", "ios_backup"]
+                },
+                "blockchain_forensics": {
+                    "status": "active",
+                    "capabilities": ["bitcoin_analysis", "ethereum_analysis", "transaction_tracing"]
+                }
+            },
+            "cases_count": len(self.cases),
+            "evidence_count": len(self.evidence),
+            "capabilities": [
+                "Disk Forensics",
+                "Memory Forensics",
+                "Network Forensics",
+                "Mobile Forensics",
+                "Blockchain Forensics",
+                "Timeline Building",
+                "Report Generation"
+            ]
+        }
+
     def generate_report(self, case_id: str) -> Dict[str, Any]:
         """Generate forensic report"""
         if case_id not in self.cases:

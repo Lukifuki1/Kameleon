@@ -792,6 +792,41 @@ class IntelligenceEngine:
         
         return analysis
     
+    def get_intelligence_status(self) -> Dict[str, Any]:
+        """Get intelligence engine status"""
+        return {
+            "status": "OPERATIONAL",
+            "timestamp": datetime.utcnow().isoformat(),
+            "components": {
+                "osint_collector": {
+                    "status": "active",
+                    "capabilities": ["dns", "whois", "ssl", "headers", "robots", "sitemap"]
+                },
+                "threat_intelligence_platform": {
+                    "status": "active",
+                    "indicators_count": len(self.tip.indicators),
+                    "actors_count": len(self.tip.actors),
+                    "reports_count": len(self.tip.reports)
+                },
+                "counter_intelligence": {
+                    "status": "active",
+                    "honeypots_count": len(self.counter_intel.honeypots),
+                    "deception_assets_count": len(self.counter_intel.deception_assets)
+                },
+                "finint_engine": {
+                    "status": "active",
+                    "capabilities": ["transaction_analysis", "fund_tracing"]
+                }
+            },
+            "capabilities": [
+                "OSINT Collection",
+                "Threat Intelligence",
+                "Counter Intelligence",
+                "Financial Intelligence",
+                "Risk Assessment"
+            ]
+        }
+
     def _assess_risk(self, target: str) -> Dict[str, Any]:
         """Assess risk level for target"""
         risk = {
