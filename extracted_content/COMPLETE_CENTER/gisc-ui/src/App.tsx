@@ -243,7 +243,24 @@ function App() {
     const [isAddingFaceTarget, setIsAddingFaceTarget] = useState(false);
     const [faceSearchImage, setFaceSearchImage] = useState<File | null>(null);
 
-      const fetchTier5Status = useCallback(async () => {
+    // Advanced Tier 5 - SOAR state
+    const [soarPlaybooks, setSoarPlaybooks] = useState<any[]>([]);
+    const [soarExecutions, setSoarExecutions] = useState<any[]>([]);
+    const [soarCases, setSoarCases] = useState<any[]>([]);
+
+    // Advanced Tier 5 - Compliance state
+    const [complianceFrameworks, setComplianceFrameworks] = useState<any[]>([]);
+    const [complianceSummary, setComplianceSummary] = useState<any>(null);
+
+    // Advanced Tier 5 - Threat Intel state
+    const [threatIntelFeeds, setThreatIntelFeeds] = useState<any[]>([]);
+    const [threatIntelIOCs, setThreatIntelIOCs] = useState<any[]>([]);
+
+    // Advanced Tier 5 - Threat Hunting state
+    const [huntingCampaigns, setHuntingCampaigns] = useState<any[]>([]);
+    const [huntingAnomalies, setHuntingAnomalies] = useState<any[]>([]);
+
+    const fetchTier5Status = useCallback(async () => {
       try {
         const response = await fetch(`${API_URL}/api/v1/tier5/status`);
         if (!response.ok) {
@@ -1270,6 +1287,114 @@ function App() {
       }
     }, []);
 
+    const fetchSoarPlaybooks = useCallback(async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/tier5/soar/playbooks`);
+        if (response.ok) {
+          const data = await response.json();
+          setSoarPlaybooks(data.playbooks || []);
+        }
+      } catch (err) {
+        console.error('Error fetching SOAR playbooks:', err);
+      }
+    }, []);
+
+    const fetchSoarExecutions = useCallback(async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/tier5/soar/executions`);
+        if (response.ok) {
+          const data = await response.json();
+          setSoarExecutions(data.executions || []);
+        }
+      } catch (err) {
+        console.error('Error fetching SOAR executions:', err);
+      }
+    }, []);
+
+    const fetchSoarCases = useCallback(async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/tier5/soar/cases`);
+        if (response.ok) {
+          const data = await response.json();
+          setSoarCases(data.cases || []);
+        }
+      } catch (err) {
+        console.error('Error fetching SOAR cases:', err);
+      }
+    }, []);
+
+    const fetchComplianceFrameworks = useCallback(async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/tier5/compliance/frameworks`);
+        if (response.ok) {
+          const data = await response.json();
+          setComplianceFrameworks(data.frameworks || []);
+        }
+      } catch (err) {
+        console.error('Error fetching compliance frameworks:', err);
+      }
+    }, []);
+
+    const fetchComplianceSummary = useCallback(async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/tier5/compliance/summary`);
+        if (response.ok) {
+          const data = await response.json();
+          setComplianceSummary(data.summary);
+        }
+      } catch (err) {
+        console.error('Error fetching compliance summary:', err);
+      }
+    }, []);
+
+    const fetchThreatIntelFeeds = useCallback(async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/tier5/threat-intel/feeds`);
+        if (response.ok) {
+          const data = await response.json();
+          setThreatIntelFeeds(data.feeds || []);
+        }
+      } catch (err) {
+        console.error('Error fetching threat intel feeds:', err);
+      }
+    }, []);
+
+    const fetchThreatIntelIOCs = useCallback(async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/tier5/threat-intel/iocs`);
+        if (response.ok) {
+          const data = await response.json();
+          setThreatIntelIOCs(data.iocs || []);
+        }
+      } catch (err) {
+        console.error('Error fetching threat intel IOCs:', err);
+      }
+    }, []);
+
+    const fetchHuntingCampaigns = useCallback(async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/tier5/hunting/campaigns`);
+        if (response.ok) {
+          const data = await response.json();
+          setHuntingCampaigns(data.campaigns || []);
+        }
+      } catch (err) {
+        console.error('Error fetching hunting campaigns:', err);
+      }
+    }, []);
+
+    const fetchHuntingAnomalies = useCallback(async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/tier5/hunting/anomalies`);
+        if (response.ok) {
+          const data = await response.json();
+          setHuntingAnomalies(data.anomalies || []);
+        }
+      } catch (err) {
+        console.error('Error fetching hunting anomalies:', err);
+      }
+    }, []);
+
     useEffect(() => {
       const timer = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(timer);
@@ -1289,7 +1414,21 @@ function App() {
               fetchNetworkNodes(),
               fetchScanHistory(),
               fetchSystemCapabilities(),
-              fetchSystemData()
+              fetchSystemData(),
+              fetchAttackRoutes(),
+              fetchAttackStatistics(),
+              fetchMalwareCaptures(),
+              fetchCameraHierarchy(),
+              fetchFaceSearchTargets(),
+              fetchSoarPlaybooks(),
+              fetchSoarExecutions(),
+              fetchSoarCases(),
+              fetchComplianceFrameworks(),
+              fetchComplianceSummary(),
+              fetchThreatIntelFeeds(),
+              fetchThreatIntelIOCs(),
+              fetchHuntingCampaigns(),
+              fetchHuntingAnomalies()
             ]);
             setConnectionError(null);
           }
@@ -1300,7 +1439,7 @@ function App() {
         }
       };
       initializeData();
-    }, [fetchTier5Status, fetchSystemStatus, fetchMetrics, fetchThreats, fetchIntelReports, fetchNetworkNodes, fetchSystemCapabilities, fetchSystemData]);
+    }, [fetchTier5Status, fetchSystemStatus, fetchMetrics, fetchThreats, fetchIntelReports, fetchNetworkNodes, fetchSystemCapabilities, fetchSystemData, fetchAttackRoutes, fetchAttackStatistics, fetchMalwareCaptures, fetchCameraHierarchy, fetchFaceSearchTargets, fetchSoarPlaybooks, fetchSoarExecutions, fetchSoarCases, fetchComplianceFrameworks, fetchComplianceSummary, fetchThreatIntelFeeds, fetchThreatIntelIOCs, fetchHuntingCampaigns, fetchHuntingAnomalies]);
 
   useEffect(() => {
     const interval = setInterval(() => {
