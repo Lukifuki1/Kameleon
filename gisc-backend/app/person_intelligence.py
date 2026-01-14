@@ -3167,19 +3167,24 @@ class PersonIntelligenceEngine:
             "timestamp": datetime.utcnow().isoformat()
         }
     
-    def search_by_face(self, image_data: bytes) -> Dict[str, Any]:
-        """Search for person by facial image"""
-        # Search in local database
+    def search_by_face(self, image_data: bytes, image_url: str = None) -> Dict[str, Any]:
+        """Search for person by facial image
+        
+        Args:
+            image_data: Raw image bytes for local database search
+            image_url: Optional URL of the image for web-based reverse image search
+        """
         local_matches = self.image_search.search_by_image(image_data)
         
-        # Get web search URLs
-        # Note: Would need actual image URL for web search
-        web_search_engines = self.image_search.reverse_image_search_web("placeholder_url")
+        web_search_engines = {}
+        if image_url:
+            web_search_engines = self.image_search.reverse_image_search_web(image_url)
         
         return {
             "timestamp": datetime.utcnow().isoformat(),
             "local_matches": local_matches,
             "web_search_engines": web_search_engines,
+            "web_search_available": bool(image_url),
             "total_local_matches": len(local_matches)
         }
     
