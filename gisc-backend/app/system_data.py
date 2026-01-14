@@ -472,27 +472,49 @@ class MalwareFamilyTracker:
         'Custom APT': {'indicators': ['apt', 'advanced persistent'], 'status': 'RECONSTRUCTING'}
     }
     
-    def track_families(self, malware_samples: List[Dict[str, Any]] = None) -> List[Dict[str, Any]]:
-        """Track malware families from analyzed samples"""
+    def track_families(self, threats: List[Dict[str, Any]] = None) -> List[Dict[str, Any]]:
+        """Track malware families from threat data - uses type and description fields"""
         family_counts = {family: 0 for family in self.KNOWN_FAMILIES}
+        unclassified_malware_count = 0
         
-        if malware_samples:
-            for sample in malware_samples:
-                sample_type = sample.get('malware_type', '').lower()
-                sample_name = sample.get('filename', '').lower()
+        if threats:
+            for threat in threats:
+                threat_type = threat.get('type', '').lower()
+                threat_desc = threat.get('description', '').lower()
+                threat_combined = f"{threat_type} {threat_desc}"
                 
+                if 'malware' not in threat_type:
+                    continue
+                
+                matched = False
                 for family, data in self.KNOWN_FAMILIES.items():
                     for indicator in data['indicators']:
-                        if indicator in sample_type or indicator in sample_name:
+                        if indicator in threat_combined:
                             family_counts[family] += 1
+                            matched = True
                             break
+                    if matched:
+                        break
+                
+                if not matched:
+                    unclassified_malware_count += 1
         
         result = []
         for family, count in family_counts.items():
+            status = self.KNOWN_FAMILIES[family]['status']
+            if count > 0:
+                status = 'DETECTED'
             result.append({
                 'family': family,
                 'samples': count,
-                'status': self.KNOWN_FAMILIES[family]['status']
+                'status': status
+            })
+        
+        if unclassified_malware_count > 0:
+            result.append({
+                'family': 'Unclassified Malware',
+                'samples': unclassified_malware_count,
+                'status': 'ANALYZING'
             })
         
         return result
@@ -786,7 +808,7 @@ class SystemDataProvider:
             'ids_ips': self.ids_ips_monitor.get_ids_ips_stats(),
             'packet_capture': self.packet_capture_monitor.get_capture_stats(),
             'attack_vectors': self.attack_vector_analyzer.analyze_vectors(threats),
-            'malware_families': self.malware_tracker.track_families(),
+            'malware_families': self.malware_tracker.track_families(threats),
             'ai_ml_models': self.ai_ml_monitor.get_model_stats(),
             'secure_comms': self.secure_comms_monitor.get_channel_stats(),
             'blockchain_forensics': self.blockchain_monitor.get_chain_stats(),
