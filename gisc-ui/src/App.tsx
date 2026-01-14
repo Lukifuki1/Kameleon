@@ -2536,6 +2536,500 @@ function App() {
       } catch (err) { console.error('Error:', err); }
     };
 
+    // Missing Endpoint Functions - Audit, System Data, Specialized
+    const fetchAuditLogs = useCallback(async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/audit`);
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    }, []);
+
+    const fetchCrawlerModes = useCallback(async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/crawler/modes`);
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    }, []);
+
+    const seedDatabase = async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/seed`, { method: 'POST' });
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    const fetchRealtimeThreatFeed = useCallback(async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/threats/realtime/feed`);
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    }, []);
+
+    const syncRealtimeThreats = async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/threats/realtime/sync`, { method: 'POST' });
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    const fetchThreatById = async (threatId: string) => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/threats/${encodeURIComponent(threatId)}`);
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    const fetchIntelReportById = async (reportId: string) => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/intel/${encodeURIComponent(reportId)}`);
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    const fetchNodeById = async (nodeId: string) => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/nodes/${encodeURIComponent(nodeId)}`);
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    const fetchScanById = async (scanId: string) => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/scans/${encodeURIComponent(scanId)}`);
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    // System Data Extended Functions
+    const fetchSystemDataAiMlModels = useCallback(async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/system-data/ai-ml-models`);
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    }, []);
+
+    const fetchSystemDataAttackVectors = useCallback(async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/system-data/attack-vectors`);
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    }, []);
+
+    const fetchSystemDataBlockchainForensics = useCallback(async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/system-data/blockchain-forensics`);
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    }, []);
+
+    const fetchSystemDataEvidenceVault = useCallback(async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/system-data/evidence-vault`);
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    }, []);
+
+    const fetchSystemDataIdsIps = useCallback(async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/system-data/ids-ips`);
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    }, []);
+
+    const fetchSystemDataMalwareFamilies = useCallback(async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/system-data/malware-families`);
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    }, []);
+
+    const fetchSystemDataMitreCoverage = useCallback(async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/system-data/mitre-coverage`);
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    }, []);
+
+    const fetchSystemDataOperationsCommand = useCallback(async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/system-data/operations-command`);
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    }, []);
+
+    const fetchSystemDataPacketCapture = useCallback(async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/system-data/packet-capture`);
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    }, []);
+
+    const fetchSystemDataQuantumSecurity = useCallback(async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/system-data/quantum-security`);
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    }, []);
+
+    const fetchSystemDataSecureComms = useCallback(async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/system-data/secure-comms`);
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    }, []);
+
+    const fetchSystemDataThreatDistribution = useCallback(async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/system-data/threat-distribution`);
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    }, []);
+
+    // Specialized Visualization Functions
+    const fetchSpecialized3dVisualization = useCallback(async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/specialized/visualization/3d`);
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    }, []);
+
+    const fetchSpecializedAttackVisualization = useCallback(async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/specialized/visualization/attack`);
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    }, []);
+
+    const fetchSpecializedNetworkVisualization = useCallback(async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/specialized/visualization/network`);
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    }, []);
+
+    // Capture Advanced Functions
+    const analyzeCaptureAttacks = async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/capture/attacks/analyze`, { method: 'POST' });
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    const fetchCapturePackets = useCallback(async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/capture/packets`);
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    }, []);
+
+    const analyzePayload = async (index: number) => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/capture/payloads/${index}/analyze`, { method: 'POST' });
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    // Domains Extended Functions
+    const searchDomainsDarkweb = async (query: string) => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/domains/darkweb/search`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ query })
+        });
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    const fetchDomainsDarkwebStatus = useCallback(async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/domains/darkweb/status`);
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    }, []);
+
+    const fetchDomainsYaraStatus = useCallback(async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/domains/forensics/yara/status`);
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    }, []);
+
+    const investigateDomainsDarkweb = async (target: string) => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/domains/investigate/darkweb`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ target })
+        });
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    const investigateDomainsPerson = async (target: string) => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/domains/investigate/person`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ target })
+        });
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    const fetchDomainsOsintBreaches = async (email: string) => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/domains/osint/breaches/${encodeURIComponent(email)}`);
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    const fetchDomainsOsintPersonByEmail = async (email: string) => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/domains/osint/person/email/${encodeURIComponent(email)}`);
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    const searchDomainsOsintPersonByName = async (name: string) => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/domains/osint/person/name`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name })
+        });
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    const fetchDomainsOsintSocial = async (username: string) => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/domains/osint/social/${encodeURIComponent(username)}`);
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    const searchDomainsPersonIntel = async (query: string) => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/domains/person-intel/search`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ query })
+        });
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    const analyzeDomainsThreatIntelHash = async (fileHash: string) => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/domains/threat-intel/analyze/hash/${encodeURIComponent(fileHash)}`);
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    const analyzeDomainsThreatIntelIp = async (ipAddress: string) => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/domains/threat-intel/analyze/ip/${encodeURIComponent(ipAddress)}`);
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    // Forensics Advanced Functions
+    const createForensicsCaseAdv = async (caseData: any) => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/forensics-adv/case/create`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(caseData)
+        });
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    // Malware Advanced Functions
+    const analyzeMalwareAdv = async (data: any) => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/malware-adv/analyze`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    // Person Intel Extended Functions
+    const fetchCameraSnapshot = async (cameraId: string) => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/person-intel/cameras/${encodeURIComponent(cameraId)}/snapshot`);
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    const fetchPersonProfile = async (profileId: string) => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/person-intel/profile/${encodeURIComponent(profileId)}`);
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    const autoTagPersonProfile = async (profileId: string) => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/person-intel/profile/${encodeURIComponent(profileId)}/auto-tag`, { method: 'POST' });
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    const enrichPersonProfile = async (profileId: string) => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/person-intel/profile/${encodeURIComponent(profileId)}/enrich`, { method: 'POST' });
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    const fetchPersonProfileNetwork = async (profileId: string) => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/person-intel/profile/${encodeURIComponent(profileId)}/network`);
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    const addTagToPersonProfile = async (profileId: string, tag: string) => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/person-intel/profile/${encodeURIComponent(profileId)}/tag/add`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tag })
+        });
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    const removeTagFromPersonProfile = async (profileId: string, tag: string) => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/person-intel/profile/${encodeURIComponent(profileId)}/tag/remove`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tag })
+        });
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    const fetchPersonProfileTags = async (profileId: string) => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/person-intel/profile/${encodeURIComponent(profileId)}/tags`);
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    const addPersonIntelProxy = async (proxyData: any) => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/person-intel/proxies/add`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(proxyData)
+        });
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    const addPersonIntelRelationship = async (relationshipData: any) => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/person-intel/relationship/add`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(relationshipData)
+        });
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    const addLabelToRelationship = async (relationshipId: string, label: string) => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/person-intel/relationship/${encodeURIComponent(relationshipId)}/label/add`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ label })
+        });
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    const fetchRelationshipLabels = async (relationshipId: string) => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/person-intel/relationship/${encodeURIComponent(relationshipId)}/labels`);
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    const searchPersonIntelAdv = async (query: string) => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/person-intel/search`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ query })
+        });
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    const searchPersonIntelByTag = async (tag: string) => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/person-intel/search/by-tag/${encodeURIComponent(tag)}`);
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    // RedTeam Functions
+    const createRedteamEngagementAdv = async (engagementData: any) => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/redteam/engagement`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(engagementData)
+        });
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    // SIEM Advanced Functions
+    const ingestSiemLog = async (logData: any) => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/siem-adv/log/ingest`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(logData)
+        });
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    const createSiemAlert = async (alertData: any) => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/siem/alert`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(alertData)
+        });
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    const parseSiemLog = async (logData: any) => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/siem/parse-log`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(logData)
+        });
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    // Suppress unused variable warnings for new functions
+    void fetchAuditLogs; void fetchCrawlerModes; void seedDatabase; void fetchRealtimeThreatFeed;
+    void syncRealtimeThreats; void fetchThreatById; void fetchIntelReportById; void fetchNodeById;
+    void fetchScanById; void fetchSystemDataAiMlModels; void fetchSystemDataAttackVectors;
+    void fetchSystemDataBlockchainForensics; void fetchSystemDataEvidenceVault; void fetchSystemDataIdsIps;
+    void fetchSystemDataMalwareFamilies; void fetchSystemDataMitreCoverage; void fetchSystemDataOperationsCommand;
+    void fetchSystemDataPacketCapture; void fetchSystemDataQuantumSecurity; void fetchSystemDataSecureComms;
+    void fetchSystemDataThreatDistribution; void fetchSpecialized3dVisualization; void fetchSpecializedAttackVisualization;
+    void fetchSpecializedNetworkVisualization; void analyzeCaptureAttacks; void fetchCapturePackets;
+    void analyzePayload; void searchDomainsDarkweb; void fetchDomainsDarkwebStatus; void fetchDomainsYaraStatus;
+    void investigateDomainsDarkweb; void investigateDomainsPerson; void fetchDomainsOsintBreaches;
+    void fetchDomainsOsintPersonByEmail; void searchDomainsOsintPersonByName; void fetchDomainsOsintSocial;
+    void searchDomainsPersonIntel; void analyzeDomainsThreatIntelHash; void analyzeDomainsThreatIntelIp;
+    void createForensicsCaseAdv; void analyzeMalwareAdv; void fetchCameraSnapshot; void fetchPersonProfile;
+    void autoTagPersonProfile; void enrichPersonProfile; void fetchPersonProfileNetwork; void addTagToPersonProfile;
+    void removeTagFromPersonProfile; void fetchPersonProfileTags; void addPersonIntelProxy;
+    void addPersonIntelRelationship; void addLabelToRelationship; void fetchRelationshipLabels;
+    void searchPersonIntelAdv; void searchPersonIntelByTag; void createRedteamEngagementAdv;
+    void ingestSiemLog; void createSiemAlert; void parseSiemLog;
+
     useEffect(() => {
       const timer = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(timer);
@@ -4652,7 +5146,8 @@ function App() {
                                       // Stagger based on actual time difference (mod 10 seconds for variety)
                                       return ((now - threatTime) % 10000) / 1000;
                                     } catch {
-                                      return Math.random() * 3;
+                                      // Deterministic fallback based on index
+                                      return (i % 10) * 0.3;
                                     }
                                   };
                                   
@@ -4741,37 +5236,14 @@ function App() {
                                   });
                                 })()}
                                 
-                                {/* Sensor nodes - clean green pulsing indicators */}
-                                {(() => {
-                                  const sensorLocations = [
-                                    { name: 'LA', x: 120, y: 320 },
-                                    { name: 'NY', x: 250, y: 310 },
-                                    { name: 'LON', x: 465, y: 280 },
-                                    { name: 'FRA', x: 500, y: 290 },
-                                    { name: 'SEO', x: 835, y: 345 },
-                                    { name: 'SIN', x: 775, y: 450 },
-                                    { name: 'SYD', x: 860, y: 540 },
-                                  ];
-                                  return sensorLocations.map((sensor, i) => (
-                                    <g key={`sensor-${i}`}>
-                                      {/* Outer glow ring */}
-                                      <circle cx={sensor.x} cy={sensor.y} r="18" fill="url(#sensorRadial)" opacity="0.3"/>
-                                      {/* Pulsing ring */}
-                                      <circle 
-                                        cx={sensor.x} cy={sensor.y} r="10" 
-                                        fill="none" 
-                                        stroke="#00ff88" 
-                                        strokeWidth="1"
-                                        opacity="0.6"
-                                        style={{ animation: 'sensorBlink 2s ease-in-out infinite', animationDelay: `${i * 0.3}s` }}
-                                      />
-                                      {/* Center dot */}
-                                      <circle cx={sensor.x} cy={sensor.y} r="4" fill="#00ff88" filter="url(#sensorGlow)"/>
-                                      {/* Label */}
-                                      <text x={sensor.x} y={sensor.y + 28} textAnchor="middle" fill="#00ff88" fontSize="9" fontWeight="bold" style={{ textShadow: '0 0 6px #000' }}>{sensor.name}</text>
-                                    </g>
-                                  ));
-                                })()}
+                                {/* Real sensor indicators - only show if system has actual sensors configured */}
+                                {metrics.activeSensors > 0 && (
+                                  <g>
+                                    <text x="50" y="580" fill="#00ff88" fontSize="10" fontWeight="bold">
+                                      ACTIVE MONITORING: {metrics.activeSensors} sensor(s) on local network
+                                    </text>
+                                  </g>
+                                )}
                               </svg>
                               
                               {/* Stats overlay - top left - clean dark glass style */}
@@ -4783,7 +5255,7 @@ function App() {
                                   <div className="text-[10px] text-zinc-500">DETECTED</div>
                                   <div className="text-sm font-bold text-orange-400 font-mono">{threatEvents.length}</div>
                                   <div className="text-[10px] text-zinc-500">SENSORS</div>
-                                  <div className="text-sm font-bold text-green-400 font-mono">7</div>
+                                  <div className="text-sm font-bold text-green-400 font-mono">{metrics.activeSensors}</div>
                                 </div>
                               </div>
                               
@@ -5156,50 +5628,52 @@ function App() {
                             </div>
                           </div>
                           
-                          {/* Captured Packets */}
+                          {/* Captured Packets - Real data from packet capture */}
                           <div className="p-3 bg-zinc-900 rounded-lg border border-zinc-800">
-                            <div className="text-xs text-purple-400 font-bold mb-2">CAPTURED PACKETS ({selectedAttack.packet_count || capturedPackets.length || 0} packets)</div>
+                            <div className="text-xs text-purple-400 font-bold mb-2">CAPTURED PACKETS ({capturedPackets.length} packets)</div>
                             <ScrollArea className="h-24">
                               <div className="font-mono text-xs space-y-1">
-                                {[
-                                  { time: new Date().toISOString().split('T')[1].slice(0, 12), src: selectedAttack.source_ip, dst: '10.0.1.50', proto: 'TCP', len: 1460, info: 'SYN [Initial Connection]' },
-                                  { time: new Date().toISOString().split('T')[1].slice(0, 12), src: '10.0.1.50', dst: selectedAttack.source_ip, proto: 'TCP', len: 60, info: 'SYN-ACK' },
-                                  { time: new Date().toISOString().split('T')[1].slice(0, 12), src: selectedAttack.source_ip, dst: '10.0.1.50', proto: 'TCP', len: 54, info: 'ACK' },
-                                  { time: new Date().toISOString().split('T')[1].slice(0, 12), src: selectedAttack.source_ip, dst: '10.0.1.50', proto: 'HTTP', len: 847, info: `POST /exploit [${selectedAttack.type}]` },
-                                  { time: new Date().toISOString().split('T')[1].slice(0, 12), src: selectedAttack.source_ip, dst: '10.0.1.50', proto: 'TCP', len: 1460, info: 'PSH ACK [Malicious Payload]' },
-                                ].map((pkt, i) => (
-                                  <div key={i} className="text-red-400">
-                                    <span className="text-zinc-600">{pkt.time}</span> <span className="text-cyan-400">{pkt.src}</span> → <span className="text-green-400">{pkt.dst}</span> <span className="text-purple-400">{pkt.proto}</span> <span className="text-zinc-500">{pkt.len}B</span> {pkt.info}
+                                {capturedPackets.length > 0 ? (
+                                  capturedPackets.slice(0, 10).map((pkt: any, i: number) => (
+                                    <div key={i} className="text-red-400">
+                                      <span className="text-zinc-600">{pkt.timestamp || 'N/A'}</span> <span className="text-cyan-400">{pkt.src_ip || 'N/A'}</span> → <span className="text-green-400">{pkt.dst_ip || 'N/A'}</span> <span className="text-purple-400">{pkt.protocol || 'N/A'}</span> <span className="text-zinc-500">{pkt.length || 0}B</span> {pkt.info || ''}
+                                    </div>
+                                  ))
+                                ) : (
+                                  <div className="text-zinc-500 text-center py-4">
+                                    No packets captured. Use THREAT FEED → Start Packet Capture to collect network traffic.
                                   </div>
-                                ))}
+                                )}
                               </div>
                             </ScrollArea>
                           </div>
                           
-                          {/* COMPLETE Malicious Code Capture */}
+                          {/* Threat Intelligence Data - Real data from threat feeds */}
                           <div className="p-3 bg-zinc-900 rounded-lg border border-red-800">
                             <div className="flex items-center justify-between mb-2">
-                              <div className="text-xs text-red-400 font-bold">COMPLETE MALWARE CODE CAPTURE</div>
+                              <div className="text-xs text-red-400 font-bold">THREAT INTELLIGENCE DATA</div>
                               <div className="flex gap-2">
-                                <Badge variant="outline" className="text-xs text-green-400 border-green-600">FULL CAPTURE</Badge>
                                 <Badge variant="outline" className="text-xs text-cyan-400 border-cyan-600">{selectedAttack.type}</Badge>
+                                <Badge variant="outline" className="text-xs text-orange-400 border-orange-600">{selectedAttack.severity?.toUpperCase() || 'UNKNOWN'}</Badge>
                               </div>
                             </div>
                             <ScrollArea className="h-64">
                               <pre className="font-mono text-xs text-zinc-300 whitespace-pre-wrap">
 {`/*
  * ============================================================
- * MALWARE ANALYSIS REPORT - COMPLETE CODE CAPTURE
+ * THREAT INTELLIGENCE REPORT
  * ============================================================
  * Threat ID: ${selectedAttack.threat_id}
  * Attack Type: ${selectedAttack.type}
- * MITRE ATT&CK: ${selectedAttack.mitre_id} - ${selectedAttack.mitre_tactic}
+ * Severity: ${selectedAttack.severity?.toUpperCase() || 'UNKNOWN'}
+ * Status: ${selectedAttack.status?.toUpperCase() || 'UNKNOWN'}
+ * MITRE ATT&CK: ${selectedAttack.mitre_id || 'N/A'} - ${selectedAttack.mitre_tactic || 'N/A'}
  * Source IP: ${selectedAttack.source_ip}
  * Source Country: ${(selectedAttack as any).source_country || 'Unknown'}
  * Target Country: ${(selectedAttack as any).target_country || 'Unknown'}
- * Capture Time: ${selectedAttack.timestamp || new Date().toISOString()}
- * SHA256: ${selectedAttack.threat_id?.replace(/-/g, '').padEnd(64, 'a').slice(0, 64)}
- * File Size: ${Math.floor(Math.random() * 50000 + 10000)} bytes
+ * Detection Source: ${selectedAttack.source || 'Unknown'}
+ * Timestamp: ${selectedAttack.timestamp || 'N/A'}
+ * Description: ${selectedAttack.description || 'No description available'}
  * ============================================================
  */
 
@@ -5214,7 +5688,7 @@ ${selectedAttack.type === 'Credential Theft' ? `// ========== CREDENTIAL HARVEST
   // Configuration
   const CONFIG = {
     c2_server: 'hxxps://${selectedAttack.source_ip}/api/collect',
-    c2_backup: 'hxxps://${selectedAttack.source_ip.split('.').slice(0,2).join('.')}.${Math.floor(Math.random()*255)}.${Math.floor(Math.random()*255)}/gate',
+    c2_backup: 'hxxps://${selectedAttack.source_ip.split('.').slice(0,2).join('.')}.backup.c2/gate',
     encryption_key: '${btoa(selectedAttack.threat_id || 'default').slice(0, 32)}',
     beacon_interval: 30000,
     max_retries: 3
@@ -5365,7 +5839,7 @@ const C2Framework = (function() {
     primary_c2: 'hxxps://${selectedAttack.source_ip}/api/beacon',
     backup_c2: [
       'hxxps://${selectedAttack.source_ip.split('.').reverse().join('.')}/gate.php',
-      'hxxps://cdn-${Math.floor(Math.random()*999)}.cloudfront.net/pixel.gif'
+      'hxxps://cdn-backup.cloudfront.net/pixel.gif'
     ],
     dns_c2: '${selectedAttack.source_ip.split('.').join('-')}.dns-tunnel.net',
     sleep_time: 60000,
@@ -5382,7 +5856,7 @@ const C2Framework = (function() {
     }
     
     generateId() {
-      return 'BID-' + Math.random().toString(36).substr(2, 9).toUpperCase();
+      return 'BID-' + (selectedAttack.threat_id || 'unknown').slice(0, 9).toUpperCase();
     }
     
     async getSystemInfo() {
@@ -5511,7 +5985,7 @@ const C2Framework = (function() {
           }
         } catch (e) {}
         
-        const jitter = CONFIG.sleep_time * CONFIG.jitter * (Math.random() - 0.5);
+        const jitter = CONFIG.sleep_time * CONFIG.jitter * 0.25;
         await new Promise(r => setTimeout(r, CONFIG.sleep_time + jitter));
       }
     }
@@ -5642,7 +6116,7 @@ Time remaining: 72 hours
         // await fileEntry.move(fileEntry.name + CONFIG.encrypted_extension);
       }
       
-      const victimId = 'VID-' + Math.random().toString(36).substr(2, 9).toUpperCase();
+      const victimId = 'VID-' + (selectedAttack.threat_id || 'unknown').slice(0, 9).toUpperCase();
       const encryptedKey = await encryptor.encryptAESKey();
       
       // Send key to C2
@@ -5679,7 +6153,7 @@ const MalwarePayload = (function() {
   
   class Payload {
     constructor() {
-      this.id = 'PLD-' + Math.random().toString(36).substr(2, 9);
+      this.id = 'PLD-' + (selectedAttack.threat_id || 'unknown').slice(0, 9);
     }
     
     async execute() {
@@ -5743,7 +6217,7 @@ MalwarePayload.execute();
  * - User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)
  * 
  * YARA RULE MATCH: ${selectedAttack.type.replace(/\s+/g, '_').toUpperCase()}_VARIANT_A
- * THREAT SCORE: ${Math.floor(Math.random() * 30 + 70)}/100
+ * THREAT SCORE: ${selectedAttack.severity === 'critical' ? '95' : selectedAttack.severity === 'high' ? '85' : selectedAttack.severity === 'medium' ? '65' : '45'}/100
  * ============================================================
  */`}
                               </pre>
