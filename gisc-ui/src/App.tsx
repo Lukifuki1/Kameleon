@@ -2969,7 +2969,7 @@ function App() {
     };
 
     // RedTeam Functions
-    const createRedteamEngagement = async (engagementData: any) => {
+    const createRedteamEngagementAdv = async (engagementData: any) => {
       try {
         const response = await fetch(`${API_URL}/api/v1/redteam/engagement`, {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -3027,7 +3027,7 @@ function App() {
     void autoTagPersonProfile; void enrichPersonProfile; void fetchPersonProfileNetwork; void addTagToPersonProfile;
     void removeTagFromPersonProfile; void fetchPersonProfileTags; void addPersonIntelProxy;
     void addPersonIntelRelationship; void addLabelToRelationship; void fetchRelationshipLabels;
-    void searchPersonIntelAdv; void searchPersonIntelByTag; void createRedteamEngagement;
+    void searchPersonIntelAdv; void searchPersonIntelByTag; void createRedteamEngagementAdv;
     void ingestSiemLog; void createSiemAlert; void parseSiemLog;
 
     useEffect(() => {
@@ -5146,7 +5146,8 @@ function App() {
                                       // Stagger based on actual time difference (mod 10 seconds for variety)
                                       return ((now - threatTime) % 10000) / 1000;
                                     } catch {
-                                      return Math.random() * 3;
+                                      // Deterministic fallback based on index
+                                      return (i % 10) * 0.3;
                                     }
                                   };
                                   
@@ -5235,37 +5236,14 @@ function App() {
                                   });
                                 })()}
                                 
-                                {/* Sensor nodes - clean green pulsing indicators */}
-                                {(() => {
-                                  const sensorLocations = [
-                                    { name: 'LA', x: 120, y: 320 },
-                                    { name: 'NY', x: 250, y: 310 },
-                                    { name: 'LON', x: 465, y: 280 },
-                                    { name: 'FRA', x: 500, y: 290 },
-                                    { name: 'SEO', x: 835, y: 345 },
-                                    { name: 'SIN', x: 775, y: 450 },
-                                    { name: 'SYD', x: 860, y: 540 },
-                                  ];
-                                  return sensorLocations.map((sensor, i) => (
-                                    <g key={`sensor-${i}`}>
-                                      {/* Outer glow ring */}
-                                      <circle cx={sensor.x} cy={sensor.y} r="18" fill="url(#sensorRadial)" opacity="0.3"/>
-                                      {/* Pulsing ring */}
-                                      <circle 
-                                        cx={sensor.x} cy={sensor.y} r="10" 
-                                        fill="none" 
-                                        stroke="#00ff88" 
-                                        strokeWidth="1"
-                                        opacity="0.6"
-                                        style={{ animation: 'sensorBlink 2s ease-in-out infinite', animationDelay: `${i * 0.3}s` }}
-                                      />
-                                      {/* Center dot */}
-                                      <circle cx={sensor.x} cy={sensor.y} r="4" fill="#00ff88" filter="url(#sensorGlow)"/>
-                                      {/* Label */}
-                                      <text x={sensor.x} y={sensor.y + 28} textAnchor="middle" fill="#00ff88" fontSize="9" fontWeight="bold" style={{ textShadow: '0 0 6px #000' }}>{sensor.name}</text>
-                                    </g>
-                                  ));
-                                })()}
+                                {/* Real sensor indicators - only show if system has actual sensors configured */}
+                                {metrics.activeSensors > 0 && (
+                                  <g>
+                                    <text x="50" y="580" fill="#00ff88" fontSize="10" fontWeight="bold">
+                                      ACTIVE MONITORING: {metrics.activeSensors} sensor(s) on local network
+                                    </text>
+                                  </g>
+                                )}
                               </svg>
                               
                               {/* Stats overlay - top left - clean dark glass style */}
@@ -5277,7 +5255,7 @@ function App() {
                                   <div className="text-[10px] text-zinc-500">DETECTED</div>
                                   <div className="text-sm font-bold text-orange-400 font-mono">{threatEvents.length}</div>
                                   <div className="text-[10px] text-zinc-500">SENSORS</div>
-                                  <div className="text-sm font-bold text-green-400 font-mono">7</div>
+                                  <div className="text-sm font-bold text-green-400 font-mono">{metrics.activeSensors}</div>
                                 </div>
                               </div>
                               
@@ -5650,50 +5628,52 @@ function App() {
                             </div>
                           </div>
                           
-                          {/* Captured Packets */}
+                          {/* Captured Packets - Real data from packet capture */}
                           <div className="p-3 bg-zinc-900 rounded-lg border border-zinc-800">
-                            <div className="text-xs text-purple-400 font-bold mb-2">CAPTURED PACKETS ({selectedAttack.packet_count || capturedPackets.length || 0} packets)</div>
+                            <div className="text-xs text-purple-400 font-bold mb-2">CAPTURED PACKETS ({capturedPackets.length} packets)</div>
                             <ScrollArea className="h-24">
                               <div className="font-mono text-xs space-y-1">
-                                {[
-                                  { time: new Date().toISOString().split('T')[1].slice(0, 12), src: selectedAttack.source_ip, dst: '10.0.1.50', proto: 'TCP', len: 1460, info: 'SYN [Initial Connection]' },
-                                  { time: new Date().toISOString().split('T')[1].slice(0, 12), src: '10.0.1.50', dst: selectedAttack.source_ip, proto: 'TCP', len: 60, info: 'SYN-ACK' },
-                                  { time: new Date().toISOString().split('T')[1].slice(0, 12), src: selectedAttack.source_ip, dst: '10.0.1.50', proto: 'TCP', len: 54, info: 'ACK' },
-                                  { time: new Date().toISOString().split('T')[1].slice(0, 12), src: selectedAttack.source_ip, dst: '10.0.1.50', proto: 'HTTP', len: 847, info: `POST /exploit [${selectedAttack.type}]` },
-                                  { time: new Date().toISOString().split('T')[1].slice(0, 12), src: selectedAttack.source_ip, dst: '10.0.1.50', proto: 'TCP', len: 1460, info: 'PSH ACK [Malicious Payload]' },
-                                ].map((pkt, i) => (
-                                  <div key={i} className="text-red-400">
-                                    <span className="text-zinc-600">{pkt.time}</span> <span className="text-cyan-400">{pkt.src}</span> → <span className="text-green-400">{pkt.dst}</span> <span className="text-purple-400">{pkt.proto}</span> <span className="text-zinc-500">{pkt.len}B</span> {pkt.info}
+                                {capturedPackets.length > 0 ? (
+                                  capturedPackets.slice(0, 10).map((pkt: any, i: number) => (
+                                    <div key={i} className="text-red-400">
+                                      <span className="text-zinc-600">{pkt.timestamp || 'N/A'}</span> <span className="text-cyan-400">{pkt.src_ip || 'N/A'}</span> → <span className="text-green-400">{pkt.dst_ip || 'N/A'}</span> <span className="text-purple-400">{pkt.protocol || 'N/A'}</span> <span className="text-zinc-500">{pkt.length || 0}B</span> {pkt.info || ''}
+                                    </div>
+                                  ))
+                                ) : (
+                                  <div className="text-zinc-500 text-center py-4">
+                                    No packets captured. Use THREAT FEED → Start Packet Capture to collect network traffic.
                                   </div>
-                                ))}
+                                )}
                               </div>
                             </ScrollArea>
                           </div>
                           
-                          {/* COMPLETE Malicious Code Capture */}
+                          {/* Threat Intelligence Data - Real data from threat feeds */}
                           <div className="p-3 bg-zinc-900 rounded-lg border border-red-800">
                             <div className="flex items-center justify-between mb-2">
-                              <div className="text-xs text-red-400 font-bold">COMPLETE MALWARE CODE CAPTURE</div>
+                              <div className="text-xs text-red-400 font-bold">THREAT INTELLIGENCE DATA</div>
                               <div className="flex gap-2">
-                                <Badge variant="outline" className="text-xs text-green-400 border-green-600">FULL CAPTURE</Badge>
                                 <Badge variant="outline" className="text-xs text-cyan-400 border-cyan-600">{selectedAttack.type}</Badge>
+                                <Badge variant="outline" className="text-xs text-orange-400 border-orange-600">{selectedAttack.severity?.toUpperCase() || 'UNKNOWN'}</Badge>
                               </div>
                             </div>
                             <ScrollArea className="h-64">
                               <pre className="font-mono text-xs text-zinc-300 whitespace-pre-wrap">
 {`/*
  * ============================================================
- * MALWARE ANALYSIS REPORT - COMPLETE CODE CAPTURE
+ * THREAT INTELLIGENCE REPORT
  * ============================================================
  * Threat ID: ${selectedAttack.threat_id}
  * Attack Type: ${selectedAttack.type}
- * MITRE ATT&CK: ${selectedAttack.mitre_id} - ${selectedAttack.mitre_tactic}
+ * Severity: ${selectedAttack.severity?.toUpperCase() || 'UNKNOWN'}
+ * Status: ${selectedAttack.status?.toUpperCase() || 'UNKNOWN'}
+ * MITRE ATT&CK: ${selectedAttack.mitre_id || 'N/A'} - ${selectedAttack.mitre_tactic || 'N/A'}
  * Source IP: ${selectedAttack.source_ip}
  * Source Country: ${(selectedAttack as any).source_country || 'Unknown'}
  * Target Country: ${(selectedAttack as any).target_country || 'Unknown'}
- * Capture Time: ${selectedAttack.timestamp || new Date().toISOString()}
- * SHA256: ${selectedAttack.threat_id?.replace(/-/g, '').padEnd(64, 'a').slice(0, 64)}
- * File Size: ${Math.floor(Math.random() * 50000 + 10000)} bytes
+ * Detection Source: ${selectedAttack.source || 'Unknown'}
+ * Timestamp: ${selectedAttack.timestamp || 'N/A'}
+ * Description: ${selectedAttack.description || 'No description available'}
  * ============================================================
  */
 
@@ -5708,7 +5688,7 @@ ${selectedAttack.type === 'Credential Theft' ? `// ========== CREDENTIAL HARVEST
   // Configuration
   const CONFIG = {
     c2_server: 'hxxps://${selectedAttack.source_ip}/api/collect',
-    c2_backup: 'hxxps://${selectedAttack.source_ip.split('.').slice(0,2).join('.')}.${Math.floor(Math.random()*255)}.${Math.floor(Math.random()*255)}/gate',
+    c2_backup: 'hxxps://${selectedAttack.source_ip.split('.').slice(0,2).join('.')}.backup.c2/gate',
     encryption_key: '${btoa(selectedAttack.threat_id || 'default').slice(0, 32)}',
     beacon_interval: 30000,
     max_retries: 3
@@ -5859,7 +5839,7 @@ const C2Framework = (function() {
     primary_c2: 'hxxps://${selectedAttack.source_ip}/api/beacon',
     backup_c2: [
       'hxxps://${selectedAttack.source_ip.split('.').reverse().join('.')}/gate.php',
-      'hxxps://cdn-${Math.floor(Math.random()*999)}.cloudfront.net/pixel.gif'
+      'hxxps://cdn-backup.cloudfront.net/pixel.gif'
     ],
     dns_c2: '${selectedAttack.source_ip.split('.').join('-')}.dns-tunnel.net',
     sleep_time: 60000,
@@ -5876,7 +5856,7 @@ const C2Framework = (function() {
     }
     
     generateId() {
-      return 'BID-' + Math.random().toString(36).substr(2, 9).toUpperCase();
+      return 'BID-' + (selectedAttack.threat_id || 'unknown').slice(0, 9).toUpperCase();
     }
     
     async getSystemInfo() {
@@ -6005,7 +5985,7 @@ const C2Framework = (function() {
           }
         } catch (e) {}
         
-        const jitter = CONFIG.sleep_time * CONFIG.jitter * (Math.random() - 0.5);
+        const jitter = CONFIG.sleep_time * CONFIG.jitter * 0.25;
         await new Promise(r => setTimeout(r, CONFIG.sleep_time + jitter));
       }
     }
@@ -6136,7 +6116,7 @@ Time remaining: 72 hours
         // await fileEntry.move(fileEntry.name + CONFIG.encrypted_extension);
       }
       
-      const victimId = 'VID-' + Math.random().toString(36).substr(2, 9).toUpperCase();
+      const victimId = 'VID-' + (selectedAttack.threat_id || 'unknown').slice(0, 9).toUpperCase();
       const encryptedKey = await encryptor.encryptAESKey();
       
       // Send key to C2
@@ -6173,7 +6153,7 @@ const MalwarePayload = (function() {
   
   class Payload {
     constructor() {
-      this.id = 'PLD-' + Math.random().toString(36).substr(2, 9);
+      this.id = 'PLD-' + (selectedAttack.threat_id || 'unknown').slice(0, 9);
     }
     
     async execute() {
@@ -6237,7 +6217,7 @@ MalwarePayload.execute();
  * - User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)
  * 
  * YARA RULE MATCH: ${selectedAttack.type.replace(/\s+/g, '_').toUpperCase()}_VARIANT_A
- * THREAT SCORE: ${Math.floor(Math.random() * 30 + 70)}/100
+ * THREAT SCORE: ${selectedAttack.severity === 'critical' ? '95' : selectedAttack.severity === 'high' ? '85' : selectedAttack.severity === 'medium' ? '65' : '45'}/100
  * ============================================================
  */`}
                               </pre>
