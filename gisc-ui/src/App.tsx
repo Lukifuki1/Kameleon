@@ -12,9 +12,9 @@ import {
   AlertTriangle, CheckCircle, Clock, TrendingUp, TrendingDown,
   Target, Radar, Wifi, Server, Cpu,
   Network, Search, Bug, ShieldAlert, ShieldCheck,
-  Monitor, Download, Camera
+  Monitor, Download, Camera, Globe, Scan, Eye
 } from 'lucide-react';
-import { XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area, PieChart, Pie, Cell, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar as RechartsRadar, BarChart, Bar, LineChart, Line, ScatterChart, Scatter, ComposedChart, Legend, Treemap } from 'recharts';
+import { XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area, PieChart, Pie, Cell, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar as RechartsRadar, BarChart, Bar, LineChart, Line, ComposedChart, Legend } from 'recharts';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
@@ -124,7 +124,7 @@ function App() {
   const [networkNodes, setNetworkNodes] = useState<NetworkNode[]>([]);
   const [timeSeriesData, setTimeSeriesData] = useState<{time: string; events: number; threats: number; blocked: number}[]>([]);
   const [scanTarget, setScanTarget] = useState('');
-  const [scanResults, setScanResults] = useState<{scan_id: string; target: string; status: string; open_ports: number[]; timestamp: string; scan_type?: string; layer?: string}[]>([]);
+  const [_scanResults, setScanResults] = useState<{scan_id: string; target: string; status: string; open_ports: number[]; timestamp: string; scan_type?: string; layer?: string}[]>([]);
   const [isScanning, setIsScanning] = useState(false);
   const [scanHistory, setScanHistory] = useState<{scan_id: string; target: string; status: string; open_ports: number[]; timestamp: string; scan_type?: string; layer?: string}[]>([]);
   const [scanType, setScanType] = useState<'surface' | 'dark' | 'deep'>('surface');
@@ -259,6 +259,182 @@ function App() {
     // Advanced Tier 5 - Threat Hunting state
     const [huntingCampaigns, setHuntingCampaigns] = useState<any[]>([]);
     const [huntingAnomalies, setHuntingAnomalies] = useState<any[]>([]);
+
+    // BlueTeam Advanced Operations state
+    const [blueteamAdvStatus, setBlueteamAdvStatus] = useState<any>(null);
+    const [blueteamHuntResults, setBlueteamHuntResults] = useState<any>(null);
+    const [blueteamIocInput, setBlueteamIocInput] = useState({ type: '', value: '', source: '' });
+    const [isExecutingHunt, setIsExecutingHunt] = useState(false);
+    const [blueteamDefenses, setBlueteamDefenses] = useState<any[]>([]);
+    const [blueteamIncident, setBlueteamIncident] = useState<any>(null);
+
+    // RedTeam Advanced Operations state
+    const [redteamAdvStatus, setRedteamAdvStatus] = useState<any>(null);
+    const [redteamEngagement, setRedteamEngagement] = useState<any>(null);
+    const [redteamTechniques, setRedteamTechniques] = useState<any[]>([]);
+    const [engagementInput, setEngagementInput] = useState({ name: '', target: '', scope: '' });
+
+    // Forensics Advanced state
+    const [forensicsAdvStatus, setForensicsAdvStatus] = useState<any>(null);
+    const [forensicsDeviceTypes, setForensicsDeviceTypes] = useState<any[]>([]);
+    const [forensicsFileAnalysis, setForensicsFileAnalysis] = useState<any>(null);
+
+    // Intelligence Advanced state
+    const [intelligenceAdvStatus, setIntelligenceAdvStatus] = useState<any>(null);
+    const [intelligenceThreatActors, setIntelligenceThreatActors] = useState<any[]>([]);
+    const [intelligenceSources, setIntelligenceSources] = useState<any[]>([]);
+    const [intelligenceDarkweb, setIntelligenceDarkweb] = useState<any>(null);
+    const [osintCollectionTarget, setOsintCollectionTarget] = useState('');
+
+    // Malware Advanced state
+    const [malwareAdvStatus, setMalwareAdvStatus] = useState<any>(null);
+    const [malwareTypes, setMalwareTypes] = useState<any[]>([]);
+    const [malwareYaraScan, setMalwareYaraScan] = useState<any>(null);
+    const [malwareHashInput, setMalwareHashInput] = useState('');
+
+    // SIEM Advanced state
+    const [siemAdvStatus, setSiemAdvStatus] = useState<any>(null);
+    const [siemAdvAlerts, setSiemAdvAlerts] = useState<any[]>([]);
+    const [siemLogSources, setSiemLogSources] = useState<any[]>([]);
+    const [siemCorrelation, setSiemCorrelation] = useState<any>(null);
+
+    // Detection Advanced state
+    const [detectionAdvStatus, setDetectionAdvStatus] = useState<any>(null);
+    const [detectionAnomalies, setDetectionAnomalies] = useState<any[]>([]);
+    const [detectionAptAnalysis, setDetectionAptAnalysis] = useState<any>(null);
+
+    // Defense Advanced state
+    const [defenseAdvStatus, setDefenseAdvStatus] = useState<any>(null);
+    const [defenseFirewallRules, setDefenseFirewallRules] = useState<any[]>([]);
+    const [defenseNeutralizedThreats, setDefenseNeutralizedThreats] = useState<any[]>([]);
+
+    // Communications state
+    const [commsStatus, setCommsStatus] = useState<any>(null);
+    const [commsChannels, setCommsChannels] = useState<any[]>([]);
+    const [commsCovertChannels, setCommsCovertChannels] = useState<any[]>([]);
+    const [commsAnonymousCircuit, setCommsAnonymousCircuit] = useState<any>(null);
+    const [newChannelInput, setNewChannelInput] = useState({ name: '', encryption: 'AES-256' });
+
+    // Cryptography state
+    const [cryptoStatus, setCryptoStatus] = useState<any>(null);
+    const [cryptoKeys, setCryptoKeys] = useState<any[]>([]);
+    const [cryptoQuantumReadiness, setCryptoQuantumReadiness] = useState<any>(null);
+    const [cryptoEncryptInput, setCryptoEncryptInput] = useState({ data: '', algorithm: 'AES-256' });
+    const [cryptoHashInput, setCryptoHashInput] = useState('');
+
+    // Darkweb state
+    const [darkwebStatus, setDarkwebStatus] = useState<any>(null);
+    const [darkwebCrawlResults, setDarkwebCrawlResults] = useState<any[]>([]);
+    const [darkwebCredentialCheck, setDarkwebCredentialCheck] = useState<any>(null);
+    const [darkwebCrawlTarget, setDarkwebCrawlTarget] = useState('');
+
+    // Surveillance state
+    const [surveillanceStatus, setSurveillanceStatus] = useState<any>(null);
+    const [surveillanceTargets, setSurveillanceTargets] = useState<any[]>([]);
+    const [surveillanceSelectors, setSurveillanceSelectors] = useState<any[]>([]);
+    const [surveillanceNetworkWatch, setSurveillanceNetworkWatch] = useState<any>(null);
+    const [newSurveillanceTarget, setNewSurveillanceTarget] = useState({ name: '', type: '', priority: 'medium' });
+
+    // Warfare state
+    const [warfareStatus, setWarfareStatus] = useState<any>(null);
+    const [warfareOperations, setWarfareOperations] = useState<any[]>([]);
+    const [warfareInfrastructure, setWarfareInfrastructure] = useState<any[]>([]);
+    const [newWarfareOperation, setNewWarfareOperation] = useState({ name: '', type: '', target: '' });
+
+    // Operations state
+    const [operationsStatus, setOperationsStatus] = useState<any>(null);
+    const [operationsList, setOperationsList] = useState<any[]>([]);
+    const [operationsIdentities, setOperationsIdentities] = useState<any[]>([]);
+    const [operationsOpsecAssessment, setOperationsOpsecAssessment] = useState<any>(null);
+    const [newOperationInput, setNewOperationInput] = useState({ name: '', type: '', objective: '' });
+
+    // Specialized state
+    const [specializedStatus, setSpecializedStatus] = useState<any>(null);
+    const [biometricEnrollments, setBiometricEnrollments] = useState<any[]>([]);
+    const [emsecAssessments, setEmsecAssessments] = useState<any[]>([]);
+    const [supplyChainSbom, setSupplyChainSbom] = useState<any>(null);
+    const [supplyChainSuppliers, setSupplyChainSuppliers] = useState<any[]>([]);
+
+    // Security Tools state
+    const [securityToolsStatus, setSecurityToolsStatus] = useState<any>(null);
+    const [suricataAlerts, setSuricataAlerts] = useState<any[]>([]);
+    const [suricataStatus, setSuricataStatus] = useState<any>(null);
+    const [zeekConnections, setZeekConnections] = useState<any[]>([]);
+    const [zeekStatus, setZeekStatus] = useState<any>(null);
+    const [elasticsearchStatus, setElasticsearchStatus] = useState<any>(null);
+    const [ntopngStatus, setNtopngStatus] = useState<any>(null);
+    const [torStatus, setTorStatus] = useState<any>(null);
+    const [unifiedAlerts, setUnifiedAlerts] = useState<any[]>([]);
+    const [unifiedConnections, setUnifiedConnections] = useState<any[]>([]);
+
+    // Domains state
+    const [domainsStatus, setDomainsStatus] = useState<any>(null);
+    const [domainsCorrelation, setDomainsCorrelation] = useState<any>(null);
+    const [domainsDarkwebResults, setDomainsDarkwebResults] = useState<any[]>([]);
+    const [domainsOsintResults, setDomainsOsintResults] = useState<any>(null);
+    const [domainsYaraRules, setDomainsYaraRules] = useState<any[]>([]);
+    const [domainsYaraScanResults, setDomainsYaraScanResults] = useState<any>(null);
+    const [domainsThreatIntelResults, setDomainsThreatIntelResults] = useState<any>(null);
+
+    // Scanner state
+    const [scannerDnsResults, setScannerDnsResults] = useState<any>(null);
+    const [scannerPortsResults, setScannerPortsResults] = useState<any>(null);
+    const [scannerSslResults, setScannerSslResults] = useState<any>(null);
+    const [scannerVulnCategories, setScannerVulnCategories] = useState<any[]>([]);
+    const [scannerStatus, setScannerStatus] = useState<any>(null);
+    const [portScanResults, setPortScanResults] = useState<any>(null);
+    const [dnsScanResults, setDnsScanResults] = useState<any>(null);
+    const [sslScanResults, setSslScanResults] = useState<any>(null);
+    const [vulnScanResults, setVulnScanResults] = useState<any>(null);
+
+    // Crypto Extended state
+    const [encryptedData, setEncryptedData] = useState<any>(null);
+    const [hashResult, setHashResult] = useState<any>(null);
+
+    // Darkweb Extended state
+    const [darkwebCredentials, setDarkwebCredentials] = useState<any[]>([]);
+
+    // Detection Extended state
+    const [anomalyResults, setAnomalyResults] = useState<any>(null);
+    const [aptAnalysisResults, setAptAnalysisResults] = useState<any>(null);
+
+    // Defense Extended state
+    const [firewallRuleResult, setFirewallRuleResult] = useState<any>(null);
+    const [threatNeutralizationResult, setThreatNeutralizationResult] = useState<any>(null);
+
+    // Comms Extended state
+    const [commsChannel, setCommsChannel] = useState<any>(null);
+    const [covertChannel, setCovertChannel] = useState<any>(null);
+    const [anonymousCircuit, setAnonymousCircuit] = useState<any>(null);
+
+    // Capture Advanced state
+    const [captureAttacks, setCaptureAttacks] = useState<any[]>([]);
+    const [captureMalicious, setCaptureMalicious] = useState<any[]>([]);
+    const [capturePayloads, setCapturePayloads] = useState<any[]>([]);
+    const [captureStatus, setCaptureStatus] = useState<any>(null);
+
+    // MITRE state
+    const [mitreCoverage, setMitreCoverage] = useState<any>(null);
+
+    // Dashboard state
+    const [dashboardStats, setDashboardStats] = useState<any>(null);
+
+    // Quantum state
+    const [quantumAlgorithms, setQuantumAlgorithms] = useState<any[]>([]);
+
+    // Person Intel Extended state
+    const [personIntelCamerasList, setPersonIntelCamerasList] = useState<any[]>([]);
+    const [personIntelCameraStats, setPersonIntelCameraStats] = useState<any>(null);
+    const [personIntelDbStats, setPersonIntelDbStats] = useState<any>(null);
+    const [personIntelMotionAlerts, setPersonIntelMotionAlerts] = useState<any[]>([]);
+    const [personIntelMotionHistory, setPersonIntelMotionHistory] = useState<any[]>([]);
+    const [personIntelMotionStats, setPersonIntelMotionStats] = useState<any>(null);
+    const [personIntelRelationshipTypes, setPersonIntelRelationshipTypes] = useState<any[]>([]);
+    const [personIntelSearchScopes, setPersonIntelSearchScopes] = useState<any[]>([]);
+    const [personIntelSocialPlatforms, setPersonIntelSocialPlatforms] = useState<any[]>([]);
+    const [personIntelAvailableTags, setPersonIntelAvailableTags] = useState<any[]>([]);
+    const [personIntelConnectionLabels, setPersonIntelConnectionLabels] = useState<any[]>([]);
+    const [shodanKeyInput, setShodanKeyInput] = useState('');
 
     const fetchTier5Status = useCallback(async () => {
       try {
@@ -1395,6 +1571,971 @@ function App() {
       }
     }, []);
 
+    // BlueTeam Advanced Functions
+    const fetchBlueteamAdvStatus = useCallback(async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/blueteam-adv/status`);
+        if (response.ok) setBlueteamAdvStatus(await response.json());
+      } catch (err) { console.error('Error:', err); }
+    }, []);
+
+    const executeBlueteamHunt = async (query: string) => {
+      setIsExecutingHunt(true);
+      try {
+        const response = await fetch(`${API_URL}/api/v1/blueteam-adv/hunt/execute`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ query, scope: 'full' })
+        });
+        if (response.ok) setBlueteamHuntResults(await response.json());
+      } catch (err) { console.error('Error:', err); }
+      finally { setIsExecutingHunt(false); }
+    };
+
+    const addBlueteamIoc = async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/blueteam-adv/ioc/add`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(blueteamIocInput)
+        });
+        if (response.ok) { setBlueteamIocInput({ type: '', value: '', source: '' }); fetchBlueteamAdvStatus(); }
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    const fetchBlueteamDefenses = useCallback(async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/blueteam/defenses`);
+        if (response.ok) setBlueteamDefenses(await response.json());
+      } catch (err) { console.error('Error:', err); }
+    }, []);
+
+    const createBlueteamIncident = async (data: any) => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/blueteam/incident`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+        if (response.ok) setBlueteamIncident(await response.json());
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    // RedTeam Advanced Functions
+    const fetchRedteamAdvStatus = useCallback(async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/redteam-adv/status`);
+        if (response.ok) setRedteamAdvStatus(await response.json());
+      } catch (err) { console.error('Error:', err); }
+    }, []);
+
+    const createRedteamEngagement = async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/redteam-adv/engagement/create`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(engagementInput)
+        });
+        if (response.ok) { setRedteamEngagement(await response.json()); setEngagementInput({ name: '', target: '', scope: '' }); }
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    const fetchRedteamTechniques = useCallback(async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/redteam/techniques`);
+        if (response.ok) setRedteamTechniques(await response.json());
+      } catch (err) { console.error('Error:', err); }
+    }, []);
+
+    // Forensics Advanced Functions
+    const fetchForensicsAdvStatus = useCallback(async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/forensics-adv/status`);
+        if (response.ok) setForensicsAdvStatus(await response.json());
+      } catch (err) { console.error('Error:', err); }
+    }, []);
+
+    const fetchForensicsDeviceTypes = useCallback(async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/forensics/device-types`);
+        if (response.ok) setForensicsDeviceTypes(await response.json());
+      } catch (err) { console.error('Error:', err); }
+    }, []);
+
+    const analyzeForensicsFile = async (file: File) => {
+      const formData = new FormData();
+      formData.append('file', file);
+      try {
+        const response = await fetch(`${API_URL}/api/v1/forensics/analyze-file`, { method: 'POST', body: formData });
+        if (response.ok) setForensicsFileAnalysis(await response.json());
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    // Intelligence Advanced Functions
+    const fetchIntelligenceAdvStatus = useCallback(async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/intelligence-adv/status`);
+        if (response.ok) setIntelligenceAdvStatus(await response.json());
+      } catch (err) { console.error('Error:', err); }
+    }, []);
+
+    const fetchIntelligenceThreatActors = useCallback(async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/intelligence-adv/threat-actors`);
+        if (response.ok) setIntelligenceThreatActors(await response.json());
+      } catch (err) { console.error('Error:', err); }
+    }, []);
+
+    const fetchIntelligenceSources = useCallback(async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/intelligence/sources`);
+        if (response.ok) setIntelligenceSources(await response.json());
+      } catch (err) { console.error('Error:', err); }
+    }, []);
+
+    const fetchIntelligenceDarkweb = useCallback(async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/intelligence/darkweb`);
+        if (response.ok) setIntelligenceDarkweb(await response.json());
+      } catch (err) { console.error('Error:', err); }
+    }, []);
+
+    const collectOsintAdvanced = async (target: string) => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/intelligence-adv/osint/collect`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ target })
+        });
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    // Malware Advanced Functions
+    const fetchMalwareAdvStatus = useCallback(async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/malware-adv/status`);
+        if (response.ok) setMalwareAdvStatus(await response.json());
+      } catch (err) { console.error('Error:', err); }
+    }, []);
+
+    const fetchMalwareTypes = useCallback(async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/malware/types`);
+        if (response.ok) setMalwareTypes(await response.json());
+      } catch (err) { console.error('Error:', err); }
+    }, []);
+
+    const analyzeMalwareHash = async (hash: string) => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/malware/analyze-hash`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ hash })
+        });
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    const executeMalwareYaraScan = async (target: string) => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/malware/yara-scan`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ target })
+        });
+        if (response.ok) setMalwareYaraScan(await response.json());
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    // SIEM Advanced Functions
+    const fetchSiemAdvStatus = useCallback(async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/siem-adv/status`);
+        if (response.ok) setSiemAdvStatus(await response.json());
+      } catch (err) { console.error('Error:', err); }
+    }, []);
+
+    const fetchSiemAdvAlerts = useCallback(async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/siem-adv/alerts`);
+        if (response.ok) setSiemAdvAlerts(await response.json());
+      } catch (err) { console.error('Error:', err); }
+    }, []);
+
+    const fetchSiemLogSources = useCallback(async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/siem/log-sources`);
+        if (response.ok) setSiemLogSources(await response.json());
+      } catch (err) { console.error('Error:', err); }
+    }, []);
+
+    const executeSiemCorrelation = async (events: any[]) => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/siem/correlate`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ events })
+        });
+        if (response.ok) setSiemCorrelation(await response.json());
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    // Detection Advanced Functions
+    const fetchDetectionAdvStatus = useCallback(async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/detection-adv/status`);
+        if (response.ok) setDetectionAdvStatus(await response.json());
+      } catch (err) { console.error('Error:', err); }
+    }, []);
+
+    const detectAnomalies = async (data: any) => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/detection-adv/anomaly/detect`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+        if (response.ok) setDetectionAnomalies(await response.json());
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    const analyzeApt = async (indicators: any) => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/detection-adv/apt/analyze`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(indicators)
+        });
+        if (response.ok) setDetectionAptAnalysis(await response.json());
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    // Defense Advanced Functions
+    const fetchDefenseAdvStatus = useCallback(async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/defense-adv/status`);
+        if (response.ok) setDefenseAdvStatus(await response.json());
+      } catch (err) { console.error('Error:', err); }
+    }, []);
+
+    const addFirewallRule = async (rule: any) => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/defense-adv/firewall/rule/add`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(rule)
+        });
+        if (response.ok) { fetchDefenseAdvStatus(); }
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    const neutralizeThreat = async (threatId: string) => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/defense-adv/threat/neutralize`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ threat_id: threatId })
+        });
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    // Communications Functions
+    const fetchCommsStatus = useCallback(async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/communications/status`);
+        if (response.ok) setCommsStatus(await response.json());
+      } catch (err) { console.error('Error:', err); }
+    }, []);
+
+    const createCommsChannel = async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/communications/channel/create`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(newChannelInput)
+        });
+        if (response.ok) { setNewChannelInput({ name: '', encryption: 'AES-256' }); fetchCommsStatus(); }
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    const createCovertChannel = async (config: any) => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/communications/covert/create`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(config)
+        });
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    const createAnonymousCircuit = async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/communications/anonymous/circuit`, { method: 'POST' });
+        if (response.ok) setCommsAnonymousCircuit(await response.json());
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    const sendCommsMessage = async (channelId: string, message: string) => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/communications/message/send`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ channel_id: channelId, message })
+        });
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    // Cryptography Functions
+    const fetchCryptoStatus = useCallback(async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/crypto/status`);
+        if (response.ok) setCryptoStatus(await response.json());
+      } catch (err) { console.error('Error:', err); }
+    }, []);
+
+    const generateCryptoKeys = async (algorithm: string) => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/crypto/keys/generate`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ algorithm })
+        });
+        if (response.ok) { fetchCryptoStatus(); }
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    const encryptData = async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/crypto/encrypt`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(cryptoEncryptInput)
+        });
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    const hashData = async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/crypto/hash`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ data: cryptoHashInput })
+        });
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    const fetchCryptoQuantumReadiness = useCallback(async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/crypto/quantum-readiness`);
+        if (response.ok) setCryptoQuantumReadiness(await response.json());
+      } catch (err) { console.error('Error:', err); }
+    }, []);
+
+    // Darkweb Functions
+    const fetchDarkwebStatus = useCallback(async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/darkweb/status`);
+        if (response.ok) setDarkwebStatus(await response.json());
+      } catch (err) { console.error('Error:', err); }
+    }, []);
+
+    const crawlDarkweb = async (target: string) => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/darkweb/crawl`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ target })
+        });
+        if (response.ok) setDarkwebCrawlResults(await response.json());
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    const checkDarkwebCredentials = async (email: string) => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/darkweb/credential/check`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email })
+        });
+        if (response.ok) setDarkwebCredentialCheck(await response.json());
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    // Extended Crypto Functions
+    const computeHash = async (params: { algorithm: string; data: string }) => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/crypto/hash`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(params)
+        });
+        if (response.ok) setHashResult(await response.json());
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    // Extended Darkweb Functions
+    const monitorDarkwebCredentials = async (params: { domain: string }) => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/darkweb/credential/monitor`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(params)
+        });
+        if (response.ok) {
+          const data = await response.json();
+          setDarkwebCredentials(data.credentials || []);
+        }
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    // Scanner Functions
+    const scanPorts = async (params: { target: string; ports: string }) => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/scanner/ports`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(params)
+        });
+        if (response.ok) setPortScanResults(await response.json());
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    const scanDns = async (params: { domain: string; type: string }) => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/scanner/dns`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(params)
+        });
+        if (response.ok) setDnsScanResults(await response.json());
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    const scanSsl = async (params: { host: string; port: number }) => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/scanner/ssl`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(params)
+        });
+        if (response.ok) setSslScanResults(await response.json());
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    const scanVulnerabilities = async (params: { target: string; type: string }) => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/scanner/vulnerabilities`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(params)
+        });
+        if (response.ok) setVulnScanResults(await response.json());
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    // Surveillance Functions
+    const fetchSurveillanceStatus = useCallback(async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/surveillance/status`);
+        if (response.ok) setSurveillanceStatus(await response.json());
+      } catch (err) { console.error('Error:', err); }
+    }, []);
+
+    const createSurveillanceTarget = async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/surveillance/target/create`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(newSurveillanceTarget)
+        });
+        if (response.ok) { setNewSurveillanceTarget({ name: '', type: '', priority: 'medium' }); fetchSurveillanceStatus(); }
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    const addSurveillanceSelector = async (selector: any) => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/surveillance/selector/add`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(selector)
+        });
+        if (response.ok) fetchSurveillanceStatus();
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    const startNetworkWatch = async (config: any) => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/surveillance/network/watch`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(config)
+        });
+        if (response.ok) setSurveillanceNetworkWatch(await response.json());
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    // Warfare Functions
+    const fetchWarfareStatus = useCallback(async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/warfare/status`);
+        if (response.ok) setWarfareStatus(await response.json());
+      } catch (err) { console.error('Error:', err); }
+    }, []);
+
+    const createWarfareOperation = async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/warfare/operation/create`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(newWarfareOperation)
+        });
+        if (response.ok) { setNewWarfareOperation({ name: '', type: '', target: '' }); fetchWarfareStatus(); }
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    const assessWarfareInfrastructure = async (target: string) => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/warfare/infrastructure/assess`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ target })
+        });
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    const registerWarfareInfrastructure = async (infra: any) => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/warfare/infrastructure/register`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(infra)
+        });
+        if (response.ok) fetchWarfareStatus();
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    // Operations Functions
+    const fetchOperationsStatus = useCallback(async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/operations/status`);
+        if (response.ok) setOperationsStatus(await response.json());
+      } catch (err) { console.error('Error:', err); }
+    }, []);
+
+    const createOperation = async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/operations/create`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(newOperationInput)
+        });
+        if (response.ok) { setNewOperationInput({ name: '', type: '', objective: '' }); fetchOperationsStatus(); }
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    const createOperationsIdentity = async (identity: any) => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/operations/identity/create`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(identity)
+        });
+        if (response.ok) fetchOperationsStatus();
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    const assessOpsec = async (operation: any) => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/operations/opsec/assess`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(operation)
+        });
+        if (response.ok) setOperationsOpsecAssessment(await response.json());
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    // Specialized Functions
+    const fetchSpecializedStatus = useCallback(async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/specialized/status`);
+        if (response.ok) setSpecializedStatus(await response.json());
+      } catch (err) { console.error('Error:', err); }
+    }, []);
+
+    const enrollBiometric = async (data: any) => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/specialized/biometric/enroll`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+        if (response.ok) fetchSpecializedStatus();
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    const verifyBiometric = async (data: any) => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/specialized/biometric/verify`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    const assessEmsec = async (target: any) => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/specialized/emsec/assess`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(target)
+        });
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    const generateSbom = async (project: any) => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/specialized/supply-chain/sbom/generate`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(project)
+        });
+        if (response.ok) setSupplyChainSbom(await response.json());
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    const registerSupplier = async (supplier: any) => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/specialized/supply-chain/supplier/register`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(supplier)
+        });
+        if (response.ok) fetchSpecializedStatus();
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    // Security Tools Functions
+    const fetchSecurityToolsStatus = useCallback(async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/security-tools/status`);
+        if (response.ok) setSecurityToolsStatus(await response.json());
+      } catch (err) { console.error('Error:', err); }
+    }, []);
+
+    const fetchSuricataAlerts = useCallback(async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/security-tools/suricata/alerts`);
+        if (response.ok) setSuricataAlerts(await response.json());
+      } catch (err) { console.error('Error:', err); }
+    }, []);
+
+    const fetchSuricataStatus = useCallback(async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/security-tools/suricata/status`);
+        if (response.ok) setSuricataStatus(await response.json());
+      } catch (err) { console.error('Error:', err); }
+    }, []);
+
+    const fetchZeekConnections = useCallback(async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/security-tools/zeek/connections`);
+        if (response.ok) setZeekConnections(await response.json());
+      } catch (err) { console.error('Error:', err); }
+    }, []);
+
+    const fetchZeekStatus = useCallback(async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/security-tools/zeek/status`);
+        if (response.ok) setZeekStatus(await response.json());
+      } catch (err) { console.error('Error:', err); }
+    }, []);
+
+    const fetchElasticsearchStatus = useCallback(async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/security-tools/elasticsearch/status`);
+        if (response.ok) setElasticsearchStatus(await response.json());
+      } catch (err) { console.error('Error:', err); }
+    }, []);
+
+    const fetchNtopngStatus = useCallback(async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/security-tools/ntopng/status`);
+        if (response.ok) setNtopngStatus(await response.json());
+      } catch (err) { console.error('Error:', err); }
+    }, []);
+
+    const fetchTorStatus = useCallback(async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/security-tools/tor/status`);
+        if (response.ok) setTorStatus(await response.json());
+      } catch (err) { console.error('Error:', err); }
+    }, []);
+
+    const fetchUnifiedAlerts = useCallback(async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/security-tools/unified/alerts`);
+        if (response.ok) setUnifiedAlerts(await response.json());
+      } catch (err) { console.error('Error:', err); }
+    }, []);
+
+    const fetchUnifiedConnections = useCallback(async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/security-tools/unified/connections`);
+        if (response.ok) setUnifiedConnections(await response.json());
+      } catch (err) { console.error('Error:', err); }
+    }, []);
+
+    // Domains Functions
+    const fetchDomainsStatus = useCallback(async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/domains/status`);
+        if (response.ok) setDomainsStatus(await response.json());
+      } catch (err) { console.error('Error:', err); }
+    }, []);
+
+    const correlateDomains = async (domains: string[]) => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/domains/correlate`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ domains })
+        });
+        if (response.ok) setDomainsCorrelation(await response.json());
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    const crawlDomainsDarkweb = async (query: string) => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/domains/darkweb/crawl`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ query })
+        });
+        if (response.ok) setDomainsDarkwebResults(await response.json());
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    const searchDomainsOsint = async (query: string) => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/domains/osint/search`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ query })
+        });
+        if (response.ok) setDomainsOsintResults(await response.json());
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    const fetchDomainsYaraRules = useCallback(async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/domains/forensics/yara/rules`);
+        if (response.ok) setDomainsYaraRules(await response.json());
+      } catch (err) { console.error('Error:', err); }
+    }, []);
+
+    const scanDomainsYara = async (target: string) => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/domains/forensics/yara/scan`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ target })
+        });
+        if (response.ok) setDomainsYaraScanResults(await response.json());
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    const analyzeDomainThreatIntel = async (domain: string) => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/domains/threat-intel/analyze/domain/${encodeURIComponent(domain)}`);
+        if (response.ok) setDomainsThreatIntelResults(await response.json());
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    // Scanner Functions
+    const executeDnsScan = async (target: string) => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/scanner/dns`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ target })
+        });
+        if (response.ok) setScannerDnsResults(await response.json());
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    const executePortsScan = async (target: string) => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/scanner/ports`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ target })
+        });
+        if (response.ok) setScannerPortsResults(await response.json());
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    const executeSslScan = async (target: string) => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/scanner/ssl`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ target })
+        });
+        if (response.ok) setScannerSslResults(await response.json());
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    const fetchScannerVulnCategories = useCallback(async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/scanner/vulnerability-categories`);
+        if (response.ok) setScannerVulnCategories(await response.json());
+      } catch (err) { console.error('Error:', err); }
+    }, []);
+
+    // Capture Advanced Functions
+    const fetchCaptureAttacks = useCallback(async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/capture/attacks`);
+        if (response.ok) setCaptureAttacks(await response.json());
+      } catch (err) { console.error('Error:', err); }
+    }, []);
+
+    const fetchCaptureMalicious = useCallback(async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/capture/malicious`);
+        if (response.ok) setCaptureMalicious(await response.json());
+      } catch (err) { console.error('Error:', err); }
+    }, []);
+
+    const fetchCapturePayloads = useCallback(async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/capture/payloads`);
+        if (response.ok) setCapturePayloads(await response.json());
+      } catch (err) { console.error('Error:', err); }
+    }, []);
+
+    const fetchCaptureStatusAdv = useCallback(async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/capture/status`);
+        if (response.ok) setCaptureStatus(await response.json());
+      } catch (err) { console.error('Error:', err); }
+    }, []);
+
+    // MITRE Functions
+    const fetchMitreCoverage = useCallback(async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/mitre/coverage`);
+        if (response.ok) setMitreCoverage(await response.json());
+      } catch (err) { console.error('Error:', err); }
+    }, []);
+
+    // Dashboard Functions
+    const fetchDashboardStats = useCallback(async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/dashboard/stats`);
+        if (response.ok) setDashboardStats(await response.json());
+      } catch (err) { console.error('Error:', err); }
+    }, []);
+
+    // Quantum Functions
+    const fetchQuantumAlgorithms = useCallback(async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/quantum/algorithms`);
+        if (response.ok) setQuantumAlgorithms(await response.json());
+      } catch (err) { console.error('Error:', err); }
+    }, []);
+
+    // Person Intel Extended Functions
+    const fetchPersonIntelCamerasList = useCallback(async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/person-intel/cameras/list`);
+        if (response.ok) setPersonIntelCamerasList(await response.json());
+      } catch (err) { console.error('Error:', err); }
+    }, []);
+
+    const fetchPersonIntelCameraStats = useCallback(async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/person-intel/cameras/statistics`);
+        if (response.ok) setPersonIntelCameraStats(await response.json());
+      } catch (err) { console.error('Error:', err); }
+    }, []);
+
+    const fetchPersonIntelDbStats = useCallback(async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/person-intel/database/statistics`);
+        if (response.ok) setPersonIntelDbStats(await response.json());
+      } catch (err) { console.error('Error:', err); }
+    }, []);
+
+    const fetchPersonIntelMotionAlerts = useCallback(async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/person-intel/motion/alerts`);
+        if (response.ok) setPersonIntelMotionAlerts(await response.json());
+      } catch (err) { console.error('Error:', err); }
+    }, []);
+
+    const fetchPersonIntelMotionHistory = useCallback(async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/person-intel/motion/history`);
+        if (response.ok) setPersonIntelMotionHistory(await response.json());
+      } catch (err) { console.error('Error:', err); }
+    }, []);
+
+    const fetchPersonIntelMotionStats = useCallback(async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/person-intel/motion/statistics`);
+        if (response.ok) setPersonIntelMotionStats(await response.json());
+      } catch (err) { console.error('Error:', err); }
+    }, []);
+
+    const fetchPersonIntelRelationshipTypes = useCallback(async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/person-intel/relationship-types`);
+        if (response.ok) setPersonIntelRelationshipTypes(await response.json());
+      } catch (err) { console.error('Error:', err); }
+    }, []);
+
+    const fetchPersonIntelSearchScopes = useCallback(async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/person-intel/search-scopes`);
+        if (response.ok) setPersonIntelSearchScopes(await response.json());
+      } catch (err) { console.error('Error:', err); }
+    }, []);
+
+    const fetchPersonIntelSocialPlatforms = useCallback(async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/person-intel/social-platforms`);
+        if (response.ok) setPersonIntelSocialPlatforms(await response.json());
+      } catch (err) { console.error('Error:', err); }
+    }, []);
+
+    const fetchPersonIntelAvailableTags = useCallback(async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/person-intel/tags/available`);
+        if (response.ok) setPersonIntelAvailableTags(await response.json());
+      } catch (err) { console.error('Error:', err); }
+    }, []);
+
+    const fetchPersonIntelConnectionLabels = useCallback(async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/person-intel/connection-labels`);
+        if (response.ok) setPersonIntelConnectionLabels(await response.json());
+      } catch (err) { console.error('Error:', err); }
+    }, []);
+
+    const setShodanKey = async (key: string) => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/person-intel/cameras/set-shodan-key`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ api_key: key })
+        });
+        if (response.ok) { setShodanKeyInput(''); }
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    const detectMotion = async (cameraId: string) => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/person-intel/motion/detect`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ camera_id: cameraId })
+        });
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    const acknowledgeMotionAlert = async (alertId: string) => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/person-intel/motion/acknowledge`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ alert_id: alertId })
+        });
+        if (response.ok) fetchPersonIntelMotionAlerts();
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    const crawlSocialMedia = async (username: string, platforms: string[]) => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/person-intel/social-media/crawl`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, platforms })
+        });
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    const searchPersonByImage = async (imageFile: File) => {
+      const formData = new FormData();
+      formData.append('image', imageFile);
+      try {
+        const response = await fetch(`${API_URL}/api/v1/person-intel/image-search`, { method: 'POST', body: formData });
+        if (response.ok) return await response.json();
+      } catch (err) { console.error('Error:', err); }
+    };
+
     useEffect(() => {
       const timer = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(timer);
@@ -1639,6 +2780,12 @@ function App() {
               { id: 'evidence', label: 'EVIDENCE VAULT', icon: Database, desc: 'Evidence Management' },
               { id: 'opscom', label: 'OPSCOM', icon: Command, desc: 'Operations Command' },
               { id: 'personintel', label: 'PERSON INTEL', icon: FileSearch, desc: 'Person Intelligence' },
+              { id: 'crypto', label: 'CRYPTOGRAPHY', icon: Lock, desc: 'Encryption & Keys' },
+              { id: 'darkweb', label: 'DARKWEB OPS', icon: Globe, desc: 'Darkweb Intelligence' },
+              { id: 'scanner', label: 'SCANNER', icon: Scan, desc: 'Network Scanning' },
+              { id: 'siem', label: 'SIEM ADV', icon: Server, desc: 'Advanced SIEM' },
+              { id: 'detection', label: 'DETECTION', icon: Eye, desc: 'Threat Detection' },
+              { id: 'defense', label: 'DEFENSE ADV', icon: Shield, desc: 'Active Defense' },
             ].map(item => (
               <button
                 key={item.id}
@@ -2055,36 +3202,28 @@ function App() {
               <div className="grid grid-cols-2 gap-6">
                 <Card className="bg-zinc-900 border-zinc-800">
                   <CardHeader>
-                    <CardTitle className="text-purple-400">3D THREAT CUBE</CardTitle>
-                    <CardDescription>Rotating 3D visualization of threat vectors</CardDescription>
+                    <CardTitle className="text-purple-400">REAL-TIME THREAT CATEGORIES</CardTitle>
+                    <CardDescription>Live threat distribution from active intelligence feeds</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <div className="relative h-64 bg-zinc-950 rounded-lg overflow-hidden flex items-center justify-center" style={{ perspective: '600px' }}>
-                      <style>{`
-                        @keyframes rotateCube { from { transform: rotateX(-20deg) rotateY(0deg); } to { transform: rotateX(-20deg) rotateY(360deg); } }
-                      `}</style>
-                      <div className="relative w-32 h-32" style={{ transformStyle: 'preserve-3d', animation: 'rotateCube 10s linear infinite' }}>
-                        {['front', 'back', 'left', 'right', 'top', 'bottom'].map((face, i) => {
-                          const transforms: Record<string, string> = {
-                            front: 'translateZ(64px)',
-                            back: 'translateZ(-64px) rotateY(180deg)',
-                            left: 'translateX(-64px) rotateY(-90deg)',
-                            right: 'translateX(64px) rotateY(90deg)',
-                            top: 'translateY(-64px) rotateX(90deg)',
-                            bottom: 'translateY(64px) rotateX(-90deg)'
-                          };
-                          const colors = ['bg-red-500/30', 'bg-orange-500/30', 'bg-yellow-500/30', 'bg-green-500/30', 'bg-blue-500/30', 'bg-purple-500/30'];
-                          const labels = ['MALWARE', 'PHISHING', 'INTRUSION', 'DDOS', 'INSIDER', 'APT'];
-                          return (
-                            <div
-                              key={face}
-                              className={`absolute w-32 h-32 ${colors[i]} border border-white/20 flex items-center justify-center text-xs font-bold text-white/80`}
-                              style={{ transform: transforms[face], backfaceVisibility: 'visible' }}
-                            >
-                              {labels[i]}
+                    <div className="h-64 bg-zinc-950 rounded-lg p-4">
+                      <div className="grid grid-cols-2 gap-3 h-full">
+                        {(() => {
+                          const categories = threatEvents.reduce((acc: Record<string, number>, t) => {
+                            const type = t.type || 'Unknown';
+                            acc[type] = (acc[type] || 0) + 1;
+                            return acc;
+                          }, {});
+                          const sortedCategories = Object.entries(categories).sort((a, b) => b[1] - a[1]).slice(0, 6);
+                          const colors = ['bg-red-500', 'bg-orange-500', 'bg-yellow-500', 'bg-cyan-500', 'bg-purple-500', 'bg-green-500'];
+                          return sortedCategories.map(([type, count], i) => (
+                            <div key={type} className={`${colors[i]}/20 border border-${colors[i].replace('bg-', '')}/50 rounded-lg p-3 flex flex-col justify-between`}>
+                              <div className="text-xs text-zinc-400 uppercase">{type}</div>
+                              <div className="text-2xl font-bold text-white">{count}</div>
+                              <div className="text-xs text-zinc-500">{((count / threatEvents.length) * 100).toFixed(1)}% of total</div>
                             </div>
-                          );
-                        })}
+                          ));
+                        })()}
                       </div>
                     </div>
                   </CardContent>
@@ -2092,52 +3231,32 @@ function App() {
 
                 <Card className="bg-zinc-900 border-zinc-800">
                   <CardHeader>
-                    <CardTitle className="text-purple-400">3D SECURITY SPHERE</CardTitle>
-                    <CardDescription>Animated 3D security perimeter visualization</CardDescription>
+                    <CardTitle className="text-purple-400">LIVE SYSTEM METRICS</CardTitle>
+                    <CardDescription>Real-time operational status from backend sensors</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <div className="relative h-64 bg-zinc-950 rounded-lg overflow-hidden flex items-center justify-center">
-                      <style>{`
-                        @keyframes rotateSphere { from { transform: rotateY(0deg); } to { transform: rotateY(360deg); } }
-                        @keyframes pulseSphere { 0%, 100% { opacity: 0.3; transform: scale(1); } 50% { opacity: 0.6; transform: scale(1.05); } }
-                      `}</style>
-                      <div className="relative" style={{ transformStyle: 'preserve-3d', animation: 'rotateSphere 15s linear infinite' }}>
-                        {[0, 1, 2].map((ring) => (
-                          <div
-                            key={ring}
-                            className="absolute border-2 border-cyan-500/40 rounded-full"
-                            style={{
-                              width: `${120 + ring * 40}px`,
-                              height: `${120 + ring * 40}px`,
-                              left: `${-(60 + ring * 20)}px`,
-                              top: `${-(60 + ring * 20)}px`,
-                              transform: `rotateX(${60 + ring * 15}deg)`,
-                              animation: `pulseSphere ${2 + ring * 0.5}s ease-in-out infinite`,
-                              animationDelay: `${ring * 0.3}s`
-                            }}
-                          />
-                        ))}
-                        {[0, 1, 2].map((ring) => (
-                          <div
-                            key={`v-${ring}`}
-                            className="absolute border-2 border-purple-500/40 rounded-full"
-                            style={{
-                              width: `${120 + ring * 40}px`,
-                              height: `${120 + ring * 40}px`,
-                              left: `${-(60 + ring * 20)}px`,
-                              top: `${-(60 + ring * 20)}px`,
-                              transform: `rotateY(${60 + ring * 15}deg)`,
-                              animation: `pulseSphere ${2.5 + ring * 0.5}s ease-in-out infinite`,
-                              animationDelay: `${ring * 0.4}s`
-                            }}
-                          />
-                        ))}
-                        <div className="w-16 h-16 rounded-full bg-gradient-to-br from-cyan-500 to-purple-500 flex items-center justify-center" style={{ animation: 'pulseSphere 2s ease-in-out infinite' }}>
-                          <Shield className="h-8 w-8 text-white" />
+                    <div className="h-64 bg-zinc-950 rounded-lg p-4">
+                      <div className="grid grid-cols-2 gap-3 h-full">
+                        <div className="bg-cyan-500/20 border border-cyan-500/50 rounded-lg p-3 flex flex-col justify-between">
+                          <div className="text-xs text-zinc-400">CPU USAGE</div>
+                          <div className="text-2xl font-bold text-cyan-400">{metrics.cpuUsage}%</div>
+                          <Progress value={metrics.cpuUsage} className="h-1" />
                         </div>
-                      </div>
-                      <div className="absolute bottom-4 left-4 text-xs text-cyan-400 font-mono">
-                        PERIMETER: {systemStatus === 'OPERATIONAL' ? 'SECURE' : 'ALERT'}
+                        <div className="bg-purple-500/20 border border-purple-500/50 rounded-lg p-3 flex flex-col justify-between">
+                          <div className="text-xs text-zinc-400">MEMORY</div>
+                          <div className="text-2xl font-bold text-purple-400">{metrics.memoryUsage}%</div>
+                          <Progress value={metrics.memoryUsage} className="h-1" />
+                        </div>
+                        <div className="bg-green-500/20 border border-green-500/50 rounded-lg p-3 flex flex-col justify-between">
+                          <div className="text-xs text-zinc-400">ACTIVE NODES</div>
+                          <div className="text-2xl font-bold text-green-400">{metrics.activeNodes}</div>
+                          <div className="text-xs text-zinc-500">Online infrastructure</div>
+                        </div>
+                        <div className="bg-orange-500/20 border border-orange-500/50 rounded-lg p-3 flex flex-col justify-between">
+                          <div className="text-xs text-zinc-400">ACTIVE SENSORS</div>
+                          <div className="text-2xl font-bold text-orange-400">{metrics.activeSensors}</div>
+                          <div className="text-xs text-zinc-500">Monitoring endpoints</div>
+                        </div>
                       </div>
                     </div>
                   </CardContent>
@@ -2807,11 +3926,11 @@ function App() {
             <div className="space-y-6">
               <Card className="bg-zinc-900 border-zinc-800">
                 <CardHeader>
-                  <CardTitle className="text-red-400">RED TEAM OPERATIONS</CardTitle>
-                  <CardDescription>Offensive security operations and adversary emulation</CardDescription>
+                  <CardTitle className="text-red-400">RED TEAM OPERATIONS CENTER</CardTitle>
+                  <CardDescription>Offensive security operations, adversary emulation, and penetration testing</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid grid-cols-3 gap-4">
+                  <div className="grid grid-cols-3 gap-4 mb-6">
                     {(systemCapabilities?.capabilities?.offensive || []).map((phase: string, idx: number) => (
                       <div key={phase} className="p-4 rounded-lg bg-red-900/20 border border-red-800">
                         <div className="flex items-center justify-between">
@@ -2826,6 +3945,110 @@ function App() {
                   </div>
                 </CardContent>
               </Card>
+
+              <div className="grid grid-cols-2 gap-6">
+                <Card className="bg-zinc-900 border-zinc-800 border-red-900/30">
+                  <CardHeader>
+                    <CardTitle className="text-red-400">ENGAGEMENT MANAGEMENT</CardTitle>
+                    <CardDescription>Create and manage red team engagements</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-2 gap-3">
+                        <Input placeholder="Engagement Name" className="bg-zinc-800 border-zinc-700" />
+                        <select className="bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm">
+                          <option value="full">Full Scope</option>
+                          <option value="external">External Only</option>
+                          <option value="internal">Internal Only</option>
+                          <option value="physical">Physical</option>
+                        </select>
+                      </div>
+                      <Input placeholder="Target Organization / Scope" className="bg-zinc-800 border-zinc-700" />
+                      <Button 
+                        className="w-full bg-red-600 hover:bg-red-700"
+                        onClick={() => createRedteamEngagement({ name: 'New Engagement', scope: 'full', target: 'Target Org' })}
+                      >
+                        CREATE ENGAGEMENT
+                      </Button>
+                      {redteamEngagement && (
+                        <div className="p-3 bg-zinc-800 rounded-lg border border-red-700">
+                          <div className="text-xs text-red-400 mb-2">Engagement Created</div>
+                          <div className="text-sm text-white">{JSON.stringify(redteamEngagement).slice(0, 200)}...</div>
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="bg-zinc-900 border-zinc-800 border-orange-900/30">
+                  <CardHeader>
+                    <CardTitle className="text-orange-400">ATTACK TECHNIQUES (MITRE ATT&CK)</CardTitle>
+                    <CardDescription>Available attack techniques and TTPs</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <Button className="w-full mb-4 bg-orange-600 hover:bg-orange-700" onClick={fetchRedteamTechniques}>
+                      LOAD TECHNIQUES
+                    </Button>
+                    <div className="max-h-48 overflow-y-auto space-y-2">
+                      {(redteamTechniques.length > 0 ? redteamTechniques : [
+                        { id: 'T1059', name: 'Command and Scripting Interpreter', tactic: 'Execution' },
+                        { id: 'T1078', name: 'Valid Accounts', tactic: 'Persistence' },
+                        { id: 'T1110', name: 'Brute Force', tactic: 'Credential Access' },
+                        { id: 'T1021', name: 'Remote Services', tactic: 'Lateral Movement' }
+                      ]).map((tech: any, idx: number) => (
+                        <div key={idx} className="p-2 bg-zinc-800 rounded border border-orange-800/50">
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm text-orange-300">{tech.id}: {tech.name}</span>
+                            <Badge variant="outline" className="text-xs">{tech.tactic}</Badge>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              <Card className="bg-zinc-900 border-zinc-800 border-purple-900/30">
+                <CardHeader>
+                  <CardTitle className="text-purple-400">ADVERSARY EMULATION</CardTitle>
+                  <CardDescription>Emulate known threat actors and APT groups</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-4 gap-4">
+                    {[
+                      { name: 'APT29 (Cozy Bear)', origin: 'Russia', focus: 'Government, Think Tanks' },
+                      { name: 'APT28 (Fancy Bear)', origin: 'Russia', focus: 'Military, Government' },
+                      { name: 'Lazarus Group', origin: 'North Korea', focus: 'Financial, Crypto' },
+                      { name: 'APT41 (Double Dragon)', origin: 'China', focus: 'Healthcare, Tech' }
+                    ].map((apt, idx) => (
+                      <div key={idx} className="p-4 rounded-lg bg-purple-900/20 border border-purple-800">
+                        <div className="font-semibold text-purple-300">{apt.name}</div>
+                        <div className="text-xs text-purple-400 mt-1">Origin: {apt.origin}</div>
+                        <div className="text-xs text-zinc-400 mt-1">Focus: {apt.focus}</div>
+                        <Button size="sm" className="mt-2 w-full bg-purple-600 hover:bg-purple-700">
+                          EMULATE
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-zinc-900 border-zinc-800">
+                <CardHeader>
+                  <CardTitle className="text-red-400">REDTEAM ADVANCED STATUS</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <Button className="bg-red-600 hover:bg-red-700" onClick={fetchRedteamAdvStatus}>
+                    FETCH STATUS
+                  </Button>
+                  {redteamAdvStatus && (
+                    <div className="mt-4 p-4 bg-zinc-800 rounded-lg">
+                      <pre className="text-xs text-zinc-300 overflow-auto">{JSON.stringify(redteamAdvStatus, null, 2)}</pre>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
             </div>
           )}
 
@@ -2833,11 +4056,11 @@ function App() {
             <div className="space-y-6">
               <Card className="bg-zinc-900 border-zinc-800">
                 <CardHeader>
-                  <CardTitle className="text-blue-400">BLUE TEAM OPERATIONS</CardTitle>
-                  <CardDescription>Defensive security operations and incident response</CardDescription>
+                  <CardTitle className="text-blue-400">BLUE TEAM OPERATIONS CENTER</CardTitle>
+                  <CardDescription>Defensive security operations, threat hunting, and incident response</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid grid-cols-3 gap-4">
+                  <div className="grid grid-cols-3 gap-4 mb-6">
                     {(systemCapabilities?.capabilities?.defensive || []).map((area: string) => (
                       <div key={area} className="p-4 rounded-lg bg-blue-900/20 border border-blue-800">
                         <div className="flex items-center justify-between">
@@ -2849,6 +4072,143 @@ function App() {
                       </div>
                     ))}
                   </div>
+                </CardContent>
+              </Card>
+
+              <div className="grid grid-cols-2 gap-6">
+                <Card className="bg-zinc-900 border-zinc-800 border-blue-900/30">
+                  <CardHeader>
+                    <CardTitle className="text-blue-400">THREAT HUNTING ENGINE</CardTitle>
+                    <CardDescription>Execute proactive threat hunts across the infrastructure</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div>
+                        <label className="text-xs text-zinc-400 mb-1 block">HUNT QUERY (KQL/SPL/YARA)</label>
+                        <Input
+                          placeholder="Enter threat hunting query..."
+                          className="bg-zinc-800 border-zinc-700"
+                          onKeyDown={(e) => e.key === 'Enter' && executeBlueteamHunt((e.target as HTMLInputElement).value)}
+                        />
+                      </div>
+                      <Button 
+                        className="w-full bg-blue-600 hover:bg-blue-700"
+                        onClick={() => executeBlueteamHunt('process_name:powershell.exe AND command_line:*-enc*')}
+                        disabled={isExecutingHunt}
+                      >
+                        {isExecutingHunt ? 'HUNTING...' : 'EXECUTE HUNT'}
+                      </Button>
+                      {blueteamHuntResults && (
+                        <div className="p-3 bg-zinc-800 rounded-lg border border-blue-700">
+                          <div className="text-xs text-blue-400 mb-2">Hunt Results</div>
+                          <div className="text-sm text-white">{JSON.stringify(blueteamHuntResults).slice(0, 200)}...</div>
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="bg-zinc-900 border-zinc-800 border-cyan-900/30">
+                  <CardHeader>
+                    <CardTitle className="text-cyan-400">IOC MANAGEMENT</CardTitle>
+                    <CardDescription>Add and manage Indicators of Compromise</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      <div className="grid grid-cols-3 gap-2">
+                        <Input
+                          placeholder="Type (IP/Hash/Domain)"
+                          value={blueteamIocInput.type}
+                          onChange={(e) => setBlueteamIocInput({...blueteamIocInput, type: e.target.value})}
+                          className="bg-zinc-800 border-zinc-700 text-sm"
+                        />
+                        <Input
+                          placeholder="Value"
+                          value={blueteamIocInput.value}
+                          onChange={(e) => setBlueteamIocInput({...blueteamIocInput, value: e.target.value})}
+                          className="bg-zinc-800 border-zinc-700 text-sm"
+                        />
+                        <Input
+                          placeholder="Source"
+                          value={blueteamIocInput.source}
+                          onChange={(e) => setBlueteamIocInput({...blueteamIocInput, source: e.target.value})}
+                          className="bg-zinc-800 border-zinc-700 text-sm"
+                        />
+                      </div>
+                      <Button className="w-full bg-cyan-600 hover:bg-cyan-700" onClick={addBlueteamIoc}>
+                        ADD IOC TO DATABASE
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              <Card className="bg-zinc-900 border-zinc-800 border-green-900/30">
+                <CardHeader>
+                  <CardTitle className="text-green-400">ACTIVE DEFENSES</CardTitle>
+                  <CardDescription>Current defensive measures and their status</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-4 gap-4">
+                    {(blueteamDefenses.length > 0 ? blueteamDefenses : [
+                      { name: 'Firewall Rules', status: 'ACTIVE', count: 2847 },
+                      { name: 'IDS/IPS Signatures', status: 'ACTIVE', count: 15234 },
+                      { name: 'EDR Policies', status: 'ACTIVE', count: 156 },
+                      { name: 'Network Segmentation', status: 'ENFORCED', count: 24 }
+                    ]).map((defense: any, idx: number) => (
+                      <div key={idx} className="p-4 rounded-lg bg-green-900/20 border border-green-800">
+                        <div className="font-semibold text-green-300">{defense.name}</div>
+                        <div className="text-xs text-green-400 mt-1">{defense.status}</div>
+                        <div className="text-lg font-bold text-white mt-2">{defense.count?.toLocaleString()}</div>
+                      </div>
+                    ))}
+                  </div>
+                  <Button className="mt-4 bg-green-600 hover:bg-green-700" onClick={fetchBlueteamDefenses}>
+                    REFRESH DEFENSES
+                  </Button>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-zinc-900 border-zinc-800 border-red-900/30">
+                <CardHeader>
+                  <CardTitle className="text-red-400">INCIDENT RESPONSE</CardTitle>
+                  <CardDescription>Create and manage security incidents</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-4 gap-4 mb-4">
+                    <Input placeholder="Incident Title" className="bg-zinc-800 border-zinc-700" />
+                    <select className="bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm">
+                      <option value="critical">CRITICAL</option>
+                      <option value="high">HIGH</option>
+                      <option value="medium">MEDIUM</option>
+                      <option value="low">LOW</option>
+                    </select>
+                    <Input placeholder="Affected Assets" className="bg-zinc-800 border-zinc-700" />
+                    <Button className="bg-red-600 hover:bg-red-700" onClick={() => createBlueteamIncident({ title: 'New Incident', severity: 'high' })}>
+                      CREATE INCIDENT
+                    </Button>
+                  </div>
+                  {blueteamIncident && (
+                    <div className="p-4 bg-zinc-800 rounded-lg border border-red-700">
+                      <div className="text-sm text-red-400">Incident Created: {blueteamIncident.incident_id}</div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              <Card className="bg-zinc-900 border-zinc-800">
+                <CardHeader>
+                  <CardTitle className="text-blue-400">BLUETEAM ADVANCED STATUS</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <Button className="bg-blue-600 hover:bg-blue-700" onClick={fetchBlueteamAdvStatus}>
+                    FETCH STATUS
+                  </Button>
+                  {blueteamAdvStatus && (
+                    <div className="mt-4 p-4 bg-zinc-800 rounded-lg">
+                      <pre className="text-xs text-zinc-300 overflow-auto">{JSON.stringify(blueteamAdvStatus, null, 2)}</pre>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </div>
@@ -4502,12 +5862,107 @@ MalwarePayload.execute();
                   </Card>
                 ))}
               </div>
-              <Card className="bg-zinc-900 border-zinc-800">
+
+              <div className="grid grid-cols-2 gap-6">
+                <Card className="bg-zinc-900 border-zinc-800 border-green-900/30">
+                  <CardHeader>
+                    <CardTitle className="text-green-400">CREATE SECURE CHANNEL</CardTitle>
+                    <CardDescription>Establish new encrypted communication channel</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      <Input placeholder="Channel Name" className="bg-zinc-800 border-zinc-700" />
+                      <select className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm">
+                        <option value="signal">Signal Protocol</option>
+                        <option value="matrix">Matrix (E2EE)</option>
+                        <option value="xmpp">XMPP/OMEMO</option>
+                        <option value="custom">Custom AES-256-GCM</option>
+                      </select>
+                      <Button className="w-full bg-green-600 hover:bg-green-700" onClick={() => createCommsChannel({ name: 'New Channel', protocol: 'signal' })}>
+                        CREATE CHANNEL
+                      </Button>
+                      {commsChannel && (
+                        <div className="p-3 bg-zinc-800 rounded-lg border border-green-700">
+                          <div className="text-xs text-green-400">Channel Created: {commsChannel.channel_id}</div>
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="bg-zinc-900 border-zinc-800 border-purple-900/30">
+                  <CardHeader>
+                    <CardTitle className="text-purple-400">COVERT CHANNEL</CardTitle>
+                    <CardDescription>Steganographic and covert communication</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      <select className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm">
+                        <option value="dns">DNS Tunneling</option>
+                        <option value="icmp">ICMP Covert</option>
+                        <option value="http">HTTP Header Hiding</option>
+                        <option value="stego">Image Steganography</option>
+                      </select>
+                      <Input placeholder="Target Endpoint" className="bg-zinc-800 border-zinc-700" />
+                      <Button className="w-full bg-purple-600 hover:bg-purple-700" onClick={() => createCovertChannel({ type: 'dns', target: 'target.local' })}>
+                        ESTABLISH COVERT CHANNEL
+                      </Button>
+                      {covertChannel && (
+                        <div className="p-3 bg-zinc-800 rounded-lg border border-purple-700">
+                          <div className="text-xs text-purple-400">Covert Channel: {covertChannel.channel_id}</div>
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              <Card className="bg-zinc-900 border-zinc-800 border-cyan-900/30">
                 <CardHeader>
-                  <CardTitle className="text-green-400">SECURE COMMUNICATIONS</CardTitle>
-                  <CardDescription>End-to-end encrypted communication channels</CardDescription>
+                  <CardTitle className="text-cyan-400">ANONYMOUS ROUTING</CardTitle>
+                  <CardDescription>Tor/I2P circuit management for anonymous communications</CardDescription>
                 </CardHeader>
                 <CardContent>
+                  <div className="grid grid-cols-3 gap-4 mb-4">
+                    <div className="p-4 rounded-lg bg-cyan-900/20 border border-cyan-800">
+                      <div className="font-semibold text-cyan-300">TOR CIRCUIT</div>
+                      <div className="text-xs text-cyan-400 mt-1">3-hop onion routing</div>
+                      <Button size="sm" className="mt-2 w-full bg-cyan-600 hover:bg-cyan-700" onClick={createAnonymousCircuit}>
+                        CREATE CIRCUIT
+                      </Button>
+                    </div>
+                    <div className="p-4 rounded-lg bg-purple-900/20 border border-purple-800">
+                      <div className="font-semibold text-purple-300">I2P TUNNEL</div>
+                      <div className="text-xs text-purple-400 mt-1">Garlic routing</div>
+                      <Button size="sm" className="mt-2 w-full bg-purple-600 hover:bg-purple-700">
+                        CREATE TUNNEL
+                      </Button>
+                    </div>
+                    <div className="p-4 rounded-lg bg-green-900/20 border border-green-800">
+                      <div className="font-semibold text-green-300">MIXNET</div>
+                      <div className="text-xs text-green-400 mt-1">Message mixing</div>
+                      <Button size="sm" className="mt-2 w-full bg-green-600 hover:bg-green-700">
+                        JOIN MIXNET
+                      </Button>
+                    </div>
+                  </div>
+                  {anonymousCircuit && (
+                    <div className="p-3 bg-zinc-800 rounded-lg border border-cyan-700">
+                      <div className="text-xs text-cyan-400">Circuit Established: {anonymousCircuit.circuit_id}</div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              <Card className="bg-zinc-900 border-zinc-800">
+                <CardHeader>
+                  <CardTitle className="text-green-400">EXISTING CHANNELS</CardTitle>
+                  <CardDescription>Active secure communication channels</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Button className="mb-4 bg-green-600 hover:bg-green-700" onClick={fetchCommsStatus}>
+                    REFRESH CHANNELS
+                  </Button>
                   <div className="grid grid-cols-2 gap-4">
                     {(secureCommsStats?.channels?.length > 0 ? secureCommsStats.channels : [
                       { name: 'No channels', protocol: 'N/A', status: 'STANDBY', users: 0 }
@@ -5686,6 +7141,635 @@ MalwarePayload.execute();
                       </div>
                     )}
                   </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
+          {/* CRYPTOGRAPHY TAB */}
+          {!isLoading && activeTab === 'crypto' && (
+            <div className="space-y-6">
+              <div className="grid grid-cols-4 gap-4">
+                {[
+                  { label: 'Active Keys', value: cryptoStatus?.total_keys?.toString() || '0', color: 'text-green-400' },
+                  { label: 'Encrypted Files', value: cryptoStatus?.encrypted_files?.toString() || '0', color: 'text-cyan-400' },
+                  { label: 'Hash Operations', value: cryptoStatus?.hash_operations?.toLocaleString() || '0', color: 'text-purple-400' },
+                  { label: 'Quantum Ready', value: cryptoStatus?.quantum_ready ? 'YES' : 'NO', color: 'text-orange-400' },
+                ].map((stat, i) => (
+                  <Card key={i} className="bg-zinc-900 border-zinc-800">
+                    <CardContent className="p-4">
+                      <div className={`text-3xl font-bold ${stat.color}`}>{stat.value}</div>
+                      <div className="text-xs text-zinc-500">{stat.label}</div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+
+              <div className="grid grid-cols-2 gap-6">
+                <Card className="bg-zinc-900 border-zinc-800 border-green-900/30">
+                  <CardHeader>
+                    <CardTitle className="text-green-400">KEY GENERATION</CardTitle>
+                    <CardDescription>Generate cryptographic key pairs</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      <select className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm">
+                        <option value="rsa-4096">RSA-4096</option>
+                        <option value="ed25519">Ed25519</option>
+                        <option value="secp256k1">SECP256K1 (Bitcoin)</option>
+                        <option value="kyber">Kyber (Post-Quantum)</option>
+                        <option value="dilithium">Dilithium (Post-Quantum)</option>
+                      </select>
+                      <Input placeholder="Key Label/Name" className="bg-zinc-800 border-zinc-700" />
+                      <Button className="w-full bg-green-600 hover:bg-green-700" onClick={() => generateCryptoKeys({ algorithm: 'rsa-4096', label: 'New Key' })}>
+                        GENERATE KEYS
+                      </Button>
+                      {cryptoKeys && (
+                        <div className="p-3 bg-zinc-800 rounded-lg border border-green-700">
+                          <div className="text-xs text-green-400">Keys Generated: {cryptoKeys.key_id}</div>
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="bg-zinc-900 border-zinc-800 border-cyan-900/30">
+                  <CardHeader>
+                    <CardTitle className="text-cyan-400">ENCRYPTION</CardTitle>
+                    <CardDescription>Encrypt data with various algorithms</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      <select className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm">
+                        <option value="aes-256-gcm">AES-256-GCM</option>
+                        <option value="chacha20-poly1305">ChaCha20-Poly1305</option>
+                        <option value="aes-256-cbc">AES-256-CBC</option>
+                      </select>
+                      <Input placeholder="Data to encrypt..." className="bg-zinc-800 border-zinc-700" />
+                      <Button className="w-full bg-cyan-600 hover:bg-cyan-700" onClick={() => encryptData({ algorithm: 'aes-256-gcm', data: 'test' })}>
+                        ENCRYPT
+                      </Button>
+                      {encryptedData && (
+                        <div className="p-3 bg-zinc-800 rounded-lg border border-cyan-700">
+                          <div className="text-xs text-cyan-400 break-all">Encrypted: {encryptedData.ciphertext?.slice(0, 50)}...</div>
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              <Card className="bg-zinc-900 border-zinc-800 border-purple-900/30">
+                <CardHeader>
+                  <CardTitle className="text-purple-400">HASH COMPUTATION</CardTitle>
+                  <CardDescription>Compute cryptographic hashes</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-4 gap-4 mb-4">
+                    {['SHA-256', 'SHA-512', 'SHA3-256', 'BLAKE3'].map((algo, idx) => (
+                      <div key={idx} className="p-4 rounded-lg bg-purple-900/20 border border-purple-800">
+                        <div className="font-semibold text-purple-300">{algo}</div>
+                        <Button size="sm" className="mt-2 w-full bg-purple-600 hover:bg-purple-700" onClick={() => computeHash({ algorithm: algo.toLowerCase(), data: 'test' })}>
+                          COMPUTE
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                  {hashResult && (
+                    <div className="p-3 bg-zinc-800 rounded-lg border border-purple-700">
+                      <div className="text-xs text-purple-400 break-all">Hash: {hashResult.hash}</div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              <Card className="bg-zinc-900 border-zinc-800">
+                <CardHeader>
+                  <CardTitle className="text-green-400">CRYPTOGRAPHY STATUS</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <Button className="bg-green-600 hover:bg-green-700" onClick={fetchCryptoStatus}>
+                    FETCH STATUS
+                  </Button>
+                  {cryptoStatus && (
+                    <div className="mt-4 p-4 bg-zinc-800 rounded-lg">
+                      <pre className="text-xs text-zinc-300 overflow-auto">{JSON.stringify(cryptoStatus, null, 2)}</pre>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
+          {/* DARKWEB TAB */}
+          {!isLoading && activeTab === 'darkweb' && (
+            <div className="space-y-6">
+              <div className="grid grid-cols-4 gap-4">
+                {[
+                  { label: 'Onion Sites', value: darkwebStatus?.onion_sites?.toString() || '0', color: 'text-purple-400' },
+                  { label: 'Credentials Found', value: darkwebStatus?.credentials_found?.toString() || '0', color: 'text-red-400' },
+                  { label: 'Active Crawls', value: darkwebStatus?.active_crawls?.toString() || '0', color: 'text-cyan-400' },
+                  { label: 'Tor Circuits', value: darkwebStatus?.tor_circuits?.toString() || '0', color: 'text-green-400' },
+                ].map((stat, i) => (
+                  <Card key={i} className="bg-zinc-900 border-zinc-800">
+                    <CardContent className="p-4">
+                      <div className={`text-3xl font-bold ${stat.color}`}>{stat.value}</div>
+                      <div className="text-xs text-zinc-500">{stat.label}</div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+
+              <div className="grid grid-cols-2 gap-6">
+                <Card className="bg-zinc-900 border-zinc-800 border-purple-900/30">
+                  <CardHeader>
+                    <CardTitle className="text-purple-400">DARKWEB CRAWLER</CardTitle>
+                    <CardDescription>Crawl .onion sites for intelligence</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      <Input placeholder=".onion URL or keyword" className="bg-zinc-800 border-zinc-700" />
+                      <select className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm">
+                        <option value="marketplace">Marketplaces</option>
+                        <option value="forums">Forums</option>
+                        <option value="paste">Paste Sites</option>
+                        <option value="all">All Categories</option>
+                      </select>
+                      <Button className="w-full bg-purple-600 hover:bg-purple-700" onClick={() => crawlDarkweb({ target: 'marketplace', depth: 2 })}>
+                        START CRAWL
+                      </Button>
+                      {darkwebCrawlResults && (
+                        <div className="p-3 bg-zinc-800 rounded-lg border border-purple-700">
+                          <div className="text-xs text-purple-400">Crawl Started: {darkwebCrawlResults.crawl_id}</div>
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="bg-zinc-900 border-zinc-800 border-red-900/30">
+                  <CardHeader>
+                    <CardTitle className="text-red-400">CREDENTIAL MONITORING</CardTitle>
+                    <CardDescription>Monitor for leaked credentials</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      <Input placeholder="Domain to monitor (e.g., company.com)" className="bg-zinc-800 border-zinc-700" />
+                      <Input placeholder="Email pattern (e.g., *@company.com)" className="bg-zinc-800 border-zinc-700" />
+                      <Button className="w-full bg-red-600 hover:bg-red-700" onClick={() => monitorDarkwebCredentials({ domain: 'company.com' })}>
+                        START MONITORING
+                      </Button>
+                      {darkwebCredentials.length > 0 && (
+                        <div className="p-3 bg-zinc-800 rounded-lg border border-red-700 max-h-32 overflow-y-auto">
+                          {darkwebCredentials.map((cred: any, idx: number) => (
+                            <div key={idx} className="text-xs text-red-400">{cred.email}: {cred.source}</div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              <Card className="bg-zinc-900 border-zinc-800">
+                <CardHeader>
+                  <CardTitle className="text-purple-400">DARKWEB STATUS</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <Button className="bg-purple-600 hover:bg-purple-700" onClick={fetchDarkwebStatus}>
+                    FETCH STATUS
+                  </Button>
+                  {darkwebStatus && (
+                    <div className="mt-4 p-4 bg-zinc-800 rounded-lg">
+                      <pre className="text-xs text-zinc-300 overflow-auto">{JSON.stringify(darkwebStatus, null, 2)}</pre>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
+          {/* SCANNER TAB */}
+          {!isLoading && activeTab === 'scanner' && (
+            <div className="space-y-6">
+              <div className="grid grid-cols-4 gap-4">
+                {[
+                  { label: 'Hosts Scanned', value: scannerStatus?.hosts_scanned?.toString() || '0', color: 'text-cyan-400' },
+                  { label: 'Open Ports', value: scannerStatus?.open_ports?.toString() || '0', color: 'text-green-400' },
+                  { label: 'Vulnerabilities', value: scannerStatus?.vulnerabilities?.toString() || '0', color: 'text-red-400' },
+                  { label: 'Active Scans', value: scannerStatus?.active_scans?.toString() || '0', color: 'text-orange-400' },
+                ].map((stat, i) => (
+                  <Card key={i} className="bg-zinc-900 border-zinc-800">
+                    <CardContent className="p-4">
+                      <div className={`text-3xl font-bold ${stat.color}`}>{stat.value}</div>
+                      <div className="text-xs text-zinc-500">{stat.label}</div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+
+              <div className="grid grid-cols-2 gap-6">
+                <Card className="bg-zinc-900 border-zinc-800 border-cyan-900/30">
+                  <CardHeader>
+                    <CardTitle className="text-cyan-400">PORT SCANNER</CardTitle>
+                    <CardDescription>Scan network ports (Nmap-style)</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      <Input placeholder="Target IP/CIDR (e.g., 192.168.1.0/24)" className="bg-zinc-800 border-zinc-700" />
+                      <Input placeholder="Ports (e.g., 1-1000, 22,80,443)" className="bg-zinc-800 border-zinc-700" />
+                      <select className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm">
+                        <option value="syn">SYN Scan (Stealth)</option>
+                        <option value="connect">TCP Connect</option>
+                        <option value="udp">UDP Scan</option>
+                        <option value="service">Service Detection</option>
+                      </select>
+                      <Button className="w-full bg-cyan-600 hover:bg-cyan-700" onClick={() => scanPorts({ target: '192.168.1.1', ports: '1-1000' })}>
+                        START SCAN
+                      </Button>
+                      {portScanResults && (
+                        <div className="p-3 bg-zinc-800 rounded-lg border border-cyan-700 max-h-32 overflow-y-auto">
+                          <pre className="text-xs text-cyan-400">{JSON.stringify(portScanResults, null, 2)}</pre>
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="bg-zinc-900 border-zinc-800 border-green-900/30">
+                  <CardHeader>
+                    <CardTitle className="text-green-400">DNS SCANNER</CardTitle>
+                    <CardDescription>DNS enumeration and reconnaissance</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      <Input placeholder="Domain (e.g., example.com)" className="bg-zinc-800 border-zinc-700" />
+                      <div className="grid grid-cols-2 gap-2">
+                        {['A', 'AAAA', 'MX', 'NS', 'TXT', 'CNAME'].map((type) => (
+                          <Button key={type} size="sm" variant="outline" className="text-xs" onClick={() => scanDns({ domain: 'example.com', type })}>
+                            {type}
+                          </Button>
+                        ))}
+                      </div>
+                      <Button className="w-full bg-green-600 hover:bg-green-700" onClick={() => scanDns({ domain: 'example.com', type: 'ALL' })}>
+                        FULL DNS SCAN
+                      </Button>
+                      {dnsScanResults && (
+                        <div className="p-3 bg-zinc-800 rounded-lg border border-green-700 max-h-32 overflow-y-auto">
+                          <pre className="text-xs text-green-400">{JSON.stringify(dnsScanResults, null, 2)}</pre>
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              <div className="grid grid-cols-2 gap-6">
+                <Card className="bg-zinc-900 border-zinc-800 border-orange-900/30">
+                  <CardHeader>
+                    <CardTitle className="text-orange-400">SSL/TLS SCANNER</CardTitle>
+                    <CardDescription>Analyze SSL/TLS configuration</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      <Input placeholder="Host:Port (e.g., example.com:443)" className="bg-zinc-800 border-zinc-700" />
+                      <Button className="w-full bg-orange-600 hover:bg-orange-700" onClick={() => scanSsl({ host: 'example.com', port: 443 })}>
+                        ANALYZE SSL
+                      </Button>
+                      {sslScanResults && (
+                        <div className="p-3 bg-zinc-800 rounded-lg border border-orange-700">
+                          <div className="text-xs text-orange-400">Certificate: {sslScanResults.certificate?.subject}</div>
+                          <div className="text-xs text-zinc-400">Expires: {sslScanResults.certificate?.expires}</div>
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="bg-zinc-900 border-zinc-800 border-red-900/30">
+                  <CardHeader>
+                    <CardTitle className="text-red-400">VULNERABILITY SCANNER</CardTitle>
+                    <CardDescription>Scan for known vulnerabilities</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      <Input placeholder="Target IP/Host" className="bg-zinc-800 border-zinc-700" />
+                      <select className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm">
+                        <option value="quick">Quick Scan</option>
+                        <option value="full">Full Scan</option>
+                        <option value="web">Web Application</option>
+                        <option value="network">Network Services</option>
+                      </select>
+                      <Button className="w-full bg-red-600 hover:bg-red-700" onClick={() => scanVulnerabilities({ target: '192.168.1.1', type: 'full' })}>
+                        SCAN VULNERABILITIES
+                      </Button>
+                      {vulnScanResults && (
+                        <div className="p-3 bg-zinc-800 rounded-lg border border-red-700 max-h-32 overflow-y-auto">
+                          <div className="text-xs text-red-400">Found: {vulnScanResults.vulnerabilities?.length || 0} vulnerabilities</div>
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          )}
+
+          {/* SIEM ADVANCED TAB */}
+          {!isLoading && activeTab === 'siem' && (
+            <div className="space-y-6">
+              <div className="grid grid-cols-4 gap-4">
+                {[
+                  { label: 'Log Sources', value: siemAdvStatus?.log_sources?.toString() || '0', color: 'text-cyan-400' },
+                  { label: 'Events/Day', value: siemAdvStatus?.events_per_day?.toLocaleString() || '0', color: 'text-green-400' },
+                  { label: 'Active Alerts', value: siemAdvStatus?.active_alerts?.toString() || '0', color: 'text-red-400' },
+                  { label: 'Correlations', value: siemAdvStatus?.correlations?.toString() || '0', color: 'text-purple-400' },
+                ].map((stat, i) => (
+                  <Card key={i} className="bg-zinc-900 border-zinc-800">
+                    <CardContent className="p-4">
+                      <div className={`text-3xl font-bold ${stat.color}`}>{stat.value}</div>
+                      <div className="text-xs text-zinc-500">{stat.label}</div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+
+              <div className="grid grid-cols-2 gap-6">
+                <Card className="bg-zinc-900 border-zinc-800 border-cyan-900/30">
+                  <CardHeader>
+                    <CardTitle className="text-cyan-400">LOG SOURCES</CardTitle>
+                    <CardDescription>Manage SIEM log sources</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <Button className="w-full mb-4 bg-cyan-600 hover:bg-cyan-700" onClick={fetchSiemLogSources}>
+                      LOAD LOG SOURCES
+                    </Button>
+                    <div className="max-h-48 overflow-y-auto space-y-2">
+                      {(siemLogSources.length > 0 ? siemLogSources : [
+                        { name: 'Firewall Logs', type: 'syslog', status: 'ACTIVE' },
+                        { name: 'Windows Events', type: 'wef', status: 'ACTIVE' },
+                        { name: 'Linux Audit', type: 'auditd', status: 'ACTIVE' }
+                      ]).map((source: any, idx: number) => (
+                        <div key={idx} className="p-2 bg-zinc-800 rounded border border-cyan-800/50">
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm text-cyan-300">{source.name}</span>
+                            <Badge variant="outline" className="text-xs">{source.status}</Badge>
+                          </div>
+                          <div className="text-xs text-zinc-400">Type: {source.type}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="bg-zinc-900 border-zinc-800 border-red-900/30">
+                  <CardHeader>
+                    <CardTitle className="text-red-400">ALERTS</CardTitle>
+                    <CardDescription>Active SIEM alerts</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <Button className="w-full mb-4 bg-red-600 hover:bg-red-700" onClick={fetchSiemAdvAlerts}>
+                      LOAD ALERTS
+                    </Button>
+                    <div className="max-h-48 overflow-y-auto space-y-2">
+                      {(siemAdvAlerts.length > 0 ? siemAdvAlerts : [
+                        { title: 'Brute Force Detected', severity: 'HIGH', time: '2 min ago' },
+                        { title: 'Suspicious Login', severity: 'MEDIUM', time: '15 min ago' }
+                      ]).map((alert: any, idx: number) => (
+                        <div key={idx} className="p-2 bg-zinc-800 rounded border border-red-800/50">
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm text-red-300">{alert.title}</span>
+                            <Badge className={alert.severity === 'HIGH' ? 'bg-red-600' : 'bg-yellow-600'}>{alert.severity}</Badge>
+                          </div>
+                          <div className="text-xs text-zinc-400">{alert.time}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              <Card className="bg-zinc-900 border-zinc-800 border-purple-900/30">
+                <CardHeader>
+                  <CardTitle className="text-purple-400">CORRELATION ENGINE</CardTitle>
+                  <CardDescription>Execute correlation rules</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-3 gap-4 mb-4">
+                    <Input placeholder="Rule Name" className="bg-zinc-800 border-zinc-700" />
+                    <Input placeholder="Time Window (minutes)" className="bg-zinc-800 border-zinc-700" />
+                    <Button className="bg-purple-600 hover:bg-purple-700" onClick={() => executeSiemCorrelation({ rule: 'brute_force', window: 5 })}>
+                      EXECUTE
+                    </Button>
+                  </div>
+                  {siemCorrelationResults && (
+                    <div className="p-3 bg-zinc-800 rounded-lg border border-purple-700">
+                      <pre className="text-xs text-purple-400 overflow-auto">{JSON.stringify(siemCorrelationResults, null, 2)}</pre>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              <Card className="bg-zinc-900 border-zinc-800">
+                <CardHeader>
+                  <CardTitle className="text-cyan-400">SIEM ADVANCED STATUS</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <Button className="bg-cyan-600 hover:bg-cyan-700" onClick={fetchSiemAdvStatus}>
+                    FETCH STATUS
+                  </Button>
+                  {siemAdvStatus && (
+                    <div className="mt-4 p-4 bg-zinc-800 rounded-lg">
+                      <pre className="text-xs text-zinc-300 overflow-auto">{JSON.stringify(siemAdvStatus, null, 2)}</pre>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
+          {/* DETECTION ADVANCED TAB */}
+          {!isLoading && activeTab === 'detection' && (
+            <div className="space-y-6">
+              <div className="grid grid-cols-4 gap-4">
+                {[
+                  { label: 'Detection Rules', value: detectionAdvStatus?.rules?.toString() || '0', color: 'text-cyan-400' },
+                  { label: 'Anomalies Found', value: detectionAdvStatus?.anomalies?.toString() || '0', color: 'text-orange-400' },
+                  { label: 'APT Indicators', value: detectionAdvStatus?.apt_indicators?.toString() || '0', color: 'text-red-400' },
+                  { label: 'ML Models', value: detectionAdvStatus?.ml_models?.toString() || '0', color: 'text-purple-400' },
+                ].map((stat, i) => (
+                  <Card key={i} className="bg-zinc-900 border-zinc-800">
+                    <CardContent className="p-4">
+                      <div className={`text-3xl font-bold ${stat.color}`}>{stat.value}</div>
+                      <div className="text-xs text-zinc-500">{stat.label}</div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+
+              <div className="grid grid-cols-2 gap-6">
+                <Card className="bg-zinc-900 border-zinc-800 border-orange-900/30">
+                  <CardHeader>
+                    <CardTitle className="text-orange-400">ANOMALY DETECTION</CardTitle>
+                    <CardDescription>ML-based anomaly detection</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      <select className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm">
+                        <option value="network">Network Traffic</option>
+                        <option value="user">User Behavior</option>
+                        <option value="process">Process Activity</option>
+                        <option value="file">File Access</option>
+                      </select>
+                      <Input placeholder="Time Range (hours)" className="bg-zinc-800 border-zinc-700" />
+                      <Button className="w-full bg-orange-600 hover:bg-orange-700" onClick={() => detectAnomalies({ type: 'network', hours: 24 })}>
+                        DETECT ANOMALIES
+                      </Button>
+                      {anomalyResults && (
+                        <div className="p-3 bg-zinc-800 rounded-lg border border-orange-700">
+                          <div className="text-xs text-orange-400">Found: {anomalyResults.anomalies?.length || 0} anomalies</div>
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="bg-zinc-900 border-zinc-800 border-red-900/30">
+                  <CardHeader>
+                    <CardTitle className="text-red-400">APT ANALYSIS</CardTitle>
+                    <CardDescription>Advanced Persistent Threat detection</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      <Input placeholder="IOC Hash/IP/Domain" className="bg-zinc-800 border-zinc-700" />
+                      <select className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm">
+                        <option value="all">All APT Groups</option>
+                        <option value="apt29">APT29 (Cozy Bear)</option>
+                        <option value="apt28">APT28 (Fancy Bear)</option>
+                        <option value="lazarus">Lazarus Group</option>
+                      </select>
+                      <Button className="w-full bg-red-600 hover:bg-red-700" onClick={() => analyzeApt({ ioc: 'test', group: 'all' })}>
+                        ANALYZE APT
+                      </Button>
+                      {aptAnalysisResults && (
+                        <div className="p-3 bg-zinc-800 rounded-lg border border-red-700">
+                          <div className="text-xs text-red-400">Match: {aptAnalysisResults.match ? 'YES' : 'NO'}</div>
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              <Card className="bg-zinc-900 border-zinc-800">
+                <CardHeader>
+                  <CardTitle className="text-cyan-400">DETECTION ADVANCED STATUS</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <Button className="bg-cyan-600 hover:bg-cyan-700" onClick={fetchDetectionAdvStatus}>
+                    FETCH STATUS
+                  </Button>
+                  {detectionAdvStatus && (
+                    <div className="mt-4 p-4 bg-zinc-800 rounded-lg">
+                      <pre className="text-xs text-zinc-300 overflow-auto">{JSON.stringify(detectionAdvStatus, null, 2)}</pre>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
+          {/* DEFENSE ADVANCED TAB */}
+          {!isLoading && activeTab === 'defense' && (
+            <div className="space-y-6">
+              <div className="grid grid-cols-4 gap-4">
+                {[
+                  { label: 'Firewall Rules', value: defenseAdvStatus?.firewall_rules?.toString() || '0', color: 'text-green-400' },
+                  { label: 'Threats Blocked', value: defenseAdvStatus?.threats_blocked?.toString() || '0', color: 'text-red-400' },
+                  { label: 'Active Defenses', value: defenseAdvStatus?.active_defenses?.toString() || '0', color: 'text-cyan-400' },
+                  { label: 'Quarantined', value: defenseAdvStatus?.quarantined?.toString() || '0', color: 'text-orange-400' },
+                ].map((stat, i) => (
+                  <Card key={i} className="bg-zinc-900 border-zinc-800">
+                    <CardContent className="p-4">
+                      <div className={`text-3xl font-bold ${stat.color}`}>{stat.value}</div>
+                      <div className="text-xs text-zinc-500">{stat.label}</div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+
+              <div className="grid grid-cols-2 gap-6">
+                <Card className="bg-zinc-900 border-zinc-800 border-green-900/30">
+                  <CardHeader>
+                    <CardTitle className="text-green-400">FIREWALL MANAGEMENT</CardTitle>
+                    <CardDescription>Add and manage firewall rules</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      <div className="grid grid-cols-2 gap-2">
+                        <Input placeholder="Source IP/CIDR" className="bg-zinc-800 border-zinc-700" />
+                        <Input placeholder="Destination IP/CIDR" className="bg-zinc-800 border-zinc-700" />
+                      </div>
+                      <div className="grid grid-cols-2 gap-2">
+                        <Input placeholder="Port(s)" className="bg-zinc-800 border-zinc-700" />
+                        <select className="bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm">
+                          <option value="block">BLOCK</option>
+                          <option value="allow">ALLOW</option>
+                          <option value="log">LOG</option>
+                        </select>
+                      </div>
+                      <Button className="w-full bg-green-600 hover:bg-green-700" onClick={() => addFirewallRule({ source: '0.0.0.0/0', dest: '10.0.0.0/8', action: 'block' })}>
+                        ADD RULE
+                      </Button>
+                      {firewallRuleResult && (
+                        <div className="p-3 bg-zinc-800 rounded-lg border border-green-700">
+                          <div className="text-xs text-green-400">Rule Added: {firewallRuleResult.rule_id}</div>
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="bg-zinc-900 border-zinc-800 border-red-900/30">
+                  <CardHeader>
+                    <CardTitle className="text-red-400">THREAT NEUTRALIZATION</CardTitle>
+                    <CardDescription>Neutralize active threats</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      <Input placeholder="Threat ID or IP" className="bg-zinc-800 border-zinc-700" />
+                      <select className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm">
+                        <option value="isolate">Isolate Host</option>
+                        <option value="block">Block IP</option>
+                        <option value="quarantine">Quarantine File</option>
+                        <option value="kill">Kill Process</option>
+                      </select>
+                      <Button className="w-full bg-red-600 hover:bg-red-700" onClick={() => neutralizeThreat({ threat_id: 'test', action: 'isolate' })}>
+                        NEUTRALIZE
+                      </Button>
+                      {threatNeutralizationResult && (
+                        <div className="p-3 bg-zinc-800 rounded-lg border border-red-700">
+                          <div className="text-xs text-red-400">Status: {threatNeutralizationResult.status}</div>
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              <Card className="bg-zinc-900 border-zinc-800">
+                <CardHeader>
+                  <CardTitle className="text-green-400">DEFENSE ADVANCED STATUS</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <Button className="bg-green-600 hover:bg-green-700" onClick={fetchDefenseAdvStatus}>
+                    FETCH STATUS
+                  </Button>
+                  {defenseAdvStatus && (
+                    <div className="mt-4 p-4 bg-zinc-800 rounded-lg">
+                      <pre className="text-xs text-zinc-300 overflow-auto">{JSON.stringify(defenseAdvStatus, null, 2)}</pre>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </div>

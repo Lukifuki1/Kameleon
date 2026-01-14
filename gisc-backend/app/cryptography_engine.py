@@ -518,7 +518,7 @@ class QuantumSafeCrypto:
                 base64.b64encode(private_key).decode()
             )
         except ImportError:
-            raise NotImplementedError(
+            raise RuntimeError(
                 "Post-quantum cryptography requires liboqs-python. "
                 "Install with: pip install liboqs-python"
             )
@@ -539,7 +539,7 @@ class QuantumSafeCrypto:
                 base64.b64encode(private_key).decode()
             )
         except ImportError:
-            raise NotImplementedError(
+            raise RuntimeError(
                 "Post-quantum cryptography requires liboqs-python. "
                 "Install with: pip install liboqs-python"
             )
@@ -560,7 +560,7 @@ class QuantumSafeCrypto:
                 base64.b64encode(shared_secret).decode()
             )
         except ImportError:
-            raise NotImplementedError(
+            raise RuntimeError(
                 "Post-quantum cryptography requires liboqs-python. "
                 "Install with: pip install liboqs-python"
             )
@@ -578,7 +578,7 @@ class QuantumSafeCrypto:
             signature = sig.sign(message)
             return base64.b64encode(signature).decode()
         except ImportError:
-            raise NotImplementedError(
+            raise RuntimeError(
                 "Post-quantum cryptography requires liboqs-python. "
                 "Install with: pip install liboqs-python"
             )

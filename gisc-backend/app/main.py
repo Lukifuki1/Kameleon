@@ -2285,7 +2285,7 @@ async def get_darkweb_status():
     """Get dark web intelligence status"""
     if not DARKWEB_AVAILABLE:
         return {"error": "Dark web module not available"}
-    return darkweb_engine.get_darkweb_status()
+    return darkweb_engine.get_network_status()
 
 
 @app.post("/api/v1/darkweb/crawl")
@@ -2505,7 +2505,7 @@ async def get_detection_adv_status():
     """Get advanced detection status"""
     if not DETECTION_AVAILABLE:
         return {"error": "Detection module not available"}
-    return detection_engine.get_detection_status()
+    return detection_engine.get_detection_summary()
 
 
 @app.post("/api/v1/detection-adv/apt/analyze")

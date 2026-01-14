@@ -11,7 +11,7 @@ This module implements:
 - Automated Profiling (data aggregation and analysis)
 - Internet-wide Search (surface web, deep web, dark web)
 
-All implementations use real API calls and web scraping - no fake/simulated data.
+All implementations use real API calls and web scraping for production deployment.
 
 Classification: TOP SECRET // NSOC // TIER-0
 """
@@ -2010,37 +2010,7 @@ class OnlineCameraSearchEngine:
                 except requests.RequestException as e:
                     logger.warning(f"Shodan API request failed: {e}")
             else:
-                logger.info("Shodan API key not configured, using simulated camera discovery")
-                base_cameras = [
-                    {"ip": "192.168.1.100", "port": 554, "type": "hikvision", "city": location or "Unknown"},
-                    {"ip": "192.168.1.101", "port": 8080, "type": "dahua", "city": location or "Unknown"},
-                    {"ip": "192.168.1.102", "port": 80, "type": "axis", "city": location or "Unknown"},
-                    {"ip": "10.0.0.50", "port": 554, "type": "foscam", "city": location or "Unknown"},
-                    {"ip": "10.0.0.51", "port": 8554, "type": "vivotek", "city": location or "Unknown"},
-                ]
-                
-                for idx, cam in enumerate(base_cameras):
-                    camera = {
-                        "camera_id": f"CAM-{secrets.token_hex(4).upper()}",
-                        "ip_address": cam["ip"],
-                        "port": cam["port"],
-                        "location": {
-                            "country": country or "Unknown",
-                            "city": cam["city"],
-                            "latitude": None,
-                            "longitude": None
-                        },
-                        "organization": "Local Network",
-                        "product": cam["type"],
-                        "os": None,
-                        "hostnames": [],
-                        "source": "local_discovery",
-                        "discovered_at": datetime.utcnow().isoformat(),
-                        "stream_url": f"rtsp://{cam['ip']}:{cam['port']}/stream",
-                        "snapshot_url": f"http://{cam['ip']}:{cam['port']}/snapshot.jpg",
-                        "status": "discovered"
-                    }
-                    cameras.append(camera)
+                logger.error("Shodan API key not configured - camera discovery requires valid API credentials")
                     
         except ImportError:
             logger.error("requests library not available for Shodan search")
@@ -3167,19 +3137,24 @@ class PersonIntelligenceEngine:
             "timestamp": datetime.utcnow().isoformat()
         }
     
-    def search_by_face(self, image_data: bytes) -> Dict[str, Any]:
-        """Search for person by facial image"""
-        # Search in local database
+    def search_by_face(self, image_data: bytes, image_url: str = None) -> Dict[str, Any]:
+        """Search for person by facial image
+        
+        Args:
+            image_data: Raw image bytes for local database search
+            image_url: Optional URL of the image for web-based reverse image search
+        """
         local_matches = self.image_search.search_by_image(image_data)
         
-        # Get web search URLs
-        # Note: Would need actual image URL for web search
-        web_search_engines = self.image_search.reverse_image_search_web("placeholder_url")
+        web_search_engines = {}
+        if image_url:
+            web_search_engines = self.image_search.reverse_image_search_web(image_url)
         
         return {
             "timestamp": datetime.utcnow().isoformat(),
             "local_matches": local_matches,
             "web_search_engines": web_search_engines,
+            "web_search_available": bool(image_url),
             "total_local_matches": len(local_matches)
         }
     

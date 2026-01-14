@@ -987,6 +987,43 @@ class RedTeamOperationsEngine:
         self.engagements.append(engagement)
         return engagement
     
+    def get_redteam_status(self) -> Dict[str, Any]:
+        """Get red team operations status"""
+        return {
+            "status": "OPERATIONAL",
+            "timestamp": datetime.utcnow().isoformat(),
+            "components": {
+                "recon_engine": {
+                    "status": "active",
+                    "capabilities": ["passive_osint", "subdomain_discovery", "whois_lookup", "dns_enumeration"]
+                },
+                "scanning_engine": {
+                    "status": "active",
+                    "capabilities": ["port_scan", "service_scan", "os_fingerprint"]
+                },
+                "exploitation_engine": {
+                    "status": "active",
+                    "exploits_loaded": len(self.exploitation.exploits_db)
+                },
+                "post_exploitation_engine": {
+                    "status": "active",
+                    "capabilities": ["enumerate_system", "credential_dump", "lateral_movement"]
+                },
+                "c2_engine": {
+                    "status": "active",
+                    "channels_count": len(self.c2.channels)
+                }
+            },
+            "engagements_count": len(self.engagements),
+            "capabilities": [
+                "Reconnaissance",
+                "Scanning",
+                "Exploitation",
+                "Post-Exploitation",
+                "Command and Control"
+            ]
+        }
+
     def get_mitre_mapping(self, technique_id: str) -> Dict[str, Any]:
         """Get MITRE ATT&CK mapping for technique"""
         mitre_db = {

@@ -345,7 +345,7 @@ class DeepfakeDetectionEngine:
         return analysis
     
     def analyze_video(self, video_path: str) -> Dict[str, Any]:
-        """Analyze video for deepfake indicators"""
+        """Analyze video for deepfake indicators using frame-by-frame analysis"""
         analysis = {
             "timestamp": datetime.utcnow().isoformat(),
             "video_path": video_path,
@@ -356,8 +356,73 @@ class DeepfakeDetectionEngine:
             "audio_analysis": {}
         }
         
-        # Would integrate with actual deepfake detection models
-        # For now, return structured analysis
+        try:
+            import cv2
+            cap = cv2.VideoCapture(video_path)
+            if not cap.isOpened():
+                analysis["error"] = "Unable to open video file"
+                return analysis
+            
+            frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+            fps = cap.get(cv2.CAP_PROP_FPS)
+            analysis["metadata"] = {
+                "frame_count": frame_count,
+                "fps": fps,
+                "duration_seconds": frame_count / fps if fps > 0 else 0
+            }
+            
+            sample_interval = max(1, frame_count // 10)
+            frame_idx = 0
+            entropy_values = []
+            
+            while True:
+                ret, frame = cap.read()
+                if not ret:
+                    break
+                
+                if frame_idx % sample_interval == 0:
+                    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+                    frame_bytes = gray.tobytes()
+                    entropy = self._calculate_entropy(frame_bytes)
+                    entropy_values.append(entropy)
+                    
+                    analysis["frame_analysis"].append({
+                        "frame_index": frame_idx,
+                        "entropy": entropy,
+                        "timestamp": frame_idx / fps if fps > 0 else 0
+                    })
+                
+                frame_idx += 1
+            
+            cap.release()
+            
+            if entropy_values:
+                avg_entropy = sum(entropy_values) / len(entropy_values)
+                entropy_variance = sum((e - avg_entropy) ** 2 for e in entropy_values) / len(entropy_values)
+                
+                if entropy_variance > 0.5:
+                    analysis["indicators"].append({
+                        "type": "entropy_inconsistency",
+                        "description": "High entropy variance across frames may indicate manipulation",
+                        "severity": "MEDIUM"
+                    })
+                    analysis["confidence"] += 0.3
+                
+                if avg_entropy > 7.5:
+                    analysis["indicators"].append({
+                        "type": "high_entropy",
+                        "description": "Unusually high average entropy may indicate synthetic content",
+                        "severity": "MEDIUM"
+                    })
+                    analysis["confidence"] += 0.2
+            
+            analysis["is_deepfake"] = analysis["confidence"] >= 0.5
+            analysis["methods_used"] = ["frame_entropy_analysis", "temporal_consistency_check"]
+            
+        except ImportError:
+            analysis["error"] = "OpenCV library required for video analysis - install with: pip install opencv-python"
+        except Exception as e:
+            analysis["error"] = f"Video analysis failed: {str(e)}"
         
         return analysis
     

@@ -996,6 +996,42 @@ class BlueTeamOperationsEngine:
         
         return analysis
     
+    def get_blueteam_status(self) -> Dict[str, Any]:
+        """Get blue team operations status"""
+        return {
+            "status": "OPERATIONAL",
+            "timestamp": datetime.utcnow().isoformat(),
+            "components": {
+                "ioc_manager": {
+                    "status": "active",
+                    "ioc_count": len(self.ioc_manager.iocs)
+                },
+                "yara_engine": {
+                    "status": "active",
+                    "rules_count": len(self.yara_engine.rules)
+                },
+                "sigma_engine": {
+                    "status": "active",
+                    "rules_count": len(self.sigma_engine.rules)
+                },
+                "hunting_engine": {
+                    "status": "active",
+                    "playbooks_count": len(self.hunting_engine.hunting_playbooks)
+                },
+                "ir_engine": {
+                    "status": "active",
+                    "incidents_count": len(self.ir_engine.incidents)
+                }
+            },
+            "capabilities": [
+                "IOC Management",
+                "YARA Rule Matching",
+                "Sigma Rule Detection",
+                "Threat Hunting",
+                "Incident Response"
+            ]
+        }
+
     def get_mitre_mapping(self, technique_id: str) -> Dict[str, Any]:
         """Get MITRE ATT&CK mapping"""
         mitre_db = {

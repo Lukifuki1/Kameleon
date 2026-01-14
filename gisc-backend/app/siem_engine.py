@@ -971,6 +971,41 @@ class SIEMEngine:
         self.cases[case.case_id] = case
         return case
     
+    def get_siem_status(self) -> Dict[str, Any]:
+        """Get SIEM engine status"""
+        return {
+            "status": "OPERATIONAL",
+            "timestamp": datetime.utcnow().isoformat(),
+            "components": {
+                "log_normalizer": {
+                    "status": "active",
+                    "formats_supported": len(self.normalizer.parsers)
+                },
+                "correlation_engine": {
+                    "status": "active",
+                    "rules_count": len(self.correlation.rules)
+                },
+                "alert_manager": {
+                    "status": "active",
+                    "alerts_count": len(self.alert_manager.alerts)
+                },
+                "mitre_mapper": {
+                    "status": "active",
+                    "techniques_count": len(self.mitre_mapper.techniques)
+                }
+            },
+            "log_sources_count": len(self.log_sources),
+            "events_count": len(self.events),
+            "cases_count": len(self.cases),
+            "capabilities": [
+                "Log Normalization",
+                "Event Correlation",
+                "Alert Management",
+                "MITRE ATT&CK Mapping",
+                "SOC Case Management"
+            ]
+        }
+
     def get_dashboard_stats(self) -> Dict[str, Any]:
         """Get SOC dashboard statistics"""
         alerts = list(self.alert_manager.alerts.values())
