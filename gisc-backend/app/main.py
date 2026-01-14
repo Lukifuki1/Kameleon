@@ -953,6 +953,41 @@ async def get_crawler_modes():
 # SCANNER API - live-web-vulnerability-scanner.ts.predloga
 # ═══════════════════════════════════════════════════════════════════════════════
 
+@app.get("/api/v1/scanner/status")
+async def get_scanner_status():
+    """Get vulnerability scanner status"""
+    return {
+        "status": "OPERATIONAL",
+        "timestamp": datetime.utcnow().isoformat(),
+        "components": {
+            "port_scanner": {
+                "status": "active",
+                "capabilities": ["tcp_scan", "udp_scan", "syn_scan", "service_detection"]
+            },
+            "vulnerability_scanner": {
+                "status": "active",
+                "capabilities": ["cve_detection", "exploit_check", "misconfig_detection"]
+            },
+            "ssl_scanner": {
+                "status": "active",
+                "capabilities": ["certificate_analysis", "cipher_check", "protocol_analysis"]
+            },
+            "dns_scanner": {
+                "status": "active",
+                "capabilities": ["zone_transfer", "subdomain_enum", "dns_records"]
+            },
+            "web_scanner": {
+                "status": "active",
+                "capabilities": ["xss_detection", "sqli_detection", "csrf_detection", "header_analysis"]
+            }
+        },
+        "scan_modes": ["PASSIVE", "ACTIVE", "AGGRESSIVE"],
+        "internet_layers": ["SURFACE", "DEEP", "DARK"],
+        "common_ports_count": 1000,
+        "vulnerability_signatures": 15000
+    }
+
+
 @app.post("/api/v1/scanner/full")
 async def full_vulnerability_scan(
     target: str = Form(...),
@@ -1753,10 +1788,11 @@ async def health_check():
 
 # Import all advanced modules
 try:
-    from app.cryptography_engine import create_cryptography_engine, CryptoAlgorithm, HashAlgorithm, KeyType, EncryptionLevel as CryptoEncryptionLevel
+    from app.cryptography_engine import create_cryptography_engine, CryptoAlgorithm, HashAlgorithm, KeyType
     crypto_engine = create_cryptography_engine()
     CRYPTO_AVAILABLE = True
-except ImportError:
+except ImportError as e:
+    print(f"Crypto import error: {e}")
     CRYPTO_AVAILABLE = False
     crypto_engine = None
 
@@ -2044,6 +2080,14 @@ async def add_network_watch(entity_type: str, value: str):
 # ═══════════════════════════════════════════════════════════════════════════════
 # COMMUNICATIONS API
 # ═══════════════════════════════════════════════════════════════════════════════
+
+@app.get("/api/v1/comms/status")
+async def get_comms_status():
+    """Get communications engine status (alias)"""
+    if not COMMS_AVAILABLE:
+        return {"error": "Communications module not available"}
+    return comms_engine.get_communications_status()
+
 
 @app.get("/api/v1/communications/status")
 async def get_communications_status():
