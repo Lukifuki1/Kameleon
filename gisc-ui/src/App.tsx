@@ -318,6 +318,7 @@ function App() {
     // Cryptography state
     const [cryptoStatus, setCryptoStatus] = useState<any>(null);
     const [cryptoKeys, setCryptoKeys] = useState<any[]>([]);
+    const [cryptoKeyGenResult, setCryptoKeyGenResult] = useState<any>(null);
     const [cryptoQuantumReadiness, setCryptoQuantumReadiness] = useState<any>(null);
     const [cryptoEncryptInput, setCryptoEncryptInput] = useState({ data: '', algorithm: 'AES-256' });
     const [cryptoHashInput, setCryptoHashInput] = useState('');
@@ -1626,11 +1627,11 @@ function App() {
       } catch (err) { console.error('Error:', err); }
     }, []);
 
-    const createRedteamEngagement = async () => {
+    const createRedteamEngagement = async (params?: { name: string; scope: string; target: string }) => {
       try {
         const response = await fetch(`${API_URL}/api/v1/redteam-adv/engagement/create`, {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(engagementInput)
+          body: JSON.stringify(params || engagementInput)
         });
         if (response.ok) { setRedteamEngagement(await response.json()); setEngagementInput({ name: '', target: '', scope: '' }); }
       } catch (err) { console.error('Error:', err); }
@@ -1763,11 +1764,12 @@ function App() {
       } catch (err) { console.error('Error:', err); }
     }, []);
 
-    const executeSiemCorrelation = async (events: any[]) => {
+    const executeSiemCorrelation = async (params: any[] | { rule: string; window: number }) => {
       try {
+        const body = Array.isArray(params) ? { events: params } : params;
         const response = await fetch(`${API_URL}/api/v1/siem/correlate`, {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ events })
+          body: JSON.stringify(body)
         });
         if (response.ok) setSiemCorrelation(await response.json());
       } catch (err) { console.error('Error:', err); }
@@ -1819,13 +1821,18 @@ function App() {
       } catch (err) { console.error('Error:', err); }
     };
 
-    const neutralizeThreat = async (threatId: string) => {
+    const neutralizeThreat = async (params: string | { threat_id: string; action: string }) => {
       try {
+        const body = typeof params === 'string' ? { threat_id: params } : params;
         const response = await fetch(`${API_URL}/api/v1/defense-adv/threat/neutralize`, {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ threat_id: threatId })
+          body: JSON.stringify(body)
         });
-        if (response.ok) return await response.json();
+        if (response.ok) {
+          const result = await response.json();
+          setThreatNeutralizationResult(result);
+          return result;
+        }
       } catch (err) { console.error('Error:', err); }
     };
 
@@ -1837,13 +1844,18 @@ function App() {
       } catch (err) { console.error('Error:', err); }
     }, []);
 
-    const createCommsChannel = async () => {
+    const createCommsChannel = async (params?: { name: string; encryption: string }) => {
       try {
         const response = await fetch(`${API_URL}/api/v1/communications/channel/create`, {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(newChannelInput)
+          body: JSON.stringify(params || newChannelInput)
         });
-        if (response.ok) { setNewChannelInput({ name: '', encryption: 'AES-256' }); fetchCommsStatus(); }
+        if (response.ok) { 
+          const result = await response.json();
+          setCommsChannel(result);
+          setNewChannelInput({ name: '', encryption: 'AES-256' }); 
+          fetchCommsStatus(); 
+        }
       } catch (err) { console.error('Error:', err); }
     };
 
@@ -1882,23 +1894,32 @@ function App() {
       } catch (err) { console.error('Error:', err); }
     }, []);
 
-    const generateCryptoKeys = async (algorithm: string) => {
+    const generateCryptoKeys = async (params: string | { algorithm: string; label: string }) => {
       try {
+        const algorithm = typeof params === 'string' ? params : params.algorithm;
         const response = await fetch(`${API_URL}/api/v1/crypto/keys/generate`, {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ algorithm })
         });
-        if (response.ok) { fetchCryptoStatus(); }
+        if (response.ok) { 
+          const result = await response.json();
+          setCryptoKeyGenResult(result);
+          fetchCryptoStatus(); 
+        }
       } catch (err) { console.error('Error:', err); }
     };
 
-    const encryptData = async () => {
+    const encryptData = async (params?: { algorithm: string; data: string }) => {
       try {
         const response = await fetch(`${API_URL}/api/v1/crypto/encrypt`, {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(cryptoEncryptInput)
+          body: JSON.stringify(params || cryptoEncryptInput)
         });
-        if (response.ok) return await response.json();
+        if (response.ok) {
+          const result = await response.json();
+          setEncryptedData(result);
+          return result;
+        }
       } catch (err) { console.error('Error:', err); }
     };
 
@@ -1927,13 +1948,18 @@ function App() {
       } catch (err) { console.error('Error:', err); }
     }, []);
 
-    const crawlDarkweb = async (target: string) => {
+    const crawlDarkweb = async (params?: string | { target: string; depth: number }) => {
       try {
+        const target = typeof params === 'string' ? params : params?.target || darkwebCrawlTarget;
+        const depth = typeof params === 'object' ? params.depth : 3;
         const response = await fetch(`${API_URL}/api/v1/darkweb/crawl`, {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ target })
+          body: JSON.stringify({ target, depth })
         });
-        if (response.ok) setDarkwebCrawlResults(await response.json());
+        if (response.ok) {
+          const results = await response.json();
+          setDarkwebCrawlResults(Array.isArray(results) ? results : [results]);
+        }
       } catch (err) { console.error('Error:', err); }
     };
 
@@ -5140,14 +5166,14 @@ function App() {
                                   
                                   // Calculate animation delay based on actual timestamp
                                   const now = Date.now();
-                                  const getAnimationDelay = (threat: any) => {
+                                  const getAnimationDelay = (threat: any, index: number) => {
                                     try {
                                       const threatTime = new Date(threat.timestamp).getTime();
                                       // Stagger based on actual time difference (mod 10 seconds for variety)
                                       return ((now - threatTime) % 10000) / 1000;
                                     } catch {
                                       // Deterministic fallback based on index
-                                      return (i % 10) * 0.3;
+                                      return (index % 10) * 0.3;
                                     }
                                   };
                                   
@@ -5162,7 +5188,7 @@ function App() {
                                     
                                     const isActive = threat.status === 'active' || threat.status === 'investigating';
                                     const isSelected = selectedAttack?.threat_id === threat.threat_id;
-                                    const animDelay = getAnimationDelay(threat);
+                                    const animDelay = getAnimationDelay(threat, i);
                                     
                                     // Color based on threat severity
                                     const threatColor = threat.severity === 'critical' ? '#ff0000' : 
@@ -6074,9 +6100,9 @@ YOUR FILES HAVE BEEN ENCRYPTED
 ========================================
 
 All your important files have been encrypted with military-grade encryption.
-To decrypt your files, you need to pay ${CONFIG.ransom_amount} to the following address:
+To decrypt your files, you need to pay \${CONFIG.ransom_amount} to the following address:
 
-Bitcoin Address: ${CONFIG.btc_address}
+Bitcoin Address: \${CONFIG.btc_address}
 
 After payment, send your Victim ID to: decrypt@${selectedAttack.source_ip}
 
@@ -6217,7 +6243,7 @@ MalwarePayload.execute();
  * - User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)
  * 
  * YARA RULE MATCH: ${selectedAttack.type.replace(/\s+/g, '_').toUpperCase()}_VARIANT_A
- * THREAT SCORE: ${selectedAttack.severity === 'critical' ? '95' : selectedAttack.severity === 'high' ? '85' : selectedAttack.severity === 'medium' ? '65' : '45'}/100
+ * THREAT SCORE: ${String(selectedAttack.severity) === 'critical' ? '95' : String(selectedAttack.severity) === 'high' ? '85' : String(selectedAttack.severity) === 'medium' ? '65' : String(selectedAttack.severity) === 'error' ? '85' : String(selectedAttack.severity) === 'warning' ? '65' : '45'}/100
  * ============================================================
  */`}
                               </pre>
@@ -6352,7 +6378,7 @@ MalwarePayload.execute();
                         <option value="xmpp">XMPP/OMEMO</option>
                         <option value="custom">Custom AES-256-GCM</option>
                       </select>
-                      <Button className="w-full bg-green-600 hover:bg-green-700" onClick={() => createCommsChannel({ name: 'New Channel', protocol: 'signal' })}>
+                      <Button className="w-full bg-green-600 hover:bg-green-700" onClick={() => createCommsChannel({ name: 'New Channel', encryption: 'signal' })}>
                         CREATE CHANNEL
                       </Button>
                       {commsChannel && (
@@ -7658,9 +7684,9 @@ MalwarePayload.execute();
                       <Button className="w-full bg-green-600 hover:bg-green-700" onClick={() => generateCryptoKeys({ algorithm: 'rsa-4096', label: 'New Key' })}>
                         GENERATE KEYS
                       </Button>
-                      {cryptoKeys && (
+                      {cryptoKeyGenResult && (
                         <div className="p-3 bg-zinc-800 rounded-lg border border-green-700">
-                          <div className="text-xs text-green-400">Keys Generated: {cryptoKeys.key_id}</div>
+                          <div className="text-xs text-green-400">Keys Generated: {cryptoKeyGenResult.key_id}</div>
                         </div>
                       )}
                     </div>
@@ -7772,9 +7798,9 @@ MalwarePayload.execute();
                       <Button className="w-full bg-purple-600 hover:bg-purple-700" onClick={() => crawlDarkweb({ target: 'marketplace', depth: 2 })}>
                         START CRAWL
                       </Button>
-                      {darkwebCrawlResults && (
+                      {darkwebCrawlResults.length > 0 && (
                         <div className="p-3 bg-zinc-800 rounded-lg border border-purple-700">
-                          <div className="text-xs text-purple-400">Crawl Started: {darkwebCrawlResults.crawl_id}</div>
+                          <div className="text-xs text-purple-400">Crawl Started: {darkwebCrawlResults[0]?.crawl_id}</div>
                         </div>
                       )}
                     </div>
@@ -8036,9 +8062,9 @@ MalwarePayload.execute();
                       EXECUTE
                     </Button>
                   </div>
-                  {siemCorrelationResults && (
+                  {siemCorrelation && (
                     <div className="p-3 bg-zinc-800 rounded-lg border border-purple-700">
-                      <pre className="text-xs text-purple-400 overflow-auto">{JSON.stringify(siemCorrelationResults, null, 2)}</pre>
+                      <pre className="text-xs text-purple-400 overflow-auto">{JSON.stringify(siemCorrelation, null, 2)}</pre>
                     </div>
                   )}
                 </CardContent>

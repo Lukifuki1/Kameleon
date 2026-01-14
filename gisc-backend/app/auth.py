@@ -692,3 +692,8 @@ def create_default_admin(db: Session):
     logger.info(f"Default admin user created. Password: {admin_password}")
     
     return admin_user
+
+
+def get_auth_service(db: Session = Depends(get_db)) -> AuthService:
+    """Factory function to get an AuthService instance with a database session."""
+    return AuthService(db)
