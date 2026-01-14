@@ -266,6 +266,111 @@ Sistem je skladen z naslednjimi standardi:
 
 ---
 
+## TIER 5 OPERATIVNI DOSEŽKI
+
+### Preverjeni API Endpointi
+
+#### Osnovni Endpointi
+- `GET /api/v1/status` - Sistemski status: **OPERATIONAL**
+- `GET /api/v1/metrics` - Sistemske metrike: **ACTIVE**
+- `GET /api/v1/threats/realtime/feed` - Real-time grožnje iz URLhaus, Feodo Tracker, ThreatFox
+
+#### TIER 5 Endpointi
+- `GET /api/v1/tier5/status` - TIER 5 status: **OPERATIONAL**
+- `GET /api/v1/tier5/threat-intel/feeds` - **8 aktivnih threat feedov**
+- `GET /api/v1/tier5/soar/playbooks` - **3 aktivni SOAR playbooki**
+- `GET /api/v1/tier5/compliance/frameworks` - **8 compliance frameworkov**
+- `GET /api/v1/tier5/hunting/campaigns` - Threat hunting kampanje
+
+#### Napredni TIER 5 Endpointi
+- `GET /api/v1/tier5/advanced/attack-visualization/routes` - Globalne attack route
+- `GET /api/v1/tier5/advanced/attack-visualization/statistics` - **55+ napadov dnevno**
+- `GET /api/v1/tier5/advanced/person/list` - Person intelligence profili
+- `POST /api/v1/tier5/advanced/cameras/discover` - Camera discovery
+
+### Operativne Metrike
+
+| Metrika | Vrednost |
+|---------|----------|
+| Total Events | 15+ |
+| Blocked Threats | 3+ |
+| Active Incidents | 6 |
+| Network Nodes | 50 |
+| Active Sensors | 2 |
+| Network Latency | 2.3ms |
+| MTTD | 2.3s |
+| MTTR | 4.9s |
+| Threat Feeds | 8 |
+| SOAR Playbooks | 3 |
+| Compliance Frameworks | 8 |
+| Attack Routes | 55+ daily |
+
+### Threat Intelligence Viri
+
+1. **URLhaus Recent URLs** - Malware distribution URLs
+2. **URLhaus Online URLs** - Active malware URLs
+3. **Feodo Tracker IP Blocklist** - Botnet C2 servers (QakBot, Emotet)
+4. **ThreatFox Recent IOCs** - Indicators of Compromise
+5. **SSL Blacklist Recent** - Malicious SSL certificates
+6. **Emerging Threats Compromised IPs** - Compromised IP addresses
+7. **CI Army Bad Guys** - Known malicious IPs
+8. **Blocklist.de All** - Attack source IPs
+
+### SOAR Playbooks
+
+1. **Block Malicious IP** - Avtomatsko blokiranje zlonamernih IP naslovov
+2. **Isolate Compromised Host** - Izolacija kompromitiranih gostiteljev
+3. **Malware Detection Response** - Odziv na detekcijo malware
+
+### Compliance Frameworks
+
+1. **NIST 800-53** - Security and Privacy Controls
+2. **ISO 27001** - Information Security Management
+3. **SOC 2** - Service Organization Controls
+4. **CIS** - Center for Internet Security Controls
+5. **GDPR** - General Data Protection Regulation
+6. **PCI DSS** - Payment Card Industry Data Security Standard
+7. **HIPAA** - Health Insurance Portability and Accountability Act
+8. **MITRE ATT&CK** - Adversarial Tactics, Techniques, and Common Knowledge
+
+---
+
+## POSNETKI ZASLONA OPERATIVNIH DOSEŽKOV
+
+### SOC Core Dashboard
+![SOC Core](docs/screenshots/soc-core.png)
+Real-time varnostni operativni center z distribucijo groženj, MITRE ATT&CK pokritostjo in živim tokom dogodkov.
+
+### 2D/3D Vizualizacija
+![2D/3D Visualization](docs/screenshots/2d-3d-viz.png)
+Interaktivna vizualizacija omrežne topologije s 50 vozlišči, threat radar in real-time grafi dogodkov.
+
+### Intelligence Modul
+![Intelligence](docs/screenshots/intelligence.png)
+Multi-INT fuzija z OSINT, SIGINT, FININT, HUMINT in Dark Web obveščevalnim zbiranjem.
+
+### Network Monitoring
+![Network Monitoring](docs/screenshots/net-mon.png)
+Multi-layer internet skener z IDS/IPS, packet capture, NDR in SIEM integracijo.
+
+### Threat Feed
+![Threat Feed](docs/screenshots/threat-feed.png)
+Globalna karta kibernetskih groženj z živo vizualizacijo napadov iz URLhaus, Feodo Tracker in ThreatFox.
+
+### Person Intelligence
+![Person Intelligence](docs/screenshots/person-intel.png)
+Iskanje oseb preko več platform z mapiranjem odnosov in nadzorom kamer.
+
+### Malware Lab
+![Malware Lab](docs/screenshots/malware-lab.png)
+Analiza vzorcev malware s statičnimi, dinamičnimi, vedenjskimi in YARA zmogljivostmi.
+
+### Digital Forensics
+![Forensics](docs/screenshots/forensics.png)
+Forenzično upravljanje primerov z mobilno, računalniško, omrežno, pomnilniško in IoT analizo.
+
+---
+
 ## LICENCA
 
 ZAUPNO - Samo za pooblaščeno osebje
